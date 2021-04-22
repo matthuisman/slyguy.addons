@@ -100,6 +100,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         PROXY_GLOBAL['session'] = self._session
 
+        url = self._session.get('path_subs', {}).get(url) or url
+
         if url.lower().startswith('plugin'):
             try:
                 url = self._plugin_request(url)

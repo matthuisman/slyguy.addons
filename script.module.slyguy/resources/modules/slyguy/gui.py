@@ -2,6 +2,7 @@ import sys
 import json
 import traceback
 import time
+import re
 from contextlib import contextmanager
 
 from six.moves.urllib_parse import quote, urlparse
@@ -183,7 +184,7 @@ class Item(object):
         self.video       = dict(video or {})
         self.audio       = dict(audio or {})
         self.context     = list(context or [])
-        self.subtitles   = list(subtitles or [])
+        self.subtitles   = subtitles or []
         self.playable    = playable
         self.inputstream = inputstream
         self.mimetype    = None
@@ -278,9 +279,6 @@ class Item(object):
         if self.context:
             li.addContextMenuItems(self.context)
 
-        if self.subtitles:
-            li.setSubtitles(self.subtitles)
-
         for key in self.properties:
             li.setProperty(key, u'{}'.format(self.properties[key]))
 
@@ -288,6 +286,21 @@ class Item(object):
         mimetype = self.mimetype
 
         proxy_path = settings.common_settings.get('proxy_path', 'http://{}:{}/'.format(PROXY_HOST, PROXY_PORT))
+
+        def get_url(url):
+            _url = url.lower()
+
+            if _url.startswith('proxy://'):
+                url = re.sub('^proxy://', proxy_path, url, flags=re.I)
+
+            elif _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy):
+                url = u'{}{}'.format(proxy_path, url)
+
+            return url
+
+        if self.subtitles:
+            subs = list([get_url(sub) for sub in self.subtitles])
+            li.setSubtitles(subs)
 
         if self.inputstream and self.inputstream.check():
             if KODI_VERSION < 19:
@@ -305,7 +318,7 @@ class Item(object):
 
             if self.inputstream.license_key:
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}&{headers}|{challenge}|{response}'.format(
-                    url = u'{}{}'.format(proxy_path, self.inputstream.license_key) if (self.inputstream.license_key.lower().startswith('plugin://') or self.use_proxy) else self.inputstream.license_key,
+                    url = get_url(self.inputstream.license_key),
                     headers = headers,
                     content_type = self.inputstream.content_type,
                     challenge = self.inputstream.challenge,
@@ -345,10 +358,11 @@ class Item(object):
                 'subs_forced': str(int(settings.getBool('subs_forced', True))),
                 'subs_non_forced': str(int(settings.getBool('subs_non_forced', True))),
                 'addon_id': ADDON_ID,
-                'manifest_middleware': None,
-                'subtitles': [],
-                'type': None,
                 'quality': QUALITY_DISABLED,
+                'manifest_middleware': None,
+                'subtitles': None,
+                'type': None,
+                'path_subs': {},
             }
 
             if mimetype == 'application/vnd.apple.mpegurl':
@@ -357,10 +371,19 @@ class Item(object):
                 proxy_data['type'] = 'mpd'
 
             proxy_data.update(self.proxy_data)
+
+            _subs = {}
+            for key in proxy_data['path_subs']:
+                _key = re.sub('^proxy://', '', key, flags=re.I)
+                _subs[_key] = proxy_data['path_subs'][key]
+            proxy_data['path_subs'] = _subs
+
             set_kodi_string('_slyguy_quality', json.dumps(proxy_data))
 
-            if self.use_proxy or proxy_data['manifest_middleware'] or proxy_data['subtitles'] or (proxy_data['quality'] not in (QUALITY_DISABLED, QUALITY_SKIP) and proxy_data['type']):
-                self.path = u'{}{}'.format(proxy_path, self.path)
+            if proxy_data['manifest_middleware'] or proxy_data['subtitles'] or (proxy_data['quality'] not in (QUALITY_DISABLED, QUALITY_SKIP) and proxy_data['type']):
+                self.use_proxy = True
+
+            self.path = get_url(self.path)
 
             if headers and '|' not in self.path:
                 self.path = u'{}|{}'.format(self.path, headers)
