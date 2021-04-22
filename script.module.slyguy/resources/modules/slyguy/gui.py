@@ -172,16 +172,6 @@ class Item(object):
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
             video=None, audio=None, subtitles=None, use_proxy=False, specialsort=None, custom=None, proxy_data=None):
 
-        self.proxy_data = {
-            'subtitles': [],
-            'path_subs': {},
-            'addon_id': ADDON_ID,
-            'quality': QUALITY_DISABLED,
-            'manifest_middleware': None,
-        }
-
-        self.proxy_data.update(proxy_data or {})
-
         self.id          = id
         self.label       = label
         self.path        = path
@@ -196,6 +186,7 @@ class Item(object):
         self.subtitles   = subtitles or []
         self.playable    = playable
         self.inputstream = inputstream
+        self.proxy_data  = proxy_data or {}
         self.mimetype    = None
         self._is_folder  = is_folder
         self.specialsort = specialsort #bottom, top
@@ -350,7 +341,7 @@ class Item(object):
                     url = url_for(ROUTE_WEBVTT, url=url)
                     mimetype = 'text/vtt'
 
-                self.proxy_data['subtitles'].append([mimetype, language, url])
+                proxy_data['subtitles'].append([mimetype, language, url])
                 return None
 
             ## only srt or webvtt (text/) supported
@@ -359,18 +350,9 @@ class Item(object):
                 mimetype = 'text/vtt'
 
             proxy_url = '{}.srt'.format(language)
-            self.proxy_data['path_subs'][proxy_url] = url
+            proxy_data['path_subs'][proxy_url] = url
 
             return u'{}{}'.format(proxy_path, proxy_url)
-
-        if self.subtitles:
-            subs = []
-            for sub in self.subtitles:
-                sub = make_sub(*sub)
-                if sub:
-                    subs.append(sub)
-
-            li.setSubtitles(list(subs))
 
         if self.path and self.path.lower().startswith('http'):
             if not mimetype:
@@ -393,16 +375,30 @@ class Item(object):
                 'audio_description': str(int(settings.getBool('audio_description', True))),
                 'subs_forced': str(int(settings.getBool('subs_forced', True))),
                 'subs_non_forced': str(int(settings.getBool('subs_non_forced', True))),
+                'subtitles': [],
+                'path_subs': {},
+                'addon_id': ADDON_ID,
+                'quality': QUALITY_DISABLED,
+                'manifest_middleware': None,
+                'type': None,
             }
 
             if mimetype == 'application/vnd.apple.mpegurl':
                 proxy_data['type'] = 'm3u8'
             elif mimetype == 'application/dash+xml':
                 proxy_data['type'] = 'mpd'
-            else:
-                proxy_data['type'] = None
 
             proxy_data.update(self.proxy_data)
+
+            if self.subtitles:
+                subs = []
+                for sub in self.subtitles:
+                    sub = make_sub(*sub)
+                    if sub:
+                        subs.append(sub)
+
+                li.setSubtitles(list(subs))
+
             set_kodi_string('_slyguy_quality', json.dumps(proxy_data))
 
             if proxy_data['manifest_middleware'] or proxy_data['subtitles'] or (proxy_data['quality'] not in (QUALITY_DISABLED, QUALITY_SKIP) and proxy_data['type']):
