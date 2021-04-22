@@ -236,10 +236,7 @@ class WebVTTWriter(BaseWriter):
         td = datetime.timedelta(microseconds=ts)
         mm, ss = divmod(td.seconds, 60)
         hh, mm = divmod(mm, 60)
-        s = "%02d:%02d.%03d" % (mm, ss, td.microseconds/1000)
-        if hh:
-            s = "%d:%s" % (hh, s)
-        return s
+        return "%02d:%02d:%02d.%03d" % (hh, mm, ss, td.microseconds/1000)
 
     def _tags_for_style(self, style):
         if style == 'italics':

@@ -7,6 +7,7 @@ import json
 from functools import wraps
 from six.moves.urllib_parse import quote_plus
 
+from pycaption import detect_format, WebVTTWriter
 from kodi_six import xbmc, xbmcplugin
 from six.moves.urllib.parse import quote
 
@@ -14,6 +15,7 @@ from . import router, gui, settings, userdata, inputstream, signals, migrate, bo
 from .constants import *
 from .log import log
 from .language import _
+from .session import Session
 from .exceptions import Error, PluginError, FailedPlayback
 from .util import set_kodi_string, get_addon, get_kodi_string, remove_file
 
@@ -52,6 +54,7 @@ def plugin_callback():
                 kwargs['_data'] = f.read()
 
             remove_file(kwargs['_data_path'])
+            kwargs['_headers'] = json.loads(kwargs['_headers'])
 
             try:
                 path = func(*args, **kwargs)
@@ -246,6 +249,20 @@ def _settings(**kwargs):
     _close()
     settings.open()
     gui.refresh()
+
+@route(ROUTE_WEBVTT)
+@plugin_callback()
+def _webvtt(url, _data_path, _headers, **kwargs):
+    r = Session().get(url, headers=_headers)
+
+    data = r.content.decode('utf8')
+    reader = detect_format(data)
+
+    data = WebVTTWriter().write(reader().read(data))
+    with open(_data_path, 'wb') as f:
+        f.write(data.encode('utf8'))
+
+    return _data_path + '|content-type=text/vtt'
 
 @route(ROUTE_RESET)
 def _reset(**kwargs):

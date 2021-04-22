@@ -77,6 +77,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = self.path.lstrip('/').strip('\\')
 
         self._headers = {}
+        self._plugin_headers = {}
         for header in self.headers:
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
@@ -126,8 +127,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = split[0]
 
         if len(split) > 1:
-            headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
-            self._headers.update(headers)
+            self._plugin_headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
 
         return url
 
@@ -150,13 +150,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         data_path = split[0]
 
         if len(split) > 1:
-            headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
-            self._headers.update(headers)
+            self._plugin_headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
 
         with open(data_path, 'rb') as f:
             data = f.read().decode('utf8')
 
-        remove_file(data_path)
+        if not ADDON_DEV:
+            remove_file(data_path)
 
         return data
 
@@ -740,7 +740,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             with open(url, 'rb') as f:
                 response.stream.content = f.read()
 
-            remove_file(url)
+            if not ADDON_DEV:
+                remove_file(url)
+
             return response
 
         debug = self._session.get('debug_all') or self._session.get('debug_{}'.format(method.lower()))
@@ -809,6 +811,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def _output_headers(self, response):
         self.send_response(response.status_code)
+
+        response.headers.update(self._plugin_headers)
 
         if 'content-length' in response.headers:
             response.headers['keep-alive'] = 'timeout=10, max=1000'
