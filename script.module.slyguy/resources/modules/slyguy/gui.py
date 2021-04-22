@@ -2,7 +2,6 @@ import sys
 import json
 import traceback
 import time
-import re
 from contextlib import contextmanager
 
 from six.moves.urllib_parse import quote, urlparse
@@ -11,7 +10,7 @@ from slyguy.util import set_kodi_string, hash_6
 
 from .constants import *
 from .exceptions import GUIError
-from .router import add_url_args
+from .router import add_url_args, url_for
 from .language import _
 from . import settings
 from .util import url_sub, fix_url
@@ -173,6 +172,16 @@ class Item(object):
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
             video=None, audio=None, subtitles=None, use_proxy=False, specialsort=None, custom=None, proxy_data=None):
 
+        self.proxy_data = {
+            'subtitles': [],
+            'path_subs': {},
+            'addon_id': ADDON_ID,
+            'quality': QUALITY_DISABLED,
+            'manifest_middleware': None,
+        }
+
+        self.proxy_data.update(proxy_data or {})
+
         self.id          = id
         self.label       = label
         self.path        = path
@@ -189,7 +198,6 @@ class Item(object):
         self.inputstream = inputstream
         self.mimetype    = None
         self._is_folder  = is_folder
-        self.proxy_data  = proxy_data or {}
         self.specialsort = specialsort #bottom, top
         self.custom      = custom
         self.use_proxy   = use_proxy
@@ -290,17 +298,10 @@ class Item(object):
         def get_url(url):
             _url = url.lower()
 
-            if _url.startswith('proxy://'):
-                url = re.sub('^proxy://', proxy_path, url, flags=re.I)
-
-            elif _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy):
+            if _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy):
                 url = u'{}{}'.format(proxy_path, url)
 
             return url
-
-        if self.subtitles:
-            subs = list([get_url(sub) for sub in self.subtitles])
-            li.setSubtitles(subs)
 
         if self.inputstream and self.inputstream.check():
             if KODI_VERSION < 19:
@@ -335,6 +336,41 @@ class Item(object):
 
             for key in self.inputstream.properties:
                 li.setProperty(self.inputstream.addon_id+'.'+key, self.inputstream.properties[key])
+        else:
+            self.inputstream = None
+
+        def make_sub(url, language='unk', mimetype=''):
+            if not url.lower().startswith('http') and not url.lower().startswith('plugin://'):
+                return url
+
+            ## using dash, we can embed subs
+            if self.inputstream and self.inputstream.manifest_type == 'mpd':
+                if mimetype not in ('application/ttml+xml', 'text/vtt') and not url.lower().startswith('plugin://'):
+                    ## can't play directly - covert to webvtt
+                    url = url_for(ROUTE_WEBVTT, url=url)
+                    mimetype = 'text/vtt'
+
+                self.proxy_data['subtitles'].append([mimetype, language, url])
+                return None
+
+            ## only srt or webvtt (text/) supported
+            if not mimetype.startswith('text/') and not url.lower().startswith('plugin://'):
+                url = url_for(ROUTE_WEBVTT, url=url)
+                mimetype = 'text/vtt'
+
+            proxy_url = '{}.srt'.format(language)
+            self.proxy_data['path_subs'][proxy_url] = url
+
+            return u'{}{}'.format(proxy_path, proxy_url)
+
+        if self.subtitles:
+            subs = []
+            for sub in self.subtitles:
+                sub = make_sub(*sub)
+                if sub:
+                    subs.append(sub)
+
+            li.setSubtitles(list(subs))
 
         if self.path and self.path.lower().startswith('http'):
             if not mimetype:
@@ -357,27 +393,16 @@ class Item(object):
                 'audio_description': str(int(settings.getBool('audio_description', True))),
                 'subs_forced': str(int(settings.getBool('subs_forced', True))),
                 'subs_non_forced': str(int(settings.getBool('subs_non_forced', True))),
-                'addon_id': ADDON_ID,
-                'quality': QUALITY_DISABLED,
-                'manifest_middleware': None,
-                'subtitles': None,
-                'type': None,
-                'path_subs': {},
             }
 
             if mimetype == 'application/vnd.apple.mpegurl':
                 proxy_data['type'] = 'm3u8'
             elif mimetype == 'application/dash+xml':
                 proxy_data['type'] = 'mpd'
+            else:
+                proxy_data['type'] = None
 
             proxy_data.update(self.proxy_data)
-
-            _subs = {}
-            for key in proxy_data['path_subs']:
-                _key = re.sub('^proxy://', '', key, flags=re.I)
-                _subs[_key] = proxy_data['path_subs'][key]
-            proxy_data['path_subs'] = _subs
-
             set_kodi_string('_slyguy_quality', json.dumps(proxy_data))
 
             if proxy_data['manifest_middleware'] or proxy_data['subtitles'] or (proxy_data['quality'] not in (QUALITY_DISABLED, QUALITY_SKIP) and proxy_data['type']):
