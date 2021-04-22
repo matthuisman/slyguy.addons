@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.play.stuff" name="Play Stuff" provider-name="SlyGuy" version="0.1.7">
+  <requires>
+    <import addon="script.module.slyguy"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <description lang="en">Play Stuff is an innovative new video on demand product that will appeal to a broad audience, including younger viewers.
+
+Requires New Zealand IP Address
+</description>
+    <reuselanguageinvoker>true</reuselanguageinvoker>
+    <license></license>
+    <language></language>
+    <website></website>
+    <news>Fix shows (now called Series)</news>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>

@@ -1,0 +1,232 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Add Button"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Reload Service"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Error importing RPi.GPIO Library\n"
+"Try installing service again."
+msgstr ""
+
+msgctxt "#30003"
+msgid "GPIO{pin}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Install Service"
+msgstr ""
+
+msgctxt "#30005"
+msgid "The GPIO service needs to be reloaded for any changes to take affect. Note: You can turn on auto-reload in the add-on settings."
+msgstr ""
+
+msgctxt "#30006"
+msgid "Select to install the GPIO Service (required)"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Delete Button"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Another button on this pin is already enabled.\n"
+"Disable other button?"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Are you sure you want to delete this button?"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Auto Reload Service"
+msgstr ""
+
+msgctxt "#30011"
+msgid "{pin} {name} - {status}"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Service Reloaded"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Pin"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Name"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Enabled"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Pull-Up"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Bounce Time"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Hold Time"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Hold Repeat"
+msgstr ""
+
+msgctxt "#30020"
+msgid "When Pressed"
+msgstr ""
+
+msgctxt "#30021"
+msgid "When Released"
+msgstr ""
+
+msgctxt "#30022"
+msgid "When Held"
+msgstr ""
+
+msgctxt "#30023"
+msgid "{option}: {value}"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Select the BCM Pin Number (2-26) for this button."
+msgstr ""
+
+msgctxt "#30025"
+msgid "(Optional) Enter a name for this button. This will be shown in it's label in the main menu."
+msgstr ""
+
+msgctxt "#30026"
+msgid "True: Button will be used by the service (default)\n\n"
+"False: Button will be ignored by the service"
+msgstr ""
+
+msgctxt "#30027"
+msgid "True: Button is connected to GND (default)\n\n"
+"False: Button is connected to 3.3V"
+msgstr ""
+
+msgctxt "#30028"
+msgid "The length of time (in seconds) that the button will ignore changes in state after an initial change."
+msgstr ""
+
+msgctxt "#30029"
+msgid "The length of time (in seconds) that the button must be held until the 'When Held' functions are executed."
+msgstr ""
+
+msgctxt "#30030"
+msgid "True: 'When Held' functions are executed repeatedly while button remains held.\n\n"
+"False: Held functions are only executed once (default)."
+msgstr ""
+
+msgctxt "#30031"
+msgid "Enter the KODI built-in function(s) you want to run when the button is pressed. Multiple functions can be seperated with {delimiter}\n\n"
+"Example: Action(Up)|Action(Left)"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Enter the KODI built-in function(s) you want to run when the button is released. Multiple functions can be seperated with {delimiter}\n\n"
+"Example: Action(Down)|Action(Right)"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Enter the KODI built-in function(s) you want to run when the button is held. Multiple functions can be seperated with {delimiter}\n\n"
+"Example: Action(Down)|Reboot"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Add a new button"
+msgstr ""
+
+msgctxt "#30035"
+msgid "This system is not supported.\n"
+"This add-on only supports LibreELEC, OSMC, XBian & Raspbian on the Raspberry Pi"
+msgstr ""
+
+msgctxt "#30036"
+msgid "GPIO Service not installed"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Inactive"
+msgstr ""
+
+msgctxt "#30038"
+msgid "Active"
+msgstr ""
+
+msgctxt "#30039"
+msgid "Error"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Status"
+msgstr ""
+
+msgctxt "#30042"
+msgid "{error}"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Service Installed\n"
+"A restart is required. Restart now?"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Please enter the password for 'xbian' user"
+msgstr ""
+
+msgctxt "#30045"
+msgid "Unable to run the install command.\n"
+"Please check the 'xbian' user password is correct."
+msgstr ""
+
+msgctxt "#30046"
+msgid "Button is actively being monitored by the GPIO Service"
+msgstr ""
+
+msgctxt "#30047"
+msgid "Button is not being monitored by the GPIO Service"
+msgstr ""
+
+msgctxt "#30048"
+msgid "Button has been disabled"
+msgstr ""
+
+msgctxt "#30049"
+msgid "The below error occured\n"
+"{error}"
+msgstr ""
+
+msgctxt "#30050"
+msgid "Test Press"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Test Release"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Test Hold"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Simulation"
+msgstr ""
+
+## COMMON SETTINGS ##

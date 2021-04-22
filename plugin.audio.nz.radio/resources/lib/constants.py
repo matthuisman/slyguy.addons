@@ -1,0 +1,1 @@
+DATA_URL = 'https://i.mjh.nz/nz/radio.json.gz'

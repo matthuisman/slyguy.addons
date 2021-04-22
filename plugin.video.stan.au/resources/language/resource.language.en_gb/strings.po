@@ -1,0 +1,180 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Failed to login / refresh token.\n"
+"Message: {msg}"
+msgstr ""
+
+
+msgctxt "#30005"
+msgid "Stan detected your not using an Australian IP address or may be using a VPN"
+msgstr ""
+
+
+msgctxt "#30009"
+msgid "TV"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Kids"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Search: {query} ({page})"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Next Page ({next})"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Failed to get playback URL.\n"
+"Message: {msg}"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Trailers & Extras"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Add Profile"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Delete Profile"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Select Profile"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Profile Activated"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Select profile to delete"
+msgstr ""
+
+msgctxt "#30022"
+msgid "All history for this profile will be lost. Are you sure you want to permanently delete this profile?"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Delete {name}'s profile?"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Profile Deleted"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Random Pick"
+msgstr ""
+
+msgctxt "#30026"
+msgid "{label} (USED)"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Select Avatar"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Profile Name"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Kids Profile?"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Kid friendly interface with only content suitable for kids."
+msgstr ""
+
+msgctxt "#30031"
+msgid "Disable profile switching in Kids profile"
+msgstr ""
+
+msgctxt "#30032"
+msgid "{name} is already being used"
+msgstr ""
+
+msgctxt "#30033"
+msgid "You're currently signed into a Stan Kids profile and can't access this content."
+msgstr ""
+
+msgctxt "#30034"
+msgid "My List"
+msgstr ""
+
+msgctxt "#30035"
+msgid "Continue Watching"
+msgstr ""
+
+msgctxt "#30036"
+msgid "[B]Go to {series}[/B]"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Sport"
+msgstr ""
+
+msgctxt "#30038"
+msgid "Hide Sport"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""

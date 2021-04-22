@@ -1,0 +1,117 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Failed to login.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Failed to get playback url.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Live"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Played"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Upcoming"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Show Scores"
+msgstr ""
+
+msgctxt "#30009"
+msgid "No Matches"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Reminder Set"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Reminder Removed"
+msgstr ""
+
+msgctxt "#30012"
+msgid "{label} [{start}]"
+msgstr ""
+
+msgctxt "#30013"
+msgid "DD MMM YYYY h:mma"
+msgstr ""
+
+msgctxt "#30014"
+msgid "{series}\n\n"
+"{match}\n\n"
+"{start}"
+msgstr ""
+
+msgctxt "#30015"
+msgid "{match} has just started"
+msgstr ""
+
+msgctxt "#30016"
+msgid "{label} [Part {part}]"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Playback Source"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Watch"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Close"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Your subscription does not have access to this content\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Could not find video urls for this content"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.sky.sport.now" name="Sky Sport Now" provider-name="SlyGuy" version="0.2.9">
+  <requires>
+    <import addon="script.module.slyguy"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <description lang="en">Full Streaming access to all 12 SKY Sport and ESPN channels.
+Sky Sport Now will give you all the LIVE Sports action you love online and on the go, as well as a huge range of feature content, highlights, stats and more!
+
+Subscription required.</description>
+    <reuselanguageinvoker>true</reuselanguageinvoker>
+    <license></license>
+    <language></language>
+    <website></website>
+    <news>Add Bookmarks</news>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>

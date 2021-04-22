@@ -1,0 +1,83 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Highlights"
+msgstr ""
+
+msgctxt "#30005"
+msgid " ({cur_page}/{total_pages})"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Next Page"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Sky Sport Now is only available to New Zealand IP Addresses"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Failed to get playback data\n"
+"Server error code: {code}"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Unknown Error\n"
+"Check you have a valid subscription"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Failed to login\n"
+"Server error code: {code}"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Replay"
+msgstr ""
+
+msgctxt "#30012"
+msgid "This event has not started yet"
+msgstr ""
+
+msgctxt "#30013"
+msgid "You can only view events within last 24 hours"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

@@ -1,0 +1,86 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Shows"
+msgstr ""
+
+msgctxt "#30001"
+msgid "ALL"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Categories"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Live Events"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Shows: {sort}"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30007"
+msgid "0 - 9"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Suggested"
+msgstr ""
+
+msgctxt "#30009"
+msgid "{count} Episodes"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Clips"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Flatten Single Seasons"
+msgstr ""
+
+
+
+msgctxt "#30014"
+msgid "Hide Suggested"
+msgstr ""
+
+msgctxt "#30015"
+msgid "{count} Events"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

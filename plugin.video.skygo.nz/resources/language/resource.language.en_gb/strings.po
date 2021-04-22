@@ -1,0 +1,108 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Video not found"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Unable to find that channel"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Failed to login.\n"
+"Server Message: {message}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "This stream is currently protected by Adobe Access DRM and can not be played in Kodi\n"
+"Sky should start to remove Adobe DRM in the near future"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Error getting play token.\n"
+"Server Message: {message}"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#30010"
+msgid "TV Shows"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Sports"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Box Sets"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Unable to get content URL\n"
+"Server Message: {message}"
+msgstr ""
+
+msgctxt "#30015"
+msgid "{title} - Episode {episode}"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Hide Unplayable Content"
+msgstr ""
+
+msgctxt "#30019"
+msgid "{label} [COLOR red](LOCKED)[/COLOR]"
+msgstr ""
+
+msgctxt "#30020"
+msgid "{label} [COLOR red](ADOBE DRM)[/COLOR]"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Next Page"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Channels"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

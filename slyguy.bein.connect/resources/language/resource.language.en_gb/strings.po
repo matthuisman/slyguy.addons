@@ -1,0 +1,124 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Watch Live"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Failed to login\n"
+"Check your username and password is correct\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "{name} ({last_login})"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Select Device"
+msgstr ""
+
+msgctxt "#30007"
+msgid "New Device"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Remove Device"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Device Name"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Select device to remove"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Remove device {device_name}?"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Add device {device_name}?"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Request was GEO Blocked (Error 415)\n"
+"Make sure your IP is in MENA region and not blocked"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Request failed with erorr code: {code}"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Login Mode"
+msgstr ""
+
+msgctxt "#30016"
+msgid "1 Device | Many IP"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Many Device | 1 IP"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Many Device | Many IP (Save Password)"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Failed to renew auth token\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Change the Login Type in settings to 'Many Device' or 'Save Password' and then login again"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Change the Login Type in settings to '1 Device' or 'Save Password' and then login again"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Many Device | Many IP (Save Password)"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Default Language"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

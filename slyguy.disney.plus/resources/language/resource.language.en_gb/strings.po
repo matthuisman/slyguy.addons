@@ -1,0 +1,198 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Series"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Search"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Widevine L1 Secure Device"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr ""
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Sync with Disney+"
+msgstr ""
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr ""
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr ""
+
+msgctxt "#30019"
+msgid "H.265 / 1080P"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Play without Intro"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Play with Intro"
+msgstr ""
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr ""
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr ""
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr ""
+
+
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr ""
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr ""
+
+msgctxt "#30050"
+msgid "DD/MM/YYYY"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr ""
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

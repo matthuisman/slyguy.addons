@@ -1,0 +1,98 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Failed to login.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Channels"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Your IP is being blocked from accessing this asset.\n"
+"An Australian IP address is required & some VPNs are also blocked"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Unable to find a stream for this assset"
+msgstr ""
+
+msgctxt "#30008"
+msgid "{label} (LIVE)"
+msgstr ""
+
+msgctxt "#30009"
+msgid " (ddd MMM D, h:mm A)"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Reminder Set"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Reminder Removed"
+msgstr ""
+
+msgctxt "#30012"
+msgid "{event} has just started"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Watch"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Close"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""

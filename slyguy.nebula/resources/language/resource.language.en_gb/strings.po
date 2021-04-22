@@ -1,0 +1,109 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30004"
+msgid "My Library"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Browse"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Everything"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Videos"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Creators"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Follow [B]{creator}[/B]"
+msgstr ""
+
+msgctxt "#30010"
+msgid "[B]{creator}[/B] • {published}\n\n"
+"{description}"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Podcasts"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Page Size"
+msgstr ""
+
+msgctxt "#30013"
+msgid "[B]{creator}[/B] Videos"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Followed [B]{creator}[/B]"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Latest Videos"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Featured Creators"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Unfollow [B]{creator}[/B]"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Unfollowed [B]{creator}[/B]"
+msgstr ""
+
+msgctxt "#30019"
+msgid "My Library - Show Creators"
+msgstr ""
+
+msgctxt "#30020"
+msgid "My Library - Videos Per Creator"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

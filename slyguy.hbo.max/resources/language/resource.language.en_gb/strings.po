@@ -1,0 +1,86 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Device Link"
+msgstr ""
+
+msgctxt "#30002"
+msgid "1. Go to [B]hbomax.com/tvsignin[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Device ID"
+msgstr ""
+
+msgctxt "#30004"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Go to Series"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Unable to find a video for this content"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Widevine L1 Secure Device"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Play Next Episode"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Skip Intros"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Play Next Recommended Movie"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Skip Credits"
+msgstr ""
+
+msgctxt "#30014"
+msgid "H.265"
+msgstr ""
+
+msgctxt "#30015"
+msgid "4K"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Dolby Vision"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

@@ -1,0 +1,85 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "My Courses"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Udemy Email"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Udemy Password"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Failed to login.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30008"
+msgid "{title}\n\n"
+"{num_lectures} Lectures ({length})"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Section {section_number}: {section_title}"
+msgstr ""
+
+msgctxt "#30010"
+msgid "No stream found"
+msgstr ""
+
+
+
+
+msgctxt "#30018"
+msgid "Business Account"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Business Host"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#30021"
+msgid "General"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Utility"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Next Page"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

@@ -1,0 +1,194 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "Courriel"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "Mot de passe"
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "La Requête API a échoué\n"
+"Erreur serveur: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "Films"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr "Séries"
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr "Originaux"
+
+msgctxt "#30007"
+msgid "Search"
+msgstr "Recherche"
+
+
+
+msgctxt "#30009"
+msgid "Widevine L1 Secure Device"
+msgstr "Appareil sécure Widevine L1"
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr "Suggérés"
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "Recommandés"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "Saison {season}"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr "Extras"
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr "Le support complet sur Kodi {kodi_ver} requiert au moins la version {ver_required} d'Inputstream Adaptative\n"
+"Vous pourriez expérimenter certains problèmes avec votre version actuelle."
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Sync with Disney+"
+msgstr "Sync avec Disney+"
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr ""
+
+msgctxt "#30019"
+msgid "H.265 / 1080P"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr "Sauter le générique"
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr "Jouer le prochain épisode"
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr "Jouer le prochain film recommandé"
+
+msgctxt "#30023"
+msgid "Play without Intro"
+msgstr "Jouer sans l'intro"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "Sauter l'intro"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "Jouer du début"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "Ma Liste"
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr "Ajouter à Ma Liste"
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "Retirer de Ma Liste"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "Ajouté à Ma Liste"
+
+
+
+msgctxt "#30041"
+msgid "Play with Intro"
+msgstr "Jouer avec l'intro"
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr "Continuer"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "Nous ne pouvez pas accéder à ce contenu.\n"
+"Vérifiez que votre abonnement est valide."
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "Vos informations de connexion sont incorrects.\n"
+"Veuillez les vérifier et essayer de nouveau."
+
+
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "Depuis {time:0>8}"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](Disponible {date})[/B]"
+
+msgctxt "#30050"
+msgid "D/MM/YYYY"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "Impossible de trouver les données de flux pour ce contenu"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr "Informations du compte"
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr "Continuer"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Demander"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Meilleur"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Plus bas"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Contourner"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Manuel"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Désactivé"

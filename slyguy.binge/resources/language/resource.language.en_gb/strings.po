@@ -1,0 +1,175 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Failed to login.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Add Profile"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Select Profile"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Delete Profile"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Profile Activated"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Random Pick"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Select Avatar"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Used"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Not Used"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Profile Name"
+msgstr ""
+
+msgctxt "#30013"
+msgid "{name} is already being used"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Select profile to delete"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Delete {name}'s profile?"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Profile history, watchlist, and activity will be deleted. There is no way to undo this."
+msgstr ""
+
+msgctxt "#30017"
+msgid "Profile Deleted"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Shows"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30021"
+msgid "BingeLists"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Failed to get asset.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30024"
+msgid "HEVC (H.265)"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Login with"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Device Link"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Email / Password"
+msgstr ""
+
+msgctxt "#30028"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Widevine L1 Secure Device"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Failed to refresh token.\n"
+"[B]Try logout and then login again[/B]\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Show Hero Contents"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Failed to fetch auth token\n"
+"Make sure your IP address is allowed (not geo-blocked)\n"
+"Try accessing the content via other means (offical app / website) to confirm it's a Kodi add-on issue"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""

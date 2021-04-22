@@ -1,0 +1,52 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "No stream available for this station"
+msgstr ""
+
+msgctxt "#30001"
+msgid "States"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Stations"
+msgstr ""
+
+
+
+msgctxt "#30004"
+msgid "{name} [B](No Stream)[/B]"
+msgstr ""
+
+
+
+msgctxt "#30012"
+msgid "Show stations without streams"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
