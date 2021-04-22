@@ -482,12 +482,6 @@ def episodes(url, show_title, fanart, **kwargs):
     return folder
 
 @plugin.route()
-@plugin.plugin_callback()
-def subs(url, _data_path, **kwargs):
-    api.get_subtitle(url, _data_path)
-    return _data_path
-
-@plugin.route()
 def play(program_id, play_type=None, **kwargs):
     return _play(program_id, play_type, is_live=ROUTE_LIVE_TAG in kwargs)
 
@@ -512,10 +506,8 @@ def _play(program_id, play_type=None, is_live=False):
         item.properties['ResumeTime'] = '1'
         item.properties['TotalTime']  = '1'
 
-    item.proxy_data['subtitles'] = []
     for row in play_data.get('captions', []):
-        ## need to proxy so their timings are fixed
-        item.proxy_data['subtitles'].append(['text/vtt', row['language'], plugin.url_for(subs, url=row['url'])])
+        item.subtitles.append([row['url'], row['language']])
 
     # for chapter in program_data.get('chapters', []):
     #     if chapter['name'] == 'Intro':
