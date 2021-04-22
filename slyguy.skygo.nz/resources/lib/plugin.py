@@ -1,3 +1,5 @@
+import codecs
+
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import Error
 from slyguy.constants import ROUTE_LIVE_TAG
@@ -85,3 +87,14 @@ def play_channel(id, **kwargs):
         item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     return item
+
+@plugin.route()
+@plugin.merge()
+def playlist(output, **kwargs):
+    with codecs.open(output, 'w', encoding='utf8') as f:
+        f.write(u'#EXTM3U\n')
+
+        for row in api.channels():
+            f.write(u'#EXTINF:-1 tvg-id="sky.{id}" tvg-chno="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+                        id=row['number'], channel=row['number'], name=row['title'], logo=row['tileImage']['uri'],
+                            path=plugin.url_for(play_channel, id=row['id'], _is_live=True)))
