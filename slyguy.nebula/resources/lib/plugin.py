@@ -304,10 +304,18 @@ def login(**kwargs):
 def play(video_id, **kwargs):
     url, subtitles = api.play(video_id)
 
-    return plugin.Item(
+    item = plugin.Item(
         path = url,
         inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs),
     )
+
+    item.proxy_data['path_subs'] = {}
+    for idx, row in enumerate(subtitles):
+        url = 'proxy://{}.srt'.format(row['label'])
+        item.subtitles.append(url)
+        item.proxy_data['path_subs'][url] = row['file']
+
+    return item
 
 @plugin.route()
 def logout(**kwargs):
