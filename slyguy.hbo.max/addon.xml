@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.2.0">
+<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.2.1">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>New settings to enable / disable H.265 / 4K / Dolby Vision</news>
+    <news>update subtitles</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
