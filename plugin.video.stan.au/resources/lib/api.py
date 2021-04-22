@@ -6,7 +6,6 @@ import json
 
 from six.moves.urllib_parse import quote_plus
 from kodi_six import xbmc
-from pycaption import detect_format, WebVTTWriter
 
 from slyguy import userdata, settings
 from slyguy.session import Session
@@ -307,13 +306,6 @@ class API(object):
         key     = bytearray.fromhex(key)
 
         return cenc_init(key)
-
-    def get_subtitle(self, url, out_file):
-        r = self._session.get(url)
-        reader = detect_format(r.text)
-        vtt = WebVTTWriter().write(reader().read(r.text))
-        with open(out_file, 'wb') as f:
-            f.write(vtt.encode('utf8'))
 
     def _get_sign(self, payload):
         module_version = 214
