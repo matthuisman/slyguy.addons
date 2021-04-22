@@ -302,7 +302,7 @@ def login(**kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(video_id, **kwargs):
-    url = api.play(video_id)
+    url, subtitles = api.play(video_id)
 
     return plugin.Item(
         path = url,

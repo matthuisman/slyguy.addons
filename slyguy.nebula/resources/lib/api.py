@@ -177,13 +177,22 @@ class API(object):
         return self._session.get('https://api.zype.com/videos', params=params).json()
 
     def play(self, video_id):
+        # return 'https://player.zype.com/manifest/{video_id}.m3u8?access_token={token}&ad_enabled=false&https=true'.format(video_id=video_id, token=self._token())
+
         params = {
-            'access_token': self._token(),
+            'autoplay': 'undefined',
+            'access_token': self._token(force=True),
         }
 
         data = self._session.get('https://player.zype.com/embed/{video_id}'.format(video_id=video_id), params=params).json()
+        if 'response' not in data:
+            log.debug(data)
+            raise APIError('{}'.format(data.get('message', 'unknown error getting playdata')))
 
-        return data['response']['body']['outputs'][0]['url']
+        play_url = data['response']['body']['outputs'][0]['url']
+        subtitles = data['response']['body'].get('subtitles', [])
+
+        return play_url, subtitles
 
     def logout(self):
         userdata.delete('key')
