@@ -309,11 +309,8 @@ def play(video_id, **kwargs):
         inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs),
     )
 
-    item.proxy_data['path_subs'] = {}
     for idx, row in enumerate(subtitles):
-        url = 'proxy://{}.srt'.format(row['label'])
-        item.subtitles.append(url)
-        item.proxy_data['path_subs'][url] = row['file']
+        item.subtitles.append([row['file'], row['label']])
 
     return item
 
