@@ -1,0 +1,548 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "SlyGuy News"
+msgstr "SlyGuy-Nachrichten"
+
+## COMMON ##
+
+msgctxt "#32000"
+msgid "You need to login to access this content"
+msgstr "Du musst dich anmelden um auf diesen Inhalt zuzugreifen."
+
+msgctxt "#32001"
+msgid "No default route found"
+msgstr "Keine Standardroute gefunden."
+
+msgctxt "#32002"
+msgid ""
+"Are you sure you want to reset this add-on?\n"
+"This will reset all settings and clear all data"
+msgstr ""
+"Bist du sicher, dass du dieses Addon zurücksetzen willst?\n"
+"Dies wird alle Einstellungen wiederherstellen und alle Daten löschen."
+
+msgctxt "#32003"
+msgid "Reset Complete"
+msgstr "Zurücksetzen abgeschlossen."
+
+msgctxt "#32004"
+msgid "Removed {delete_count} Cached Item"
+msgstr "{delete_count} gecachte Elemente gelöscht."
+
+msgctxt "#32005"
+msgid "Clear Cache"
+msgstr "Cache leeren"
+
+msgctxt "#32006"
+msgid ""
+"This add-on path is no longer valid\n"
+"If your using favorites, remove the favorite and then re-create it via the "
+"add-on"
+msgstr ""
+"Dieser Addon-Pfad existiert nicht mehr.\n"
+"Wenn du Favoriten benutzt, lösche es und erstelle es erneut."
+
+msgctxt "#32007"
+msgid "Could not find a url for function: {function_name}"
+msgstr "Konnte keine URL finden für Funktion {function_name}"
+
+msgctxt "#32008"
+msgid "Inpustream Adaptive add-on required for Widevine playback"
+msgstr "Addon Inputstream Adaptive benötigt für Widevine-Wiedergabe."
+
+msgctxt "#32009"
+msgid ""
+"Kodi Windows Store (UWP) version does not support Widevine playback.\n"
+"Use the Kodi .exe installer from the Kodi website instead."
+msgstr ""
+"Die Windows Store-Version (UWP) von Kodi unterstützt keine Widevine-"
+"Wiedergabe. Benutze stattdessen den Kodi .exe-Installer von der der Kodi-"
+"Webseite."
+
+msgctxt "#32010"
+msgid "Kodi 18 or higher required for Widevine playback on {system}"
+msgstr "Kodi 18 oder höher wird benötigt zur Widevine-Wiedergabe auf {system}"
+
+msgctxt "#32011"
+msgid ""
+"ARM 64bit does not support Widevine playback\n"
+"An OS with a 32-bit userspace is required.\n"
+"Try coreelec.org"
+msgstr ""
+"ARM 64 Bit unterstützt keine Widevine-Wiedergabe.\n"
+"Ein Betriebssystem mit 32 Bit Userspace wird benötigt.\n"
+"Teste coreelec.org"
+
+msgctxt "#32012"
+msgid ""
+"This system ({system}{arch} Kodi v{kodi_version}) does not yet support "
+"Widevine playback"
+msgstr ""
+"Dieses System ({system}{arch} Kodi v{kodi_version}) unterstützt noch keine "
+"Widevine-Wiedergabe."
+
+#msgctxt "#32013"
+#msgid ""
+#"Could not find a media source from Brightcove\n"
+#"Server Message: {error}"
+#msgstr ""
+
+msgctxt "#32014"
+msgid ""
+"Downloading required file\n"
+"{url}"
+msgstr ""
+"Lade benötigte Datei\n"
+"{url}"
+
+msgctxt "#32015"
+msgid "Widevine CDM"
+msgstr "Widevine CDM"
+
+msgctxt "#32016"
+msgid ""
+"There was an unexpected error installing the Widevine CDM\n"
+"Please restart Kodi and try again"
+msgstr ""
+"Beim Installieren des Widevine CDM ist ein unerwarteter Fehler aufgetreten.\n"
+"Bitte starte Kodi neu und versuche es erneut."
+
+msgctxt "#32017"
+msgid "Use Cache"
+msgstr "Cache benutzen"
+
+msgctxt "#32018"
+msgid "Inputstream Settings"
+msgstr "Inpustream-Einstellungen"
+
+msgctxt "#32019"
+msgid "Reset Add-on"
+msgstr "Addon zurücksetzen"
+
+msgctxt "#32020"
+msgid "{addon} - Error"
+msgstr "{addon} - Fehler"
+
+msgctxt "#32021"
+msgid "Install Widevine CDM"
+msgstr "Widevine CDM installieren"
+
+msgctxt "#32022"
+msgid ""
+"Widevine CDM ({version}) Installed OK\n"
+"If videos do not play, please restart Kodi and try again"
+msgstr ""
+"Widevine CDM ({version}) korrekt installiert.\n"
+"Wenn Videos nicht richtig spielen, starte Kodi neu und versuche es nochmal."
+
+msgctxt "#32023"
+msgid "Use Inputstream HLS for VOD Streams"
+msgstr "Benutze Inpustream HLS für VOD-Streams"
+
+msgctxt "#32024"
+msgid "Login"
+msgstr "Anmelden"
+
+msgctxt "#32025"
+msgid "Logout"
+msgstr "Abmelden"
+
+msgctxt "#32026"
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgctxt "#32027"
+msgid "Are you sure you want to logout?"
+msgstr "Bist du sicher, dass du dich abmelden möchtest?"
+
+msgctxt "#32028"
+msgid ""
+"Failed to login.\n"
+"Check your details are correct and try again."
+msgstr ""
+"Fehler beim Anmelden.\n"
+"Überprüfe deine Anmeldedaten und versuche es erneut."
+
+msgctxt "#32029"
+msgid "Search"
+msgstr "Suchen"
+
+msgctxt "#32030"
+msgid "Search: {query}"
+msgstr "Suche: {query}"
+
+msgctxt "#32031"
+msgid "No Results"
+msgstr "Keine Ergebnisse"
+
+msgctxt "#32032"
+msgid "{addon} ({version}) - Unexpected Error"
+msgstr "{addon} ({version}) - Unerwarteter Fehler"
+
+msgctxt "#32033"
+msgid "Failed to download required file: {filename}"
+msgstr ""
+"Lade benötigte Datei\n"
+"{filename}"
+
+msgctxt "#32034"
+msgid "General"
+msgstr "Allgemein"
+
+msgctxt "#32035"
+msgid "Playback"
+msgstr "Wiedergabe"
+
+msgctxt "#32036"
+msgid "Advanced"
+msgstr "Erweitert"
+
+msgctxt "#32037"
+msgid "Verify SSL Certs"
+msgstr "Überprüfe SSL-Zertifikate"
+
+msgctxt "#32038"
+msgid "Select Widevine CDM version to install"
+msgstr "Widevine CDM-Version zur Installation auswählen"
+
+msgctxt "#32039"
+msgid "Service Start Delay (0 = Random 10s-60s)"
+msgstr "Dienst-Startverzögerung (0 = zufällig 10s-60s)"
+
+msgctxt "#32040"
+msgid ""
+"MD5 checksum failed for file: {filename}\n"
+"{local_md5} != {remote_md5}"
+msgstr ""
+"MD5-Prüfsumme ungültig für Datei {filename}\n"
+"{local_md5} <> {remote_md5}"
+
+msgctxt "#32041"
+msgid "No Items"
+msgstr "Keine Elemente"
+
+msgctxt "#32042"
+msgid ""
+"New add-on not found.\n"
+"Update repos then try again."
+msgstr ""
+"Neues Addon nicht gefunden.\n"
+"Suche nach Aktualiserungen und versuche es erneut."
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Beste"
+
+#msgctxt "#32044"
+#msgid "HTTP Timeout (seconds)"
+#msgstr ""
+
+#msgctxt "#32045"
+#msgid "HTTP Retries"
+#msgstr ""
+
+#msgctxt "#32046"
+#msgid "Chunksize"
+#msgstr ""
+
+msgctxt "#32047"
+msgid "{label} (LATEST)"
+msgstr "{label} (neuste)"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Umgehen"
+
+msgctxt "#32049"
+msgid "No list item found that matches pattern: {pattern}"
+msgstr "Kein Listenelement gefunden, dass auf Muster {pattern} passt"
+
+msgctxt "#32050"
+msgid ""
+"This add-on has moved\n"
+"A new add-on '{new_addon_id}' is therefore required\n"
+"Install and migrate to new add-on?"
+msgstr ""
+"Dieses Addon ist umgezogen.\n"
+"Das neue Addon {new_addon_id} wird daher benötigt.\n"
+"Neues Addon installieren und migrieren?"
+
+msgctxt "#32051"
+msgid ""
+"Add-on has been migrated\n"
+"Remove the old add-on?"
+msgstr ""
+"Addon wurde migriert.\n"
+"Altes Addon entfernen?"
+
+msgctxt "#32052"
+msgid "Unknown Error"
+msgstr "Unbekannter Fehler"
+
+msgctxt "#32053"
+msgid ""
+"This manifest contains multiple base urls\n"
+"Support for this will hopefully be introduced in Kodi 19\n"
+"There is a chance this content may not play"
+msgstr ""
+"Dieses Manifest enthält mehrere Basis-URLs.\n"
+"Unterstützung dafür wird hoffentlich in Kodi 19 implementiert.\n"
+"Es kann sein, dass der Inhalt nicht abgespielt wird.\n"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Angepasst"
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Nachfragen"
+
+msgctxt "#32056"
+msgid ""
+"Failed to fetch / parse playback URL\n"
+"Make sure your entitled to this content and your IP address is allowed (not "
+"geo-blocked)\n"
+"Try accessing the content via other means (offical app / website) to test if "
+"it's a Kodi add-on issue"
+msgstr ""
+"Fehler beim Laden/Parsen der Wiedergabe-URL.\n"
+"Versichere dich, dass du Zugriff auf diesen Inhalt hast und deine IP-Adresse "
+"nicht geo-blockiert ist.\n"
+"Versuche diesen Inhalt über die offizielle App oder Website abzurufen um zu "
+"kontrollieren, dass es ein Problem in Kodi ist."
+
+msgctxt "#32057"
+msgid "M3U8 file does not start with #EXTM3U"
+msgstr "M3U8-Datei beginnt nicht mit #EXTM3U"
+
+msgctxt "#32058"
+msgid "{version} (INSTALLED)"
+msgstr "{version} (INSTALLED)"
+
+msgctxt "#32059"
+msgid "Max Bandwidth (Mbit/s)"
+msgstr "Max. Bandbreite (Mbit/s)"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Niedrigste"
+
+msgctxt "#32061"
+msgid "Playback Quality"
+msgstr "Wiedergabequalität"
+
+#msgctxt "#32062"
+#msgid ""
+#"Inputstream HLS required to watch streams From Live.\n"
+#"Check HLS is enabled in settings and Inputstream Adaptive is installed"
+#msgstr ""
+
+#msgctxt "#32063"
+#msgid "Live Play Action"
+#msgstr ""
+
+#msgctxt "#32064"
+#msgid "From Start"
+#msgstr ""
+
+#msgctxt "#32065"
+#msgid "From Live"
+#msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr "Nachfragen"
+
+msgctxt "#32067"
+msgid "Play From?"
+msgstr "Wiedergabe von?"
+
+msgctxt "#32068"
+msgid "{bandwidth:.2f} Mbit/s {resolution} {fps}"
+msgstr "{bandwidth:.2f} Mbit/s {resolution} {fps}"
+
+msgctxt "#32069"
+msgid "{fps:.2f} FPS"
+msgstr "{fps:.2f} FPS"
+
+msgctxt "#32070"
+msgid "Available Widevine CDM Versions"
+msgstr "Verfügbare Widevine CDM-Versionen"
+
+msgctxt "#32071"
+msgid "Unknown {version} (INSTALLLED)"
+msgstr "Unbekannt {version} (installiert)"
+
+msgctxt "#32072"
+msgid ""
+"Widevine CDM ({version}) Installed\n"
+"If content does not play, you may need to install the latest CDM version "
+"instead."
+msgstr ""
+"Widevine CDM ({version}) installiert.\n"
+"Wenn der Inhalt nicht richtig abgespielt wird, musst du womöglich "
+"stattdessen die neuste CDM-Version installieren."
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+msgctxt "#32074"
+msgid "URL returned error code: {code}"
+msgstr "URL hat Fehlercode {code} zurückgegeben."
+
+msgctxt "#32075"
+msgid ""
+"Widevine CDM is built-in to Android\n"
+"If content does not play, your Android device may not have a suitable "
+"Widevine level."
+msgstr ""
+"Widevine CDM wird mit Android ausgeliefert.\n"
+"Wenn der Inhalt nicht richtig abgespielt wird, hat dein Ger#te womöglich "
+"kein ausreichendes Widevine-Level."
+
+msgctxt "#32076"
+msgid "Use Inputstream HLS for Live Streams"
+msgstr "Benutze Inpustream HLS für Livestreams"
+
+msgctxt "#32077"
+msgid ""
+"Your IP address is not allowed to access this content (geo-blocked)\n"
+"You may need to use a VPN / Smart DNS. Sometimes even these can be blocked.\n"
+"Try accessing the content via other means (offical app / website) to test if "
+"it's a Kodi add-on issue"
+msgstr ""
+"Deine IP-Adresse darf diesen Inhalt nicht abspielen (Geo-Blocking).\n"
+"Du musst eventuell ein VPN/Smart DNS benutzen. Auch diese werden manchmal "
+"blockiert.\n"
+"Versuche diesen Inhalt über die offizielle App oder Website abzurufen um zu "
+"kontrollieren, dass es ein Problem in Kodi ist."
+
+msgctxt "#32078"
+msgid "Kiosk Mode"
+msgstr ""
+
+msgctxt "#32079"
+msgid "Setup IPTV Merge"
+msgstr ""
+
+msgctxt "#32080"
+msgid "EPG days to scrape"
+msgstr ""
+
+msgctxt "#32081"
+msgid "Live TV & EPG"
+msgstr ""
+
+msgctxt "#32082"
+msgid "Force built-in EPG scraper"
+msgstr ""
+
+msgctxt "#32083"
+msgid "Profile Activated"
+msgstr ""
+
+msgctxt "#32084"
+msgid "Select Profile"
+msgstr "Profil auswählen"
+
+msgctxt "#32085"
+msgid "This service requires a {required} location\n"
+"We detected your location is {current}\n"
+msgstr ""
+
+msgctxt "#32086"
+msgid "Audio Allow List"
+msgstr ""
+
+msgctxt "#32087"
+msgid "Subtitle Allow List"
+msgstr ""
+
+msgctxt "#32088"
+msgid "Include Forced Subs"
+msgstr ""
+
+msgctxt "#32089"
+msgid "Include Non-forced Subs"
+msgstr ""
+
+msgctxt "#32090"
+msgid "Include Audio Description Tracks"
+msgstr ""
+
+msgctxt "#32091"
+msgid "Add Profile"
+msgstr ""
+
+msgctxt "#32092"
+msgid "Delete Profile"
+msgstr ""
+
+msgctxt "#32093"
+msgid "Random Pick"
+msgstr ""
+
+msgctxt "#32094"
+msgid "Select Avatar"
+msgstr ""
+
+msgctxt "#32095"
+msgid "Select profile to delete"
+msgstr ""
+
+msgctxt "#32096"
+msgid "Profile history, watchlist, and activity will be deleted. There is no way to undo this."
+msgstr ""
+
+msgctxt "#32097"
+msgid "Delete {name}'s profile?"
+msgstr ""
+
+msgctxt "#32098"
+msgid "Profile Deleted"
+msgstr ""
+
+msgctxt "#32099"
+msgid "{label} (Used)"
+msgstr ""
+
+msgctxt "#32100"
+msgid "Kid friendly interface with only content suitable for kids."
+msgstr ""
+
+msgctxt "#32101"
+msgid "Kids Profile?"
+msgstr ""
+
+msgctxt "#32102"
+msgid "Profile Name"
+msgstr ""
+
+msgctxt "#32103"
+msgid "{name} is already being used"
+msgstr ""
+
+msgctxt "#32104"
+msgid "Disable profile switching in Kids profile"
+msgstr "Profilwechsel in Kinderprofil verbieten"
+
+msgctxt "#32105"
+msgid "Content requires a newer version of Inputstream Adaptive\n"
+"Minimum required version: [B]{required}[/B]\n"
+"Your current version: {current}"
+msgstr ""
+
+msgctxt "#32106"
+msgid "ARMv6 does not support Widevine playback"
+msgstr ""
+
+msgctxt "#32107"
+msgid "iOS does not support Widevine playback on Kodi"
+msgstr ""
+
+msgctxt "#32108"
+msgid "Next Page ({page})"
+msgstr "Nächste Seite ({page})"

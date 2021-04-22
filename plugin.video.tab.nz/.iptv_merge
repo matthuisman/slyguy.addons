@@ -1,0 +1,5 @@
+{
+    "version":  3,
+    "playlist": "plugin://$ID/?_=playlist&output=$FILE",
+    "epg":      "https://i.mjh.nz/nz/epg.xml.gz"
+}

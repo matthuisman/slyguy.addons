@@ -1,0 +1,137 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Failed to login.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Channels"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30006"
+msgid "No data returned from Spark (iStreamPlanet)\n"
+"This is usually caused by geo-block (non NZ IP address)\n"
+"Also try logging out and back in"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Live & Upcoming"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Sports"
+msgstr ""
+
+msgctxt "#30009"
+msgid " [ON NOW]"
+msgstr ""
+
+msgctxt "#30010"
+msgid " (D MMM, h:mm A)"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Could not retrieve asset\n"
+"This is usually caused by geo-block (non NZ IP address)"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Could not retrieve MPD url"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Could not retrieve entitlement token\n"
+"Reason: {error}"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Failed to refresh authentication token\n"
+"Try logging out and back in\n"
+"Server Message: {msg}"
+msgstr ""
+
+
+
+msgctxt "#30020"
+msgid "Set Reminder"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Remove Reminder"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Freemium"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Reminder Set"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Reminder Removed"
+msgstr ""
+
+msgctxt "#30025"
+msgid "{event} has just started"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Watch"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Close"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""

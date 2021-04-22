@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Region"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Sydney"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Melbourne"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Brisbane"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Perth"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Adelaide"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Darwin"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Hobart"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Canberra"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Live TV"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

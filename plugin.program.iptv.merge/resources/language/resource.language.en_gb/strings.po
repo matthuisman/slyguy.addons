@@ -1,0 +1,352 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Output Directory"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Auto Merge Sources"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Hours between merges"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Reload IPTV Simple Client after merge"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Channels per page"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Setup IPTV Simple Client"
+msgstr ""
+
+msgctxt "#30007"
+msgid "IPTV Simple Client Setup Complete\n"
+"You can now add Playlists and then run a merge"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Setting up IPTV Simple Client..."
+msgstr ""
+
+msgctxt "#30009"
+msgid "Playlists"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Add Playlist"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Delete Playlist"
+msgstr ""
+
+msgctxt "#30012"
+msgid "That source already exists"
+msgstr ""
+
+msgctxt "#30013"
+msgid "URL"
+msgstr ""
+
+msgctxt "#30014"
+msgid "File"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Add-on"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Select source type"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Enter source URL"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Select source file"
+msgstr ""
+
+msgctxt "#30019"
+msgid "No compatible add-ons found\n"
+"Make sure the add-on is installed and enabled"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Select source add-on"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Add EPG"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Edit Playlist"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Source: {value}"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Archive Type: {value}"
+msgstr ""
+
+msgctxt "#30025"
+msgid "None"
+msgstr ""
+
+msgctxt "#30026"
+msgid "gzip"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Enabled: {value}"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Ignore Playlist Channel Numbers: {value}"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Starting Channel Number: {value}"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Default Visible Channels: {value}"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Group Name: {value}"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Ignore Playlist Groups: {value}"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Group Name: {value}"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Enter Group Name"
+msgstr ""
+
+msgctxt "#30035"
+msgid "Enter Starting Channel Number"
+msgstr ""
+
+msgctxt "#30036"
+msgid "Select Archive Type"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Manage TV"
+msgstr ""
+
+msgctxt "#30038"
+msgid "All Channels"
+msgstr ""
+
+msgctxt "#30039"
+msgid "Delete EPG"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Edit EPG"
+msgstr ""
+
+msgctxt "#30041"
+msgid "EPG Source: {value}"
+msgstr ""
+
+msgctxt "#30042"
+msgid "{label} (DISABLED)"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Merge Complete"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Run Merge"
+msgstr ""
+
+msgctxt "#30045"
+msgid "Merge Started"
+msgstr ""
+
+msgctxt "#30046"
+msgid "A merge is already in progress"
+msgstr ""
+
+msgctxt "#30047"
+msgid "Enter Channel URL"
+msgstr ""
+
+msgctxt "#30048"
+msgid "Next ({page})"
+msgstr ""
+
+msgctxt "#30049"
+msgid "{chno} {name}"
+msgstr ""
+
+msgctxt "#30050"
+msgid "{label} [COLOR red](HIDDEN)[/COLOR]"
+msgstr ""
+
+msgctxt "#30051"
+msgid "(NO NAME)"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Show Channel"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Hide Channel"
+msgstr ""
+
+msgctxt "#30054"
+msgid "Play Channel"
+msgstr ""
+
+msgctxt "#30055"
+msgid "Delete Channel"
+msgstr ""
+
+msgctxt "#30056"
+msgid "Reset Channel"
+msgstr ""
+
+msgctxt "#30057"
+msgid "Edit Channel"
+msgstr ""
+
+msgctxt "#30058"
+msgid "[COLOR blue]{label}[/COLOR]"
+msgstr ""
+
+msgctxt "#30059"
+msgid "Playlist"
+msgstr ""
+
+msgctxt "#30060"
+msgid "Add Channel"
+msgstr ""
+
+msgctxt "#30061"
+msgid "EPGs"
+msgstr ""
+
+msgctxt "#30062"
+msgid "Add-on source timed out\n"
+"{url}"
+msgstr ""
+
+msgctxt "#30063"
+msgid "Add-on source failed\n"
+"{url}"
+msgstr ""
+
+msgctxt "#30064"
+msgid "Local path not found\n"
+"{path}"
+msgstr ""
+
+msgctxt "#30065"
+msgid "ID"
+msgstr ""
+
+msgctxt "#30066"
+msgid "Use IPTV Merge Proxy for HTTP streams"
+msgstr ""
+
+msgctxt "#30067"
+msgid "Add-on Settings"
+msgstr ""
+
+msgctxt "#30068"
+msgid "[B][COLOR orange]Pending[/COLOR][/B]\n\n"
+"'Run Merge' in main menu\n"
+"to force a merge"
+msgstr ""
+
+msgctxt "#30069"
+msgid "[B][COLOR gray]Disabled[/COLOR][/B]\n\n"
+"Will not be included in merges"
+msgstr ""
+
+msgctxt "#30070"
+msgid "Starting Channel Number"
+msgstr ""
+
+msgctxt "#30071"
+msgid "Manage Radio"
+msgstr ""
+
+msgctxt "#30072"
+msgid "{group} (RADIO)"
+msgstr ""
+
+msgctxt "#30073"
+msgid "Run merge when service starts"
+msgstr ""
+
+msgctxt "#30074"
+msgid "xz"
+msgstr ""
+
+msgctxt "#30075"
+msgid "Clean Kodi TV/EPG DB after merge"
+msgstr ""
+
+msgctxt "#30076"
+msgid "Insert Playlist"
+msgstr ""
+
+msgctxt "#30077"
+msgid "Ask to add Playlist/EPG"
+msgstr ""
+
+msgctxt "#30078"
+msgid "Group Order Override"
+msgstr ""
+
+msgctxt "#30079"
+msgid "Free-IPTV lists are not allowed due to being private pay-to-use repo. Try [B]github.com/iptv-org/iptv[/B] instead!"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

@@ -1,0 +1,98 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Failed to login.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Failed to get video for media.\n"
+"Server Message: {msg}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Categories"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Collections"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Watchlist"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Continue Watching"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Sync with CuriosityStream"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Next Page ({next_page})"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Could not find that category: {category_id}"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Child Friendly Mode"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Add to Watchlist"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Remove from Watchlist"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Watchlist Added"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Watchlist Removed"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

@@ -1,0 +1,88 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Showmax Email"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Showmax Password"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Series"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Kids"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Season {season_number}"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Episode {episode_number}"
+msgstr ""
+
+msgctxt "#30007"
+msgid "H.264"
+msgstr ""
+
+msgctxt "#30008"
+msgid "English"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Polish"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Afrikaans"
+msgstr ""
+
+msgctxt "#30011"
+msgid "H.265"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Preferred Audio Language"
+msgstr ""
+
+msgctxt "#30013"
+msgid "VP9"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Select Language"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""

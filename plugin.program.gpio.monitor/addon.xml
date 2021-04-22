@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.program.gpio.monitor" name="GPIO Monitor" provider-name="SlyGuy" version="0.1.4">
+  <requires>
+    <import addon="script.module.slyguy"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.service" library="service.py" start="login" />
+  <extension point="xbmc.addon.metadata">
+    <description lang="en">Monitors GPIO pins and runs KODI function(s) (eg. Shutdown) when it changes (Raspberry Pi Only)</description>
+    <reuselanguageinvoker>true</reuselanguageinvoker>
+    <license></license>
+    <language/>
+    <website></website>
+    <news>Fix breaking after update</news>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>

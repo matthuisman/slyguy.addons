@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "News"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Sport"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Entertainment"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Life"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Docos"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Channels"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Genres"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Next Page ({next})"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Search: {query} ({page}/{total_pages})"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Series"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Home"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32034"
+msgid "General"
+msgstr ""
+
+msgctxt "#32035"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#32061"
+msgid "Playback Quality"
+msgstr ""
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32059"
+msgid "Max Bandwidth (Mbit/s)"
+msgstr ""
+
+msgctxt "#32023"
+msgid "Use Inputstream HLS"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Install Widevine CDM"
+msgstr ""
+
+msgctxt "#32036"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#32037"
+msgid "Verify SSL Certs"
+msgstr ""
+
+msgctxt "#32044"
+msgid "HTTP Timeout (seconds)"
+msgstr ""
+
+msgctxt "#32045"
+msgid "HTTP Retries"
+msgstr ""
+
+msgctxt "#32046"
+msgid "Chunksize"
+msgstr ""
+
+msgctxt "#32039"
+msgid "Service Start Delay (0 = Random 10s-60s)"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Reset Add-on"
+msgstr ""
+
+msgctxt "#32063"
+msgid "Live Play Action"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""

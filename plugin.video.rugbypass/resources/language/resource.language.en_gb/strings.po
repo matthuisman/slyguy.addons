@@ -1,0 +1,235 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Live"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Played"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Upcoming"
+msgstr ""
+
+msgctxt "#30006"
+msgid "RugbyPass Email"
+msgstr ""
+
+msgctxt "#30007"
+msgid "RugbyPass Password"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Failed to login with below error:\n"
+"{error_msg}"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Reminder Set"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Reminder Removed"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Unable to get content url for this game"
+msgstr ""
+
+msgctxt "#30013"
+msgid "No Games"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Could not find that game"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Set Reminder"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Remove Reminder"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Watch Live"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Watch from Start"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Full Game"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Condensed Game"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Show Score"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Live stream has started"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Is about to kick-off"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Watch"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Close"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Reminder Type"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Pop-up Dialog"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Notification"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Reminder When"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Stream Starts"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Kick-off Time"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Show scores"
+msgstr ""
+
+msgctxt "#30033"
+msgid "after ? hours"
+msgstr ""
+
+
+msgctxt "#30036"
+msgid "A draw ({win_score} all)"
+msgstr ""
+
+msgctxt "#30037"
+msgid "{win_team} win {win_score} to {lose_score}"
+msgstr ""
+
+msgctxt "#30038"
+msgid "Your IP address isn't in an allowed area or is blocked\n"
+"You may need to use a VPN or DNS service that isn't blocked"
+msgstr ""
+
+msgctxt "#30039"
+msgid "{home_team} host {away_team}\n"
+"{kick_off}\n\n"
+"{result}"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Kick-off: {date_time}"
+msgstr ""
+
+msgctxt "#30041"
+msgid "{home_team} vs {away_team}"
+msgstr ""
+
+msgctxt "#30042"
+msgid "Your subscription does not have access to this content"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Request was GEO blocked (blackout area)"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Default Live Play Action"
+msgstr ""
+
+msgctxt "#30045"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#30046"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#30047"
+msgid "From Start"
+msgstr ""
+
+msgctxt "#30048"
+msgid "Play From?"
+msgstr ""
+
+msgctxt "#30049"
+msgid "Inputstream HLS required to watch streams From Live.\n"
+"Check HLS is enabled in settings and Inputstream Adaptive is installed"
+msgstr ""
+
+msgctxt "#30050"
+msgid "Failed to get games list.\n"
+"Check your subscription"
+msgstr ""
+
+
+
+
+
+msgctxt "#30059"
+msgid "Next Page ({page})"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""

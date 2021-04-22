@@ -1,0 +1,10 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Clear Data"
+msgstr ""
+
+msgctxt "#32036"
+msgid "Advanced"
+msgstr ""
