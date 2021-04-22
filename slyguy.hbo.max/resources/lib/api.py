@@ -2,8 +2,6 @@ import uuid
 from time import time
 
 import arrow
-import re
-from pycaption import detect_format, WebVTTWriter
 from kodi_six import xbmc
 
 from slyguy import userdata, settings
@@ -297,13 +295,6 @@ class API(object):
                 return row, content_data
 
         raise APIError(_.NO_VIDEO_FOUND)
-
-    def get_subtitle(self, url, out_file):
-        r = self._session.get(url)
-        reader = detect_format(r.text)
-        vtt = WebVTTWriter().write(reader().read(r.text))
-        with open(out_file, 'wb') as f:
-            f.write(vtt.encode('utf8'))
 
     def logout(self):
         userdata.delete('access_token')

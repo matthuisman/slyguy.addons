@@ -496,12 +496,6 @@ def _get_milestone(milestones, key, default=None):
     return default
 
 @plugin.route()
-@plugin.plugin_callback()
-def subs(url, _data_path, **kwargs):
-    api.get_subtitle(url, _data_path)
-    return _data_path
-
-@plugin.route()
 def play(slug, skip_intro=None, **kwargs):
     data, content = api.play(slug)
 
@@ -573,10 +567,8 @@ def play(slug, skip_intro=None, **kwargs):
                     item.play_next['next_file'] = 'urn:hbo:feature:' + slug.split(':')[3]
                     break
 
-    item.proxy_data['subtitles'] = []
     for row in data.get('textTracks', []):
-        item.proxy_data['subtitles'].append(['application/ttml+xml', row['language'], row['url']])
-        #item.proxy_data['subtitles'].append(['text/vtt', row['language'], plugin.url_for(subs, url=row['url'])])
+        item.subtitles.append([row['url'], row['language']])
 
     return item
 
