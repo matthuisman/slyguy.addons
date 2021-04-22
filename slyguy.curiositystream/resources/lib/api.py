@@ -1,5 +1,4 @@
 from kodi_six import xbmc
-from pycaption import detect_format, WebVTTWriter
 
 from slyguy import userdata, settings
 from slyguy.session import Session
@@ -119,13 +118,6 @@ class API(object):
 
         data = self._session.post('/v1/user_collection', params=params, json={}).json()
         return data['status'] == 'success'
-
-    def get_subtitle(self, url, out_file):
-        r = self._session.get(url)
-        reader = detect_format(r.text)
-        vtt = WebVTTWriter().write(reader().read(r.text))
-        with open(out_file, 'wb') as f:
-            f.write(vtt.encode('utf8'))
 
     def media(self, id):
         params = {

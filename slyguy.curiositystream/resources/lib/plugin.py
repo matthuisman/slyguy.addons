@@ -354,12 +354,6 @@ def _get_play_path(id):
     return plugin.url_for(play, **kwargs)
 
 @plugin.route()
-@plugin.plugin_callback()
-def subs(url, _data_path, **kwargs):
-    api.get_subtitle(url, _data_path)
-    return _data_path
-
-@plugin.route()
 def play(id, **kwargs):
     data = api.media(id)
 
@@ -370,9 +364,8 @@ def play(id, **kwargs):
         proxy_data = {'default_language': 'English'},
     )
 
-    item.proxy_data['subtitles'] = []
     for row in data.get('closed_captions', []):
-        item.proxy_data['subtitles'].append(['text/vtt', row['code'], plugin.url_for(subs, url=row['file'])])
+        item.subtitles.append([row['file'], row['code']])
 
     if settings.getBool('sync_playback', False):
         item.callback = {
