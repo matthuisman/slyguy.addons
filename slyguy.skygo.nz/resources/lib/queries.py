@@ -16,7 +16,7 @@ query {
 }
 """
 
-PLAYBACK = """
+START_LINEAR = """
 mutation startLinearPlayback ($channelId: ID!, $deviceId: ID!) {
     startLinearPlayback(channelId: $channelId, deviceId: $deviceId) {
       __typename
@@ -46,4 +46,10 @@ mutation startLinearPlayback ($channelId: ID!, $deviceId: ID!) {
   }
     }
   }
+"""
+
+STOP_LINEAR = """
+mutation StopLinearPlayback($channelId: ID!, $deviceId: ID!) {
+    stopLinearPlayback(channelId: $channelId, deviceId: $deviceId)
+}
 """
