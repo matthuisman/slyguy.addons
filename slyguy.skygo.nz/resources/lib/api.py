@@ -102,7 +102,7 @@ class API(object):
             # }
         }
 
-        data = self._query_request(queries.PLAYBACK, variables)['data']['startLinearPlayback']
+        data = self._query_request(queries.START_LINEAR, variables)['data']['startLinearPlayback']
 
         if data['__typename'] == 'SubscriptionNeeded':
             raise APIError('{} Subscription Required'.format(data['subscriptions'][0]['title']))
@@ -110,6 +110,9 @@ class API(object):
             raise APIError(_.GEO_ERROR)
         elif data['__typename'] != 'LinearPlaybackSources':
             raise APIError('Unkown error: {}'.format(data['__typename']))
+
+        try: self._query_request(queries.STOP_LINEAR, variables)['data']['stopLinearPlayback']
+        except: log.debug('Stop Linear Failed')
 
         return data['playbackSource']['streamUri'], data['playbackSource']['drmLicense']['licenseUri']
 
