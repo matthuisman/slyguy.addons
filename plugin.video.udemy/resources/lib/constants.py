@@ -7,6 +7,7 @@ CLIENT_ID    = 'bd2565cb7b0c313f5e9bae44961e8db2'
 DEFAULT_HOST = 'www.udemy.com'
 API_URL      = 'https://{}/api-2.0/{{}}'
 PAGE_SIZE    = 1400
+WV_URL       = 'https://www.udemy.com/api-2.0/media-license-server/validate-auth-token?drm_type=widevine&auth_token={token}'
 
 BANDWIDTH_MAP = {
     720: [2500000, '1280x720'],
