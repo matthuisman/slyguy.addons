@@ -301,6 +301,7 @@ class Item(object):
                 li.setProperty('inputstream', self.inputstream.addon_id)
 
             li.setProperty('{}.manifest_type'.format(self.inputstream.addon_id), self.inputstream.manifest_type)
+            li.setProperty('{}.license_flags'.format(self.inputstream.addon_id), 'force_secure_decoder')
 
             if self.inputstream.license_type:
                 li.setProperty('{}.license_type'.format(self.inputstream.addon_id), self.inputstream.license_type)
