@@ -157,6 +157,7 @@ class BaseLanguage(object):
     RENAME_BOOKMARK             = 32117
     XZ_ERROR                    = 32118
     INSTALLING_APT_IA           = 32119
+    WINDOWS_VMP_REQUIRED        = 32120
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
