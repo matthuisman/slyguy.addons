@@ -93,7 +93,11 @@ class API(object):
             'fields[asset]'   : '@all',
         }
 
-        return self._session.get('assets/{0}'.format(asset_id), params=params).json()
+        data = self._session.get('assets/{0}'.format(asset_id), params=params).json()
+        if 'detail' in data:
+            raise APIError(data['detail'])
+
+        return data
 
     def login(self, username, password):
         data = {

@@ -9,7 +9,7 @@ from slyguy.exceptions import FailedPlayback
 
 from .api import API
 from .language import _
-from .constants import CLIENT_ID, BANDWIDTH_MAP
+from .constants import *
 
 api = API()
 
@@ -219,14 +219,16 @@ def play(asset_id, **kwargs):
         cookies = {'access_token': token, 'client_id': CLIENT_ID},
     )
 
+    is_drm = stream_data.get('course_is_drmed', False)
+
     hls_url = stream_data.get('hls_url')
-    if hls_url:
+    if hls_url and not is_drm:
         play_item.path = hls_url
         play_item.inputstream = inputstream.HLS(live=False)
         return play_item
 
-    stream_urls = stream_data.get('stream_urls', {})
-    streams     = stream_urls.get('Video') or stream_urls.get('Audio') or []
+    stream_urls = stream_data.get('stream_urls') or {}
+    streams = stream_urls.get('Video') or stream_urls.get('Audio') or []
 
     CODECS = {
         'libx264': 'H.264',
@@ -250,6 +252,28 @@ def play(asset_id, **kwargs):
 
             urls.append([bandwidth, item['file']])
             qualities.append([bandwidth, _(_.QUALITY_BITRATE, bandwidth=float(bandwidth)/1000000, resolution=resolution, fps=fps, codecs=codecs)])
+
+    if not urls:
+        for row in stream_data.get('media_sources') or []:
+            if row['type'] == 'application/x-mpegURL' and not is_drm:
+                urls.append([row['src'], inputstream.HLS(live=False)])
+
+            if row['type'] == 'application/dash+xml':
+                play_item.path = row['src']
+
+                if is_drm:
+                    token = stream_data['media_license_token']
+                    ia = inputstream.Widevine(license_key=WV_URL.format(token=token), vmp=True)
+                else:
+                    ia = inputstream.MPD()
+
+                urls.append([row['src'], ia])
+
+        if urls:
+            urls = sorted(urls, key=lambda x: isinstance(x[1], inputstream.Widevine), reverse=True)
+            play_item.path = urls[0][0]
+            play_item.inputstream = urls[0][1]
+            return play_item
 
     if not urls:
         raise plugin.Error(_.NO_STREAM_ERROR)
