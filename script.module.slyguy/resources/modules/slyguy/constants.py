@@ -1,4 +1,3 @@
-
 import os
 
 from kodi_six import xbmc, xbmcaddon
@@ -129,4 +128,4 @@ BOOKMARK_FILE = os.path.join(ADDON_PROFILE, 'bookmarks.json')
 ## PROXY ##
 PROXY_PORT = 52103
 PROXY_HOST = '127.0.0.1'
-CHUNK_SIZE = 16384
+CHUNK_SIZE = 64 * 1024
