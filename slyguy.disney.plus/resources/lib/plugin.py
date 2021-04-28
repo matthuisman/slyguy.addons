@@ -713,14 +713,15 @@ def play(content_id=None, family_id=None, skip_intro=None, **kwargs):
         item.callback = {
             'type':'interval',
             'interval': 20,
-            'callback': plugin.url_for(callback, media_id=telemetry['mediaId'], fguid=telemetry['fguid'], playback_time='$playback_time'),
+            'callback': plugin.url_for(callback, media_id=telemetry['mediaId'], fguid=telemetry['fguid']),
         }
 
     return item
 
 @plugin.route()
-def callback(media_id, fguid, playback_time, **kwargs):
-    api.update_resume(media_id, fguid, int(playback_time))
+@plugin.no_error_gui()
+def callback(media_id, fguid, _time, **kwargs):
+    api.update_resume(media_id, fguid, int(_time))
 
 def _get_milestone(milestones, key, default=None):
     if not milestones:

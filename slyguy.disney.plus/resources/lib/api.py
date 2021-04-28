@@ -421,10 +421,11 @@ class API(object):
     def playback_data(self, playback_url):
         self._refresh_token(force=True)
 
-        scenario = self.get_config()['services']['media']['extras']['restrictedPlaybackScenario']
+        config = self.get_config()
+        scenario = config['services']['media']['extras']['restrictedPlaybackScenario']
 
         if settings.getBool('wv_secure', False):
-            scenario = self.get_config()['services']['media']['extras']['playbackScenarioDefault']
+            scenario = config['services']['media']['extras']['playbackScenarioDefault']
 
             if settings.getBool('h265', False):
                 scenario += '-h265'
