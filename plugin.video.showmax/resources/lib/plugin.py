@@ -158,6 +158,7 @@ def _play_videos(videos):
         inputstream = inputstream.Widevine(license_url),
         path = url,
         headers = HEADERS,
+        use_proxy = True, # Needed for https://github.com/xbmc/inputstream.adaptive/pull/606
     )
 
     return item
