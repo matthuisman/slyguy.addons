@@ -339,10 +339,6 @@ def login(**kwargs):
     api.login(username=username, password=password)
     gui.refresh()
 
-@plugin.route()
-def callback(media_id, playback_time, **kwargs):
-    api.set_user_media(media_id, progress_in_seconds=int(playback_time))
-
 def _get_play_path(id):
     kwargs = {
         'id': id,
@@ -371,10 +367,15 @@ def play(id, **kwargs):
         item.callback = {
             'type': 'interval',
             'interval': 10,
-            'callback': plugin.url_for(callback, media_id=id, playback_time='$playback_time'),
+            'callback': plugin.url_for(callback, media_id=id),
         }
 
     return item
+
+@plugin.route()
+@plugin.no_error_gui()
+def callback(media_id, _time, *kwargs):
+    api.set_user_media(media_id, progress_in_seconds=int(_time))
 
 @plugin.route()
 def logout(**kwargs):
