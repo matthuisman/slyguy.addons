@@ -33,6 +33,18 @@ class Redirect(object):
     def __init__(self, location):
         self.location = location
 
+# @plugin.no_error_gui()
+def no_error_gui():
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except Exception as e:
+                log.exception(e)
+        return decorated_function
+    return lambda f: decorator(f)
+
 # @plugin.login_required()
 def login_required():
     def decorator(f):

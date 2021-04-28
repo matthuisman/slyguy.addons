@@ -7,6 +7,7 @@ from threading import Thread
 from slyguy import userdata, inputstream
 from slyguy.util import get_kodi_string, set_kodi_string
 from slyguy.log import log
+from slyguy.router import add_url_args
 
 from .monitor import monitor
 
@@ -32,12 +33,12 @@ class Player(xbmc.Player):
                 last_callback = None
 
             if self._callback and self._callback['type'] == 'interval' and (not last_callback or cur_time >= last_callback + self._callback['interval']):
-                callback = self._callback['callback'].replace('%24playback_time', str(int(play_time))).replace('$playback_time', str(int(play_time)))
+                callback = add_url_args(self._callback['callback'], _time=int(play_time))
                 xbmc.executebuiltin('RunPlugin({})'.format(callback))
                 last_callback = cur_time
 
         if self._callback:
-            callback = self._callback['callback'].replace('%24playback_time', str(int(play_time))).replace('$playback_time', str(int(play_time)))
+            callback = add_url_args(self._callback['callback'], _time=int(play_time))
             xbmc.executebuiltin('RunPlugin({})'.format(callback))
 
     def onAVStarted(self):
