@@ -344,6 +344,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         mpd = root.getElementsByTagName("MPD")[0]
 
+        ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
+        if 'publishTime' in mpd.attributes.keys():
+            mpd.removeAttribute('publishTime')
+
         ## Live mpd needs non-last periods removed
         ## https://github.com/xbmc/inputstream.adaptive/issues/574
         if 'type' in mpd.attributes.keys() and mpd.getAttribute('type').lower() == 'dynamic':
@@ -500,6 +504,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         elems = root.getElementsByTagName('SegmentTemplate')
         elems.extend(root.getElementsByTagName('SegmentURL'))
 
+        def get_base_url(node):
+            if not node.parentNode:
+                return None
+
+            siblings = node.parentNode.getElementsByTagName('BaseURL')
+            if siblings:
+                return siblings[0]
+            else:
+                return get_base_url(node.parentNode)
+
         for e in elems:
             def process_attrib(attrib):
                 if attrib not in e.attributes.keys():
@@ -508,9 +522,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                 url = e.getAttribute(attrib)
                 if '://' in url:
                     e.setAttribute(attrib, PROXY_PATH + url)
+                else:
+                    base_url = get_base_url(e)
+                    ## Fixed with https://github.com/xbmc/inputstream.adaptive/pull/606
+                    if base_url and not base_url.firstChild.nodeValue.endswith('/'):
+                        base_url.firstChild.nodeValue = base_url.firstChild.nodeValue + '/'
 
             process_attrib('initialization')
             process_attrib('media')
+
+            ## Remove presentationTimeOffset PR: https://github.com/xbmc/inputstream.adaptive/pull/564/
+            if 'presentationTimeOffset' in e.attributes.keys():
+                e.removeAttribute('presentationTimeOffset')
         ###############
 
         ## Get selected quality
