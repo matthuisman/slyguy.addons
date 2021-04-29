@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.15.7">
+<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.15.8">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -13,7 +13,7 @@
     <license></license>
     <language/>
     <website></website>
-    <news></news>
+    <news>Add support for x-tvg-url and url-tvg</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

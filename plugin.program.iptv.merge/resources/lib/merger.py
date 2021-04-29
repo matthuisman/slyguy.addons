@@ -3,6 +3,7 @@ import shutil
 import time
 import json
 import codecs
+import re
 import xml.parsers.expat
 from xml.sax.saxutils import escape
 
@@ -129,6 +130,7 @@ class Merger(object):
         self.forced = forced
         self.tmp_file = os.path.join(self.output_path, 'iptv_merge_tmp')
         self.integrations = get_integrations()
+        self._playlist_epgs = []
 
     def _call_addon_method(self, plugin_url):
         dirs, files = xbmcvfs.listdir(plugin_url)
@@ -204,15 +206,32 @@ class Merger(object):
             chnos = {'tv': playlist.start_chno, 'radio': playlist.start_chno}
 
         free_iptv = False
+        valid_file = False
         with codecs.open(file_path, 'r', encoding='utf8', errors='replace') as infile:
-            for idx, line in enumerate(infile):
+            for line in infile:
                 line = line.strip()
 
                 if 'free-iptv' in line.lower():
                     free_iptv = True
 
-                if idx == 0 and '#EXTM3U' not in line:
-                    raise Error('Invalid playlist - Does not start with #EXTM3U')
+                if '#EXTM3U' in line:
+                    valid_file = True
+
+                    #if not playlist.ignore_playlist_epg:
+                    attribs = {}
+                    for key, value in re.findall('([\w-]+)="([^"]*)"', line):
+                        attribs[key] = value.strip()
+
+                    xml_urls = attribs.get('x-tvg-url', '').split(',')
+                    xml_urls.extend(attribs.get('url-tvg', '').split(','))
+
+                    for url in xml_urls:
+                        url = url.strip()
+                        if url:
+                            self._playlist_epgs.append(url)
+
+                if not valid_file:
+                    continue
 
                 if line.startswith('#EXTINF'):
                     channel = Channel.from_playlist(line)
@@ -266,9 +285,6 @@ class Merger(object):
 
                     if free_iptv:
                         channel.url = 'https://archive.org/download/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp4'
-                        # channel.name = _.NO_FREE_IPTV
-                        # channel.epg_id = None
-                        # channel.logo = None
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = playlist.default_visible
@@ -288,6 +304,9 @@ class Merger(object):
 
                     channel = None
                     added_count += 1
+
+        if not valid_file:
+            raise Error('Invalid playlist - Does not start with #EXTM3U')
 
         Channel.bulk_create_lazy(to_create, force=True)
         to_create.clear()
@@ -420,6 +439,15 @@ class Merger(object):
             epgs = list(EPG.select().where(EPG.enabled == True).order_by(EPG.id))
             EPG.update({EPG.start_index: 0, EPG.end_index: 0, EPG.results: []}).where(EPG.enabled == False).execute()
 
+            if self._playlist_epgs:
+                epg_urls = [x.path.lower() for x in epgs]
+                for url in self._playlist_epgs:
+                    if url.lower() not in epg_urls:
+                        epg = EPG(source_type=EPG.TYPE_URL, path=url, enabled=1)
+                        epg.auto_archive_type()
+                        epgs.append(epg)
+                        epg_urls.append(url.lower())
+
             with FileIO(epg_path_tmp, 'wb') as _out:
                 _out.write(b'<?xml version="1.0" encoding="UTF-8"?><tv>')
 
@@ -464,7 +492,8 @@ class Merger(object):
                             epg.results.insert(0, result)
 
                     epg.results = epg.results[:3]
-                    epg.save()
+                    if epg.id:
+                        epg.save()
                     remove_file(self.tmp_file)
 
                 _out.write(b'</tv>')

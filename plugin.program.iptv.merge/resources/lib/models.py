@@ -373,6 +373,7 @@ class Playlist(Source):
     skip_playlist_groups = peewee.BooleanField(default=False)
     group_name           = peewee.CharField(null=True)
     order                = peewee.IntegerField()
+    #ignore_playlist_epg  = peewee.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.order:
