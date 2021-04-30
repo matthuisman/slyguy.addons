@@ -109,6 +109,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 log.debug('Plugin requsted failed')
                 log.exception(e)
+                url = None
 
         return url
 
@@ -347,6 +348,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
         if 'publishTime' in mpd.attributes.keys():
             mpd.removeAttribute('publishTime')
+            log.debug('Dash Fix: publishTime removed')
 
         ## Live mpd needs non-last periods removed
         ## https://github.com/xbmc/inputstream.adaptive/issues/574
@@ -527,6 +529,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     ## Fixed with https://github.com/xbmc/inputstream.adaptive/pull/606
                     if base_url and not base_url.firstChild.nodeValue.endswith('/'):
                         base_url.firstChild.nodeValue = base_url.firstChild.nodeValue + '/'
+                        log.debug('Dash Fix: base_url / fixed')
 
             process_attrib('initialization')
             process_attrib('media')
@@ -534,6 +537,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             ## Remove presentationTimeOffset PR: https://github.com/xbmc/inputstream.adaptive/pull/564/
             if 'presentationTimeOffset' in e.attributes.keys():
                 e.removeAttribute('presentationTimeOffset')
+                log.debug('Dash Fix: presentationTimeOffset removed')
         ###############
 
         ## Get selected quality
