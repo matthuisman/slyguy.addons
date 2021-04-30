@@ -66,7 +66,7 @@ def _process_rows(rows, slug):
                 #    'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
                 },
                 path     = _get_play_path(row['viewable']),
-              #  context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
+                context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
                 playable = True,
             ))
 
@@ -74,7 +74,7 @@ def _process_rows(rows, slug):
             items.append(plugin.Item(
                 label    = row['titles']['full'],
                 art      = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-               # context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
+                context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
                 path     = plugin.url_for(series, slug=row['viewable']),
             ))
 
@@ -157,10 +157,10 @@ def information(slug, **kwargs):
                 'tvshowtitle': content['titles']['full'],
                 'mediatype': 'tvshow',
             },
-           # path = plugin.url_for(series, slug=slug), #kodi stalls when trying to play from this dialob
+            #path = plugin.url_for(series, slug=slug), #kodi stalls when trying to browse from this dialog
         )
 
-    if ':feature' in slug:
+    elif ':feature' in slug:
         item = plugin.Item(
             label = content['titles']['full'],
             art   = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
@@ -170,12 +170,11 @@ def information(slug, **kwargs):
                 'year': content['releaseYear'],
                 'mediatype': 'movie',
             },
-          #  path = _get_play_path(slug), #kodi stalls when trying to play from this dialob
-            # playable = True,
+            #path = _get_play_path(slug), #kodi stalls when trying to play from this dialog
+            #playable = True,
         )
 
     gui.info(item)
-    gui.refresh()
 
 @plugin.route()
 def page(slug, label, tab=None, **kwargs):
