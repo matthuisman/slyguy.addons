@@ -305,9 +305,7 @@ msgctxt "#30074"
 msgid "xz"
 msgstr ""
 
-msgctxt "#30075"
-msgid "Clean Kodi TV/EPG DB after merge"
-msgstr ""
+
 
 msgctxt "#30076"
 msgid "Insert Playlist"

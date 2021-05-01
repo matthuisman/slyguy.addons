@@ -76,7 +76,7 @@ class Language(BaseLanguage):
     RADIO_GROUP            = 30072
     BOOT_MERGE             = 30073
     XZ                     = 30074
-    CLEAN_DBS              = 30075
+
     INSERT_PLAYLIST        = 30076
     ASK_TO_ADD             = 30077
     GROUP_ORDER            = 30078
