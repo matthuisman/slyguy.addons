@@ -22,6 +22,8 @@ from .constants import *
 from .models import Source, Playlist, EPG, Channel, merge_info, get_integrations
 from .language import _
 
+_read_only = None
+
 def copy_partial_data(file_path, _out, start_index, end_index):
     if start_index < 1 or end_index < start_index:
         return

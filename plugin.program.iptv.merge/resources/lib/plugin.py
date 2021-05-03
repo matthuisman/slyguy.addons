@@ -13,7 +13,7 @@ from slyguy.exceptions import PluginError
 from .language import _
 from .models import Playlist, Source, EPG, Channel, Override, play_channel, merge_info
 from .constants import *
-from .merger import Merger
+from .merger import Merger, _read_only
 
 @plugin.route('')
 def home(**kwargs):
