@@ -89,11 +89,13 @@ class InputstreamItem(object):
     response      = None
     properties    = None
     minversion    = None
+    x_discontinuity = False
 
-    def __init__(self, minversion=None, properties=None):
+    def __init__(self, minversion=None, properties=None, x_discontinuity=False):
         if minversion:
             self.minversion = minversion
         self.properties = properties or {}
+        self.x_discontinuity = x_discontinuity
 
     @property
     def addon_id(self):
@@ -122,6 +124,11 @@ class HLS(InputstreamItem):
         legacy   = settings.getBool('use_ia_hls', False)
         hls_live = settings.getBool('use_ia_hls_live', legacy)
         hls_vod  = settings.getBool('use_ia_hls_vod', legacy)
+
+        if self.x_discontinuity and KODI_VERSION == 18:
+            global ADDON_ID
+            ADDON_ID = IA_TESTING_ID
+            self.force = True
 
         return (self.force or (self.live and hls_live) or (not self.live and hls_vod)) and require_version(self.minversion, required=self.force)
 
