@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from dateutil import tz
 
 from arrow import locales
-from arrow.util import iso_to_gregorian, next_weekday, normalize_timestamp
+from arrow.util import iso_to_gregorian, normalize_timestamp
 
 try:
     from functools import lru_cache
@@ -114,11 +114,8 @@ class DateTimeParser(object):
 
     # TODO: since we support more than ISO 8601, we should rename this function
     # IDEA: break into multiple functions
-    def parse_iso(self, datetime_string, normalize_whitespace=False):
-
-        if normalize_whitespace:
-            datetime_string = re.sub(r"\s+", " ", datetime_string.strip())
-
+    def parse_iso(self, datetime_string):
+        # TODO: add a flag to normalize whitespace (useful in logs, ref issue #421)
         has_space_divider = " " in datetime_string
         has_t_divider = "T" in datetime_string
 
@@ -216,10 +213,7 @@ class DateTimeParser(object):
 
         return self._parse_multiformat(datetime_string, formats)
 
-    def parse(self, datetime_string, fmt, normalize_whitespace=False):
-
-        if normalize_whitespace:
-            datetime_string = re.sub(r"\s+", " ", datetime_string)
+    def parse(self, datetime_string, fmt):
 
         if isinstance(fmt, list):
             return self._parse_multiformat(datetime_string, fmt)
@@ -344,22 +338,8 @@ class DateTimeParser(object):
         elif token in ["DD", "D"]:
             parts["day"] = int(value)
 
-        elif token == "Do":
+        elif token in ["Do"]:
             parts["day"] = int(value)
-
-        elif token == "dddd":
-            # locale day names are 1-indexed
-            day_of_week = [x.lower() for x in self.locale.day_names].index(
-                value.lower()
-            )
-            parts["day_of_week"] = day_of_week - 1
-
-        elif token == "ddd":
-            # locale day abbreviations are 1-indexed
-            day_of_week = [x.lower() for x in self.locale.day_abbreviations].index(
-                value.lower()
-            )
-            parts["day_of_week"] = day_of_week - 1
 
         elif token.upper() in ["HH", "H"]:
             parts["hour"] = int(value)
@@ -434,8 +414,7 @@ class DateTimeParser(object):
 
         if expanded_timestamp is not None:
             return datetime.fromtimestamp(
-                normalize_timestamp(expanded_timestamp),
-                tz=tz.tzutc(),
+                normalize_timestamp(expanded_timestamp), tz=tz.tzutc(),
             )
 
         day_of_year = parts.get("day_of_year")
@@ -464,24 +443,6 @@ class DateTimeParser(object):
             parts["year"] = dt.year
             parts["month"] = dt.month
             parts["day"] = dt.day
-
-        day_of_week = parts.get("day_of_week")
-        day = parts.get("day")
-
-        # If day is passed, ignore day of week
-        if day_of_week is not None and day is None:
-            year = parts.get("year", 1970)
-            month = parts.get("month", 1)
-            day = 1
-
-            # dddd => first day of week after epoch
-            # dddd YYYY => first day of week in specified year
-            # dddd MM YYYY => first day of week in specified year and month
-            # dddd MM => first day after epoch in specified month
-            next_weekday_dt = next_weekday(datetime(year, month, day), day_of_week)
-            parts["year"] = next_weekday_dt.year
-            parts["month"] = next_weekday_dt.month
-            parts["day"] = next_weekday_dt.day
 
         am_pm = parts.get("am_pm")
         hour = parts.get("hour", 0)
