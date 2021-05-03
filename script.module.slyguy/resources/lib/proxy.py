@@ -490,7 +490,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         default_base_url = default_base_url.rstrip('/')
         default_base_url = default_base_url + os.path.split(parse.path)[0]
         default_base_url += '/' if not default_base_url.endswith('/') else ''
-        default_base_url = PROXY_PATH + default_base_url
 
         def get_base_url(node):
             if not node.parentNode:
@@ -513,7 +512,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 continue
 
             if '://' not in url:
-                url = urljoin(get_base_url(elem), url)
+                url = urljoin(default_base_url, url)
 
             if not url.startswith(PROXY_PATH):
                 elem.firstChild.nodeValue = PROXY_PATH + url
@@ -539,6 +538,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     base_url = get_base_url(e)
                     base_url += '/' if not base_url.endswith('/') else ''
                     url = urljoin(base_url, url)
+
+                if not url.startswith(PROXY_PATH):
+                    url = PROXY_PATH + url
 
                 e.setAttribute(attrib, url)
 
