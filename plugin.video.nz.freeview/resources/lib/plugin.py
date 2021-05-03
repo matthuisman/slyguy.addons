@@ -57,7 +57,7 @@ def play(slug, **kwargs):
     )
 
     if channel.get('hls', False):
-        item.inputstream = inputstream.HLS(live=True)
+        item.inputstream = inputstream.HLS(live=True, x_discontinuity=channel.get('x_discontinuity', False))
 
     return item
 
