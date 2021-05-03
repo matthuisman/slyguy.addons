@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.foxtel.now" name="Foxtel Now" provider-name="SlyGuy" version="0.7.4">
+<addon id="plugin.video.foxtel.now" name="Foxtel Now" provider-name="SlyGuy" version="0.7.6">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
