@@ -514,9 +514,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             if '://' not in url:
                 url = urljoin(default_base_url, url)
 
-            if not url.startswith(PROXY_PATH):
-                elem.firstChild.nodeValue = PROXY_PATH + url
-
+            elem.firstChild.nodeValue = PROXY_PATH + url
             base_url_parents.append(elem.parentNode)
         ################
 
@@ -537,7 +535,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     # & https://github.com/xbmc/inputstream.adaptive/pull/668
                     base_url = get_base_url(e)
                     base_url += '/' if not base_url.endswith('/') else ''
-                    url = urljoin(base_url, url)
+                    url = base_url + url
 
                 if not url.startswith(PROXY_PATH):
                     url = PROXY_PATH + url
