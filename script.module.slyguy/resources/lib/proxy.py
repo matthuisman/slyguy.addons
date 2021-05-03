@@ -841,9 +841,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         response.headers.update(self._plugin_headers)
 
-        if 'content-length' in response.headers:
-            response.headers['keep-alive'] = 'timeout=10, max=1000'
-        else:
+        if 'content-length' not in response.headers:
             response.headers['connection'] = 'close'
 
         for d in list(response.headers.items()):
