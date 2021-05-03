@@ -485,22 +485,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 adap_parent.appendChild(elem)
         ##################
 
-        parse = urlparse(response.url)
-        default_base_url = parse.scheme + '://' + parse.netloc
-        default_base_url = default_base_url.rstrip('/')
-        default_base_url = default_base_url + os.path.split(parse.path)[0]
-        default_base_url += '/' if not default_base_url.endswith('/') else ''
-
-        def get_base_url(node):
-            if not node.parentNode:
-                return default_base_url
-
-            siblings = node.parentNode.getElementsByTagName('BaseURL')
-            if siblings:
-                return siblings[0].firstChild.nodeValue
-            else:
-                return get_base_url(node.parentNode)
-
         ## Convert BaseURLS
         base_url_parents = []
         for elem in root.getElementsByTagName('BaseURL'):
@@ -512,7 +496,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 continue
 
             if '://' not in url:
-                url = urljoin(default_base_url, url)
+                url = urljoin(response.url, url)
 
             elem.firstChild.nodeValue = PROXY_PATH + url
             base_url_parents.append(elem.parentNode)
@@ -522,6 +506,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         elems = root.getElementsByTagName('SegmentTemplate')
         elems.extend(root.getElementsByTagName('SegmentURL'))
 
+        def get_base_url(node):
+            if not node.parentNode:
+                return None
+
+            siblings = node.parentNode.getElementsByTagName('BaseURL')
+            if siblings:
+                return siblings[0]
+            else:
+                return get_base_url(node.parentNode)
+
         for e in elems:
             def process_attrib(attrib):
                 if attrib not in e.attributes.keys():
@@ -529,18 +523,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 url = e.getAttribute(attrib)
                 if '://' in url:
-                    url = PROXY_PATH + url
+                    e.setAttribute(attrib, PROXY_PATH + url)
                 else:
-                    # Fixed with https://github.com/xbmc/inputstream.adaptive/pull/606
-                    # & https://github.com/xbmc/inputstream.adaptive/pull/668
                     base_url = get_base_url(e)
-                    base_url += '/' if not base_url.endswith('/') else ''
-                    url = base_url + url
-
-                if not url.startswith(PROXY_PATH):
-                    url = PROXY_PATH + url
-
-                e.setAttribute(attrib, url)
+                    ## Fixed with https://github.com/xbmc/inputstream.adaptive/pull/606
+                    if base_url and not base_url.firstChild.nodeValue.endswith('/'):
+                        base_url.firstChild.nodeValue = base_url.firstChild.nodeValue + '/'
+                        log.debug('Dash Fix: base_url / fixed')
 
             process_attrib('initialization')
             process_attrib('media')
