@@ -32,7 +32,7 @@ from .constants import *
 #ADDON_DEV = True
 
 REMOVE_IN_HEADERS = ['upgrade', 'host']
-REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding']
+REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
 
 PROXY_PORT = check_port(PROXY_PORT)
 if not PROXY_PORT:
@@ -58,8 +58,6 @@ PROXY_GLOBAL = {
 }
 
 class RequestHandler(BaseHTTPRequestHandler):
-    protocol_version = 'HTTP/1.1'
-
     def __init__(self, request, client_address, server):
         try:
             BaseHTTPRequestHandler.__init__(self, request, client_address, server)
@@ -840,10 +838,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_response(response.status_code)
 
         response.headers.update(self._plugin_headers)
-
-        if 'content-length' not in response.headers:
-            response.headers['connection'] = 'close'
-
         for d in list(response.headers.items()):
             self.send_header(d[0], d[1])
 
