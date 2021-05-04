@@ -18,12 +18,12 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 from six.moves import queue
 from six.moves.urllib.parse import urlparse, urlunparse
 from six import PY2
-import requests
 
 from .language import _
 from .log import log
 from .exceptions import Error
 from .constants import WIDEVINE_UUID, WIDEVINE_PSSH, DEFAULT_WORKERS, ADDON_PROFILE, CHUNK_SIZE
+from .session import requests
 
 def fix_url(url):
     parse = urlparse(url)

@@ -8,7 +8,7 @@ from kodi_six import xbmc
 
 from slyguy import userdata, gui, router, settings
 from slyguy.session import Session
-from slyguy.util import hash_6, kodi_rpc, get_addon
+from slyguy.util import hash_6, kodi_rpc, get_addon, user_country
 from slyguy.log import log
 from slyguy.constants import ROUTE_SERVICE, ROUTE_SERVICE_INTERVAL, KODI_VERSION
 
@@ -80,6 +80,14 @@ def _check_news():
 
     if news['type'] == 'next_plugin_msg':
         userdata.set('_next_plugin_msg', news['message'])
+
+    elif news['type'] == 'country_msg' and user_country().lower() == news.get('country','').lower():
+        def _interact_thread():
+            gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
+
+        thread = Thread(target=_interact_thread)
+        thread.daemon = True
+        thread.start()
 
     elif news['type'] == 'addon_release':
         if news.get('requires') and not get_addon(news['requires'], install=False):
