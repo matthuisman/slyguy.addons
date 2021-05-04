@@ -16,7 +16,6 @@ from slyguy.exceptions import Error
 from slyguy.constants import ADDON_PROFILE, DEFAULT_USERAGENT
 from slyguy.util import hash_6, get_addon, kodi_rpc
 from slyguy.log import log
-from slyguy.session import Session
 
 from .constants import *
 from .language import _
@@ -281,7 +280,6 @@ class Source(database.Model):
     @classmethod
     def get_addon_sources(cls, current=None):
         data         = kodi_rpc('Addons.GetAddons', {'installed': True, 'enabled': True}, raise_on_error=True)
-        integrations = get_integrations()
         installed    = [x.path for x in cls.select(cls.path).where(cls.source_type==cls.TYPE_ADDON)]
 
         addons = []
@@ -289,7 +287,7 @@ class Source(database.Model):
             if row['addonid'] != current and row['addonid'] in installed:
                 continue
 
-            addon, data = merge_info(row['addonid'], integrations)
+            addon, data = merge_info(row['addonid'])
             if not addon or not data:
                 continue
 
@@ -307,15 +305,7 @@ class Source(database.Model):
             (('path',), True),
         )
 
-def get_integrations():
-    try:
-        return Session().gz_json(INTEGRATIONS_URL)
-    except Exception as e:
-        log.debug('Failed to get integrations')
-        log.exception(e)
-        return {}
-
-def merge_info(addon_id, integrations=None, merging=False):
+def merge_info(addon_id, merging=False):
     addon      = get_addon(addon_id, required=True, install=False)
     addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
     merge_path = os.path.join(addon_path, MERGE_SETTING_FILE)
@@ -329,17 +319,9 @@ def merge_info(addon_id, integrations=None, merging=False):
             log.debug('failed to parse merge file: {}'.format(merge_path))
             return addon, {}
     else:
-        if integrations is None:
-            integrations = get_integrations()
-
-        data = integrations.get(addon_id) or {}
-
-        if merging:
-            if not integrations:
-                raise Error('Failed to download integrations')
-
-            elif not data:
-                raise Error('No integration found for this source')
+        data = INTEGRATIONS.get(addon_id) or {}
+        if merging and not data:
+            raise Error('No integration found for this source')
 
     min_version = data.get('min_version')
     max_version = data.get('max_version')
