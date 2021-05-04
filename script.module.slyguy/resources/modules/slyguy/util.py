@@ -171,7 +171,9 @@ def require_country(required=None, _raise=False):
 
 def user_country():
     try:
-        return requests.get('http://ip-api.com/json/?fields=countryCode').json()['countryCode'].upper()
+        country = requests.get('http://ip-api.com/json/?fields=countryCode').json()['countryCode'].upper()
+        log.debug('fetched user country: {}'.format(country))
+        return country
     except:
         log.debug('Unable to get users country')
         return ''
