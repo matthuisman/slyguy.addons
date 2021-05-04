@@ -78,10 +78,14 @@ def _check_news():
         log.debug("news is too old to show")
         return
 
+    if 'country' in news and user_country().lower() != news['country'].lower():
+        log.debug("news is only for country: {}".format(news['country']))
+        return
+
     if news['type'] == 'next_plugin_msg':
         userdata.set('_next_plugin_msg', news['message'])
 
-    elif news['type'] == 'country_msg' and user_country().lower() == news.get('country','').lower():
+    elif news['type'] == 'message':
         def _interact_thread():
             gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
 
