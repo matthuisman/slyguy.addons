@@ -19,7 +19,7 @@ from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
 
 from .constants import *
-from .models import Source, Playlist, EPG, Channel, merge_info, get_integrations
+from .models import Source, Playlist, EPG, Channel, merge_info
 from .language import _
 
 _read_only = None
@@ -131,7 +131,6 @@ class Merger(object):
 
         self.forced = forced
         self.tmp_file = os.path.join(self.output_path, 'iptv_merge_tmp')
-        self.integrations = get_integrations()
         self._playlist_epgs = []
 
     def _call_addon_method(self, plugin_url):
@@ -149,7 +148,7 @@ class Merger(object):
 
         if source_type == Source.TYPE_ADDON:
             addon_id = path
-            addon, data = merge_info(addon_id, self.integrations, merging=True)
+            addon, data = merge_info(addon_id, merging=True)
 
             if method_name not in data:
                 raise Error('{} could not be found for {}'.format(method_name, addon_id))
