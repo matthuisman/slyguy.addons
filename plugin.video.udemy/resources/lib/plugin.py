@@ -255,7 +255,7 @@ def play(asset_id, **kwargs):
 
     if not urls:
         for row in stream_data.get('media_sources') or []:
-            if row['type'] == 'application/x-mpegURL' and not is_drm:
+            if row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
                 urls.append([row['src'], inputstream.HLS(live=False)])
 
             if row['type'] == 'application/dash+xml':
@@ -270,7 +270,7 @@ def play(asset_id, **kwargs):
                 urls.append([row['src'], ia])
 
         if urls:
-            urls = sorted(urls, key=lambda x: isinstance(x[1], inputstream.Widevine), reverse=True)
+            urls = sorted(urls, key=lambda x: isinstance(x[1], inputstream.Widevine))
             play_item.path = urls[0][0]
             play_item.inputstream = urls[0][1]
             return play_item
