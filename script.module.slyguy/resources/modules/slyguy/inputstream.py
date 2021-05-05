@@ -38,7 +38,7 @@ def get_ia_addon(required=False, install=True):
         with gui.progress(_.INSTALLING_APT_IA, heading=_.IA_WIDEVINE_DRM, percent=20) as progress:
             try:
                 subprocess.check_output('apt-get -y install {0} || sudo apt-get -y install {0}'.format(IA_LINUX_PACKAGE), shell=True)
-                log.debug('kodi-inputstream-adaptive installed')
+                log.debug('{} installed'.format(IA_LINUX_PACKAGE))
                 progress.update(70)
                 xbmc.executebuiltin('UpdateLocalAddons()')
 
@@ -51,7 +51,7 @@ def get_ia_addon(required=False, install=True):
                         break
             except Exception as e:
                 log.exception(e)
-                log.debug('kodi-inputstream-adaptive failed to install')
+                log.debug('{} failed to install'.format(IA_LINUX_PACKAGE))
 
     if not addon and required:
         raise InputStreamError(_(_.ADDON_REQUIRED, addon_id=addon_id))
@@ -72,6 +72,8 @@ def install_iat_repo():
             repo_id = 'repository.inputstream.adaptive.testing.aarch64'
         else:
             repo_id = 'repository.inputstream.adaptive.testing.x86_64'
+    elif system in ('UWP', 'IOS'):
+        raise InputStreamError(_.IA_TESTING_NOT_AVAILABLE)
     else:
         repo_id = 'repository.inputstream.adaptive.testing'
 
@@ -125,10 +127,11 @@ class HLS(InputstreamItem):
         hls_live = settings.getBool('use_ia_hls_live', legacy)
         hls_vod  = settings.getBool('use_ia_hls_vod', legacy)
 
-        if self.x_discontinuity and KODI_VERSION == 18:
-            global ADDON_ID
-            ADDON_ID = IA_TESTING_ID
+        if self.x_discontinuity:
             self.force = True
+            if KODI_VERSION == 18:
+                global ADDON_ID
+                ADDON_ID = IA_TESTING_ID
 
         return (self.force or (self.live and hls_live) or (not self.live and hls_vod)) and require_version(self.minversion, required=self.force)
 

@@ -521,3 +521,7 @@ msgctxt "#32120"
 msgid "This content is using Widevine Verified Media Path for Windows\n"
 "Kodi does not work with VMP so expect this content to fail to play."
 msgstr ""
+
+msgctxt "#32121"
+msgid "Inputstream Adaptive Testing is not available for UWP or IOS"
+msgstr ""
