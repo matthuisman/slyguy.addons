@@ -188,6 +188,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._parse_dash(response)
                 self._session['manifest'] = None  # unset manifest url so isn't parsed again
         except Exception as e:
+            log.exception(e)
+
             if type(e) != Exit and url == self._session['manifest']:
                 gui.error(_.QUALITY_PARSE_ERROR)
 
