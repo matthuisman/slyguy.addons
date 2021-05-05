@@ -510,10 +510,9 @@ class Folder(object):
 
         xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=self.updateListing, cacheToDisc=self.cacheToDisc)
 
-        common_data = userdata.Userdata(COMMON_ADDON)
-        plugin_msg  = common_data.get('_next_plugin_msg')
+        plugin_msg = COMMON_ADDON.getSetting('_next_plugin_msg')
         if plugin_msg:
-            common_data.delete('_next_plugin_msg')
+            COMMON_ADDON.setSetting('_next_plugin_msg', '')
             gui.ok(plugin_msg)
 
     def add_item(self, *args, **kwargs):
