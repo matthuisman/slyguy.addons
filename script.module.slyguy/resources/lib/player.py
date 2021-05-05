@@ -4,7 +4,6 @@ import time
 from kodi_six import xbmc
 from threading import Thread
 
-from slyguy import userdata, inputstream
 from slyguy.util import get_kodi_string, set_kodi_string
 from slyguy.log import log
 from slyguy.router import add_url_args
