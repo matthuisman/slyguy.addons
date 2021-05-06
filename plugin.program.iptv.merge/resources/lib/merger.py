@@ -5,7 +5,6 @@ import json
 import codecs
 import re
 import xml.parsers.expat
-from xml.sax.saxutils import escape
 
 import peewee
 from kodi_six import xbmc, xbmcvfs
@@ -17,10 +16,12 @@ from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
+from slyguy.router import add_url_args
 
 from .constants import *
 from .models import Source, Playlist, EPG, Channel, merge_info
 from .language import _
+from . import iptv_manager
 
 _read_only = None
 
@@ -153,22 +154,27 @@ class Merger(object):
             if method_name not in data:
                 raise Error('{} could not be found for {}'.format(method_name, addon_id))
 
+            path = data[method_name]
+
+            if data['type'] == TYPE_IPTV_MANAGER:
+                iptv_manager.process_path(path, file_path)
+                return
+
             template_tags = {
                 '$ID': addon_id,
                 '$FILE': file_path,
                 '$IP': xbmc.getIPAddress(),
             }
 
-            path = data[method_name]
             for tag in template_tags:
                 path = path.replace(tag, template_tags[tag])
 
             path = path.strip()
-            if path.lower().startswith('plugin'):
+            if path.lower().startswith('plugin://'):
                 self._call_addon_method(path)
                 return
 
-            if path.lower().startswith('http'):
+            if path.lower().startswith('http://') or path.lower().startswith('https://'):
                 source_type = Source.TYPE_URL
             else:
                 source_type = Source.TYPE_FILE
@@ -181,7 +187,7 @@ class Merger(object):
             name, ext = os.path.splitext(path.lower())
             archive_type = archive_extensions.get(ext, Source.ARCHIVE_NONE)
 
-        if source_type == Source.TYPE_URL and path.lower().startswith('http'):
+        if source_type == Source.TYPE_URL and (path.lower().startswith('http://') or path.lower().startswith('https://')):
             log.debug('Downloading: {} > {}'.format(path, file_path))
             Session().chunked_dl(path, file_path)
         elif not xbmcvfs.exists(path):
@@ -208,6 +214,8 @@ class Merger(object):
 
         free_iptv = False
         valid_file = False
+        default_attribs = {}
+
         with codecs.open(file_path, 'r', encoding='utf8', errors='replace') as infile:
             for line in infile:
                 line = line.strip()
@@ -231,11 +239,20 @@ class Merger(object):
                         if url:
                             self._playlist_epgs.append(url)
 
+                    if 'tvg-shift' in attribs:
+                        default_attribs['tvg-shift'] = attribs['tvg-shift']
+                    if 'catchup-correction' in attribs:
+                        default_attribs['catchup-correction'] = attribs['catchup-correction']
+
                 if not valid_file:
                     continue
 
                 if line.startswith('#EXTINF'):
                     channel = Channel.from_playlist(line)
+                    for key in default_attribs:
+                        if key not in channel.attribs:
+                            channel.attribs[key] = default_attribs[key]
+
                 elif not channel:
                     continue
 

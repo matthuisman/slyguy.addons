@@ -518,7 +518,7 @@ def iptv_is_setup():
     if not addon:
         return False
 
-    output_dir    = xbmc.translatePath(settings.get('output_dir', '').strip() or ADDON_PROFILE)
+    output_dir    = settings.get('output_dir', '').strip() or ADDON_PROFILE
     playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
     epg_path      = os.path.join(output_dir, EPG_FILE_NAME)
 
@@ -536,18 +536,18 @@ def _setup():
     with gui.progress(_.SETTING_UP_IPTV) as progress:
         kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
 
-        output_dir    = xbmc.translatePath(settings.get('output_dir', '').strip() or ADDON_PROFILE)
+        output_dir    = settings.get('output_dir', '').strip() or ADDON_PROFILE
         playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
         epg_path      = os.path.join(output_dir, EPG_FILE_NAME)
 
-        if not os.path.exists(playlist_path):
-            with open(playlist_path, 'w') as f:
+        if not os.path.exists(xbmc.translatePath(playlist_path)):
+            with open(xbmc.translatePath(playlist_path), 'w') as f:
                 f.write('''#EXTM3U
 #EXTINF:-1 tvg-id="iptv_merge" tvg-chno="1000" tvg-logo="{}",{}
 {}'''.format(ADDON_ICON, 'IPTV Merge: Click me to run a merge!', plugin.url_for(merge)))
 
-        if not os.path.exists(epg_path):
-            with open(epg_path, 'w') as f:
+        if not os.path.exists(xbmc.translatePath(epg_path)):
+            with open(xbmc.translatePath(epg_path), 'w') as f:
                 f.write('''<?xml version="1.0" encoding="utf-8" ?><tv><channel id="iptv_merge"></channel></tv>''')
 
         ## IMPORT ANY CURRENT SOURCES ##
@@ -555,7 +555,7 @@ def _setup():
         cur_epg_path = addon.getSetting('epgPath')
         cur_epg_type = addon.getSetting('epgPathType')
 
-        if cur_epg_path != epg_path and os.path.exists(xbmc.translatePath(cur_epg_path)):
+        if xbmc.translatePath(cur_epg_path) != xbmc.translatePath(epg_path) and os.path.exists(xbmc.translatePath(cur_epg_path)):
             epg = EPG(source_type=EPG.TYPE_FILE, path=cur_epg_path, enabled=cur_epg_type == '0')
             epg.auto_archive_type()
             try: epg.save()
@@ -573,7 +573,7 @@ def _setup():
         start_chno   = int(addon.getSetting('startNum') or 1)
         #user_agent   = addon.getSetting('userAgent')
 
-        if cur_m3u_path != playlist_path and os.path.exists(xbmc.translatePath(cur_m3u_path)):
+        if xbmc.translatePath(cur_m3u_path) != xbmc.translatePath(playlist_path) and os.path.exists(xbmc.translatePath(cur_m3u_path)):
             playlist = Playlist(source_type=Playlist.TYPE_FILE, path=cur_m3u_path, enabled=cur_m3u_type == '0')
             playlist.auto_archive_type()
             if start_chno != 1:

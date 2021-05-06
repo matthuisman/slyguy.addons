@@ -176,7 +176,7 @@ class Source(database.Model):
         self.source_type = self.TYPES[index]
 
         if self.source_type == self.TYPE_ADDON:
-            addons  = self.get_addon_sources(current=self.path if orig_source_type == self.TYPE_ADDON else None)
+            addons  = self.get_addon_sources()
             if not addons:
                 raise Error(_.NO_SOURCE_ADDONS)
 
@@ -278,13 +278,13 @@ class Source(database.Model):
         return source
 
     @classmethod
-    def get_addon_sources(cls, current=None):
-        data         = kodi_rpc('Addons.GetAddons', {'installed': True, 'enabled': True}, raise_on_error=True)
-        installed    = [x.path for x in cls.select(cls.path).where(cls.source_type==cls.TYPE_ADDON)]
+    def get_addon_sources(cls):
+        data      = kodi_rpc('Addons.GetAddons', {'installed': True, 'enabled': True, 'type': 'xbmc.python.pluginsource'}, raise_on_error=True)
+        installed = [x.path for x in cls.select(cls.path).where(cls.source_type==cls.TYPE_ADDON)]
 
         addons = []
         for row in data['addons']:
-            if row['addonid'] != current and row['addonid'] in installed:
+            if row['addonid'] in installed:
                 continue
 
             addon, data = merge_info(row['addonid'])
@@ -314,14 +314,24 @@ def merge_info(addon_id, merging=False):
         try:
             with codecs.open(merge_path, 'r', encoding='utf8') as f:
                 data = json.load(f)
+                data['type'] = TYPE_IPTV_MERGE
         except Exception as e:
             log.exception(e)
             log.debug('failed to parse merge file: {}'.format(merge_path))
             return addon, {}
+
+    elif addon.getSetting('iptv.enabled'):
+        data = {
+            'type': TYPE_IPTV_MANAGER,
+            'playlist': addon.getSetting('iptv.channels_uri'),
+            'epg': addon.getSetting('iptv.epg_uri'),
+        }
+
     else:
         data = INTEGRATIONS.get(addon_id) or {}
         if merging and not data:
             raise Error('No integration found for this source')
+        data['type'] = TYPE_INTEGRATION
 
     min_version = data.get('min_version')
     max_version = data.get('max_version')
