@@ -16,13 +16,15 @@ INTEGRATIONS = {
         'epg': 'special://profile/addon_data/$ID/xmltv.xml',
     },
     'plugin.video.sling': {
-        'min_version': '0.0.103',
+        'min_version': '2021.5.4.1',
         'playlist': 'http://127.0.0.1:9999/channels.m3u',
         'epg': 'http://127.0.0.1:9999/guide.xml',
         'settings': {
             'Use_Slinger': 'true',
             'Enable_EPG': 'false',
-            'Guide_Days': '5',
+            'Run_Updates': 'true',
+            'Update_Channels': 'true',
+            'Update_Guide': 'true',
         },
     },
     'service.iptv.manager': {

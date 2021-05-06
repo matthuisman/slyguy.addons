@@ -16,7 +16,6 @@ from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
-from slyguy.router import add_url_args
 
 from .constants import *
 from .models import Source, Playlist, EPG, Channel, merge_info
