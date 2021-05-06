@@ -393,13 +393,14 @@ default_fanart = ADDON_FANART
 
 #Plugin.Item()
 class Item(gui.Item):
-    def __init__(self, cache_key=None, play_next=None, callback=None, geolock=None, bookmark=True, *args, **kwargs):
+    def __init__(self, cache_key=None, play_next=None, callback=None, geolock=None, bookmark=True, quality=None, *args, **kwargs):
         super(Item, self).__init__(self, *args, **kwargs)
         self.cache_key = cache_key
         self.play_next = dict(play_next or {})
         self.callback  = dict(callback or {})
         self.geolock   = geolock
         self.bookmark  = bookmark
+        self.quality   = quality
 
     def get_li(self):
         # if settings.getBool('use_cache', True) and self.cache_key:
@@ -430,6 +431,8 @@ class Item(gui.Item):
                 self.properties.pop('TotalTime', None)
         except:
             pass
+
+        quality = self.quality if quality is None else quality
 
         if quality is None:
             quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)

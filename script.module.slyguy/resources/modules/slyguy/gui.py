@@ -170,7 +170,7 @@ def info(item):
 class Item(object):
     def __init__(self, id=None, label='', path=None, playable=False, info=None, context=None,
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
-            video=None, audio=None, subtitles=None, use_proxy=False, specialsort=None, custom=None, proxy_data=None):
+            video=None, audio=None, subtitles=None, use_proxy=None, specialsort=None, custom=None, proxy_data=None):
 
         self.id          = id
         self.label       = label
@@ -402,7 +402,7 @@ class Item(object):
 
             set_kodi_string('_slyguy_quality', json.dumps(proxy_data))
 
-            if proxy_data['manifest_middleware'] or proxy_data['subtitles'] or (proxy_data['quality'] not in (QUALITY_DISABLED, QUALITY_SKIP) and proxy_data['type']):
+            if proxy_data['manifest_middleware'] or proxy_data['subtitles'] or (self.use_proxy != False and proxy_data['quality'] not in (QUALITY_DISABLED, QUALITY_SKIP) and proxy_data['type']):
                 self.use_proxy = True
 
             self.path = get_url(self.path)
