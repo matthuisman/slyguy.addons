@@ -171,8 +171,8 @@ class Widevine(InputstreamItem):
     def do_check(self):
         result = require_version(self.minversion, required=True) and install_widevine()
 
-        if result and self.vmp and get_system_arch()[0] == 'Windows':
-            gui.ok(_.WINDOWS_VMP_REQUIRED)
+        if result and self.vmp and get_system_arch()[0] != 'Android':
+            gui.ok(_.VMP_REQUIRED)
 
         return result
 

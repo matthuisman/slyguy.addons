@@ -518,8 +518,8 @@ msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr ""
 
 msgctxt "#32120"
-msgid "This content is using Widevine Verified Media Path for Windows\n"
-"Kodi does not work with VMP so expect this content to fail to play."
+msgid "This content is using Widevine Verified Media Path\n"
+"Kodi does not work with VMP (except Android) so expect this content to fail to play."
 msgstr ""
 
 msgctxt "#32121"
