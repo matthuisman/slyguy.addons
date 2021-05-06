@@ -11,19 +11,21 @@ session = Session()
 
 @plugin.route('')
 def home(**kwargs):
+    if not settings.getBool('bookmarks', True):
+        return _stations()
+
     folder = plugin.Folder(cacheToDisc=False)
-
     folder.add_item(label=_(_.STATIONS, _bold=True), path=plugin.url_for(stations))
-
-    if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
-
+    folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
 
 @plugin.route()
 def stations(**kwargs):
+    return _stations()
+
+def _stations():
     folder = plugin.Folder(_.STATIONS)
 
     channels = get_channels()
@@ -45,15 +47,16 @@ def stations(**kwargs):
 @plugin.route()
 def play(slug, **kwargs):
     channel = get_channels()[slug]
-    url = session.get(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
+    url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
-        path     = url,
+        path     = url or channel['mjh_master'],
         headers  = channel['headers'],
         info     = {'plot': channel.get('description')},
         video    = channel.get('video', {}),
         audio    = channel.get('audio', {}),
         art      = {'thumb': channel.get('logo')},
+        use_proxy = False,
     )
 
     return item
