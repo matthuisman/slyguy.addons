@@ -73,14 +73,25 @@ def _check_news():
         return
 
     if _time > news.get('timestamp', _time) + NEWS_MAX_TIME:
-        settings.set('_last_news_id', news['id'])
-        log.debug("news is too old to show")
+        log.debug('news is too old')
         return
 
-    if 'country' in news and user_country().lower() != news['country'].lower():
-        settings.set('_last_news_id', news['id'])
-        log.debug("news is only for country: {}".format(news['country']))
-        return
+    if news.get('country'):
+        valid = False
+        cur_country = user_country().lower()
+
+        for rule in [x.lower().strip() for x in news['country'].split(',')]:
+            if not rule:
+                continue
+            elif not rule.startswith('!') and cur_country == rule:
+                valid = True
+                break
+            else:
+                valid = cur_country != rule[1:] if rule.startswith('!') else cur_country == rule
+
+        if not valid:
+            log.debug('news is only for country: {}'.format(news['country']))
+            return
 
     if news['type'] == 'next_plugin_msg':
         settings.set('_last_news_id', news['id'])
