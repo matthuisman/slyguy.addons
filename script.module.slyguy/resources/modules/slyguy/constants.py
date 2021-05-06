@@ -128,6 +128,4 @@ BOOKMARK_FILE = os.path.join(ADDON_PROFILE, 'bookmarks.json')
 ## PROXY ##
 PROXY_PORT = 52103
 PROXY_HOST = '127.0.0.1'
-
-# https://github.com/python/cpython/blob/master/Lib/shutil.py#L42
-CHUNK_SIZE = 1024 * 1024 if os.name == 'nt' else 64 * 1024
+CHUNK_SIZE = 64 * 1024

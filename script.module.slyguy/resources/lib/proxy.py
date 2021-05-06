@@ -174,7 +174,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         response = self._proxy_request('GET', url)
 
-        if self._session.get('redirecting') or not self._session.get('type') or not self._session.get('manifest'):
+        length = int(response.headers.get('content-length', 0))
+        if self._session.get('redirecting') or not self._session.get('type') or not self._session.get('manifest') or length > 1000000 or length == 0:
             self._output_response(response)
             return
 
