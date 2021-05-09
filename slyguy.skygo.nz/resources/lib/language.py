@@ -7,5 +7,7 @@ class Language(BaseLanguage):
     REFRESH_TOKEN_ERROR    = 30003
     LOGIN_ERROR            = 30004
     LIVE_TV                = 30005
+    CONCURRENT_STREAMS     = 30006
+    SUBSCRIPTION_REQUIRED  = 30007
 
 _ = Language()

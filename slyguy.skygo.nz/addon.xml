@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.skygo.nz" name="Sky Go (New)" provider-name="SlyGuy" version="0.0.4">
+<addon id="slyguy.skygo.nz" name="Sky Go" provider-name="SlyGuy" version="0.0.5">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -7,7 +7,7 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <description lang="en">Only Live TV currently. Updates coming soon!
+    <description lang="en">Only Live TV currently. VOD coming soon!
 
 Subscription required.</description>
     <!-- <description lang="en">Watch Sky online with Sky Go. Live sports, news, box sets, catch up movies, shows and entertainment. For Sky TV customers, anywhere in New Zealand.
