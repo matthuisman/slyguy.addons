@@ -1,5 +1,5 @@
-import sys
+from slyguy.migrate import migrate
 
-from resources.lib.plugin import plugin
+message = 'SkyGo has made big changes & a new add-on is required.\nCurrently live channels is working. VOD coming soon.\nClick Yes to install the new add-on'
 
-plugin.dispatch(sys.argv[2])
+migrate('slyguy.skygo.nz', copy_userdata=False, message=message)
