@@ -79,7 +79,6 @@ class WebVTTReader(BaseReader):
         found_timing = False
 
         for i, line in enumerate(lines):
-
             if '-->' in line:
                 found_timing = True
                 timing_line = i
@@ -93,11 +92,8 @@ class WebVTTReader(BaseReader):
 
             elif '' == line:
                 if found_timing:
-                    if not nodes:
-                        raise CaptionReadSyntaxError(
-                            'Cue without content. (line %d)' % timing_line)
-                    else:
-                        found_timing = False
+                    found_timing = False
+                    if nodes:
                         caption = Caption(
                             start, end, nodes, layout_info=layout_info)
                         captions.append(caption)

@@ -495,10 +495,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 elem.parentNode.removeChild(elem)
                 continue
 
-            if '://' not in url:
+            if url.startswith('/'):
                 url = urljoin(response.url, url)
 
-            elem.firstChild.nodeValue = PROXY_PATH + url
+            if '://' in url:
+                elem.firstChild.nodeValue = PROXY_PATH + url
+
             base_url_parents.append(elem.parentNode)
         ################
 
@@ -506,15 +508,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         elems = root.getElementsByTagName('SegmentTemplate')
         elems.extend(root.getElementsByTagName('SegmentURL'))
 
-        def get_base_url(node):
-            if not node.parentNode:
+        def get_parent_node(node, tag_name, levels=99):
+            if not node.parentNode or levels == 0:
                 return None
 
-            siblings = node.parentNode.getElementsByTagName('BaseURL')
+            siblings = [x for x in node.parentNode.childNodes if x != node and x.nodeType == x.ELEMENT_NODE and x.tagName == tag_name]
             if siblings:
                 return siblings[0]
             else:
-                return get_base_url(node.parentNode)
+                return get_parent_node(node.parentNode, tag_name, levels-1)
 
         for e in elems:
             def process_attrib(attrib):
@@ -525,11 +527,21 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if '://' in url:
                     e.setAttribute(attrib, PROXY_PATH + url)
                 else:
-                    base_url = get_base_url(e)
                     ## Fixed with https://github.com/xbmc/inputstream.adaptive/pull/606
+                    base_url = get_parent_node(e, 'BaseURL')
                     if base_url and not base_url.firstChild.nodeValue.endswith('/'):
                         base_url.firstChild.nodeValue = base_url.firstChild.nodeValue + '/'
                         log.debug('Dash Fix: base_url / fixed')
+
+                    # Fixed with https://github.com/xbmc/inputstream.adaptive/pull/668
+                    parent_template = get_parent_node(e, 'SegmentTemplate', levels=2)
+                    if parent_template:
+                        for key in parent_template.attributes.keys():
+                            if key not in e.attributes.keys():
+                                e.setAttribute(key, parent_template.getAttribute(key))
+
+                        parent_template.parentNode.removeChild(parent_template)
+                        log.debug('Dash Fix: Double SegmentTemplate removed')
 
             process_attrib('initialization')
             process_attrib('media')
