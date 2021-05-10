@@ -229,14 +229,20 @@ class WebVTTWriter(BaseWriter):
 
         captions = caption_set.get_captions(lang)
 
-        return output + '\n'.join(
-            [self._write_caption(caption_set, caption) for caption in captions])
+        for i, caption in enumerate(captions):
+            merge = i > 0 and captions[i-1].start == caption.start and captions[i-1].end == caption.end
+            if not merge:
+                output += '\n'
 
-    def _timestamp(self, ts):
-        td = datetime.timedelta(microseconds=ts)
+            output += self._write_caption(caption_set, caption, merge=i > 0 and captions[i-1].start == caption.start and captions[i-1].end == caption.end)
+
+        return output
+
+    def _timestamp(self, timestamp):
+        td = datetime.timedelta(microseconds=timestamp)
         mm, ss = divmod(td.seconds, 60)
         hh, mm = divmod(mm, 60)
-        return "%02d:%02d:%02d.%03d" % (hh, mm, ss, td.microseconds/1000)
+        return "%02u:%02u:%02u.%03u" % (hh, mm, ss, td.microseconds/1000)
 
     def _tags_for_style(self, style):
         if style == 'italics':
@@ -266,7 +272,7 @@ class WebVTTWriter(BaseWriter):
 
         return resulting_style
 
-    def _write_caption(self, caption_set, caption):
+    def _write_caption(self, caption_set, caption, merge=False):
         """
         :type caption: Caption
         """
@@ -292,7 +298,8 @@ class WebVTTWriter(BaseWriter):
             if not layout:
                 layout = caption.layout_info or self.global_layout
             cue_settings = self._cue_settings_from(layout)
-            output += timespan + cue_settings + '\n'
+            if not merge:
+                output += timespan + cue_settings + '\n'
             output += cue_style_tags[0] + cue_text + cue_style_tags[1] + '\n'
 
         return output
