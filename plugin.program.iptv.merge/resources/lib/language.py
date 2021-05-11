@@ -26,7 +26,7 @@ class Language(BaseLanguage):
     EDIT_PLAYLIST          = 30022
     SOURCE_LABEL           = 30023
     ARCHIVE_TYPE_LABEL     = 30024
-    ARCHIVE_PLAIN          = 30025
+    ARCHIVE_NONE           = 30025
     GZIP                   = 30026
     ENABLED_LABEL          = 30027
     SKIP_PLIST_CHNO_LABEL  = 30028

@@ -79,7 +79,7 @@ class Source(database.Model):
     ARCHIVE_AUTO  = 0
     ARCHIVE_GZIP  = 1
     ARCHIVE_XZ    = 2
-    ARCHIVE_PLAIN = 3
+    ARCHIVE_NONE  = 3
 
     source_type   = peewee.IntegerField()
     archive_type  = peewee.IntegerField(default=ARCHIVE_AUTO)
@@ -235,11 +235,11 @@ class Source(database.Model):
         }
 
         name, ext = os.path.splitext(path.lower())
-        return archive_extensions.get(ext, Source.ARCHIVE_PLAIN)
+        return archive_extensions.get(ext, Source.ARCHIVE_NONE)
 
     def select_archive_type(self):
-        values = [self.ARCHIVE_AUTO, self.ARCHIVE_GZIP, self.ARCHIVE_XZ, self.ARCHIVE_PLAIN]
-        labels = [_.ARCHIVE_AUTO, _.GZIP, _.XZ, _.ARCHIVE_PLAIN]
+        values = [self.ARCHIVE_AUTO, self.ARCHIVE_GZIP, self.ARCHIVE_XZ, self.ARCHIVE_NONE]
+        labels = [_.ARCHIVE_AUTO, _.GZIP, _.XZ, _.ARCHIVE_NONE]
 
         try:
             default = values.index(self.archive_type)
@@ -262,7 +262,7 @@ class Source(database.Model):
         elif self.archive_type == self.ARCHIVE_XZ:
             return _.XZ
         else:
-            return _.ARCHIVE_PLAIN
+            return _.ARCHIVE_NONE
 
     def toggle_enabled(self):
         self.enabled = not self.enabled
