@@ -8,12 +8,12 @@ from contextlib import contextmanager
 from distutils.version import LooseVersion
 
 import peewee
-from six.moves.urllib_parse import urlparse, parse_qsl
+from six.moves.urllib_parse import parse_qsl
 from kodi_six import xbmc, xbmcgui, xbmcaddon
 
 from slyguy import database, gui, settings, plugin, inputstream
 from slyguy.exceptions import Error
-from slyguy.constants import ADDON_PROFILE, DEFAULT_USERAGENT
+from slyguy.constants import DEFAULT_USERAGENT
 from slyguy.util import hash_6, get_addon, kodi_rpc
 from slyguy.log import log
 
@@ -76,12 +76,13 @@ class Source(database.Model):
     TYPE_ADDON    = 2
     TYPE_CUSTOM   = 3
 
-    ARCHIVE_NONE  = 0
+    ARCHIVE_AUTO  = 0
     ARCHIVE_GZIP  = 1
     ARCHIVE_XZ    = 2
+    ARCHIVE_PLAIN = 3
 
     source_type   = peewee.IntegerField()
-    archive_type  = peewee.IntegerField(default=ARCHIVE_NONE)
+    archive_type  = peewee.IntegerField(default=ARCHIVE_AUTO)
 
     path          = peewee.CharField()
     enabled       = peewee.BooleanField(default=True)
@@ -205,7 +206,6 @@ class Source(database.Model):
         if not self.path:
             return False
 
-        self.auto_archive_type()
         self.save()
 
         if self.source_type == self.TYPE_ADDON:
@@ -227,18 +227,19 @@ class Source(database.Model):
 
         return True
 
-    def auto_archive_type(self):
+    @staticmethod
+    def auto_archive_type(path):
         archive_extensions = {
-            '.gz': self.ARCHIVE_GZIP,
-            '.xz': self.ARCHIVE_XZ,
+            '.gz': Source.ARCHIVE_GZIP,
+            '.xz': Source.ARCHIVE_XZ,
         }
 
-        name, ext = os.path.splitext(self.path.lower())
-        self.archive_type = archive_extensions.get(ext, self.ARCHIVE_NONE)
+        name, ext = os.path.splitext(path.lower())
+        return archive_extensions.get(ext, Source.ARCHIVE_PLAIN)
 
     def select_archive_type(self):
-        values = [self.ARCHIVE_NONE, self.ARCHIVE_GZIP, self.ARCHIVE_XZ]
-        labels = [_.NOT_ARCHIVED, _.GZIP, _.XZ]
+        values = [self.ARCHIVE_AUTO, self.ARCHIVE_GZIP, self.ARCHIVE_XZ, self.ARCHIVE_PLAIN]
+        labels = [_.ARCHIVE_AUTO, _.GZIP, _.XZ, _.ARCHIVE_PLAIN]
 
         try:
             default = values.index(self.archive_type)
@@ -254,12 +255,14 @@ class Source(database.Model):
 
     @property
     def archive_type_name(self):
-        if self.archive_type == self.ARCHIVE_GZIP:
+        if self.archive_type == self.ARCHIVE_AUTO:
+            return _.ARCHIVE_AUTO
+        elif self.archive_type == self.ARCHIVE_GZIP:
             return _.GZIP
         elif self.archive_type == self.ARCHIVE_XZ:
             return _.XZ
         else:
-            return _.NOT_ARCHIVED
+            return _.ARCHIVE_PLAIN
 
     def toggle_enabled(self):
         self.enabled = not self.enabled

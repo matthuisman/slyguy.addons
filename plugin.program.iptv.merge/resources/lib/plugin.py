@@ -1,19 +1,17 @@
 import os
-import json
-import time
 from difflib import SequenceMatcher
 
-from kodi_six import xbmc, xbmcaddon, xbmcgui
+from kodi_six import xbmc
 
 from slyguy import plugin, settings, gui, userdata
 from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon
-from slyguy.constants import ADDON_PROFILE, KODI_VERSION, ADDON_ICON
+from slyguy.constants import ADDON_PROFILE, ADDON_ICON
 from slyguy.exceptions import PluginError
 
 from .language import _
-from .models import Playlist, Source, EPG, Channel, Override, play_channel, merge_info
+from .models import Playlist, EPG, Channel, Override, merge_info
 from .constants import *
-from .merger import Merger, _read_only
+from .merger import Merger
 
 @plugin.route('')
 def home(**kwargs):
@@ -557,13 +555,11 @@ def _setup():
 
         if xbmc.translatePath(cur_epg_path) != xbmc.translatePath(epg_path) and os.path.exists(xbmc.translatePath(cur_epg_path)):
             epg = EPG(source_type=EPG.TYPE_FILE, path=cur_epg_path, enabled=cur_epg_type == '0')
-            epg.auto_archive_type()
             try: epg.save()
             except: pass
 
         if cur_epg_url:
             epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
-            epg.auto_archive_type()
             try: epg.save()
             except: pass
 
@@ -575,7 +571,6 @@ def _setup():
 
         if xbmc.translatePath(cur_m3u_path) != xbmc.translatePath(playlist_path) and os.path.exists(xbmc.translatePath(cur_m3u_path)):
             playlist = Playlist(source_type=Playlist.TYPE_FILE, path=cur_m3u_path, enabled=cur_m3u_type == '0')
-            playlist.auto_archive_type()
             if start_chno != 1:
                 playlist.use_start_chno = True
                 playlist.start_chno = start_chno
@@ -585,7 +580,6 @@ def _setup():
 
         if cur_m3u_url:
             playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
-            playlist.auto_archive_type()
             if start_chno != 1:
                 playlist.use_start_chno = True
                 playlist.start_chno = start_chno

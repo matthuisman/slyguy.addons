@@ -1,18 +1,16 @@
 import os
 import shutil
 import time
-import json
 import codecs
 import re
 import xml.parsers.expat
 
-import peewee
 from kodi_six import xbmc, xbmcvfs
 from six.moves.urllib.parse import unquote
 
 from slyguy import settings, database, gui, router
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
@@ -21,8 +19,6 @@ from .constants import *
 from .models import Source, Playlist, EPG, Channel, merge_info
 from .language import _
 from . import iptv_manager
-
-_read_only = None
 
 def copy_partial_data(file_path, _out, start_index, end_index):
     if start_index < 1 or end_index < start_index:
@@ -178,22 +174,21 @@ class Merger(object):
             else:
                 source_type = Source.TYPE_FILE
 
-            archive_extensions = {
-                '.gz': Source.ARCHIVE_GZIP,
-                '.xz': Source.ARCHIVE_XZ,
-            }
-
-            name, ext = os.path.splitext(path.lower())
-            archive_type = archive_extensions.get(ext, Source.ARCHIVE_NONE)
-
         if source_type == Source.TYPE_URL and (path.lower().startswith('http://') or path.lower().startswith('https://')):
-            log.debug('Downloading: {} > {}'.format(path, file_path))
-            Session().chunked_dl(path, file_path)
+            if 'drive.google.com' in path.lower():
+                log.debug('Gdrive Downloading: {} > {}'.format(path, file_path))
+                path = gdrivedl(path, file_path)
+            else:
+                log.debug('Downloading: {} > {}'.format(path, file_path))
+                Session().chunked_dl(path, file_path)
         elif not xbmcvfs.exists(path):
             raise Error(_(_.LOCAL_PATH_MISSING, path=path))
         else:
             log.debug('Copying local file: {} > {}'.format(path, file_path))
             xbmcvfs.copy(path, file_path)
+
+        if archive_type == Source.ARCHIVE_AUTO:
+            archive_type = Source.auto_archive_type(path)
 
         if archive_type == Source.ARCHIVE_GZIP:
             gzip_extract(file_path)
@@ -460,8 +455,7 @@ class Merger(object):
                 epg_urls = [x.path.lower() for x in epgs]
                 for url in self._playlist_epgs:
                     if url.lower() not in epg_urls:
-                        epg = EPG(source_type=EPG.TYPE_URL, path=url, enabled=1)
-                        epg.auto_archive_type()
+                        epg = EPG(source_type=EPG.TYPE_URL, path=url, enabled=1, archive_type=EPG.ARCHIVE_AUTO)
                         epgs.append(epg)
                         epg_urls.append(url.lower())
 
