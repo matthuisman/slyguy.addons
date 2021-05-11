@@ -517,10 +517,7 @@ msgctxt "#32119"
 msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr ""
 
-msgctxt "#32120"
-msgid "This content is using Widevine Verified Media Path\n"
-"Kodi does not work with VMP (except Android) so expect this content to fail to play."
-msgstr ""
+
 
 msgctxt "#32121"
 msgid "Inputstream Adaptive Testing is not available for UWP or IOS"
