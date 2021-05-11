@@ -6,6 +6,7 @@ from slyguy import plugin, gui, settings, userdata, inputstream, signals
 from slyguy.log import log
 from slyguy.constants import QUALITY_TAG, QUALITY_CUSTOM, QUALITY_ASK, QUALITY_BEST, QUALITY_LOWEST, QUALITY_TYPES
 from slyguy.exceptions import FailedPlayback
+from slyguy.util import get_system_arch
 
 from .api import API
 from .language import _
@@ -263,7 +264,7 @@ def play(asset_id, **kwargs):
 
                 if is_drm:
                     token = stream_data['media_license_token']
-                    ia = inputstream.Widevine(license_key=WV_URL.format(token=token), vmp=True)
+                    ia = inputstream.Widevine(license_key=WV_URL.format(token=token))
                 else:
                     ia = inputstream.MPD()
 
@@ -273,6 +274,11 @@ def play(asset_id, **kwargs):
             urls = sorted(urls, key=lambda x: isinstance(x[1], inputstream.Widevine))
             play_item.path = urls[0][0]
             play_item.inputstream = urls[0][1]
+            if isinstance(play_item.inputstream, inputstream.Widevine):
+                system, arch = get_system_arch()
+                if system == 'Windows' or (system == 'Linux' and arch == 'armv7'):
+                    gui.ok(_.VMP_WARNING)
+
             return play_item
 
     if not urls:
