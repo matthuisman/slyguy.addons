@@ -8,7 +8,7 @@ class Language(BaseLanguage):
     COURSE_INFO      = 30008
     SECTION_LABEL    = 30009
     NO_STREAM_ERROR  = 30010
-
+    VMP_WARNING      = 30011
 
     BUSINESS_ACCOUNT = 30018
     BUSINESS_NAME    = 30019

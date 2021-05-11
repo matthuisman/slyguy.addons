@@ -31,6 +31,11 @@ msgctxt "#30010"
 msgid "No stream found"
 msgstr ""
 
+msgctxt "#30011"
+msgid "This content is using Widevine VMP (Verified Media Path)\n"
+"Kodi does not work with VMP (except Android)\n"
+"Expect this content to not play"
+msgstr ""
 
 
 
