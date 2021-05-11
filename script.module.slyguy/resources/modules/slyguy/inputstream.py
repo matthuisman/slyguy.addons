@@ -155,9 +155,8 @@ class Playready(InputstreamItem):
 class Widevine(InputstreamItem):
     license_type  = 'com.widevine.alpha'
     minversion    = IA_WV_MIN_VER
-    vmp = False
 
-    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', license_data=None, vmp=False, **kwargs):
+    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', license_data=None, **kwargs):
         super(Widevine, self).__init__(**kwargs)
         self.license_key   = license_key
         self.content_type  = content_type
@@ -166,15 +165,9 @@ class Widevine(InputstreamItem):
         self.manifest_type = manifest_type
         self.mimetype      = mimetype
         self.license_data  = license_data
-        self.vmp = vmp
 
     def do_check(self):
-        result = require_version(self.minversion, required=True) and install_widevine()
-
-        if result and self.vmp and get_system_arch()[0] != 'Android':
-            gui.ok(_.VMP_REQUIRED)
-
-        return result
+        return require_version(self.minversion, required=True) and install_widevine()
 
 def set_bandwidth_bin(bps):
     addon = get_ia_addon(install=False)
