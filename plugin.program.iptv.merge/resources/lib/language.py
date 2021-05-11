@@ -26,7 +26,7 @@ class Language(BaseLanguage):
     EDIT_PLAYLIST          = 30022
     SOURCE_LABEL           = 30023
     ARCHIVE_TYPE_LABEL     = 30024
-    NOT_ARCHIVED           = 30025
+    ARCHIVE_PLAIN          = 30025
     GZIP                   = 30026
     ENABLED_LABEL          = 30027
     SKIP_PLIST_CHNO_LABEL  = 30028
@@ -76,7 +76,7 @@ class Language(BaseLanguage):
     RADIO_GROUP            = 30072
     BOOT_MERGE             = 30073
     XZ                     = 30074
-
+    ARCHIVE_AUTO           = 30075
     INSERT_PLAYLIST        = 30076
     ASK_TO_ADD             = 30077
     GROUP_ORDER            = 30078

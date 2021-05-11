@@ -100,7 +100,7 @@ msgid "Archive Type: {value}"
 msgstr ""
 
 msgctxt "#30025"
-msgid "None"
+msgid "Not Archived"
 msgstr ""
 
 msgctxt "#30026"
@@ -305,7 +305,9 @@ msgctxt "#30074"
 msgid "xz"
 msgstr ""
 
-
+msgctxt "#30075"
+msgid "Auto (Guess)"
+msgstr ""
 
 msgctxt "#30076"
 msgid "Insert Playlist"
