@@ -2,12 +2,9 @@ import codecs
 
 from slyguy import plugin, inputstream, mem_cache, settings
 from slyguy.session import Session
-from slyguy.constants import IA_TESTING_ID
 
 from .language import _
 from .constants import *
-
-inputstream.ADDON_ID = IA_TESTING_ID
 
 @plugin.route('')
 def home(**kwargs):
@@ -51,7 +48,7 @@ def play(id, **kwargs):
         label = channel['name'],
         info = {'plot': channel['description']},
         art = {'thumb': channel['logo']},
-        inputstream = inputstream.HLS(live=True, force=True),
+        inputstream = inputstream.HLS(live=True, x_discontinuity=True),
         path = channel['url'],
     )
 
