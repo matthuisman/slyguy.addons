@@ -118,15 +118,13 @@ def merge():
             folder = Folder()
 
             try:
-                f(*args, **kwargs)
+                message = f(*args, **kwargs) or 'ok'
             except Error as e:
                 log.debug(e, exc_info=True)
                 message = e.message
             except Exception as e:
                 log.exception(e)
                 message = str(e)
-            else:
-                message = 'ok'
 
             folder.add_item(
                 path = quote(message),
