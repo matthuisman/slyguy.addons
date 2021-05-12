@@ -45,7 +45,7 @@ class API(object):
             raise APIError(_.NO_DATA)
 
     def refresh_token(self):
-        if time.time() < userdata.get('expires', 0):
+        if not self.logged_in or time.time() < userdata.get('expires', 0):
             return
 
         data = self._session.put('/oam/v2/user/tokens').json()

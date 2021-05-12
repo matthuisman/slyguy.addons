@@ -224,7 +224,7 @@ def play(id, play_type=PLAY_FROM_LIVE, **kwargs):
         path        = mpd_url,
         inputstream = inputstream.Widevine(license_key=license),
         headers     = headers,
-        use_proxy   = True,
+        use_proxy   = True, #needed for live with multiple periods and fix https://github.com/xbmc/inputstream.adaptive/pull/668
     )
 
     play_type = int(play_type)
