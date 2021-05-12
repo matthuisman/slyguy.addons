@@ -1,4 +1,5 @@
 import arrow
+import uuid
 
 from six.moves.urllib.parse import urlsplit, parse_qsl, urlencode
 
@@ -13,6 +14,10 @@ from .language import _
 
 class APIError(Error):
     pass
+
+UUID_NAMESPACE = '122e1611-0232-4336-bf43-e054c8ecd0d5'
+DEVICE_ID = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(uuid.getnode())))
+SID = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), DEVICE_ID))
 
 class API(object):
     def new_session(self):
@@ -30,17 +35,22 @@ class API(object):
 
         self._cache_key += str(settings.getBool('show_epg', False))
 
-    @mem_cache.cached(60*5)
-    def all_channels(self):
-        channels = self._session.gz_json(MH_DATA_URL.format(region=ALL))
-
+    def _process_channels(self, channels):
         for key in channels:
             if 'url' not in channels[key]:
                 channels[key]['url'] = PLAY_URL.format(id=key)
             if 'logo' not in channels[key]:
                 channels[key]['logo'] = LOGO_URL.format(id=key)
 
+            channels[key]['url'] = channels[key]['url'].replace('%7Bdevice_id%7D', DEVICE_ID)
+            channels[key]['url'] = channels[key]['url'].replace('%7Bsid%7D', SID)
+
         return channels
+
+    @mem_cache.cached(60*5)
+    def all_channels(self):
+        channels = self._session.gz_json(MH_DATA_URL.format(region=ALL))
+        return self._process_channels(channels)
 
     def channels(self, region=None, ):
         channels = mem_cache.get(self._cache_key)
@@ -57,13 +67,7 @@ class API(object):
 
         mem_cache.set(self._cache_key, channels, expires=(60*5))
 
-        for key in channels:
-            if 'url' not in channels[key]:
-                channels[key]['url'] = PLAY_URL.format(id=key)
-            if 'logo' not in channels[key]:
-                channels[key]['logo'] = LOGO_URL.format(id=key)
-
-        return channels
+        return self._process_channels(channels)
 
     # def play(self, id):
     #     params = {}

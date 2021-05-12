@@ -3,9 +3,8 @@ HEADERS = {
 }
 
 EPG_URL  = 'https://service-channels.clusters.pluto.tv/v1/guide'
-PLAY_URL = 'https://service-stitcher.clusters.pluto.tv/v1/stitch/embed/hls/channel/{id}/master.m3u8?deviceId=channel&deviceModel=web&deviceVersion=1.0&appVersion=1.0&deviceType=rokuChannel&deviceMake=rokuChannel&deviceDNT=1&advertisingId=channel&embedPartner=rokuChannel&appName=rokuchannel&is_lat=1&bmodel=bm1&content=channel&platform=web&tags=ROKU_CONTENT_TAGS&coppa=false&content_type=livefeed&rdid=channel&genre=ROKU_ADS_CONTENT_GENRE&content_rating=ROKU_ADS_CONTENT_RATING&studio_id=viacom&channel_id=channel'
+PLAY_URL = 'https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/{id}/master.m3u8?advertisingId=&appName=web&appVersion=5.16.0-d477896b413cece569cca008ddae951d02cadc9e&app_name=web&clientDeviceType=0&clientID=%7Bdevice_id%7D&clientModelNumber=na&deviceDNT=false&deviceId=%7Bdevice_id%7D&deviceLat=34.0485&deviceLon=-118.2529&deviceMake=Chrome&deviceModel=web&deviceType=web&deviceVersion=90.0.4430.212&marketingRegion=US&serverSideAds=true&sessionID=%7Bsid%7D&sid=%7Bsid%7D&userId='
 LOGO_URL = 'https://images.pluto.tv/channels/{id}/colorLogoPNG.png'
-
 
 MH_DATA_URL = 'https://i.mjh.nz/PlutoTV/{region}.json.gz'
 MH_EPG_URL  = 'https://i.mjh.nz/PlutoTV/{region}.xml.gz'

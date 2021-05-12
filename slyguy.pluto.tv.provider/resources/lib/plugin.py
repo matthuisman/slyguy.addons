@@ -8,7 +8,6 @@ from slyguy.session import Session
 from slyguy.util import gzip_extract
 from slyguy.language import _
 from slyguy.log import log
-from slyguy.constants import KODI_VERSION
 
 from .api import API
 from .language import _
@@ -74,10 +73,8 @@ def play(id, **kwargs):
         label = channel['name'],
         art = {'thumb': channel['logo']},
         path = channel['url'],
+        inputstream = inputstream.HLS(live=True, x_discontinuity=True),
     )
-
-    if KODI_VERSION > 18:
-        item.inputstream = inputstream.HLS(live=True)
 
     return item
 
