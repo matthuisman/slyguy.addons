@@ -131,8 +131,8 @@ class Merger(object):
 
     def _call_addon_method(self, plugin_url):
         dirs, files = xbmcvfs.listdir(plugin_url)
-        msg = unquote(files[0])
-        if msg != 'ok':
+        result, msg = int(files[0][0]), unquote(files[0][1:])
+        if not result:
             raise AddonError(msg)
 
     def _process_source(self, source, method_name, file_path):
@@ -326,9 +326,12 @@ class Merger(object):
 
         return added_count
 
-    def playlists(self):
-        start_time = time.time()
+    def playlists(self, refresh=True):
         playlist_path = os.path.join(self.output_path, PLAYLIST_FILE_NAME)
+        if not refresh and os.path.exists(playlist_path):
+            return playlist_path
+
+        start_time = time.time()
         database.connect()
 
         try:
@@ -439,9 +442,12 @@ class Merger(object):
 
         return playlist_path
 
-    def epgs(self):
+    def epgs(self, refresh=True):
+        epg_path = os.path.join(self.output_path, EPG_FILE_NAME)
+        if not refresh and os.path.exists(epg_path):
+            return epg_path
+
         start_time = time.time()
-        epg_path   = os.path.join(self.output_path, EPG_FILE_NAME)
         epg_path_tmp = os.path.join(self.output_path, EPG_FILE_NAME+'_tmp')
         database.connect()
 
@@ -455,7 +461,7 @@ class Merger(object):
                 epg_urls = [x.path.lower() for x in epgs]
                 for url in self._playlist_epgs:
                     if url.lower() not in epg_urls:
-                        epg = EPG(source_type=EPG.TYPE_URL, path=url, enabled=1, archive_type=EPG.ARCHIVE_AUTO)
+                        epg = EPG(source_type=EPG.TYPE_URL, path=url, enabled=1)
                         epgs.append(epg)
                         epg_urls.append(url.lower())
 

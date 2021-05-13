@@ -627,28 +627,23 @@ def merge(**kwargs):
         set_kodi_string('_iptv_merge_force_run', '1')
 
 @plugin.route()
-def proxy_merge(type='all', **kwargs):
-    merge = Merger()
+@plugin.merge()
+def run_merge(type='all', refresh=1, forced=0, **kwargs):
+    refresh = int(refresh)
+    merge = Merger(forced=int(forced))
 
     if type == 'playlist':
-        path = merge.playlists()
+        path = merge.playlists(refresh)
 
     elif type == 'epg':
-        path = merge.epgs()
+        path = merge.epgs(refresh)
 
     elif type == 'all':
-        merge.playlists()
-        merge.epgs()
+        merge.playlists(refresh)
+        merge.epgs(refresh)
         path = merge.output_path
 
-    return plugin.Item(path=path)
-
-@plugin.route()
-@plugin.merge()
-def service_merge(forced=0, **kwargs):
-    merge = Merger(forced=int(forced))
-    merge.playlists()
-    merge.epgs()
+    return path
 
 @plugin.route()
 def setup_addon(addon_id, **kwargs):
