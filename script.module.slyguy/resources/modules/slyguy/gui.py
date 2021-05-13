@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 
 from six.moves.urllib_parse import quote, urlparse
-from kodi_six import xbmcgui, xbmc, xbmcgui
+from kodi_six import xbmcgui, xbmc
 from slyguy.util import set_kodi_string, hash_6
 
 from .constants import *
@@ -27,13 +27,14 @@ def notification(message, heading=None, icon=None, time=3000, sound=False):
 def refresh():
     xbmc.executebuiltin('Container.Refresh')
 
-def select(heading=None, options=None, autoclose=None, **kwargs):
+def select(heading=None, options=None, autoclose=None, multi=False, **kwargs):
     heading = _make_heading(heading)
     options = options or []
 
-    if KODI_VERSION < 17:
-        kwargs.pop('preselect', None)
-        kwargs.pop('useDetails', None)
+    if KODI_VERSION < 18:
+        kwargs.pop('preselect', None) # preselect breaks cancel in 17
+        if KODI_VERSION < 17:
+            kwargs.pop('useDetails', None) # useDetails added in 17
 
     if autoclose:
         kwargs['autoclose'] = autoclose
@@ -45,7 +46,10 @@ def select(heading=None, options=None, autoclose=None, **kwargs):
 
         _options.append(option)
 
-    return xbmcgui.Dialog().select(heading, _options, **kwargs)
+    if multi:
+        return xbmcgui.Dialog().multiselect(heading, _options, **kwargs)
+    else:
+        return xbmcgui.Dialog().select(heading, _options, **kwargs)
 
 def redirect(location):
     xbmc.executebuiltin('Container.Update({},replace)'.format(location))
@@ -284,12 +288,12 @@ class Item(object):
         headers = self.get_url_headers()
         mimetype = self.mimetype
 
-        proxy_path = settings.common_settings.get('proxy_path', 'http://{}:{}/'.format(PROXY_HOST, PROXY_PORT))
+        proxy_path = settings.common_settings.get('proxy_path')
 
         def get_url(url):
             _url = url.lower()
 
-            if _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy):
+            if _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy and not _url.startswith(proxy_path)):
                 url = u'{}{}'.format(proxy_path, url)
 
             return url
@@ -355,7 +359,7 @@ class Item(object):
 
             return u'{}{}'.format(proxy_path, proxy_url)
 
-        if self.path and self.path.lower().startswith('http'):
+        if self.path and self.path.lower().startswith('http://') or self.path.lower().startswith('https://'):
             if not mimetype:
                 parse = urlparse(self.path.lower())
                 if parse.path.endswith('.m3u') or parse.path.endswith('.m3u8'):

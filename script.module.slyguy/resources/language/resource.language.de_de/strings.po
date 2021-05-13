@@ -62,8 +62,8 @@ msgstr ""
 "Webseite."
 
 msgctxt "#32010"
-msgid "Kodi 18 or higher required for Widevine playback on {system}"
-msgstr "Kodi 18 oder höher wird benötigt zur Widevine-Wiedergabe auf {system}"
+msgid "Kodi 18 or higher required for Widevine playback"
+msgstr "Kodi 18 oder höher wird benötigt zur Widevine-Wiedergabe"
 
 msgctxt "#32011"
 msgid ""

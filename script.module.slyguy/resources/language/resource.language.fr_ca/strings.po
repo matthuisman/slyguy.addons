@@ -51,7 +51,7 @@ msgid "Kodi Microsoft UWP version does not support Widevine playback.\n"
 msgstr ""
 
 msgctxt "#32010"
-msgid "Kodi 18 or higher required for Widevine playback on {system}"
+msgid "Kodi 18 or higher required for Widevine playback"
 msgstr ""
 
 msgctxt "#32011"
