@@ -246,6 +246,9 @@ class Item(object):
                 self.info['title'] = self.label
 
         if self.info:
+            if self.info.get('mediatype') in ('tvshow','season') and settings.getBool('show_series_folders', True):
+                self.info.pop('mediatype')
+
             li.setInfo('video', self.info)
 
         if self.specialsort:

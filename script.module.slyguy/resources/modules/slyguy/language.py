@@ -157,7 +157,7 @@ class BaseLanguage(object):
     RENAME_BOOKMARK             = 32117
     XZ_ERROR                    = 32118
     INSTALLING_APT_IA           = 32119
-
+    FOLDERS_FOR_SHOW_SERIES     = 32120
     IA_TESTING_NOT_AVAILABLE    = 32121
 
     def __getattribute__(self, name):
