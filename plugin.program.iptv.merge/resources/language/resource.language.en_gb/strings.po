@@ -298,7 +298,7 @@ msgid "{group} (RADIO)"
 msgstr ""
 
 msgctxt "#30073"
-msgid "Run merge when service starts"
+msgid "Run merge on boot"
 msgstr ""
 
 msgctxt "#30074"

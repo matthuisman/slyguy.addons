@@ -10,7 +10,11 @@ from slyguy.log import log
 
 from .constants import *
 
+from .http import HTTP
+
 def start():
+    http = HTTP()
+
     monitor = xbmc.Monitor()
     restart_queued = False
 
@@ -18,16 +22,17 @@ def start():
     set_kodi_string('_iptv_merge_force_run')
 
     while not monitor.waitForAbort(1):
+        #http.start() if settings.getBool('http_api', False) else http.stop()
+
         forced = ADDON_DEV or get_kodi_string('_iptv_merge_force_run') or 0
 
         if forced or boot_merge or (settings.getBool('auto_merge', True) and time.time() - userdata.get('last_run', 0) > settings.getInt('reload_time_hours', 12) * 3600):
             set_kodi_string('_iptv_merge_force_run', '1')
 
-            url = router.url_for('service_merge', forced=forced)
+            url = router.url_for('run_merge', forced=int(forced))
             dirs, files = xbmcvfs.listdir(url)
-            msg = unquote(files[0])
-
-            if msg == 'ok':
+            result, msg = int(files[0][0]), unquote(files[0][1:])
+            if result:
                 restart_queued = True
 
             userdata.set('last_run', int(time.time()))
@@ -60,3 +65,5 @@ def start():
         boot_merge = False
         if ADDON_DEV:
             break
+
+    http.stop()
