@@ -52,7 +52,7 @@ class API(object):
         channels = self._session.gz_json(MH_DATA_URL.format(region=ALL))
         return self._process_channels(channels)
 
-    def channels(self, region=None, ):
+    def channels(self, region=None):
         channels = mem_cache.get(self._cache_key)
         if channels:
             return channels
