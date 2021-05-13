@@ -1,13 +1,9 @@
 import threading
 import os
-import shutil
 import re
-import uuid
 import time
-import base64
 import json
 
-from io import BytesIO
 from xml.dom.minidom import parseString
 from collections import defaultdict
 from functools import cmp_to_key
@@ -21,6 +17,7 @@ from requests import ConnectionError
 from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url
+from slyguy.plugin import failed_playback
 from slyguy.exceptions import Exit
 from slyguy import settings, gui
 from slyguy.session import RawSession
@@ -34,7 +31,10 @@ from .constants import *
 REMOVE_IN_HEADERS = ['upgrade', 'host']
 REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
 
-PROXY_PORT = check_port(PROXY_PORT)
+DEFAULT_PORT = 52103
+PROXY_HOST = '127.0.0.1'
+
+PROXY_PORT = check_port(DEFAULT_PORT)
 if not PROXY_PORT:
     PROXY_PORT = check_port()
 
@@ -195,6 +195,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             response.status_code = 500
             response.stream.content = str(e).encode('utf-8')
+            failed_playback()
 
         self._output_response(response)
 
@@ -770,17 +771,19 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _proxy_request(self, method, url):
         self._session['redirecting'] = False
 
-        if not url.startswith('http'):
+        if not url.lower().startswith('http://') and not url.lower().startswith('https://'):
             response = Response()
             response.headers = {}
-            response.status_code = 200
             response.stream = ResponseStream(response)
 
-            with open(url, 'rb') as f:
-                response.stream.content = f.read()
-
-            if not ADDON_DEV:
-                remove_file(url)
+            if os.path.exists(url):
+                response.status_code = 200
+                with open(url, 'rb') as f:
+                    response.stream.content = f.read()
+                if not ADDON_DEV: remove_file(url)
+            else:
+                response.status_code = 500
+                response.stream.content = "File not found: {}".format(url).encode('utf-8')
 
             return response
 

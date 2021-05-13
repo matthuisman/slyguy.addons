@@ -17,7 +17,7 @@ from .log import log
 from .language import _
 from .session import Session
 from .exceptions import Error, PluginError, FailedPlayback
-from .util import set_kodi_string, get_addon, get_kodi_string, remove_file
+from .util import set_kodi_string, get_addon, remove_file
 
 ## SHORTCUTS
 url_for         = router.url_for
@@ -139,7 +139,7 @@ def resolve(error=False):
     handle = _handle()
     if handle > 0:
         if error and '_play=1' in sys.argv[2]:
-            _failed_playback()
+            failed_playback()
         else:
             xbmcplugin.endOfDirectory(handle, succeeded=False, updateListing=False, cacheToDisc=False)
 
@@ -160,7 +160,7 @@ def _exception(e):
     _close()
 
     if type(e) == FailedPlayback:
-        _failed_playback()
+        failed_playback()
         return
 
     log.exception(e)
@@ -327,6 +327,14 @@ def _handle():
     except:
         return -1
 
+def failed_playback():
+    handle = _handle()
+    xbmcplugin.setResolvedUrl(handle, False, Item(path='http').get_li())
+    xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=False, cacheToDisc=False)
+    if KODI_VERSION < 18:
+        xbmc.PlayList(xbmc.PLAYLIST_MUSIC).clear()
+        xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
+
 def _autoplay(folder, pattern):
     choose = 'pick'
 
@@ -378,13 +386,6 @@ def _autoplay(folder, pattern):
     log.debug('"{}" item selected "{}"'.format(choose, selected.label))
 
     return router.redirect(selected.path)
-
-def _failed_playback():
-    handle = _handle()
-    xbmcplugin.setResolvedUrl(handle, False, Item(path='http://').get_li())
-    xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=False, cacheToDisc=False)
-    # xbmc.PlayList(xbmc.PLAYLIST_MUSIC).clear()
-    # xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
 
 default_thumb  = ADDON_ICON
 default_fanart = ADDON_FANART
@@ -511,9 +512,9 @@ class Folder(object):
 
         xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=self.updateListing, cacheToDisc=self.cacheToDisc)
 
-        plugin_msg = COMMON_ADDON.getSetting('_next_plugin_msg')
+        plugin_msg = settings.common_settings.get('_next_plugin_msg')
         if plugin_msg:
-            COMMON_ADDON.setSetting('_next_plugin_msg', '')
+            settings.common_settings.set('_next_plugin_msg', '')
             gui.ok(plugin_msg)
 
     def add_item(self, *args, **kwargs):

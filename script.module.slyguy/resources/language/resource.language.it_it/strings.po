@@ -54,8 +54,8 @@ msgstr "La versione Kodi del Windows Store (UWP) non supporta la riproduzione Wi
 "Si consiglia invece di installare Kodi .exe dal sito Web ufficiale di Kodi.
 
 msgctxt "#32010"
-msgid "Kodi 18 or higher required for Widevine playback on {system}"
-msgstr "Kodi 18 o superiore è richiesto per la riproduzione Widevine su {system}"
+msgid "Kodi 18 or higher required for Widevine playback"
+msgstr "Kodi 18 o superiore è richiesto per la riproduzione Widevine"
 
 msgctxt "#32011"
 msgid "ARM 64bit does not support Widevine playback\n"

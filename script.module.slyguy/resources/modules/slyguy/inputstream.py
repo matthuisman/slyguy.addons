@@ -154,7 +154,6 @@ class Playready(InputstreamItem):
 
 class Widevine(InputstreamItem):
     license_type  = 'com.widevine.alpha'
-    minversion    = IA_WV_MIN_VER
 
     def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', license_data=None, **kwargs):
         super(Widevine, self).__init__(**kwargs)
@@ -167,7 +166,7 @@ class Widevine(InputstreamItem):
         self.license_data  = license_data
 
     def do_check(self):
-        return require_version(self.minversion, required=True) and install_widevine()
+        return install_widevine()
 
 def set_bandwidth_bin(bps):
     addon = get_ia_addon(install=False)
@@ -222,21 +221,20 @@ def require_version(required_version, required=False):
     if required and not result:
         raise InputStreamError(_(_.IA_VERSION_REQUIRED, required=required_version, current=current_version))
 
-    return result
+    return ia_addon if result else False
 
 def install_widevine(reinstall=False):
-    system, arch = get_system_arch()
-
-    if KODI_VERSION < 18:
-        raise InputStreamError(_(_.IA_KODI18_REQUIRED, system=system))
-
-    ia_addon = get_ia_addon(required=True)
-
     DST_FILES = {
         'Linux':   'libwidevinecdm.so',
         'Darwin':  'libwidevinecdm.dylib',
         'Windows': 'widevinecdm.dll',
     }
+
+    if KODI_VERSION < 18:
+        raise InputStreamError(_.IA_KODI18_REQUIRED)
+
+    ia_addon = require_version(IA_WV_MIN_VER, required=True)
+    system, arch = get_system_arch()
 
     if system == 'Android':
         return True

@@ -54,8 +54,8 @@ msgstr "Kodi for Microsoft UWP støtter ikke Widevine-avspilling.\n"
 "Hvis du Windows, bruk exe-installeringsversjonen fra Kodi-nettsiden istedet."
 
 msgctxt "#32010"
-msgid "Kodi 18 or higher required for Widevine playback on {system}"
-msgstr "Kodi 18 eller høyere er påkrevd for Widevine-avspilling på {system}."
+msgid "Kodi 18 or higher required for Widevine playback"
+msgstr "Kodi 18 eller høyere er påkrevd for Widevine-avspilling."
 
 msgctxt "#32011"
 msgid "ARM 64bit does not support Widevine playback\n"
