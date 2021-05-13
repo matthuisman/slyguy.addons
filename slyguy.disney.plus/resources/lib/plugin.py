@@ -403,7 +403,7 @@ def _parse_series(row):
         info = {
             'plot': _get_text(row['texts'], 'description', 'series'),
             'year': row['releases'][0]['releaseYear'],
-      #      'mediatype': 'tvshow',
+            'mediatype': 'tvshow',
             'genre': row['genres'],
         },
         path = plugin.url_for(series, series_id=row['encodedSeriesId']),
@@ -418,7 +418,7 @@ def _parse_season(row, series):
             'plot': _get_text(row['texts'], 'description', 'season'),
             'year': row['releases'][0]['releaseYear'],
             'season': row['seasonSequenceNumber'],
-           # 'mediatype' : 'season'
+            'mediatype' : 'season'
         },
         art   = {'thumb': _image(row['images'] or series['images'], 'thumb')},
         path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
