@@ -104,7 +104,7 @@ def epg(output, **kwargs):
             Session().chunked_dl(epg_url, output)
             if epg_url.endswith('.gz'):
                 gzip_extract(output)
-            return True
+            return
         except Exception as e:
             log.exception(e)
             log.debug('Failed to get remote epg: {}. Fall back to scraping'.format(epg_url))
