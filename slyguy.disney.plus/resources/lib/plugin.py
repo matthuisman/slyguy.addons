@@ -418,7 +418,7 @@ def _parse_season(row, series):
             'plot': _get_text(row['texts'], 'description', 'season'),
             'year': row['releases'][0]['releaseYear'],
             'season': row['seasonSequenceNumber'],
-            'mediatype' : 'season'
+            'mediatype' : 'season',
         },
         art   = {'thumb': _image(row['images'] or series['images'], 'thumb')},
         path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
