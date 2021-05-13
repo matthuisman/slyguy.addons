@@ -57,32 +57,6 @@ def login_required():
         return decorated_function
     return lambda f: decorator(f)
 
-# @plugin.plugin_callback()
-def plugin_callback():
-    def decorator(func):
-        @wraps(func)
-        def decorated_function(*args, **kwargs):
-            with open(kwargs['_data_path'], 'rb') as f:
-                kwargs['_data'] = f.read()
-
-            remove_file(kwargs['_data_path'])
-            kwargs['_headers'] = json.loads(kwargs['_headers'])
-
-            try:
-                path = func(*args, **kwargs)
-            except Exception as e:
-                log.exception(e)
-                path = None
-
-            folder = Folder()
-            folder.add_item(
-                path = quote_plus(path or ''),
-            )
-
-            return folder
-        return decorated_function
-    return lambda func: decorator(func)
-
 # @plugin.route()
 def route(url=None):
     def decorator(f, url):
@@ -110,6 +84,32 @@ def route(url=None):
         return decorated_function
     return lambda f: decorator(f, url)
 
+# @plugin.plugin_callback()
+def plugin_callback():
+    def decorator(func):
+        @wraps(func)
+        def decorated_function(*args, **kwargs):
+            with open(kwargs['_data_path'], 'rb') as f:
+                kwargs['_data'] = f.read()
+
+            remove_file(kwargs['_data_path'])
+            kwargs['_headers'] = json.loads(kwargs['_headers'])
+
+            try:
+                path = func(*args, **kwargs)
+            except Exception as e:
+                log.exception(e)
+                path = None
+
+            folder = Folder()
+            folder.add_item(
+                path = quote_plus(path or ''),
+            )
+
+            return folder
+        return decorated_function
+    return lambda func: decorator(func)
+
 # @plugin.merge()
 def merge():
     def decorator(f):
@@ -117,17 +117,20 @@ def merge():
         def decorated_function(*args, **kwargs):
             folder = Folder()
 
+            result = False
             try:
-                message = f(*args, **kwargs) or 'ok'
+                message = f(*args, **kwargs) or ''
             except Error as e:
                 log.debug(e, exc_info=True)
                 message = e.message
             except Exception as e:
                 log.exception(e)
                 message = str(e)
+            else:
+                result = True
 
             folder.add_item(
-                path = quote(message),
+                path = quote_plus(u'{}{}'.format(int(result), message)),
             )
 
             return folder
