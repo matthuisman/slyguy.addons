@@ -359,7 +359,7 @@ class Item(object):
 
             return u'{}{}'.format(proxy_path, proxy_url)
 
-        if self.path and self.path.lower().startswith('http://') or self.path.lower().startswith('https://'):
+        if self.path and (self.path.lower().startswith('http://') or self.path.lower().startswith('https://')):
             if not mimetype:
                 parse = urlparse(self.path.lower())
                 if parse.path.endswith('.m3u') or parse.path.endswith('.m3u8'):
