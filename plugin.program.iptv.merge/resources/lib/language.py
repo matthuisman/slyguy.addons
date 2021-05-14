@@ -80,6 +80,7 @@ class Language(BaseLanguage):
     INSERT_PLAYLIST        = 30076
     ASK_TO_ADD             = 30077
     GROUP_ORDER            = 30078
-    NO_FREE_IPTV           = 30079
+    HTTP_SETTING           = 30079
+    HTTP_FORCE_SETTING     = 30080
 
 _ = Language()

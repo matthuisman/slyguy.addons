@@ -322,7 +322,11 @@ msgid "Group Order Override"
 msgstr ""
 
 msgctxt "#30079"
-msgid "Free-IPTV lists are not allowed due to being private pay-to-use repo. Try [B]github.com/iptv-org/iptv[/B] instead!"
+msgid "HTTP API Server"
+msgstr ""
+
+msgctxt "#30080"
+msgid "HTTP Request Forces Merge"
 msgstr ""
 
 ## COMMON SETTINGS ##

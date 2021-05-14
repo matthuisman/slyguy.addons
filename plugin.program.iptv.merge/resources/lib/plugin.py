@@ -48,12 +48,22 @@ def home(**kwargs):
         path  = plugin.url_for(merge),
     )
 
+    if settings.getBool('http_api'):
+        folder.add_item(
+            label = 'HTTP API Running',
+            path = plugin.url_for(http_info),
+        )
+
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_.BOOKMARKS, path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False)
 
     return folder
+
+@plugin.route()
+def http_info(**kwargs):
+    gui.text('Playlist URL\n[B]{}[/B]\n\nEPG URL\n[B]{}[/B]'.format(userdata.get('_playlist_url'), userdata.get('_epg_url')))
 
 @plugin.route()
 def shift_playlist(playlist_id, shift, **kwargs):

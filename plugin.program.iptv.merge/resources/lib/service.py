@@ -22,7 +22,7 @@ def start():
     set_kodi_string('_iptv_merge_force_run')
 
     while not monitor.waitForAbort(1):
-        #http.start() if settings.getBool('http_api', False) else http.stop()
+        http.start() if settings.getBool('http_api', False) else http.stop()
 
         forced = ADDON_DEV or get_kodi_string('_iptv_merge_force_run') or 0
 
