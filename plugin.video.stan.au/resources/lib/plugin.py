@@ -391,11 +391,11 @@ def _process_entries(entries):
                 if row.get('liveEndDate'):
                     end_date = arrow.get(int(row['liveEndDate']/1000))
                 else:
-                    end_date = start_date
+                    end_date = start_date.shift(hours=2)
 
-                if start_date > now:
+                if now < start_date:
                     item.label += ' [{}]'.format(start_date.humanize())
-                elif start_date < now and end_date > now:
+                elif now > start_date and now < end_date:
                     is_live = True
                     item.label += ' [B][LIVE][/B]'
 

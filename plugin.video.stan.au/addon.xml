@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.stan.au" name="Stan" provider-name="SlyGuy" version="0.2.6">
+<addon id="plugin.video.stan.au" name="Stan" provider-name="SlyGuy" version="0.2.7">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>update subtitles</news>
+    <news>Fix live game detection</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
