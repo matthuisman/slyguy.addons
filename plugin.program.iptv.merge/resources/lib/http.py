@@ -1,5 +1,6 @@
 import os
 import threading
+import socket
 
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
@@ -8,12 +9,15 @@ from six.moves.urllib.parse import unquote
 from kodi_six import xbmcvfs
 
 from slyguy.log import log
-from slyguy import router, settings
+from slyguy import router, userdata, settings
 from slyguy.constants import CHUNK_SIZE
 from slyguy.util import check_port
 
 HOST = '0.0.0.0'
-DEFAULT_PORT = 9000
+DEFAULT_PORT = 52104
+
+PLAYLIST_URL = 'playlist.m3u8'
+EPG_URL = 'epg.xml'
 
 class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
@@ -24,10 +28,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self):
-        if self.path == '/playlist.m3u8':
+        if self.path.lower() == '/'+PLAYLIST_URL.lower():
             path = router.url_for('run_merge', type='playlist', refresh=int(settings.getBool('http_force_merge', True)))
             content_type = 'application/vnd.apple.mpegurl'
-        elif self.path == '/epg.xml':
+        elif self.path.lower() == '/'+EPG_URL.lower():
             path = router.url_for('run_merge', type='epg', refresh=int(settings.getBool('http_force_merge', True)))
             content_type = 'text/xml'
         else:
@@ -62,6 +66,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
+userdata.set('_playlist_url', '')
+userdata.set('_epg_url', '')
+
 class HTTP(object):
     started = False
 
@@ -78,7 +85,16 @@ class HTTP(object):
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
         self.started = True
-        log.info("IPTV Merge HTTP Started {}:{}".format(HOST, port))
+        log.info("API Started: {}:{}".format(HOST, port))
+
+        try:
+            hostname = socket.gethostname()
+            local_ip = socket.gethostbyname(hostname)
+        except:
+            local_ip = HOST
+
+        userdata.set('_playlist_url', 'http://{}:{}/{}'.format(local_ip, port, PLAYLIST_URL))
+        userdata.set('_epg_url', 'http://{}:{}/{}'.format(local_ip, port, EPG_URL))
 
     def stop(self):
         if not self.started:
@@ -89,4 +105,6 @@ class HTTP(object):
         self._server.socket.close()
         self._httpd_thread.join()
         self.started = False
-        log.debug("IPTV Merge HTTP Started: Stopped")
+        log.debug("API: Stopped")
+        userdata.set('_playlist_url', '')
+        userdata.set('_epg_url', '')
