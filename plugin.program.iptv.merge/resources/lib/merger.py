@@ -131,7 +131,15 @@ class Merger(object):
 
     def _call_addon_method(self, plugin_url):
         dirs, files = xbmcvfs.listdir(plugin_url)
-        result, msg = int(files[0][0]), unquote(files[0][1:])
+
+        try:
+            result, msg = int(files[0][0]), unquote(files[0][1:])
+        except:
+            # LEGACY
+            log.debug('Please update your add-on to return 1 instead of ok')
+            msg = unquote(files[0])
+            result = msg.lower() == 'ok'
+
         if not result:
             raise AddonError(msg)
 
