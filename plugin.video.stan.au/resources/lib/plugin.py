@@ -390,6 +390,8 @@ def _process_entries(entries):
 
                 if row.get('liveEndDate'):
                     end_date = arrow.get(int(row['liveEndDate']/1000))
+                    if not item.info['duration']:
+                        item.info['duration'] = (end_date-start_date).total_seconds()
                 else:
                     end_date = start_date.shift(hours=2)
 
