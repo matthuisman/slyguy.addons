@@ -32,13 +32,13 @@ REMOVE_IN_HEADERS = ['upgrade', 'host']
 REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
 
 DEFAULT_PORT = 52103
-PROXY_HOST = '127.0.0.1'
+HOST = '127.0.0.1'
 
-PROXY_PORT = check_port(DEFAULT_PORT)
-if not PROXY_PORT:
-    PROXY_PORT = check_port()
+PORT = check_port(DEFAULT_PORT)
+if not PORT:
+    PORT = check_port()
 
-PROXY_PATH = 'http://{}:{}/'.format(PROXY_HOST, PROXY_PORT)
+PROXY_PATH = 'http://{}:{}/'.format(HOST, PORT)
 settings.set('proxy_path', PROXY_PATH)
 
 CODECS = {
@@ -846,7 +846,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             log.debug('set-cookie: {}'.format(response.headers['set-cookie']))
             response.headers.pop('set-cookie') #lets handle cookies in session
             # base_url = urljoin(url, '/')
-            # response.headers['set-cookie'] = re.sub(r'domain=([^ ;]*)', r'domain={}'.format(PROXY_HOST), response.headers['set-cookie'], flags=re.I)
+            # response.headers['set-cookie'] = re.sub(r'domain=([^ ;]*)', r'domain={}'.format(HOST), response.headers['set-cookie'], flags=re.I)
             # response.headers['set-cookie'] = re.sub(r'path=(/[^ ;]*)', r'path=/{}\1'.format(base_url), response.headers['set-cookie'], flags=re.I)
 
         return response
@@ -921,17 +921,26 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 class Proxy(object):
+    started = False
+
     def start(self):
-        log.debug("Starting Proxy {}:{}".format(PROXY_HOST, PROXY_PORT))
-        self._server = ThreadedHTTPServer((PROXY_HOST, PROXY_PORT), RequestHandler)
+        if self.started:
+            return
+
+        self._server = ThreadedHTTPServer((HOST, PORT), RequestHandler)
         self._server.allow_reuse_address = True
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
-        log.info("Proxy bound to {}:{}".format(PROXY_HOST, PROXY_PORT))
+        self.started = True
+        log.info("Proxy Started: {}:{}".format(HOST, PORT))
 
     def stop(self):
+        if not self.started:
+            return
+
         self._server.shutdown()
         self._server.server_close()
         self._server.socket.close()
         self._httpd_thread.join()
-        log.debug("Proxy Server: Stopped")
+        self.started = False
+        log.debug("Proxy: Stopped")
