@@ -5,6 +5,7 @@ import arrow
 from kodi_six import xbmcplugin
 from slyguy import plugin, gui, settings, userdata, inputstream
 from slyguy.constants import ROUTE_LIVE_TAG, ROUTE_LIVE_SUFFIX
+from slyguy.util import pthms_to_seconds
 
 from .api import API
 from .constants import HEADERS
@@ -40,20 +41,6 @@ def _process_show(data):
         path  = plugin.url_for(show, slug=data['page']['href'].split('/')[-1]),
     )
 
-def _process_duration(duration):
-    if not duration:
-        return None
-
-    keys = [['H', 3600], ['M', 60], ['S', 1]]
-
-    seconds = 0
-    duration = duration.lstrip('PT')
-    for key in keys:
-        if key[0] in duration:
-            count, duration = duration.split(key[0])
-            seconds += float(count) * key[1]
-
-    return int(seconds)
 
 def _process_video(data, showname, categories=None):
     label = '{}'.format(data['labels']['primary'])
@@ -76,7 +63,7 @@ def _process_video(data, showname, categories=None):
     else:
         _type = 'episode'
 
-    info = {'plot': data['synopsis'], 'mediatype': _type, 'genre': categories, 'duration': _process_duration(data.get('duration'))}
+    info = {'plot': data['synopsis'], 'mediatype': _type, 'genre': categories, 'duration': pthms_to_seconds(data.get('duration'))}
     if _type == 'episode':
         info['tvshowtitle'] = showname
         info['season'] = data['seasonNumber']
