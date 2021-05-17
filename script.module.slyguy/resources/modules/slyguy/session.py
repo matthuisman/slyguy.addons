@@ -42,9 +42,9 @@ class Session(RawSession):
         self._headers     = headers or {}
         self._cookies_key = cookies_key
         self._base_url    = base_url
-        self._timeout     = timeout or settings.getInt('http_timeout', 30)
-        self._attempts    = attempts or settings.getInt('http_retries', 2)
-        self._verify      = verify if verify is not None else settings.getBool('verify_ssl', True)
+        self._timeout     = settings.getInt('http_timeout', 30) if timeout is None else timeout
+        self._attempts    = settings.getInt('http_retries', 2) if attempts is None else attempts
+        self._verify      = settings.getBool('verify_ssl', True) if verify is None else verify
         self.after_request = None
 
         self.headers.update(DEFAULT_HEADERS)
@@ -64,12 +64,12 @@ class Session(RawSession):
         if not url.startswith('http'):
             url = self._base_url.format(url)
 
-        timeout = timeout or self._timeout
-        if timeout:
-            kwargs['timeout'] = timeout
+        timeout = self._timeout if timeout is None else timeout
+        attempts = self._attempts if attempts is None else attempts
+        kwargs['verify'] = self._verify if verify is None else verify
 
-        kwargs['verify']  = verify or self._verify
-        attempts          = attempts or self._attempts
+        if timeout is not None:
+            kwargs['timeout'] = timeout
 
         #url = PROXY_PATH + url
 
