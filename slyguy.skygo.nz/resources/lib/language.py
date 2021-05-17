@@ -9,5 +9,6 @@ class Language(BaseLanguage):
     LIVE_TV                = 30005
     CONCURRENT_STREAMS     = 30006
     SUBSCRIPTION_REQUIRED  = 30007
+    MOVIES                 = 30008
 
 _ = Language()

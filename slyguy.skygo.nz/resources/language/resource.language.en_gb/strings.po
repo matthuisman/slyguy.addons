@@ -38,6 +38,10 @@ msgctxt "#30007"
 msgid "{subscription} Subscription Required"
 msgstr ""
 
+msgctxt "#30008"
+msgid "Movies"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
