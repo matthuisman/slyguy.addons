@@ -590,9 +590,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         audio_whitelist   = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist    = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
-        subs_forced       = int(self._session.get('subs_forced', 1))
-        subs_non_forced   = int(self._session.get('subs_non_forced', 1))
-        audio_description = int(self._session.get('audio_description', 1))
+        subs_forced       = self._session.get('subs_forced', True)
+        subs_non_forced   = self._session.get('subs_non_forced', True)
+        audio_description = self._session.get('audio_description', True)
         original_language = self._session.get('original_language', '').lower().strip()
         default_language  = self._session.get('default_language', '').lower().strip()
 
@@ -805,7 +805,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         # some reason we get connection errors every so often when using a session. something to do with the socket
         for i in range(retries):
             try:
-                response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
+                response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, verify=self._session.get('verify_ssl', True), stream=True)
             except ConnectionError as e:
                 if 'Connection aborted' not in str(e) or i == retries-1:
                     log.exception(e)

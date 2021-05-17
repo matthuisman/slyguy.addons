@@ -1,10 +1,9 @@
 from __future__ import absolute_import
 
-import time
-
 # The default socket timeout, used by httplib to indicate that no timeout was
 # specified by the user
 from socket import _GLOBAL_DEFAULT_TIMEOUT
+import time
 
 from ..exceptions import TimeoutStateError
 
@@ -20,26 +19,20 @@ current_time = getattr(time, "monotonic", time.time)
 class Timeout(object):
     """Timeout configuration.
 
-    Timeouts can be defined as a default for a pool:
+    Timeouts can be defined as a default for a pool::
 
-    .. code-block:: python
+        timeout = Timeout(connect=2.0, read=7.0)
+        http = PoolManager(timeout=timeout)
+        response = http.request('GET', 'http://example.com/')
 
-       timeout = Timeout(connect=2.0, read=7.0)
-       http = PoolManager(timeout=timeout)
-       response = http.request('GET', 'http://example.com/')
+    Or per-request (which overrides the default for the pool)::
 
-    Or per-request (which overrides the default for the pool):
+        response = http.request('GET', 'http://example.com/', timeout=Timeout(10))
 
-    .. code-block:: python
+    Timeouts can be disabled by setting all the parameters to ``None``::
 
-       response = http.request('GET', 'http://example.com/', timeout=Timeout(10))
-
-    Timeouts can be disabled by setting all the parameters to ``None``:
-
-    .. code-block:: python
-
-       no_timeout = Timeout(connect=None, read=None)
-       response = http.request('GET', 'http://example.com/, timeout=no_timeout)
+        no_timeout = Timeout(connect=None, read=None)
+        response = http.request('GET', 'http://example.com/, timeout=no_timeout)
 
 
     :param total:
@@ -50,7 +43,7 @@ class Timeout(object):
 
         Defaults to None.
 
-    :type total: int, float, or None
+    :type total: integer, float, or None
 
     :param connect:
         The maximum amount of time (in seconds) to wait for a connection
@@ -60,7 +53,7 @@ class Timeout(object):
         <http://hg.python.org/cpython/file/603b4d593758/Lib/socket.py#l535>`_.
         None will set an infinite timeout for connection attempts.
 
-    :type connect: int, float, or None
+    :type connect: integer, float, or None
 
     :param read:
         The maximum amount of time (in seconds) to wait between consecutive
@@ -70,7 +63,7 @@ class Timeout(object):
         <http://hg.python.org/cpython/file/603b4d593758/Lib/socket.py#l535>`_.
         None will set an infinite timeout.
 
-    :type read: int, float, or None
+    :type read: integer, float, or None
 
     .. note::
 
