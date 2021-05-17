@@ -39,7 +39,11 @@ class API(object):
             'variables': variables or {},
         }
 
-        return self._session.post(GRAPH_URL, json=data, **kwargs).json()
+        data = self._session.post(GRAPH_URL, json=data, **kwargs).json()
+        if 'errors' in data:
+            raise APIError(data['errors'][0]['message'])
+
+        return data
 
     def _refresh_token(self, force=False):
         if not force and userdata.get('expires', 0) > time() or not self.logged_in:
@@ -89,11 +93,16 @@ class API(object):
 
         return sorted(channels, key=lambda x: x['number'])
 
-    def play_channel(self, channel_id):
+    def collection(self, collection_id):
+        return self._query_request(queries.COLLECTION, variables={'collectionId': collection_id})['data']['collection']
+
+    def play(self, asset_id):
+        is_linear = asset_id.startswith('skylarkChannel')
+
         variables = {
             'deviceId': '',
-            'assetId': channel_id,
-            'channelId': channel_id,
+            'assetId': asset_id,
+            'channelId': asset_id,
             # 'playbackDevice': {
             #     'platform': 'Windows',
             #     'osVersion': '10',
@@ -102,7 +111,10 @@ class API(object):
             # }
         }
 
-        data = self._query_request(queries.LINEAR_START, variables)['data']['startLinearPlayback']
+        if is_linear:
+            data = self._query_request(queries.LINEAR_START, variables)['data']['startLinearPlayback']
+        else:
+            data = self._query_request(queries.VOD_START, variables)['data']['startVodPlayback']
 
         if data['__typename'] == 'SubscriptionNeeded':
             raise APIError(_(_.SUBSCRIPTION_REQUIRED, subscription=data['subscriptions'][0]['title']))
@@ -110,11 +122,16 @@ class API(object):
             raise APIError(_.GEO_ERROR)
         elif data['__typename'] == 'ConcurrentStreamsExceeded':
             raise APIError(_.CONCURRENT_STREAMS)
-        elif data['__typename'] != 'LinearPlaybackSources':
+        elif data['__typename'] not in ('LinearPlaybackSources', 'VodPlaybackSources'):
             raise APIError('Unkown error: {}'.format(data['__typename']))
 
-        try: self._query_request(queries.LINEAR_STOP, variables)['data']['stopLinearPlayback']
-        except: log.debug('Stop Linear Failed')
+        try:
+            if is_linear:
+                self._query_request(queries.LINEAR_STOP, variables)['data']['stopLinearPlayback']
+            else:
+                self._query_request(queries.VOD_STOP, variables)['data']['stopVodPlayback']
+        except:
+            log.debug('Stop Linear / VOD Failed')
 
         return data['playbackSource']['streamUri'], data['playbackSource']['drmLicense']['licenseUri']
 
