@@ -598,3 +598,18 @@ def cenc_version1to0(cenc):
         return cenc
 
     return cenc_init(data)
+
+def pthms_to_seconds(duration):
+    if not duration:
+        return None
+
+    keys = [['H', 3600], ['M', 60], ['S', 1]]
+
+    seconds = 0
+    duration = duration.lstrip('PT')
+    for key in keys:
+        if key[0] in duration:
+            count, duration = duration.split(key[0])
+            seconds += float(count) * key[1]
+
+    return int(seconds)
