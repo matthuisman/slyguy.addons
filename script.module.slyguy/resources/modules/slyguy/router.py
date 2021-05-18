@@ -51,12 +51,7 @@ def parse_url(url):
         _url = url
 
     params[ROUTE_URL_TAG] = url
-    params[ROUTE_RESUME_TAG] = False
-
-    try:
-        if sys.argv[3] == 'resume:true':
-            params[ROUTE_RESUME_TAG] = True
-    except: pass
+    params[ROUTE_RESUME_TAG] = len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true'
 
     function = _routes.get(_url)
 

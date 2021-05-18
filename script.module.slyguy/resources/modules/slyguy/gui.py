@@ -174,7 +174,8 @@ def info(item):
 class Item(object):
     def __init__(self, id=None, label='', path=None, playable=False, info=None, context=None,
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
-            video=None, audio=None, subtitles=None, use_proxy=None, specialsort=None, custom=None, proxy_data=None):
+            video=None, audio=None, subtitles=None, use_proxy=None, specialsort=None, custom=None, proxy_data=None,
+            resume_from=None, force_resume=False):
 
         self.id          = id
         self.label       = label
@@ -196,6 +197,8 @@ class Item(object):
         self.specialsort = specialsort #bottom, top
         self.custom      = custom
         self.use_proxy   = use_proxy
+        self.resume_from = resume_from
+        self.force_resume = force_resume
 
     def update(self, **kwargs):
         for key in kwargs:
@@ -284,6 +287,14 @@ class Item(object):
 
         if self.context:
             li.addContextMenuItems(self.context)
+
+        if self.resume_from is not None:
+            self.properties['ResumeTime'] = self.resume_from or 1
+            self.properties['TotalTime'] = 1
+
+        if not self.force_resume and len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
+            self.properties.pop('ResumeTime', None)
+            self.properties.pop('TotalTime', None)
 
         for key in self.properties:
             li.setProperty(key, u'{}'.format(self.properties[key]))

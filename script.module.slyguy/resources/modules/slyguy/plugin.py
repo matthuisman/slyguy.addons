@@ -71,7 +71,7 @@ def route(url=None):
             elif isinstance(item, Folder):
                 item.display()
             elif isinstance(item, Item):
-                item.play(quality=kwargs.get(QUALITY_TAG))
+                item.play(**kwargs)
             elif isinstance(item, Redirect):
                 if _handle() > 0:
                     xbmcplugin.endOfDirectory(_handle(), succeeded=True, updateListing=True, cacheToDisc=True)
@@ -424,17 +424,15 @@ class Item(gui.Item):
 
         return super(Item, self).get_li()
 
-    def play(self, quality=None):
+    def play(self, **kwargs):
         self.playable = True
 
-        try:
-            if not self.properties.get('ForceResume', False) and sys.argv[3] == 'resume:true':
-                self.properties.pop('ResumeTime', None)
-                self.properties.pop('TotalTime', None)
-        except:
-            pass
+        quality = kwargs.get(QUALITY_TAG, self.quality)
+        is_live = ROUTE_LIVE_TAG in kwargs
 
-        quality = self.quality if quality is None else quality
+        if is_live and self.resume_from is None:
+            # Make sure always play from live head across chapters
+            self.resume_from = 12*60*60
 
         if quality is None:
             quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
