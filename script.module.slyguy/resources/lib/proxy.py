@@ -351,18 +351,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             mpd.removeAttribute('publishTime')
             log.debug('Dash Fix: publishTime removed')
 
-        ## Live mpd needs non-last periods removed
-        ## https://github.com/xbmc/inputstream.adaptive/issues/574
-        if 'type' in mpd.attributes.keys() and mpd.getAttribute('type').lower() == 'dynamic':
-            periods = [elem for elem in root.getElementsByTagName('Period')]
-
-            # Keep last period
-            if len(periods) > 1:
-                periods.pop()
-                for elem in periods:
-                    elem.parentNode.removeChild(elem)
-        #################################################
-
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
         audio_sets = []
