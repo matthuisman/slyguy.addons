@@ -224,13 +224,11 @@ def play(id, play_type=PLAY_FROM_LIVE, **kwargs):
         path        = mpd_url,
         inputstream = inputstream.Widevine(license_key=license),
         headers     = headers,
-        use_proxy   = True, #needed for live with multiple periods and fix https://github.com/xbmc/inputstream.adaptive/pull/668
     )
 
     play_type = int(play_type)
     if from_start and (play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
-        item.properties['ResumeTime'] = 1
-        item.properties['TotalTime']  = 1
+        item.resume_from = 1
 
     return item
 
