@@ -430,6 +430,11 @@ class Item(gui.Item):
         quality = kwargs.get(QUALITY_TAG, self.quality)
         is_live = ROUTE_LIVE_TAG in kwargs
 
+        ##LEGACY##
+        if self.resume_from is None and 'ResumeTime' in self.properties:
+            self.resume_from = int(self.properties.pop('ResumeTime'))
+        #######
+
         if is_live and self.resume_from is None:
             # Make sure always play from live head across chapters
             self.resume_from = 12*60*60
