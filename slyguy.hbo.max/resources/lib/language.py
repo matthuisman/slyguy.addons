@@ -7,7 +7,7 @@ class Language(BaseLanguage):
     API_ERROR         = 30004
     GO_TO_SERIES      = 30005
     NO_VIDEO_FOUND    = 30006
-
+    EC3_ENABLED       = 30007
     L1_SECURE_DEVICE  = 30009
     PLAY_NEXT_EPISODE = 30010
     SKIP_INTROS       = 30011
@@ -17,5 +17,6 @@ class Language(BaseLanguage):
     H265              = 30014
     ENABLE_4K         = 30015
     DOLBY_VISION      = 30016
+    ACCESSIBILITY     = 30017
 
 _ = Language()
