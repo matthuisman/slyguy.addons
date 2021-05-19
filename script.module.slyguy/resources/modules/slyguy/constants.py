@@ -125,5 +125,5 @@ DEFAULT_WORKERS   = 5
 #### BOOKMARKS #####
 BOOKMARK_FILE = os.path.join(ADDON_PROFILE, 'bookmarks.json')
 
-## PROXY ##
 CHUNK_SIZE = 64 * 1024
+LIVE_HEAD = 12*60*60
