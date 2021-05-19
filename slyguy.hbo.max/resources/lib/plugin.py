@@ -1,14 +1,11 @@
-import random
-import re
-from time import time
+import os
 from xml.dom.minidom import parseString
 
 from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.log import log
+from slyguy.session import Session
 from slyguy.util import cenc_init
-from slyguy.constants import ROUTE_RESUME_TAG
-from slyguy.exceptions import Exit
+from slyguy.constants import ADDON_PROFILE
 
 from .api import API
 from .constants import *
@@ -36,7 +33,7 @@ def index(**kwargs):
 
         if not userdata.get('kid_lockdown', False):
             profile = userdata.get('profile', {})
-            folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': _avatar(profile.get('avatar'))}, info={'plot': profile.get('name')}, _kiosk=False, bookmark=False)
+            folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': profile.get('avatar')}, info={'plot': profile.get('name')}, _kiosk=False, bookmark=False)
 
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
@@ -63,26 +60,27 @@ def _process_rows(rows, slug):
                 art      = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
                 info     = {
                     'duration': row['duration'],
-                #    'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
+                    'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
                 },
-                path     = _get_play_path(row['viewable']),
                 context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
                 playable = True,
+                path     = _get_play_path(row['viewable']),
             ))
 
         elif content_type == 'SERIES':
             items.append(plugin.Item(
-                label    = row['titles']['full'],
-                art      = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
-                path     = plugin.url_for(series, slug=row['viewable']),
+                label   = row['titles']['full'],
+                art     = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                context = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
+                info    = {'mediatype': 'tvshow'},
+                path    = plugin.url_for(series, slug=row['viewable']),
             ))
 
         elif viewable.startswith('urn:hbo:franchise'):
             items.append(plugin.Item(
-                label    = row['titles']['full'],
-                art      = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                path     = plugin.url_for(series, slug='urn:hbo:series:'+row['images']['tile'].split('/')[4]),
+                label = row['titles']['full'],
+                art   = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                path  = plugin.url_for(series, slug='urn:hbo:series:'+row['images']['tile'].split('/')[4]),
             ))
 
         elif content_type in ('SERIES_EPISODE', 'MINISERIES_EPISODE'):
@@ -94,11 +92,11 @@ def _process_rows(rows, slug):
                     'tvshowtitle': row['seriesTitles']['full'],
                     'season': row.get('seasonNumber', 1),
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
-                    'mediatype': 'episode'
+                    'mediatype': 'episode',
                 },
                 context  = ((_.GO_TO_SERIES, 'Container.Update({})'.format(plugin.url_for(series, slug=row['series']))),),
-                path     = _get_play_path(row['viewable']),
                 playable = True,
+                path     = _get_play_path(row['viewable']),
             ))
 
         elif row['id'].startswith('urn:hbo:themed-tray') and row['items']:
@@ -117,13 +115,6 @@ def _process_rows(rows, slug):
         # elif row['id'].startswith('urn:hbo:highlight'):
         #     print(row)
         #     raise
-
-        #     items.append(plugin.Item(
-        #         label = '{}: {}'.format(row['summary']['umbrella'], row['summary']['title']),
-        #         art   = {'thumb': _image(row['image']['uri'])},
-        #         info  = {'plot': row['summary']['description']},
-        #         playable = True,
-        #     ))
 
         elif row['id'].startswith('urn:hbo:tab-group'):
             for tab in row['tabs']:
@@ -196,7 +187,10 @@ def series(slug, season=None, **kwargs):
         for row in data['seasons']:
             folder.add_item(
                 label = row['titles']['full'],
-                info  = {'plot': row['summaries']['short']},
+                info  = {
+                    'plot': row['summaries']['short'],
+                    'mediatype' : 'season'
+                },
                 art   = {'thumb': _image(data['images'].get('tileburnedin'))},
                 path  = plugin.url_for(series, slug=slug, season=row['id']),
             )
@@ -287,105 +281,43 @@ def select_profile(**kwargs):
     _select_profile()
     gui.refresh()
 
-def _avatar(key):
-    if key is None:
-        return None
+def _avatar(profile, download=False):
+    _type = profile.get('avatarImageType')
 
-    return AVATARS[key or DEFAULT_AVATAR]
+    if _type == 'user-upload':
+        url = 'https://gateway.api.hbo.com/accounts/user-images/profile/' + profile['avatarImageId'] + '?format=png&size=320x320&authorization=Bearer {}'.format(userdata.get('access_token'))
+    elif _type == 'character':
+        url = 'https://play.hbomax.com/assets/images/characters/' + CHARACTERS.get(profile['avatarImageId'], CHARACTERS[DEFAULT_CHARACTER]) + '_320x320.png'
+    else:
+        url = AVATARS.get(profile['avatarId'], AVATARS[DEFAULT_AVATAR])
+
+    if not download:
+        return url
+
+    dst_path = os.path.join(ADDON_PROFILE, 'profile.png')
+    Session().chunked_dl(url, dst_path)
+    return dst_path
 
 def _select_profile():
     profiles = api.profiles()
 
     options = []
     values  = []
-    can_delete = []
     default = -1
 
     for index, profile in enumerate(profiles):
         values.append(profile)
-        options.append(plugin.Item(label=profile['name'], art={'thumb': _avatar(profile['avatarId'])}))
+        options.append(plugin.Item(label=profile['name'], art={'thumb': _avatar(profile)}))
 
         if profile['isMe']:
             default = index
             _set_profile(profile, switching=False)
-        elif not profile['isPrimary']:
-            can_delete.append(profile)
-
-    # options.append(plugin.Item(label=_(_.ADD_PROFILE, _bold=True)))
-    # values.append('_add')
-
-    # if can_delete:
-    #     options.append(plugin.Item(label=_(_.DELETE_PROFILE, _bold=True)))
-    #     values.append('_delete')
 
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
     if index < 0:
         return
 
-    selected = values[index]
-
-    if selected == '_delete':
-        _delete_profile(can_delete)
-    elif selected == '_add':
-        _add_profile(taken_names=[x['name'] for x in profiles], taken_avatars=[x['avatarId'] or DEFAULT_AVATAR for x in profiles])
-    else:
-        _set_profile(selected)
-
-def _delete_profile(profiles):
-    options = []
-    for index, profile in enumerate(profiles):
-        options.append(plugin.Item(label=profile['name'], art={'thumb': _avatar(profile['avatarId'])}))
-
-    index = gui.select(_.SELECT_DELETE_PROFILE, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    selected = profiles[index]
-    if gui.yes_no(_.DELETE_PROFILE_INFO, heading=_(_.DELTE_PROFILE_HEADER, name=selected['name'])) and api.delete_profile(selected['profileId']):
-        gui.notification(_.PROFILE_DELETED, heading=selected['name'], icon=_avatar(selected['avatarId']))
-
-def _add_profile(taken_names, taken_avatars):
-    ## PROFILE AVATAR ##
-    options = [plugin.Item(label=_(_.RANDOM_AVATAR, _bold=True)),]
-    values  = ['_random',]
-    unused  = []
-
-    for key in AVATARS:
-        label = ''
-        if key in taken_avatars:
-            label = _(_.AVATAR_USED, label=label)
-        else:
-            unused.append(key)
-
-        options.append(plugin.Item(label=label, art={'thumb': AVATARS[key]}))
-        values.append(key)
-
-    index = gui.select(_.SELECT_AVATAR, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    avatar = values[index]
-    if avatar == '_random':
-        avatar = random.choice(unused or AVATARS.keys())
-
-    ## PROFLE KIDS ##
-    kids = gui.yes_no(_.KIDS_PROFILE_INFO, heading=_.KIDS_PROFILE)
-
-    ## PROFILE NAME ##
-    name = ''
-    while True:
-        name = gui.input(_.PROFILE_NAME, default=name).strip()
-        if not name:
-            return
-
-        elif name in taken_names:
-            gui.notification(_(_.PROFILE_NAME_TAKEN, name=name))
-
-        else:
-            break
-
-    profile = api.add_profile(name, kids, avatar)
-    _set_profile(profile)
+    _set_profile(values[index])
 
 def _set_profile(profile, switching=True):
     if switching:
@@ -394,7 +326,7 @@ def _set_profile(profile, switching=True):
     if settings.getBool('kid_lockdown', False) and profile['profileType'] == 'child':
         userdata.set('kid_lockdown', True)
 
-    _profile = {'id': profile['profileId'], 'name': profile['name'], 'avatar': profile['avatarId']}
+    _profile = {'id': profile['profileId'], 'name': profile['name'], 'avatar': _avatar(profile, download=True)}
     if profile['profileType'] == 'child':
         _profile.update({
             'child': 1,
@@ -404,7 +336,7 @@ def _set_profile(profile, switching=True):
     userdata.set('profile', _profile)
 
     if switching:
-        gui.notification(_.PROFILE_ACTIVATED, heading=_profile['name'], icon=_avatar(_profile['avatar']))
+        gui.notification(_.PROFILE_ACTIVATED, heading=_profile['name'], icon=_profile['avatar'])
 
 def _get_play_path(slug):
     if not slug:
@@ -484,18 +416,8 @@ def mpd_request(_data, _data_path, **kwargs):
 
     return _data_path
 
-def _get_milestone(milestones, key, default=None):
-    if not milestones:
-        return default
-
-    for milestone in milestones:
-        if milestone['type'] == key:
-            return milestone['end']
-
-    return default
-
 @plugin.route()
-def play(slug, skip_intro=None, **kwargs):
+def play(slug, **kwargs):
     data, content = api.play(slug)
 
     headers = {
@@ -514,23 +436,7 @@ def play(slug, skip_intro=None, **kwargs):
         if settings.getBool('wv_secure'):
             item.inputstream.properties['license_flags'] = 'force_secure_decoder'
 
-    # resume_from = None
-    # if kwargs[ROUTE_RESUME_TAG]:
-    #     pass
-    #     if settings.getBool('disney_sync', False):
-    #         continue_watching = api.continue_watching()
-    #         resume_from = continue_watching.get(video['contentId'], 0)
-    #         item.properties['ForceResume'] = True
-
-    # elif (int(skip_intro) if skip_intro is not None else settings.getBool('skip_intros', False)):
-    #     resume_from = _get_milestone(data.get('annotations'), 'SKIP', default=0)
-
-    # if resume_from is not None:
-    #     item.properties['ResumeTime'] = resume_from
-    #     item.properties['TotalTime']  = resume_from
-
     item.play_next = {}
-
     if ':episode' in slug:
         item.update(
             label = content['titles']['full'],
