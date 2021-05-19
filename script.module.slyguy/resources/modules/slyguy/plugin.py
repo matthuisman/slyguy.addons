@@ -435,9 +435,10 @@ class Item(gui.Item):
             self.resume_from = int(self.properties.pop('ResumeTime'))
         #######
 
-        if is_live and self.resume_from is None:
-            # Make sure always play from live head across chapters
-            self.resume_from = 12*60*60
+        # if is_live and self.resume_from is None:
+        #     # Make sure always play from live head across chapters
+        #     # Requires https://github.com/xbmc/inputstream.adaptive/pull/685 for some streams
+        #     self.resume_from = 12*60*60
 
         if quality is None:
             quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
