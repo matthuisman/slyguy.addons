@@ -380,10 +380,12 @@ def mpd_request(_data, _data_path, **kwargs):
     dolby_vison = settings.getBool('dolby_vision', False)
     h265        = settings.getBool('h265', True)
     enable_4k   = settings.getBool('4k_enabled', True)
+    enable_ec3  = settings.getBool('ec3_enabled', False)
+    enable_accessibility = settings.getBool('accessibility_enabled', False)
 
     for elem in root.getElementsByTagName('Representation'):
         parent = elem.parentNode
-        codecs = elem.getAttribute('codecs')
+        codecs = elem.getAttribute('codecs').lower()
         height = int(elem.getAttribute('height') or 0)
         width = int(elem.getAttribute('width') or 0)
 
@@ -396,8 +398,12 @@ def mpd_request(_data, _data_path, **kwargs):
         elif not enable_4k and (height > 1080 or width > 1920):
             parent.removeChild(elem)
 
+        elif not enable_ec3 and codecs == 'ec-3':
+            parent.removeChild(elem)
+
     for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not adap_set.getElementsByTagName('Representation'):
+        if not adap_set.getElementsByTagName('Representation') or \
+            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')):
             adap_set.parentNode.removeChild(adap_set)
 
     ## do below to convert all to cenc0 to work on firestick
