@@ -11,15 +11,6 @@ DEVICE_MODEL = 'androidtv'
 BASE_URL = 'https://comet.api.hbo.com{}'
 AGE_CATS = [[0, '2-5'], [6, '6-9'], [10, '10-12'], [13, '12+']]
 
-AVATARS = {
-    '85fc382d-dca7-42d8-95af-3850e29186e1': 'https://play.hbomax.com/assets/images/avatars/avatar1.png',
-    'a0b761f6-0fa4-4b12-9f78-8817d9a71619': 'https://play.hbomax.com/assets/images/avatars/avatar2.png',
-    '5e911712-2da5-40c1-8863-45b387db91a6': 'https://play.hbomax.com/assets/images/avatars/avatar3.png',
-    '3d1b9015-880b-46b2-99e6-df2c7c6118d6': 'https://play.hbomax.com/assets/images/avatars/avatar4.png',
-    'b4e56613-8e5f-47a8-ac02-1bb283b8e3f3': 'https://play.hbomax.com/assets/images/avatars/avatar5.png',
-}
-DEFAULT_AVATAR = '85fc382d-dca7-42d8-95af-3850e29186e1'
-
 CHARACTERS = {
     'a286cb57-fee3-45b1-a9c0-b9fabe519bfb': 'jonsnow_gameofthrones_v3_8',
     '14b96ab4-fa91-45a4-99c8-92405d36f2ac': 'danys_gameofthrones_v3_8',

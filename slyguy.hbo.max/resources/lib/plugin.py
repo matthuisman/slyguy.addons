@@ -289,7 +289,7 @@ def _avatar(profile, download=False):
     elif _type == 'character':
         url = 'https://play.hbomax.com/assets/images/characters/' + CHARACTERS.get(profile['avatarImageId'], CHARACTERS[DEFAULT_CHARACTER]) + '_320x320.png'
     else:
-        url = AVATARS.get(profile['avatarId'], AVATARS[DEFAULT_AVATAR])
+        return None
 
     if not download:
         return url
