@@ -378,8 +378,9 @@ def mpd_request(_data, _data_path, **kwargs):
                 parent.removeChild(adap_set)
 
     dolby_vison = settings.getBool('dolby_vision', False)
-    h265        = settings.getBool('h265', True)
+    h265        = settings.getBool('h265', False)
     enable_4k   = settings.getBool('4k_enabled', True)
+    enable_ac3  = settings.getBool('ac3_enabled', False)
     enable_ec3  = settings.getBool('ec3_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
 
@@ -396,6 +397,9 @@ def mpd_request(_data, _data_path, **kwargs):
             parent.removeChild(elem)
 
         elif not enable_4k and (height > 1080 or width > 1920):
+            parent.removeChild(elem)
+
+        elif not enable_ac3 and codecs == 'ac-3':
             parent.removeChild(elem)
 
         elif not enable_ec3 and codecs == 'ec-3':
