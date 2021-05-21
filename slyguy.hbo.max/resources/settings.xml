@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>    
+<settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <!-- <setting label="30011" type="bool" id="skip_intros" default="false"/> -->
         <!-- <setting label="30013" type="bool" id="skip_credits" default="true"/> -->
@@ -7,12 +7,13 @@
         <setting label="30003" type="text" id="device_id" default="{mac_address}"/>
         <setting label="30010" type="bool" id="play_next_episode" default="true"/>
         <setting label="30012" type="bool" id="play_next_movie" default="false"/>
-        <setting label="30014" type="bool" id="h265" default="true"/>
+        <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
         <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
         <setting label="30017" type="bool" id="accessibility_enabled" default="false"/>
+        <setting label="30014" type="bool" id="h265" default="false"/>
         <setting label="30009" type="bool" id="wv_secure" default="false" visible="system.platform.android"/>
         <setting label="30015" type="bool" id="4k_enabled" default="true" visible="eq(-1,true)"/>
-        <setting label="30016" type="bool" id="dolby_vision" default="true" visible="eq(-2,true)"/>
+        <setting label="30016" type="bool" id="dolby_vision" default="false" visible="eq(-2,true)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

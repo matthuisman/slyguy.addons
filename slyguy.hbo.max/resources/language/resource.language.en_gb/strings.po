@@ -67,6 +67,10 @@ msgctxt "#30017"
 msgid "Accessibility Audio"
 msgstr ""
 
+msgctxt "#30018"
+msgid "Dolby Digital (AC-3)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
