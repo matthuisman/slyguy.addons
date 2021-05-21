@@ -127,11 +127,9 @@ class HLS(InputstreamItem):
         hls_live = settings.getBool('use_ia_hls_live', legacy)
         hls_vod  = settings.getBool('use_ia_hls_vod', legacy)
 
-        if self.x_discontinuity:
-            self.force = True
-            if KODI_VERSION == 18:
-                global ADDON_ID
-                ADDON_ID = IA_TESTING_ID
+        if self.x_discontinuity and KODI_VERSION == 18:
+            global ADDON_ID
+            ADDON_ID = IA_TESTING_ID
 
         return (self.force or (self.live and hls_live) or (not self.live and hls_vod)) and require_version(self.minversion, required=self.force)
 
