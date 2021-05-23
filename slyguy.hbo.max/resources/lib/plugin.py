@@ -370,10 +370,7 @@ def mpd_request(_data, _data_path, **kwargs):
             height = int(adap_set.getAttribute('maxHeight') or 0)
             width = int(adap_set.getAttribute('maxWidth') or 0)
 
-            if width < 1280 or height < 720:
-                #keep
-                pass
-            else:
+            if height >= 720:
                 parent = adap_set.parentNode
                 parent.removeChild(adap_set)
 
