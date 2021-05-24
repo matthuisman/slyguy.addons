@@ -222,8 +222,14 @@ class Merger(object):
             for line in infile:
                 line = line.strip()
 
+                if not line:
+                    continue
+
                 if 'free-iptv' in line.lower():
                     free_iptv = True
+
+                if not valid_file and '#EXTM3U' not in line:
+                    raise Error('Invalid playlist - Does not start with #EXTM3U')
 
                 if '#EXTM3U' in line:
                     valid_file = True
@@ -245,9 +251,6 @@ class Merger(object):
                         default_attribs['tvg-shift'] = attribs['tvg-shift']
                     if 'catchup-correction' in attribs:
                         default_attribs['catchup-correction'] = attribs['catchup-correction']
-
-                if not valid_file:
-                    continue
 
                 if line.startswith('#EXTINF'):
                     channel = Channel.from_playlist(line)
@@ -304,7 +307,7 @@ class Merger(object):
                             chnos['tv'] = channel.chno + 1
 
                     if free_iptv:
-                        channel.url = 'https://archive.org/download/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp4'
+                        channel.url = TROLL_URL
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = playlist.default_visible

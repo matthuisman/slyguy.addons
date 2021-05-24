@@ -9,6 +9,8 @@ TYPE_IPTV_MERGE = 1
 TYPE_IPTV_MANAGER = 2
 TYPE_INTEGRATION = 3
 
+TROLL_URL = 'https://archive.org/download/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp4'
+
 INTEGRATIONS = {
     'plugin.video.iptvsimple.addons': {
         'min_version': '0.0.7',
