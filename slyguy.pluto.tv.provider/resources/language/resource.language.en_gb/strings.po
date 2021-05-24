@@ -70,6 +70,10 @@ msgctxt "#30016"
 msgid "France"
 msgstr ""
 
+msgctxt "#30017"
+msgid "Use alternative streams (with ads)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

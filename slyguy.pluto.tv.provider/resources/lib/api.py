@@ -1,12 +1,11 @@
 import arrow
 import uuid
 
-from six.moves.urllib.parse import urlsplit, parse_qsl, urlencode
+from requests.sessions import session
 
-from slyguy import settings, mem_cache
-from slyguy.session import Session
+from slyguy import settings, mem_cache, userdata
 from slyguy.log import log
-from slyguy.mem_cache import cached
+from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from .constants import *
@@ -17,7 +16,23 @@ class APIError(Error):
 
 UUID_NAMESPACE = '122e1611-0232-4336-bf43-e054c8ecd0d5'
 DEVICE_ID = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(uuid.getnode())))
-SID = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), DEVICE_ID))
+
+PLUTO_PARAMS = {
+    'deviceId': DEVICE_ID,
+    'deviceMake': 'Chrome',
+    'deviceType': 'web',
+    'deviceVersion': '90.0.4430.212',
+    'deviceModel': 'web',
+    'DNT': '0',
+    'appName': 'web',
+    'appVersion': '5.17.0-38a9908bb8d8f15260d990bd00c1f6b49c7bba28',
+    'serverSideAds': 'true',
+    'channelSlug': '',
+    'episodeSlugs': '',
+    'channelID': '',
+    'clientID': DEVICE_ID,
+    'clientModelNumber': 'na',
+}
 
 class API(object):
     def new_session(self):
@@ -41,9 +56,6 @@ class API(object):
                 channels[key]['url'] = PLAY_URL.format(id=key)
             if 'logo' not in channels[key]:
                 channels[key]['logo'] = LOGO_URL.format(id=key)
-
-            channels[key]['url'] = channels[key]['url'].replace('%7Bdevice_id%7D', DEVICE_ID)
-            channels[key]['url'] = channels[key]['url'].replace('%7Bsid%7D', SID)
 
         return channels
 
@@ -69,22 +81,14 @@ class API(object):
 
         return self._process_channels(channels)
 
-    # def play(self, id):
-    #     params = {}
-    #     params.update(PLUTO_PARAMS)
-    #     params['channelID'] = id
+    @mem_cache.cached(60*60)
+    def _get_session(self):
+        data = self._session.get('https://boot.pluto.tv/v4/start', params=PLUTO_PARAMS).json()
+        return {'params': data['stitcherParams'], 'session_id': data['session']['sessionID'], 'token': data['sessionToken']}
 
-    #     data = self._session.get('https://boot.pluto.tv/v4/start', params=params).json()
-
-    #     if data['EPG'][0]['isStitched']:
-    #         return PLAY_URL.format(id=id, params=data['stitcherParams'])
-    #     else:
-    #         for row in data['EPG'][0].get('timelines', []):
-    #             try: return row['episode']['sourcesWithClipDetails'][0]['sources'][0]['file']
-    #             except: pass
-    #             else: break
-
-    #     return None
+    def play(self, id):
+        data = self._get_session()
+        return ALT_URL.format(id=id, params=data['params'])
 
     def epg(self, start=None, stop=None):
         start = start or arrow.now().replace(minute=0, second=0, microsecond=0).to('utc')

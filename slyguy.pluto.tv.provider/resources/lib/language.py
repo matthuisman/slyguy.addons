@@ -18,5 +18,6 @@ class Language(BaseLanguage):
     SHOW_EPG    = 30014
     MEXICO      = 30015
     FRANCE      = 30016
+    ALT_STREAMS = 30017
 
 _ = Language()

@@ -4,6 +4,7 @@
         <setting label="30006" id="region" type="enum" default="0" lvalues="30000|30001|30002|30003|30009|30010|30011|30012|30013|30015|30016"/>
         <setting label="30007" id="region_ip" type="ipaddress" default="0.0.0.0" visible="eq(-1,3)"/>
         <setting label="30014" type="bool" id="show_epg" default="false" visible="!eq(-2,7)+!eq(-2,2)+!eq(-2,3)"/>
+        <setting label="30017" type="bool" id="use_alt_streams" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
