@@ -72,7 +72,8 @@ def play(id, **kwargs):
     item = plugin.Item(
         label = channel['name'],
         art = {'thumb': channel['logo']},
-        path = channel['url'],
+        path = api.play(id) if settings.getBool('use_alt_streams', False) else channel['url'],
+        headers = api._session.headers,
         inputstream = inputstream.HLS(live=True, x_discontinuity=True),
     )
 
