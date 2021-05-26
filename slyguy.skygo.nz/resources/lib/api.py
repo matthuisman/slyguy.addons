@@ -3,7 +3,7 @@ from time import time
 from bs4 import BeautifulSoup
 from six.moves.urllib_parse import urlparse, parse_qsl
 
-from slyguy import userdata
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.exceptions import Error
@@ -93,8 +93,20 @@ class API(object):
 
         return sorted(channels, key=lambda x: x['number'])
 
-    def collection(self, collection_id):
-        return self._query_request(queries.COLLECTION, variables={'collectionId': collection_id})['data']['collection']
+    @mem_cache.cached(60*10)
+    def collection(self, collection_id, filters="", limit=36, after=None, sort="ALPHABETICAL", tv_upcoming=False):
+        context = 'VOD,CATCHUP'
+        if tv_upcoming:
+            context += ',LINEAR'
+
+        filters = 'namedFilters: "{}"'.format(filters) if filters else ''
+        limit = 'first: {}'.format(limit) if limit else ''
+        sort = 'sort: {}'.format(sort) if sort else ''
+        after = 'after: "{}"'.format(after) if after else ''
+
+        query = queries.COLLECTION % (after, limit, context, filters, sort)
+
+        return self._query_request(query, variables={'collectionId': collection_id})['data']['collection']
 
     def play(self, asset_id):
         is_linear = asset_id.startswith('skylarkChannel')
