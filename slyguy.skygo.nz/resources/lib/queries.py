@@ -151,13 +151,16 @@ COLLECTION = """
         title
       }
       contentPage (
+        %s
+        %s
         filter: {
           onlyMyContent: true
           viewingContextsByContentType: {
-            viewingContexts: [VOD,CATCHUP]
+            viewingContexts: [%s]
           }
         }
-        sort: ALPHABETICAL
+        %s
+        %s
       ){
         pageInfo {
           endCursor

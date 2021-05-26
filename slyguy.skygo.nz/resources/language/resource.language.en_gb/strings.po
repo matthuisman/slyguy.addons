@@ -42,6 +42,10 @@ msgctxt "#30008"
 msgid "Movies"
 msgstr ""
 
+msgctxt "#30009"
+msgid "ALL"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

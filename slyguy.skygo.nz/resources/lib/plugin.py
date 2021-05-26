@@ -24,7 +24,7 @@ def home(**kwargs):
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.LIVE_TV, _bold=True),  path=plugin.url_for(live_tv))
-        folder.add_item(label=_(_.MOVIES, _bold=True),  path=plugin.url_for(movies))
+        folder.add_item(label=_(_.MOVIES, _bold=True),  path=plugin.url_for(collection, id=MOVIES_ID))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -59,27 +59,63 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
-def movies(**kwargs):
-    #todo - dont hardcode
-    # A-Z, ALL etc, Genres
-    data = api.collection('skylarkSetUid|coll_55ba44c548d33baf99f70e64a7f232b0')
+def collection(id, filters=None, page=1, after=None, **kwargs):
+    page = int(page)
+    data = api.collection(id, filters, after=after, tv_upcoming=False)
     folder = plugin.Folder(data['title'])
 
-    for row in data['contentPage']['content']:
+    if filters is None:
         folder.add_item(
-            label = row['title'],
-            info = {
-                'duration': pthms_to_seconds(row['duration']),
-                'plot': row['synopsis'],
-                'year': row['year'],
-                'mediatype': 'movie',
-            },
-            art = {'thumb': row['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': row['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
-            playable = True,
-            path = plugin.url_for(play, asset_id=row['asset']['id']),
+            label = _(_.ALL, _bold=True),
+            path = plugin.url_for(collection, id=id, filters=""),
+        )
+
+        for row in data.get('namedFilters', []):
+            folder.add_item(
+                label = row['title'],
+                path = plugin.url_for(collection, id=id, filters=row['id']),
+            )
+
+        return folder
+
+    items = process_rows(data['contentPage']['content'])
+    folder.add_items(items)
+
+    if data['contentPage']['pageInfo']['hasNextPage']:
+        folder.add_item(
+            label = _(_.NEXT_PAGE, page=page+1),
+            path = plugin.url_for(collection, id=id, filters=filters, page=page+1, after=data['contentPage']['pageInfo']['endCursor']),
+            specialsort = 'bottom',
         )
 
     return folder
+
+def process_rows(rows):
+    items = []
+
+    for row in rows:
+        if row['__typename'] == 'Movie':
+            item = plugin.Item(
+                label = row['title'],
+                info = {
+                    'duration': pthms_to_seconds(row['duration']),
+                    'plot': row['synopsis'],
+                    'year': row['year'],
+                    'mediatype': 'movie',
+                },
+                art = {'thumb': row['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': row['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
+            )
+
+            if row['asset']:
+                item.playable = True
+                item.path = plugin.url_for(play, asset_id=row['asset']['id'])
+            else:
+                item.label = item.label + ' [B][Coming Soon][/B]'
+                #item.path = plugin.url_for(reminder, id=row['id'])
+
+            items.append(item)
+
+    return items
 
 @plugin.route()
 def live_tv(**kwargs):
