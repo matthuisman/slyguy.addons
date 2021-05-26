@@ -64,7 +64,7 @@ class API(object):
         token_data = self._session.post('https://login.sky.co.nz/oauth/token', json=payload, error_msg=_.TOKEN_ERROR).json()
 
         if 'error' in token_data:
-            error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
+            error = _.REFRESH_TOKEN_ERROR if token_data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
             raise APIError(_(error, msg=token_data.get('error_description')))
 
         userdata.set('access_token', token_data['access_token'])
