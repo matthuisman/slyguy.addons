@@ -518,7 +518,7 @@ msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr ""
 
 msgctxt "#32120"
-msgid "Folders for TV Show and Series"
+msgid "Folders for TV Show and Seasons"
 msgstr ""
 
 msgctxt "#32121"
