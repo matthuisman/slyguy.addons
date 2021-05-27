@@ -183,6 +183,9 @@ def show(id, season=None, **kwargs):
             folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
 
             for episode in row['episodes']:
+                if not episode['asset']:
+                    continue
+
                 folder.add_item(
                     label = episode['title'],
                     info = {
