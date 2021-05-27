@@ -171,6 +171,10 @@ COLLECTION = """
           ... on Title {
             id
             title
+            synopsis
+            primaryGenres {
+              title
+            }
             contentTileHorizontal: tileImage(aspectRatio: 1.77) {
               uri
             }
@@ -184,16 +188,8 @@ COLLECTION = """
           ... on Movie {
             year
             duration
-            synopsis
             asset {
               id
-            }
-          }
-          ... on LinearChannel {
-            id
-            title
-            contentTileHorizontal: tileImage(aspectRatio: 1.77) {
-              uri
             }
           }
           ... on Collection {
@@ -207,4 +203,104 @@ COLLECTION = """
       }
     }
   }
+"""
+
+VOD_CATEGORIES = """
+query GetBrowseCategories($excludeViewingContexts: [ViewingContext!]) {
+  section(id: "browse") {
+  ... on Section {
+      home {
+      ... on BrowseHome {
+        categories(excludeViewingContexts: $excludeViewingContexts) {
+            __typename
+            id
+            title
+            tileImage {
+              uri
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+SEARCH = """
+  query Search($term: String!) {
+    search(term: $term) {
+        results {
+            __typename
+            ... on Title {
+              id
+              title
+              synopsis
+              primaryGenres {
+                title
+              }
+              contentTileHorizontal: tileImage(aspectRatio: 1.77) {
+                uri
+              }
+              heroLandingWide: heroImage(aspectRatio: 1.77) {
+                uri
+              }
+            }
+            ... on Show {
+              numberOfSeasons
+            }
+            ... on Movie {
+              year
+              duration
+              asset {
+                id
+              }
+            }
+        }
+    }
+}
+"""
+
+SHOW = """
+query GetShow($brandId: ID!) {
+  show(id: $brandId) {
+    __typename
+    ...on Title {
+      id
+      title
+      synopsis
+      primaryGenres {
+        title
+      }
+      contentTileHorizontal: tileImage(aspectRatio: 1.77) {
+        uri
+      }
+      heroLandingWide: heroImage(aspectRatio: 1.77) {
+        uri
+      }
+    }
+    type
+    numberOfSeasons
+    seasons(viewingContexts: VOD) {
+      id
+      number
+      episodes(viewingContexts: VOD) {
+        ...episodeFields
+      }
+    }
+  }
+}
+
+fragment episodeFields on Episode {
+  id
+  title
+  number
+  synopsis
+  duration
+  asset {
+    id
+  }
+  image {
+    uri
+  }
+}
 """

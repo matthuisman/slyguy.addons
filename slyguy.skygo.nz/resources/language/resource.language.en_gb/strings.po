@@ -39,11 +39,15 @@ msgid "{subscription} Subscription Required"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Movies"
+msgid "ALL"
 msgstr ""
 
 msgctxt "#30009"
-msgid "ALL"
+msgid "{label} [B][Coming Soon][/B]"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Season {number}"
 msgstr ""
 
 ## COMMON SETTINGS ##

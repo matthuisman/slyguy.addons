@@ -5,5 +5,3 @@ HEADERS = {
 
 CLIENT_ID = 'dXhXjmK9G90mOX3B02R1kV7gsC4bp8yx'
 GRAPH_URL = 'https://api.skyone.co.nz/exp/graph'
-
-MOVIES_ID = 'skylarkSetUid|coll_55ba44c548d33baf99f70e64a7f232b0'
