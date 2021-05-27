@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <!-- <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30018" type="bool" id="hide_unplayable" default="false"/>
-    </category> -->
+    <category label="$ADDON[script.module.slyguy 32034]">
+        <setting label="30011" type="bool" id="flatten_single_season" default="true"/>
+    </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>

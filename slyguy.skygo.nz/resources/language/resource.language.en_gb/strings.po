@@ -50,6 +50,10 @@ msgctxt "#30010"
 msgid "Season {number}"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Flatten Single Seasons"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

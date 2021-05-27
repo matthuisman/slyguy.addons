@@ -162,8 +162,7 @@ def show(id, season=None, **kwargs):
 
     folder = plugin.Folder(data['title'])
 
-    # flatten single seasons
-    if len(data['seasons']) == 1 and season is None:
+    if len(data['seasons']) == 1 and season is None and settings.getBool('flatten_single_season', True):
         season = data['seasons'][0]['id']
 
     for row in data['seasons']:

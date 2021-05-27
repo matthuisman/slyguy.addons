@@ -12,5 +12,6 @@ class Language(BaseLanguage):
     ALL                    = 30008
     COMING_SOON            = 30009
     SEASON                 = 30010
+    FLATTEN_SEASONS        = 30011
 
 _ = Language()
