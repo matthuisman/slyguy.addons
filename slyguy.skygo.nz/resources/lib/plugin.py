@@ -1,7 +1,7 @@
 import codecs
 
+from kodi_six import xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.exceptions import Error
 from slyguy.constants import ROUTE_LIVE_TAG
 from slyguy.util import pthms_to_seconds
 
@@ -24,7 +24,8 @@ def home(**kwargs):
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.LIVE_TV, _bold=True),  path=plugin.url_for(live_tv))
-        folder.add_item(label=_(_.MOVIES, _bold=True),  path=plugin.url_for(collection, id=MOVIES_ID))
+        _ondemand(folder)
+        folder.add_item(label=_(_.SEARCH, _bold=True),  path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -34,6 +35,13 @@ def home(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
+
+def _ondemand(folder):
+    for row in api.vod_categories():
+        folder.add_item(
+            label = _(row['title'], _bold=True),
+            path = plugin.url_for(collection, id=row['id']),
+        )
 
 @plugin.route()
 def login(**kwargs):
@@ -59,12 +67,29 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
+def search(query=None, **kwargs):
+    if not query:
+        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
+        if not query:
+            return
+
+        userdata.set('search', query)
+
+    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+
+    results = api.search(query)
+    items = process_rows(results)
+    folder.add_items(items)
+
+    return folder
+
+@plugin.route()
 def collection(id, filters=None, page=1, after=None, **kwargs):
     page = int(page)
-    data = api.collection(id, filters, after=after, tv_upcoming=False)
+    data = api.collection(id, filters, after=after)
     folder = plugin.Folder(data['title'])
 
-    if filters is None:
+    if filters is None and data.get('namedFilters'):
         folder.add_item(
             label = _(_.ALL, _bold=True),
             path = plugin.url_for(collection, id=id, filters=""),
@@ -84,7 +109,7 @@ def collection(id, filters=None, page=1, after=None, **kwargs):
     if data['contentPage']['pageInfo']['hasNextPage']:
         folder.add_item(
             label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(collection, id=id, filters=filters, page=page+1, after=data['contentPage']['pageInfo']['endCursor']),
+            path = plugin.url_for(collection, id=id, filters=filters or "", page=page+1, after=data['contentPage']['pageInfo']['endCursor']),
             specialsort = 'bottom',
         )
 
@@ -94,28 +119,89 @@ def process_rows(rows):
     items = []
 
     for row in rows:
-        if row['__typename'] == 'Movie':
-            item = plugin.Item(
+        if row['__typename'] == 'Movie' and row['asset']:
+            items.append(plugin.Item(
                 label = row['title'],
                 info = {
                     'duration': pthms_to_seconds(row['duration']),
                     'plot': row['synopsis'],
                     'year': row['year'],
                     'mediatype': 'movie',
+                    'genre': [x['title'] for x in row['primaryGenres']],
                 },
                 art = {'thumb': row['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': row['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
-            )
+                playable = True,
+                path = plugin.url_for(play, asset_id=row['asset']['id']),
+            ))
 
-            if row['asset']:
-                item.playable = True
-                item.path = plugin.url_for(play, asset_id=row['asset']['id'])
-            else:
-                item.label = item.label + ' [B][Coming Soon][/B]'
-                #item.path = plugin.url_for(reminder, id=row['id'])
+        elif row['__typename'] == 'Collection':
+            items.append(plugin.Item(
+                label = row['title'],
+                art = {'thumb': row['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal'},
+                path = plugin.url_for(collection, id=row['id']),
+            ))
 
-            items.append(item)
+        elif row['__typename'] == 'Show' and row['numberOfSeasons']:
+            items.append(plugin.Item(
+                label = row['title'],
+                info = {
+                    'plot': row['synopsis'],
+                    'mediatype': 'tvshow',
+                    'genre': [x['title'] for x in row['primaryGenres']],
+                },
+                art = {'thumb': row['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': row['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
+                path = plugin.url_for(show, id=row['id']),
+            ))
 
     return items
+
+@plugin.route()
+def show(id, season=None, **kwargs):
+    data = api.show(id)
+    genres = [x['title'] for x in data['primaryGenres']]
+
+    folder = plugin.Folder(data['title'])
+
+    # flatten single seasons
+    if len(data['seasons']) == 1 and season is None:
+        season = data['seasons'][0]['id']
+
+    for row in data['seasons']:
+        if season is None:
+            folder.add_item(
+                label = _(_.SEASON, number=row['number']),
+                info = {
+                    'plot': data['synopsis'],
+                    'mediatype': 'season',
+                    'genre': genres,
+                },
+                art = {'thumb': data['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': data['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
+                path = plugin.url_for(show, id=id, season=row['id']),
+            )
+
+        elif row['id'] == season:
+            folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
+
+            for episode in row['episodes']:
+                folder.add_item(
+                    label = episode['title'],
+                    info = {
+                        'plot': episode['synopsis'],
+                        'duration': pthms_to_seconds(episode['duration']),
+                        'season': row['number'],
+                        'episode': episode['number'],
+                        'tvshowtitle': data['title'],
+                        'mediatype': 'episode',
+                        'genre': genres,
+                    },
+                    art = {'thumb': episode['image']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': data['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
+                    playable = True,
+                    path = plugin.url_for(play, asset_id=episode['asset']['id']),
+                )
+
+            break
+
+    return folder
 
 @plugin.route()
 def live_tv(**kwargs):

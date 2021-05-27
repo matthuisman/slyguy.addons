@@ -93,7 +93,15 @@ class API(object):
 
         return sorted(channels, key=lambda x: x['number'])
 
-    @mem_cache.cached(60*10)
+    @mem_cache.cached(60*5)
+    def search(self, query):
+        return self._query_request(queries.SEARCH, variables={'term': query})['data']['search']['results']
+
+    @mem_cache.cached(60*5)
+    def show(self, id):
+        return self._query_request(queries.SHOW, variables={'brandId': id})['data']['show']
+
+    @mem_cache.cached(60*5)
     def collection(self, collection_id, filters="", limit=36, after=None, sort="ALPHABETICAL", tv_upcoming=False):
         context = 'VOD,CATCHUP'
         if tv_upcoming:
@@ -107,6 +115,10 @@ class API(object):
         query = queries.COLLECTION % (after, limit, context, filters, sort)
 
         return self._query_request(query, variables={'collectionId': collection_id})['data']['collection']
+
+    @mem_cache.cached(60*10)
+    def vod_categories(self):
+        return self._query_request(queries.VOD_CATEGORIES, variables={'excludeViewingContexts': ['DOWNLOAD',]})['data']['section']['home']['categories']
 
     def play(self, asset_id):
         is_linear = asset_id.startswith('skylarkChannel')
