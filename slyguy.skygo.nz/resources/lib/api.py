@@ -202,7 +202,6 @@ class API(object):
                 payload[e.attrs['name']] = e.attrs.get('value')
 
         resp = self._session.post('https://login.sky.co.nz/login/callback', data=payload)
-
         parsed = urlparse(resp.url)
         data = dict(parse_qsl(parsed.query))
 
