@@ -1,5 +1,5 @@
 CHANNELS = """
-query {
+query getChannels($from: DateTime!, $to: DateTime!) {
   linearChannelGroups {
     id
     title
@@ -10,6 +10,23 @@ query {
       number
       tileImage {
         uri
+      }
+      slots(from: $from to: $to) {
+        start
+        programme {
+          ... on Title {
+            title
+          }
+          ... on Episode {
+            number
+            season {
+              number
+            }
+            show {
+              title
+            }
+          }
+        }
       }
     }
   }

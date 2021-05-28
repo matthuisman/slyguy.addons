@@ -27,7 +27,7 @@ msgid "Failed to login.\n"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Watch TV"
+msgid "Live TV"
 msgstr ""
 
 msgctxt "#30006"
