@@ -1,5 +1,6 @@
 import codecs
 
+import arrow
 from kodi_six import xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.constants import ROUTE_LIVE_TAG
@@ -212,9 +213,29 @@ def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
     for row in api.channels():
+        plot = ''
+        count = 0
+        for slot in row['slots']:
+            start = arrow.get(slot['start']).to('local')
+            slot['programme'] = slot['programme'] or {}
+
+            if 'show' in slot['programme']:
+                plot += '[{}] {}\n'.format(start.format('h:mma'), slot['programme']['show']['title'])
+            elif 'title' in slot['programme']:
+                plot += '[{}] {}\n'.format(start.format('h:mma'), slot['programme']['title'])
+            else:
+                plot += '[{}] {}\n'.format(start.format('h:mma'), 'Schedule unavailable at this time')
+
+            count += 1
+            if count == 5:
+                break
+
         folder.add_item(
-            label = row['title'],
+            label = '{:03d} | {}'.format(row['number'], row['title']),
             art = {'thumb': row['tileImage']['uri']},
+            info = {
+                'plot': plot.strip('\n'),
+            },
             playable = True,
             path = plugin.url_for(play, asset_id=row['id'], _is_live=True),
         )

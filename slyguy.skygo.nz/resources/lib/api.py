@@ -1,5 +1,6 @@
 from time import time
 
+import arrow
 from bs4 import BeautifulSoup
 from six.moves.urllib_parse import urlparse, parse_qsl
 
@@ -80,11 +81,17 @@ class API(object):
 
         self._set_authentication()
 
+    @mem_cache.cached(60*5)
     def channels(self):
         ids = []
         channels = []
 
-        groups = self._query_request(queries.CHANNELS)['data']['linearChannelGroups']
+        variables = {
+            'from': arrow.utcnow().format('YYYY-MM-DDTHH:mm:ss.000')+'Z',
+            'to': arrow.utcnow().shift(hours=6).format('YYYY-MM-DDTHH:mm:ss.000')+'Z',
+        }
+
+        groups = self._query_request(queries.CHANNELS, variables=variables)['data']['linearChannelGroups']
         for group in groups:
             for row in group.get('channels', []):
                 if row['__typename'] == 'LinearChannel' and row['id'] not in ids:
