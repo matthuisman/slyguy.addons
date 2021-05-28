@@ -147,6 +147,7 @@ def process_rows(rows):
                 info = {
                     'plot': row['synopsis'],
                     'mediatype': 'tvshow',
+                    'tvshowtitle': row['title'],
                     'genre': [x['title'] for x in row['primaryGenres']],
                 },
                 art = {'thumb': row['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': row['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
@@ -172,6 +173,7 @@ def show(id, season=None, **kwargs):
                 info = {
                     'plot': data['synopsis'],
                     'mediatype': 'season',
+                    'tvshowtitle': data['title'],
                     'genre': genres,
                 },
                 art = {'thumb': data['contentTileHorizontal']['uri'] + '?impolicy=contentTileHorizontal', 'fanart': data['heroLandingWide']['uri']+ '?impolicy=heroLandingWide'},
