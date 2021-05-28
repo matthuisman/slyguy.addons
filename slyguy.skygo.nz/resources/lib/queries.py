@@ -18,10 +18,6 @@ query getChannels($from: DateTime!, $to: DateTime!) {
             title
           }
           ... on Episode {
-            number
-            season {
-              number
-            }
             show {
               title
             }
@@ -318,6 +314,116 @@ fragment episodeFields on Episode {
   }
   image {
     uri
+  }
+}
+"""
+
+HOME = """
+query getHome {
+  section(id: "home") {
+    id
+    home {
+      __typename
+      ... on ContentHome {
+        path
+        hero {
+          ... on Title {
+            __typename
+            id
+            title
+            synopsis
+            primaryGenres {
+              title
+            }
+            contentTileHorizontal: tileImage(aspectRatio: 1.77) {
+              uri
+            }
+            heroLandingWide: heroImage(aspectRatio: 1.77) {
+              uri
+            }
+          }
+          ... on Show {
+            numberOfSeasons
+          }
+          ... on Movie {
+            year
+            duration
+            asset {
+              id
+            }
+          }
+        }
+        groups {
+          id
+          title
+        }
+      }
+    }
+  }
+}
+"""
+
+GROUP = """
+query GetGroup($railId: ID!) {
+  group(id: $railId){
+    id
+    title
+    content {
+      __typename
+      ... on Title {
+        __typename
+        id
+        title
+        synopsis
+        primaryGenres {
+          title
+        }
+        contentTileHorizontal: tileImage(aspectRatio: 1.77) {
+          uri
+        }
+        heroLandingWide: heroImage(aspectRatio: 1.77) {
+          uri
+        }
+      }
+      ... on Show {
+        numberOfSeasons
+      }
+      ... on Movie {
+        year
+        duration
+        asset {
+          id
+        }
+      }
+      ... on Collection {
+        id
+        title
+        contentTileHorizontal: tileImage(aspectRatio: 1.77) {
+          uri
+        }
+      }
+      ... on LinearChannel {
+        id
+        title
+        number
+        tileImage {
+          uri
+        }
+        slot {
+          start
+          programme {
+            ... on Title {
+              title
+            }
+            ... on Episode {
+              show {
+                title
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 """
