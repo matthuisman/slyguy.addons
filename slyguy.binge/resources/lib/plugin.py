@@ -1,7 +1,6 @@
 import codecs
 import random
 import time
-import math
 import re
 
 import arrow
@@ -13,7 +12,7 @@ from slyguy.session import Session
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_SUFFIX, ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
-from .api import API, APIError
+from .api import API
 from .language import _
 from .constants import *
 
@@ -114,6 +113,7 @@ def search(query=None,**kwargs):
 
     return folder
 
+
 @plugin.route()
 def show(show_id, title, **kwargs):
     folder = plugin.Folder(title)
@@ -134,6 +134,8 @@ def show(show_id, title, **kwargs):
                     },
                     info = {
                         'plot': row['data']['contentDisplay']['synopsis'],
+                        'tvshowtitle': title,
+                        'mediatype': 'season',
                     },
                     path = plugin.url_for(season, show_id=show_id, season_id=row['data']['id'], title=title),
                 )
@@ -186,25 +188,6 @@ def _makeDate(now, start=None):
         return start.to('local').format('DD MMM')
     else:
         return start.to('local').format('DD MMM YY')
-
-def _makeHumanised(now, start=None):
-    if not start:
-        return ''
-
-    now   = now.to('local').replace(hour = 0, minute = 0, second = 0, microsecond = 0)
-    start = start.to('local').replace(hour = 0, minute = 0, second = 0, microsecond = 0)
-    days  = (start - now).days
-
-    if days == -1:
-        return 'yesterday'
-    elif days == 0:
-        return 'today'
-    elif days == 1:
-        return 'tomorrow'
-    elif days <= 7 and days >= 1:
-        return start.format('dddd')
-    else:
-        return _makeDate(now, start)
 
 def _get_asset(row):
     asset = {
@@ -273,8 +256,22 @@ def _parse_contents(rows):
         elif row['contentType'] == 'section' and row['data']['type'] == 'tv-show':
             items.append(_parse_show(asset))
 
-        elif row['contentType'] == 'section' and row['data']['contentType'] == 'genre-menu':
+        elif row['contentType'] == 'section' and row['data']['type'] == 'tv-season':
+            items.append(plugin.Item(
+                label = row['data']['clickthrough']['title'],
+                info = {
+                    'plot': row['data']['contentDisplay']['synopsis'],
+                    'tvshowtitle': row['data']['contentDisplay']['title']['value'],
+                    'mediatype': 'season',
+                },
+                art = {
+                    'thumb' : row['data']['contentDisplay']['images']['tile'].replace('${WIDTH}', str(768)),
+                    'fanart': row['data']['contentDisplay']['images']['hero'].replace('${WIDTH}', str(1920)),
+                },
+                path = plugin.url_for(season, show_id=row['data']['clickthrough']['show'], season_id=row['data']['clickthrough']['season'], title=row['data']['contentDisplay']['title']['value']),
+            ))
 
+        elif row['contentType'] == 'section' and row['data']['contentType'] == 'genre-menu':
             items.append(plugin.Item(
                 label = row['data']['clickthrough']['title'],
                 art  = {
@@ -283,8 +280,8 @@ def _parse_contents(rows):
                 path  = plugin.url_for(genre, slug=row['data']['clickthrough']['type'], title=row['data']['clickthrough']['title'], genre=row['data']['clickthrough']['genre'], subgenre=row['data']['clickthrough']['subgenre']),
             ))
 
-        # elif row['contentType'] == 'section' and row['data']['contentType'] == 'collection':
-        #     items.append(_parse_collection(asset))
+        elif row['contentType'] == 'section' and row['data']['contentType'] == 'collection':
+            items.append(_parse_collection(asset))
 
     return items
 
@@ -302,8 +299,9 @@ def _parse_collection(asset):
     )
 
 @plugin.route()
-def collection():
-    pass
+def collection(collection_id, title, **kwargs):
+    folder = plugin.Folder(title, no_items_label='Sorry, collections are not yet supported in this add-on')
+    return folder
 
 def _parse_show(asset):
     return plugin.Item(
@@ -314,6 +312,8 @@ def _parse_show(asset):
         },
         info = {
             'plot': asset['plot'],
+            'tvshowtitle': asset['title'],
+            'mediatype': 'tvshow',
         },
         path = plugin.url_for(show, show_id=asset['id'], title=asset['title']),
     )
@@ -328,9 +328,6 @@ def _parse_video(asset):
         precheck = arrow.get(asset['preCheckTime'])
         if precheck > start:
             precheck = start
-
-    # if 'heroHeader' in row['contentDisplay']:
-    #     title += ' [' + row['contentDisplay']['heroHeader'].replace('${DATE_HUMANISED}', _makeHumanised(now, start).upper()).replace('${TIME}', _makeTime(start)) + ']'
 
     item = plugin.Item(
         label = asset['title'],
@@ -611,7 +608,6 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         path     = stream['manifest']['uri'],
         art      = False,
         headers  = HEADERS,
-        use_proxy = True, #required to support dolby 5.1 and license requests
     )
 
     if is_live and (play_type == PLAY_FROM_LIVE or (play_type == PLAY_FROM_ASK and gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
