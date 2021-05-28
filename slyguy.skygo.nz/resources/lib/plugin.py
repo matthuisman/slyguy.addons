@@ -24,9 +24,10 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE_TV, _bold=True),  path=plugin.url_for(live_tv))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
         _ondemand(folder)
-        folder.add_item(label=_(_.SEARCH, _bold=True),  path=plugin.url_for(search))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -43,6 +44,34 @@ def _ondemand(folder):
             label = _(row['title'], _bold=True),
             path = plugin.url_for(collection, id=row['id']),
         )
+
+@plugin.route()
+def featured(**kwargs):
+    folder = plugin.Folder(_.FEATURED)
+
+    data = api.home()
+
+    if data['hero']:
+        items = process_rows([data['hero']])
+        folder.add_items(items)
+
+    for row in data['groups']:
+        folder.add_item(
+            label = row['title'],
+            path = plugin.url_for(group, id=row['id']),
+        )
+
+    return folder
+
+@plugin.route()
+def group(id, **kwargs):
+    data = api.group(id)
+
+    folder = plugin.Folder(data['title'])
+    items = process_rows(data['content'])
+    folder.add_items(items)
+
+    return folder
 
 @plugin.route()
 def login(**kwargs):
@@ -155,6 +184,37 @@ def process_rows(rows):
                 path = plugin.url_for(show, id=row['id']),
             ))
 
+        elif row['__typename'] == 'LinearChannel':
+            if 'slot' in row:
+                row['slots'] = [row['slot']]
+
+            plot = u''
+            count = 0
+            for slot in row.get('slots', []):
+                start = arrow.get(slot['start']).to('local')
+                slot['programme'] = slot['programme'] or {}
+
+                if 'show' in slot['programme']:
+                    plot += u'[{}] {}\n'.format(start.format('h:mma'), slot['programme']['show']['title'])
+                elif 'title' in slot['programme']:
+                    plot += u'[{}] {}\n'.format(start.format('h:mma'), slot['programme']['title'])
+                else:
+                    plot += u'[{}] {}\n'.format(start.format('h:mma'), 'Schedule unavailable at this time')
+
+                count += 1
+                if count == 5:
+                    break
+
+            items.append(plugin.Item(
+                label = u'{:03d} | {}'.format(row['number'], row['title']),
+                art = {'thumb': row['tileImage']['uri']},
+                info = {
+                    'plot': plot.strip('\n'),
+                },
+                playable = True,
+                path = plugin.url_for(play, asset_id=row['id'], _is_live=True),
+            ))
+
     return items
 
 @plugin.route()
@@ -212,33 +272,10 @@ def show(id, season=None, **kwargs):
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
-    for row in api.channels():
-        plot = u''
-        count = 0
-        for slot in row['slots']:
-            start = arrow.get(slot['start']).to('local')
-            slot['programme'] = slot['programme'] or {}
+    data = api.channels()
 
-            if 'show' in slot['programme']:
-                plot += u'[{}] {}\n'.format(start.format('h:mma'), slot['programme']['show']['title'])
-            elif 'title' in slot['programme']:
-                plot += u'[{}] {}\n'.format(start.format('h:mma'), slot['programme']['title'])
-            else:
-                plot += u'[{}] {}\n'.format(start.format('h:mma'), 'Schedule unavailable at this time')
-
-            count += 1
-            if count == 5:
-                break
-
-        folder.add_item(
-            label = '{:03d} | {}'.format(row['number'], row['title']),
-            art = {'thumb': row['tileImage']['uri']},
-            info = {
-                'plot': plot.strip('\n'),
-            },
-            playable = True,
-            path = plugin.url_for(play, asset_id=row['id'], _is_live=True),
-        )
+    items = process_rows(data)
+    folder.add_items(items)
 
     return folder
 

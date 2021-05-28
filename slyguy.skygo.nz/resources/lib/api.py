@@ -82,6 +82,14 @@ class API(object):
         self._set_authentication()
 
     @mem_cache.cached(60*5)
+    def home(self):
+        return self._query_request(queries.HOME)['data']['section']['home']
+
+    @mem_cache.cached(60*5)
+    def group(self, id):
+        return self._query_request(queries.GROUP, variables={'railId': id})['data']['group']
+
+    @mem_cache.cached(60*5)
     def channels(self):
         ids = []
         channels = []
