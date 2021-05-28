@@ -201,8 +201,9 @@ class API(object):
             if 'name' in e.attrs:
                 payload[e.attrs['name']] = e.attrs.get('value')
 
-        resp = self._session.post('https://login.sky.co.nz/login/callback', data=payload, allow_redirects=False)
-        parsed = urlparse(resp.headers['location'])
+        resp = self._session.post('https://login.sky.co.nz/login/callback', data=payload)
+
+        parsed = urlparse(resp.url)
         data = dict(parse_qsl(parsed.query))
 
         payload = {
