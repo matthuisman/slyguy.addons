@@ -47,6 +47,9 @@ def play_channel(slug, **kwargs):
         playable   = True,
     )
 
+    if channel.radio:
+        item.use_proxy = False
+
     manifest_type = channel.properties.get('inputstream.adaptive.manifest_type', '')
     license_type  = channel.properties.get('inputstream.adaptive.license_type', '')
 
