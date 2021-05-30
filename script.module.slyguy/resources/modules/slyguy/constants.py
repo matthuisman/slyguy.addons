@@ -96,9 +96,6 @@ LOG_ID     = ADDON_ID
 LOG_FORMAT = u'%(name)s - %(message)s'
 #################
 
-#### GUI ####
-GUI_DEFAULT_AUTOCLOSE = 10000 #10 seconds
-
 ## QUALITY ##
 QUALITY_ASK      = -1
 QUALITY_BEST     = -2
