@@ -39,7 +39,7 @@ if not PORT:
     PORT = check_port()
 
 PROXY_PATH = 'http://{}:{}/'.format(HOST, PORT)
-settings.set('proxy_path', PROXY_PATH)
+settings.set('_proxy_path', PROXY_PATH)
 
 CODECS = {
     'avc': 'H.264',
@@ -121,6 +121,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         log.debug('PLUGIN REQUEST: {}'.format(url))
         dirs, files = xbmcvfs.listdir(url)
 
+        if not files:
+            raise Exception('No data returned from plugin')
+
         path = unquote(files[0])
         split = path.split('|')
         url = split[0]
@@ -161,7 +164,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = self._get_url()
-        log.debug('GET IN: {}'.format(url))
 
         if not url:
             response = Response()
@@ -172,6 +174,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._output_response(response)
             return
 
+        log.debug('GET IN: {}'.format(url))
         response = self._proxy_request('GET', url)
 
         if self._session.get('redirecting') or not self._session.get('type') or not self._session.get('manifest') or int(response.headers.get('content-length', 0)) > 1000000:

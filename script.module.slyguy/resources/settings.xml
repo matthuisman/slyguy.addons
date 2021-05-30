@@ -11,5 +11,10 @@
 
         <setting id="_fresh" type="bool" default="true" visible="false"/>
         <setting id="_userdata" type="text" default="{}" visible="false"/>
+
+        <setting id="_proxy_path" type="text" default="http://127.0.0.1:52103/" visible="false"/>
+        <setting id="_last_news_check" type="text" default="" visible="false"/>
+        <setting id="_last_news_id" type="text" default="" visible="false"/>
+        <setting id="_next_plugin_msg" type="text" default="" visible="false"/>
     </category>
 </settings>
