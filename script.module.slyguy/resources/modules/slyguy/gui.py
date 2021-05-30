@@ -159,7 +159,7 @@ def text(message, heading=None, **kwargs):
 
     return xbmcgui.Dialog().textviewer(heading, message)
 
-def yes_no(message, heading=None, autoclose=GUI_DEFAULT_AUTOCLOSE, **kwargs):
+def yes_no(message, heading=None, autoclose=None, **kwargs):
     heading = _make_heading(heading)
 
     if autoclose:
