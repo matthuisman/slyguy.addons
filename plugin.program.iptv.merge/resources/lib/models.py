@@ -467,7 +467,7 @@ class Channel(database.Model):
         return plot
 
     def get_play_path(self):
-        if self.url.lower().startswith('http') and settings.getBool('iptv_merge_proxy', True):
+        if not self.radio and self.url.lower().startswith('http') and settings.getBool('iptv_merge_proxy', True):
             return plugin.url_for(play_channel, slug=self.slug)
         else:
             return self.url
@@ -494,7 +494,7 @@ class Channel(database.Model):
         if not self.is_live:
             lines += u'#EXT-X-PLAYLIST-TYPE:VOD\n'
 
-        if not self.url.lower().startswith('http') or not settings.getBool('iptv_merge_proxy', True):
+        if self.radio or not self.url.lower().startswith('http') or not settings.getBool('iptv_merge_proxy', True):
             for key in self.properties:
                 lines += u'#KODIPROP:{}={}\n'.format(key, self.properties[key])
 
