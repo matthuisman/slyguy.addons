@@ -302,7 +302,7 @@ class Item(object):
         headers = self.get_url_headers()
         mimetype = self.mimetype
 
-        proxy_path = settings.common_settings.get('proxy_path')
+        proxy_path = settings.common_settings.get('_proxy_path')
 
         def get_url(url):
             _url = url.lower()
