@@ -72,6 +72,8 @@ def _check_news():
     if 'id' not in news or news['id'] == settings.get('_last_news_id'):
         return
 
+    settings.set('_last_news_id', news['id'])
+
     if _time > news.get('timestamp', _time) + NEWS_MAX_TIME:
         log.debug('news is too old')
         return
@@ -93,13 +95,14 @@ def _check_news():
             log.debug('news is only for country: {}'.format(news['country']))
             return
 
+    if news.get('requires') and not get_addon(news['requires'], install=False):
+        log.debug('news is only for users with addon {} installed'.format(news['requires']))
+        return
+
     if news['type'] == 'next_plugin_msg':
-        settings.set('_last_news_id', news['id'])
         settings.set('_next_plugin_msg', news['message'])
 
     elif news['type'] == 'message':
-        settings.set('_last_news_id', news['id'])
-
         def _interact_thread():
             gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
 
@@ -108,12 +111,6 @@ def _check_news():
         thread.start()
 
     elif news['type'] == 'addon_release':
-        settings.set('_last_news_id', news['id'])
-
-        if news.get('requires') and not get_addon(news['requires'], install=False):
-            log.debug('addon_release {} requires addon {} which is not installed'.format(news['addon_id'], news['requires']))
-            return
-
         if get_addon(news['addon_id'], install=False):
             log.debug('addon_release {} already installed'.format(news['addon_id']))
             return

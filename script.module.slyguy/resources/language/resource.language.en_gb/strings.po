@@ -527,5 +527,7 @@ msgstr ""
 
 msgctxt "#32122"
 msgid "TCMalloc is required for this version of Widevine\n"
-"See [B]http://mjh.nz/wv[/B] for more information"
+"All older versions of Widevine have been revoked by Google\n"
+"See [B]http://mjh.nz/wv[/B] for more information\n"
+"Select Yes to proceed with install"
 msgstr ""
