@@ -306,12 +306,8 @@ def install_widevine(reinstall=False):
     if 'req' in selected:
         for req in selected['req'].split(','):
             if req.lower().strip() == 'tcmalloc':
-                try:
-                    result = 'libtcmalloc_minimal.so' in open('/proc/self/maps', 'r').read()
-                except: result = False
-
-                if not result:
-                    raise InputStreamError(_.IA_TCMALLOC_REQUIRED)
+                if not gui.yes_no(_.IA_TCMALLOC_REQUIRED):
+                    return False
 
     if 'src' in selected:
         url = widevine['base_url'] + selected['src']
