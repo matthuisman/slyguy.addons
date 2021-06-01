@@ -303,11 +303,8 @@ def install_widevine(reinstall=False):
 
     selected = wv_versions[index]
 
-    if 'req' in selected:
-        for req in selected['req'].split(','):
-            if req.lower().strip() == 'tcmalloc':
-                if not gui.yes_no(_.IA_TCMALLOC_REQUIRED):
-                    return False
+    if 'confirm' in selected and not gui.yes_no(selected['confirm']):
+        return False
 
     if 'src' in selected:
         url = widevine['base_url'] + selected['src']
