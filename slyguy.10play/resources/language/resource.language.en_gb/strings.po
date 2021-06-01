@@ -1,0 +1,104 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "State"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Auto"
+msgstr ""
+
+msgctxt "#30002"
+msgid "NSW"
+msgstr ""
+
+msgctxt "#30003"
+msgid "VIC"
+msgstr ""
+
+msgctxt "#30004"
+msgid "QLD"
+msgstr ""
+
+msgctxt "#30005"
+msgid "WA"
+msgstr ""
+
+msgctxt "#30006"
+msgid "SA"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#30008"
+msgid "ALL"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Shows: {sort}"
+msgstr ""
+
+msgctxt "#30010"
+msgid "0 - 9"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Shows"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Flatten Single Seasons"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Hide Extras"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Categories"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Featured"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""
