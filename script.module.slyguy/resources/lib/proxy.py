@@ -14,12 +14,12 @@ from six.moves.urllib.parse import urlparse, urljoin, unquote, parse_qsl, quote_
 from kodi_six import xbmc, xbmcvfs
 from requests import ConnectionError
 
+from slyguy import settings, gui, inputstream
 from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url
 from slyguy.plugin import failed_playback
 from slyguy.exceptions import Exit
-from slyguy import settings, gui
 from slyguy.session import RawSession
 from slyguy.language import _
 from slyguy.router import add_url_args
@@ -103,11 +103,16 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if url.lower().startswith('plugin'):
             try:
-                url = self._plugin_request(url)
+                new_url = self._plugin_request(url)
             except Exception as e:
                 log.debug('Plugin requsted failed')
                 log.exception(e)
-                url = None
+                new_url = None
+
+            if url == self._session.get('license_url'):
+                self._session['license_url'] = new_url
+
+            url = new_url
 
         return url
 
@@ -340,13 +345,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## SUPPORT EC-3 CHANNEL COUNT https://github.com/xbmc/inputstream.adaptive/pull/618
         data = data.replace('urn:mpeg:mpegB:cicp:ChannelConfiguration', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
 
-        try:
-            root = parseString(data.encode('utf8'))
-        except Exception as e:
-            log.debug("Proxy: Failed to parse MPD")
-            log.exception(e)
-            return self._output_response(response)
-
+        root = parseString(data.encode('utf8'))
         mpd = root.getElementsByTagName("MPD")[0]
 
         ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
@@ -768,11 +767,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             response.stream = ResponseStream(response)
 
             if os.path.exists(url):
+                response.ok = True
                 response.status_code = 200
                 with open(url, 'rb') as f:
                     response.stream.content = f.read()
                 if not ADDON_DEV: remove_file(url)
             else:
+                response.ok = False
                 response.status_code = 500
                 response.stream.content = "File not found: {}".format(url).encode('utf-8')
 
@@ -829,6 +830,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._session['redirecting'] = True
             if url == self._session.get('manifest'):
                 self._session['manifest'] = response.headers['location']
+            if url == self._session.get('license_url'):
+                self._session['license_url'] = response.headers['location']
 
             response.headers['location'] = PROXY_PATH + response.headers['location']
             response.stream.content = b''
@@ -871,6 +874,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         log.debug('POST IN: {}'.format(url))
         response = self._proxy_request('POST', url)
         self._output_response(response)
+
+        if not response.ok and url == self._session.get('license_url') and gui.yes_no(_.WV_FAILED, heading=_.IA_WIDEVINE_DRM):
+            inputstream.install_widevine(reinstall=True)
 
 class Response(object):
     pass
