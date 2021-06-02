@@ -161,7 +161,12 @@ class API(object):
 
     def license_request(self, data):
         self._refresh_token()
-        return self._session.post(LICENSE_URL, data=data, headers=self._auth_header).content
+
+        resp = self._session.post(LICENSE_URL, data=data, headers=self._auth_header)
+        if not resp.ok:
+            raise APIError('Failed to get license')
+
+        return resp.content
 
     def stream(self, asset_id):
         self._refresh_token()
