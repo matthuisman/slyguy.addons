@@ -282,11 +282,14 @@ def install_widevine(reinstall=False):
 
     current = None
     for wv in wv_versions:
+        wv['label'] = _(_.WV_LATEST, label=wv['ver']) if wv == latest and not wv.get('revoked') else wv['ver']
+
+        if wv.get('revoked'):
+            wv['label'] = _(_.WV_REVOKED, label=wv['label'])
+
         if wv['md5'] == installed:
             current = wv
-            wv['label'] = _(_.WV_INSTALLED, version=wv['ver'])
-        else:
-            wv['label'] = wv['ver']
+            wv['label'] = _(_.WV_INSTALLED, label=wv['label'])
 
     if installed and not current:
         wv_versions.append({
@@ -294,22 +297,25 @@ def install_widevine(reinstall=False):
             'label': _(_.WV_UNKNOWN, version=installed[:6]),
         })
 
-    latest['label'] = _(_.WV_LATEST, label=latest['label'])
-    labels = [x['label'] for x in wv_versions]
-
-    index = gui.select(_.SELECT_WV_VERSION, options=labels)
-    if index < 0:
-        return False
-
-    selected = wv_versions[index]
-
-    if 'confirm' in selected and not gui.yes_no(selected['confirm']):
-        return False
-
-    if 'src' in selected:
-        url = widevine['base_url'] + selected['src']
-        if not _download(url, wv_path, selected['md5']):
+    while True:
+        index = gui.select(_.SELECT_WV_VERSION, options=[x['label'] for x in wv_versions])
+        if index < 0:
             return False
+
+        selected = wv_versions[index]
+
+        if selected.get('revoked') and not gui.yes_no(_.WV_REVOKED_CONFIRM):
+            continue
+
+        if 'confirm' in selected and not gui.yes_no(selected['confirm']):
+            continue
+
+        if 'src' in selected:
+            url = widevine['base_url'] + selected['src']
+            if not _download(url, wv_path, selected['md5']):
+                continue
+
+        break
 
     if system == 'Linux':
         try:

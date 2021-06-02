@@ -159,6 +159,8 @@ class BaseLanguage(object):
     INSTALLING_APT_IA           = 32119
     FOLDERS_FOR_SHOW_SERIES     = 32120
     IA_TESTING_NOT_AVAILABLE    = 32121
+    WV_REVOKED                  = 32122
+    WV_REVOKED_CONFIRM          = 32123
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
