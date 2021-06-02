@@ -312,6 +312,7 @@ class Item(object):
 
             return url
 
+        license_url = None
         if self.inputstream and self.inputstream.check():
             if KODI_VERSION < 19:
                 li.setProperty('inputstreamaddon', self.inputstream.addon_id)
@@ -327,6 +328,7 @@ class Item(object):
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
 
             if self.inputstream.license_key:
+                license_url = self.inputstream.license_key
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}&{headers}|{challenge}|{response}'.format(
                     url = get_url(self.inputstream.license_key),
                     headers = headers,
@@ -387,6 +389,7 @@ class Item(object):
 
             proxy_data = {
                 'manifest': self.path,
+                'license_url': license_url,
                 'session_id': hash_6(time.time()),
                 'audio_whitelist': settings.get('audio_whitelist', ''),
                 'subs_whitelist':  settings.get('subs_whitelist', ''),

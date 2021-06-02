@@ -161,6 +161,7 @@ class BaseLanguage(object):
     IA_TESTING_NOT_AVAILABLE    = 32121
     WV_REVOKED                  = 32122
     WV_REVOKED_CONFIRM          = 32123
+    WV_FAILED                   = 32124
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
