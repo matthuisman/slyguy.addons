@@ -572,14 +572,6 @@ def license_request(_data, _data_path, **kwargs):
 
     return _data_path
 
-# @plugin.route()
-# @plugin.plugin_callback()
-# def license_request(**kwargs):
-#     api.refresh_token()
-#     item = plugin.Item(path=LICENSE_URL, headers=HEADERS)
-#     item.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
-#     return item.get_li().getPath()
-
 @plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
