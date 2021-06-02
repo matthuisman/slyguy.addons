@@ -87,7 +87,6 @@ def play(channel_id, **kwargs):
         path = url,
         inputstream = inputstream.Widevine(license_key=license_path, challenge='b{SSM}', response='B'),
         headers = HEADERS,
-        use_proxy = True, #required for plugin license_request and default language
         proxy_data = {'default_language': settings.get('default_language')},
     )
 
