@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
+    <category label="$ADDON[script.module.slyguy 32035]">
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
+    </category>
+
     <category label="$ADDON[script.module.slyguy 32036]">
         <setting label="Persist Cache" id="persist_cache" type="bool" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
