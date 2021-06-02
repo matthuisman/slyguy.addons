@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.31.7">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.31.8">
   <requires>
     <import addon="repository.slyguy"/>
   </requires>
   <extension point="xbmc.service" library="service.py" start="login" />
-  <!-- <extension point="xbmc.python.script" library="default.py">
-    <provides>executable</provides>
-  </extension> -->
+  <extension point="xbmc.python.pluginsource" library="default.py" />
   <extension point="xbmc.python.module" library="resources/modules" />
   <extension point="xbmc.addon.metadata">
     <description lang="en">Common code used by all Slyguy add-ons</description>
