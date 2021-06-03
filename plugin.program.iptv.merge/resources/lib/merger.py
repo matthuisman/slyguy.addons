@@ -86,8 +86,7 @@ class XMLParser(object):
 
         if self._add:
             self._counts[name]['added'] += 1
-            self._out.write(self._buffer[:self._parser.CurrentByteIndex-self._offset])
-            self._out.write(b'</programme>' if name == 'programme' else b'</channel>')
+            self._out.write(self._buffer[:self._parser.CurrentByteIndex-self._offset] + b'</programme>' if name == 'programme' else b'</channel>')
         else:
             self._counts[name]['skipped'] += 1
 
