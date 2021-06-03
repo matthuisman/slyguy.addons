@@ -76,7 +76,7 @@ def search(**kwargs):
 
     #total_results = data['groupCount'] #pagination
     entitlements = _get_entitlements()
-    
+
     for group in sorted(data['groups'], key=lambda d: d['score'], reverse=True):
         hitcount = int(group['hitCount'])
 
@@ -119,8 +119,8 @@ def search(**kwargs):
                 folder.add_item(
                     label = _(_.LOCKED, label=label) if meta['locked'] else label,
                     info  = {
-                            'plot':        'S{} EP{} - {}\n\n{}'.format(season, episode, meta.get('episodeTitle', meta['title']), meta.get('shortSynopsis')), 
-                            'episode':     episode, 
+                            'plot':        'S{} EP{} - {}\n\n{}'.format(season, episode, meta.get('episodeTitle', meta['title']), meta.get('shortSynopsis')),
+                            'episode':     episode,
                             'season':      season,
                             'tvshowtitle': meta['title'],
                         #  'duration':    int(elem.get('duration') or 0),
@@ -207,15 +207,15 @@ def _parse_elements(elements, from_menu=False):
     entitlements = _get_entitlements()
 
     items = []
-    for elem in elements: 
+    for elem in elements:
         elem['locked'] = entitlements and elem['channelCode'] not in entitlements
-        
+
         if elem['locked'] and settings.getBool('hide_locked'):
-            continue 
+            continue
 
         if elem['type'] == 'movie':
             item = _parse_movie(elem)
-        
+
         elif elem['type'] == 'episode':
             item = _parse_episode(elem, from_menu=from_menu)
 
@@ -225,7 +225,7 @@ def _parse_elements(elements, from_menu=False):
         elif elem['type']  == 'series':
             log.debug('Series! You should no longer see this. Let me know if you do...')
             continue
-                
+
         else:
             continue
 
@@ -238,10 +238,10 @@ def _parse_movie(elem):
         label = _(_.LOCKED, label=elem['title']) if elem['locked'] else elem['title'],
         art   = {'thumb': _image(elem['image']), 'fanart': _image(elem.get('widescreenImage', elem['image']), 600)},
         info  = {
-            'mediatype':   'movie',
-            'plot':        elem.get('synopsis'),
-            'duration':    int(elem.get('duration') or 0),
-            'year':        int(elem.get('year') or 0),
+            'mediatype': 'movie',
+            'plot': elem.get('synopsis'),
+            'duration': int(elem.get('duration') or 0),
+            'year': int(elem.get('year') or 0),
         },
         path  = plugin.url_for(play, media_type=TYPE_VOD, id=elem.get('mediaId', elem['id'])),
         playable = True,
@@ -252,9 +252,10 @@ def _parse_show(elem):
         label = _(_.LOCKED, label=elem['title']) if elem['locked'] else elem['title'],
         art   = {'thumb': _image(elem['image']), 'fanart': _image(elem.get('widescreenImage', elem['image']), 600)},
         info  = {
-            'plot':        elem.get('synopsis'),
+            'mediatype': 'tvshow',
+            'plot': elem.get('synopsis'),
             'tvshowtitle': elem['title'],
-            'year':        int(elem.get('year') or 0),
+            'year': int(elem.get('year') or 0),
         },
         path  = plugin.url_for(show, show_id=elem['showId']),
     )
@@ -286,13 +287,13 @@ def _parse_episode(elem, from_menu=False):
         label = label,
         art   = art,
         info  = {
-            'plot':        elem.get('synopsis'), 
-            'episode':     int(elem.get('episodeNumber') or 0), 
-            'season':      int(elem.get('season') or 0),
+            'plot': elem.get('synopsis'),
+            'episode': int(elem.get('episodeNumber') or 0),
+            'season': int(elem.get('season') or 0),
             'tvshowtitle': elem['title'],
-            'duration':    int(elem.get('duration') or 0),
-            'year':        int(elem.get('year') or 0),
-            'mediatype':   'episode',
+            'duration': int(elem.get('duration') or 0),
+            'year': int(elem.get('year') or 0),
+            'mediatype': 'episode',
         },
         path     = plugin.url_for(play, media_type=TYPE_VOD, id=elem.get('mediaId', elem['id'])),
         context  = context,
@@ -314,8 +315,12 @@ def show(show_id, season=None, **kwargs):
         for item in seasons:
             folder.add_item(
                 label =  _(_.SEASON, season_number=item['season']),
-                path  = plugin.url_for(show, show_id=show_id, season=item['season']),
-                art   = {'thumb': _image(data['image'])},
+                info = {
+                    'mediatype': 'season',
+                    'tvshowtitle': data['title'],
+                },
+                path = plugin.url_for(show, show_id=show_id, season=item['season']),
+                art = {'thumb': _image(data['image'])},
             )
     else:
         for item in seasons:
@@ -324,7 +329,7 @@ def show(show_id, season=None, **kwargs):
 
             items = _parse_elements(item['childAssets']['items'])
             folder.add_items(items)
-            
+
     return folder
 
 def _get_entitlements():
@@ -356,7 +361,7 @@ def live_tv(_filter=None, **kwargs):
 
         channels = []
         codes    = []
-        for elem in sorted(data['liveChannel'], key=lambda e: e['order']):
+        for elem in sorted(data['liveChannel'], key=lambda e: e['channelId']):
             elem['locked'] = entitlements and elem['channelCode'] not in entitlements
 
             if elem['locked'] and settings.getBool('hide_locked'):
@@ -366,11 +371,14 @@ def live_tv(_filter=None, **kwargs):
                 codes.append(elem['channelCode'])
 
         epg = {}
-        for row in api.epg(codes):
-            epg[row['SourceChannel']['ChannelTag']] = row['ChannelSchedule']['EventList']
+        try:
+            for row in api.epg(codes):
+                epg[row['SourceChannel']['ChannelTag']] = row['ChannelSchedule']['EventList']
+        except Exception as e:
+            log.debug('failed to get EPG')
 
         for elem in channels:
-            plot = ''
+            plot = u''
             now = arrow.utcnow()
             count = 0
 
@@ -378,7 +386,7 @@ def live_tv(_filter=None, **kwargs):
                 start = arrow.get(int(event['StartTimeUTC']))
                 end   = arrow.get(int(event['EndTimeUTC']))
                 if (now > start and now < end) or start > now:
-                    plot += '[{}] {}\n'.format(start.to('local').format('h:mma'), event['EventTitle'])
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), event['EventTitle'])
                     count += 1
 
                     if count == EPG_EVENTS_COUNT:
@@ -417,8 +425,8 @@ def _play(media_type, id):
 
     item = plugin.Item(
         inputstream = inputstream.Widevine(license_key=license_url),
-        path        = url,
-        headers     = HEADERS,
+        path = url,
+        headers = HEADERS,
     )
 
     if media_type == TYPE_LIVE:
@@ -454,6 +462,7 @@ def logout(**kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = api.live_channels()
+    entitlements = _get_entitlements()
 
     genres = {}
     for genre in data['genres']['items'][1:]: #skip first "All channels" genre
@@ -461,21 +470,13 @@ def playlist(output, **kwargs):
         for channel in channels:
             genres[channel['channelCode']] = genre['title']
 
-    entitlements = _get_entitlements()
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U\n')
 
         for elem in sorted(data['liveChannel'], key=lambda e: e['order']):
-            elem['locked'] = entitlements and elem['channelCode'] not in entitlements
-
-            if elem['locked'] and settings.getBool('hide_locked'):
+            if entitlements and elem['channelCode'] not in entitlements:
                 continue
-
-            label = elem['title']
-            if elem['locked']:
-                label = _(_.LOCKED, label=label)
 
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" group-title="{group}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{path}\n'.format(
                 id=elem['channelCode'], channel=elem['channelId'], logo=_image('{id}:{site_id}:CHANNEL:IMAGE'.format(id=elem['id'], site_id=LIVE_SITEID), fragment=elem['title']),
-                name=label, group=genres.get(elem['channelCode'], ''), path=plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True)))
+                name=elem['title'], group=genres.get(elem['channelCode'], ''), path=plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True)))

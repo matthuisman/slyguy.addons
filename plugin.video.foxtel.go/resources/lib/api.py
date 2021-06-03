@@ -10,7 +10,7 @@ from slyguy.exceptions import Error
 from slyguy.log import log
 from slyguy.util import get_system_arch
 
-from .constants import HEADERS, AES_IV, API_URL, TYPE_LIVE, TYPE_VOD, STREAM_PRIORITY, LIVE_SITEID, VOD_SITEID, BUNDLE_URL, APP_ID, PLT_DEVICE, SEARCH_URL
+from .constants import *
 from .language import _
 
 class APIError(Error):
@@ -18,13 +18,48 @@ class APIError(Error):
 
 class API(object):
     def new_session(self):
-        self._session  = Session(HEADERS, base_url=API_URL)
+        self._session = Session(HEADERS, base_url=API_URL)
         self.logged_in = userdata.get('token') != None
+
+    def _refresh_token(self):
+        payload = {
+            'username': userdata.get('username'),
+            'loginToken': userdata.get('token'),
+            'deviceId': userdata.get('deviceid'),
+            'accountType': 'foxtel',
+            'format': 'json',
+            'appID': 'GO2',
+            'plt': PLT_DEVICE,
+        }
+
+        password = userdata.get('pswd')
+        if password:
+            log.debug('Using Password Login')
+            payload['password'] = self._hex_password(password, userdata.get('deviceid'))
+            del payload['loginToken']
+        else:
+            log.debug('Using Token Login')
+
+        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()
+
+        response = data['LogonResponse']
+        error = response.get('Error')
+        success = response.get('Success')
+
+        if error:
+            self.logout()
+            raise APIError(_(_.TOKEN_ERROR, msg=error.get('Message')))
+
+        userdata.set('token', success['LoginToken'])
+        userdata.set('deviceid', success['DeviceId'])
+        userdata.set('entitlements', success.get('Entitlements', ''))
+
+        self.logged_in = True
 
     def login(self, username, password, kickdevice=None):
         self.logout()
 
-        raw_id    = self._format_id(settings.get('device_id')).lower()
+        raw_id = self._format_id(settings.get('device_id')).lower()
         device_id = hashlib.sha1(raw_id.encode('utf8')).hexdigest()
 
         log.debug('Raw device id: {}'.format(raw_id))
@@ -32,42 +67,40 @@ class API(object):
 
         hex_password = self._hex_password(password, device_id)
 
-        params = {
-            'appID' : APP_ID,
-            'format': 'json',
-        }
-
         payload = {
-            'username':    username,
-            'password':    hex_password,
-            'deviceId':    device_id,
+            'username': username,
+            'password': hex_password,
+            'deviceId': device_id,
             'accountType': 'foxtel',
+            'format': 'json',
+            'appID': 'GO2',
+            'plt': PLT_DEVICE,
         }
 
         if kickdevice:
             payload['deviceToKick'] = kickdevice
             log.debug('Kicking device: {}'.format(kickdevice))
 
-        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload, params=params).json()
+        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()
 
-        response     = data['LogonResponse']
-        devices      = response.get('CurrentDevices', [])
-        error        = response.get('Error')
-        success      = response.get('Success')
+        response = data['LogonResponse']
+        devices = response.get('CurrentDevices', [])
+        error = response.get('Error')
+        success = response.get('Success')
 
         if error:
             if not devices or kickdevice:
                 raise APIError(_(_.LOGIN_ERROR, msg=error.get('Message')))
 
-            options    = [d['Nickname'] for d in devices]
-            index      = gui.select(_.DEREGISTER_CHOOSE, options)
+            options = [d['Nickname'] for d in devices]
+            index = gui.select(_.DEREGISTER_CHOOSE, options)
             if index < 0:
                 raise APIError(_(_.LOGIN_ERROR, msg=error.get('Message')))
 
             kickdevice = devices[index]['DeviceID']
-  
+
             return self.login(username, password, kickdevice=kickdevice)
-    
+
         userdata.set('token', success['LoginToken'])
         userdata.set('deviceid', success['DeviceId'])
         userdata.set('entitlements', success.get('Entitlements', ''))
@@ -94,13 +127,16 @@ class API(object):
         nickname = self._format_id(settings.get('device_name'))
         log.debug('Device nickname: {}'.format(nickname))
 
-        params = {
+        payload = {
             'deviceId': device_id,
             'nickName': nickname,
-            'format'  : 'json',
+            'format': 'json',
+            'appID': 'GO2',
+            'accountType': 'foxtel',
+            'plt': PLT_DEVICE,
         }
-        
-        secret     = self._session.get('/auth.class.api.php/prelogin/{site_id}'.format(site_id=VOD_SITEID), params=params).json()['secret']
+
+        secret = self._session.post('/auth.class.api.php/prelogin/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()['secret']
         log.debug('Pass Secret: {}{}'.format(secret[:5], 'x'*len(secret[5:])))
 
         try:
@@ -110,7 +146,7 @@ class API(object):
             #python2
             iv = str(bytearray.fromhex(AES_IV))
 
-        encrypter  = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(secret.encode('utf8'), iv))
+        encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(secret.encode('utf8'), iv))
 
         ciphertext = encrypter.feed(password)
         ciphertext += encrypter.feed()
@@ -128,12 +164,13 @@ class API(object):
 
     def assets(self, asset_type, _filter=None, showall=False):
         params = {
-            'showall':  showall,
-            'plt':      PLT_DEVICE,
-            'appID':    APP_ID,
+            'showall': showall,
+            'plt': PLT_DEVICE,
             'entitlementToken': self._entitlement_token(),
-            'sort' :    'latest',
-            'format':   'json',
+            'sort': 'latest',
+            'format': 'json',
+            'appID': 'GO2',
+            'serviceID': 'PLAY',
         }
 
         if _filter:
@@ -143,10 +180,11 @@ class API(object):
 
     def live_channels(self, _filter=None):
         params = {
-            'plt':    PLT_DEVICE,
-            'appID':  APP_ID,
+            'plt': PLT_DEVICE,
             'entitlementToken': self._entitlement_token(),
             'format': 'json',
+            'appID': 'GO2',
+            'serviceID': 'PLAY',
         }
 
         if _filter:
@@ -157,36 +195,41 @@ class API(object):
     def show(self, show_id):
         params = {
             'showId': show_id,
-            'plt':    PLT_DEVICE,
-            'appID':  APP_ID,
+            'plt': PLT_DEVICE,
             'format': 'json',
+            'dateFormat': 'ISO8601',
+            'appID': 'GO2',
+            'serviceID': 'PLAY',
         }
 
         return self._session.get('/asset.class.api.php/GOgetAssetData/{site_id}/0'.format(site_id=VOD_SITEID), params=params).json()
 
     def asset(self, media_type, id):
         params = {
-            'plt':    PLT_DEVICE,
-            'appID':  APP_ID, 
+            'plt': PLT_DEVICE,
             'format': 'json',
+            'dateFormat': 'ISO8601',
+            'appID': 'GO2',
+            'serviceID': 'PLAY',
         }
 
         if media_type == TYPE_VOD:
-            site_id  = VOD_SITEID
+            site_id = VOD_SITEID
         else:
-            site_id  = LIVE_SITEID
+            site_id = LIVE_SITEID
 
         return self._session.get('/asset.class.api.php/GOgetAssetData/{site_id}/{id}'.format(site_id=site_id, id=id), params=params).json()
 
     def bundle(self, mode=''):
         params = {
-            'plt':    PLT_DEVICE,
-            'appID':  APP_ID,
+            'plt': PLT_DEVICE,
             'entitlementToken': self._entitlement_token(),
             'apiVersion': 2,
             'filter': '',
-            'mode':  mode,
+            'mode': mode,
             'format': 'json',
+            'appID': 'GO2',
+            'serviceID': 'PLAY',
         }
 
         return self._session.get(BUNDLE_URL, params=params).json()
@@ -195,16 +238,16 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'appID':  APP_ID,
-            'format': 'json',
-        }
-        
-        payload = {
-            'loginToken': userdata.get('token'),
-            'deviceId':   userdata.get('deviceid'),
+            'serviceID': 'PLAY',
         }
 
-        vod_token  = None
+        payload = {
+            'loginToken': userdata.get('token'),
+            'deviceId': userdata.get('deviceid'),
+            'format': 'json',
+        }
+
+        vod_token = None
         live_token = None
 
         data = self._session.post('/userCatalog.class.api.php/getSyncTokens/{site_id}'.format(site_id=VOD_SITEID), params=params, data=payload).json()
@@ -223,9 +266,10 @@ class API(object):
         params = {
             'syncToken': token,
             'platform': PLT_DEVICE,
-            'appID':  APP_ID,
             'limit': 100,
             'format': 'json',
+            'appID': 'GO2',
+            'serviceID': 'PLAY',
         }
 
         return self._session.get('/userCatalog.class.api.php/getCarousel/{site_id}/{catalog_name}'.format(site_id=site_id, catalog_name=catalog_name), params=params).json()
@@ -234,25 +278,25 @@ class API(object):
         now = arrow.utcnow()
 
         starttime = starttime or now.shift(hours=-2)
-        endtime   = endtime   or starttime.shift(days=1)
+        endtime = endtime or starttime.shift(days=1)
 
         params = {
             'filter_starttime': starttime.timestamp,
-            'filter_endtime':   endtime.timestamp,
-            'filter_channels':  ','.join(channel_codes),
-            'filter_fields':    'EventTitle,ShortSynopsis,StartTimeUTC,EndTimeUTC,RawStartTimeUTC,RawEndTimeUTC,ProgramTitle,EpisodeTitle,Genre,HighDefinition,ClosedCaption,EpisodeNumber,SeriesNumber,ParentalRating,MergedShortSynopsis',
-            'format':           'json',
+            'filter_endtime': endtime.timestamp,
+            'filter_channels': ','.join(channel_codes),
+            'filter_fields': 'EventTitle,ShortSynopsis,StartTimeUTC,EndTimeUTC,RawStartTimeUTC,RawEndTimeUTC,ProgramTitle,EpisodeTitle,Genre,HighDefinition,ClosedCaption,EpisodeNumber,SeriesNumber,ParentalRating,MergedShortSynopsis',
+            'format': 'json',
         }
 
-        return self._session.get('/epg.class.api.php/getChannelListings/{site_id}'.format(site_id=LIVE_SITEID), params=params).json()
+        return self._session.get(EPG_URL, params=params).json()
 
-    def search(self, query, type='VOD'):
+    def search(self, query, _type='VOD'):
         params = {
-            'prod': 'FOXTELNOW' if APP_ID == 'PLAY2' else 'FOXTELGO',
-            'idm': '04' if APP_ID == 'PLAY2' else '02',
+            'prod': 'FOXTELGO',
+            'idm': '04',
             'BLOCKED': 'YES',
             'fx': '"{}"'.format(query),
-            'sfx': 'type:{}'.format(type), #VOD OR LINEAR
+            'sfx': 'type:{}'.format(_type), #VOD OR LINEAR
             'limit': 100,
             'offset': 0,
             'dpg': 'R18+',
@@ -273,32 +317,33 @@ class API(object):
         self._refresh_token()
 
         payload = {
-            'deviceId':   userdata.get('deviceid'),
+            'deviceId': userdata.get('deviceid'),
             'loginToken': userdata.get('token'),
         }
 
         if media_type == TYPE_VOD:
             endpoint = 'GOgetVODConfig'
-            site_id  = VOD_SITEID
+            site_id = VOD_SITEID
         else:
             endpoint = 'GOgetLiveConfig'
-            site_id  = LIVE_SITEID
+            site_id = LIVE_SITEID
 
         params = {
-            'rate':       'WIREDHIGH',
-            'plt':        PLT_DEVICE,
-            'appID':      'PLAY2',
-            'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
-            'format':    'json',
+            'rate': 'WIFIHIGH',
+            'plt': PLT_DEVICE,
+            'appID': 'GO2',
+            'serviceID': 'GO',
+            'format': 'json',
         }
 
-        if settings.getBool('legacy_mode', False):
-            url = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/now-mobile-140/api/playback.class.api.php/{endpoint}/{site_id}/1/{id}'
-        else:
+        if not settings.getBool('legacy_mode', False):
             params['plt'] = 'ipstb'
-            url = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/now-box-140/api/playback.class.api.php/{endpoint}/{site_id}/1/{id}'
+            params['rate'] = 'WIREDHIGH'
+            url = PLAYBACK_URL
+        else:
+            url = '/playback.class.api.php/{endpoint}/{site_id}/1/{id}'
 
-        data  = self._session.post(url.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(url.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
 
@@ -310,7 +355,20 @@ class API(object):
             raise APIError(_.NO_STREAM_ERROR)
 
         playback_url = streams[0]['url'].replace('cm=yes&','') #replace cm=yes to fix playback
-        license_url  = data['fullLicenceUrl']
+        license_url = data['fullLicenceUrl']
+
+        params = {
+            'sessionId': data['general']['sessionID'],
+            'deviceId': userdata.get('deviceid'),
+            'loginToken': userdata.get('token'),
+            'sessionStatus': 'FINISHED',
+            'serviceID': 'GO',
+            'format': 'json',
+            'appID': 'GO2',
+        }
+
+        url = '/playback.class.api.php/GOupdateSession/{}/{}'.format(data['general']['siteID'], data['general']['assetID'])
+        self._session.get(url, params=params).json()
 
         return playback_url, license_url
 
@@ -319,14 +377,14 @@ class API(object):
 
         if show.get('programId') == program_id:
             return show
-        
+
         if 'childAssets' not in show:
             return None
 
         for child in show['childAssets']['items']:
             if child.get('programId') == program_id:
                 return child
-                
+
             if 'childAssets' not in child:
                 return None
 
@@ -335,43 +393,6 @@ class API(object):
                     return subchild
 
         return None
-
-    def _refresh_token(self):
-        params = {
-            'appID' : APP_ID,
-            'format': 'json',
-        }
-
-        payload = {
-            'username':    userdata.get('username'),
-            'loginToken':  userdata.get('token'),
-            'deviceId':    userdata.get('deviceid'),
-            'accountType': 'foxtel',
-        }
-
-        password = userdata.get('pswd')
-        if password:
-            log.debug('Using Password Login')
-            payload['password'] = self._hex_password(password, userdata.get('deviceid'))
-            del payload['loginToken']
-        else:
-            log.debug('Using Token Login')
-
-        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload, params=params).json()
-
-        response = data['LogonResponse']
-        error    = response.get('Error')
-        success  = response.get('Success')
-
-        if error:
-            self.logout()
-            raise APIError(_(_.TOKEN_ERROR, msg=error.get('Message')))
-
-        userdata.set('token', success['LoginToken'])
-        userdata.set('deviceid', success['DeviceId'])
-        userdata.set('entitlements', success.get('Entitlements', ''))
-
-        self.logged_in = True
 
     def _entitlement_token(self):
         entitlements = userdata.get('entitlements')
