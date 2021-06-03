@@ -202,6 +202,9 @@ def gdrivedl(url, dst_path):
 
     session = requests.session()
     resp = session.get(FILE_URL.format(id=id, confirm=''), stream=True)
+    if not resp.ok:
+        raise Error('Gdrive url no longer exists')
+
     if 'ServiceLogin' in resp.url:
         raise Error('Gdrive url does not have link sharing enabled')
 
