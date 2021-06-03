@@ -52,69 +52,58 @@ class AddonError(Error):
     pass
 
 class XMLParser(object):
-    def __init__(self, out):
+    def __init__(self, out, epg_ids=None):
         self._out = out
-        self.channel_count   = 0
-        self.programme_count = 0
+        self._epg_ids = set(epg_ids or [])
+        self._counts = {
+            'channel': {'added': 0, 'skipped': 0},
+            'programme': {'added': 0, 'skipped': 0},
+        }
 
         self._parser = xml.parsers.expat.ParserCreate()
         self._parser.buffer_text = True
         self._parser.StartElementHandler = self._start_element
         self._parser.EndElementHandler = self._end_element
 
-        self._reset_buffer = False
-        self._start_index = None
-        self._end_index = None
+        self._buffer = b''
+        self._offset = 0
+        self._add = False
+
+    def epg_count(self):
+        return 'Added {added} / Skipped {skipped}'.format(**self._counts['programme'])
 
     def _start_element(self, name, attrs):
-        if self._start_index == 'next':
-            self._start_index = self._parser.CurrentByteIndex
+        if name not in ('channel', 'programme'):
+            return
 
-        if name == 'tv' and self._start_index is None:
-            self._start_index = 'next'
-
-        if name == 'channel':
-            self.channel_count += 1
-
-        elif name == 'programme':
-            self.programme_count += 1
+        self._buffer = self._buffer[self._parser.CurrentByteIndex-self._offset:]
+        self._offset = self._parser.CurrentByteIndex
+        self._add = (name == 'programme' and 'channel' in attrs and attrs['channel'] in self._epg_ids) or (name == 'channel' and 'id' in attrs and attrs['id'] in self._epg_ids)
 
     def _end_element(self, name):
-        self._reset_buffer = True
-        if name == 'tv':
-            self._end_index = self._parser.CurrentByteIndex
+        if name not in ('channel', 'programme'):
+            return
+
+        if self._add:
+            self._counts[name]['added'] += 1
+            self._out.write(self._buffer[:self._parser.CurrentByteIndex-self._offset])
+            self._out.write(b'</programme>' if name == 'programme' else b'</channel>')
+        else:
+            self._counts[name]['skipped'] += 1
+
+        self._buffer = self._buffer[self._parser.CurrentByteIndex-self._offset:]
+        self._offset = self._parser.CurrentByteIndex
 
     def parse(self, _in, epg):
         epg.start_index = self._out.tell()
 
-        buffer = b''
-        start_pos = 0
         while True:
             chunk = _in.read(CHUNK_SIZE)
             if not chunk:
                 break
 
-            buffer += chunk
+            self._buffer += chunk
             self._parser.Parse(chunk)
-
-            if self._start_index in (None, 'next'):
-                continue
-
-            if self._start_index:
-                buffer = buffer[self._start_index-start_pos:]
-                self._start_index = False
-
-            if self._end_index:
-                buffer = buffer[:-(self._parser.CurrentByteIndex - self._end_index)]
-
-            if self._reset_buffer:
-                self._out.write(buffer)
-                buffer = b''
-                self._reset_buffer = False
-                start_pos = self._parser.CurrentByteIndex
-
-            if self._end_index:
-                break
 
         self._out.flush()
         epg.end_index = self._out.tell()
@@ -476,6 +465,7 @@ class Merger(object):
                         epgs.append(epg)
                         epg_urls.append(url.lower())
 
+            epg_ids = [x[0] for x in Channel.select(Channel.epg_id).where(Channel.visible == True).distinct().tuples()]
             with FileIO(epg_path_tmp, 'wb') as _out:
                 _out.write(b'<?xml version="1.0" encoding="UTF-8"?><tv>')
 
@@ -491,13 +481,13 @@ class Merger(object):
                         log.debug('Processing: {}'.format(epg.path))
                         self._process_source(epg, METHOD_EPG, self.tmp_file)
                         with FileIO(self.tmp_file, 'rb') as _in:
-                            parser = XMLParser(_out)
+                            parser = XMLParser(_out, epg_ids=epg_ids)
                             parser.parse(_in, epg)
                     except Exception as e:
                         log.exception(e)
                         result = [int(time.time()), EPG.ERROR, str(e)]
                     else:
-                        result = [int(time.time()), EPG.OK, '{} Programmes ({:.2f}s)'.format(parser.programme_count, time.time() - epg_start)]
+                        result = [int(time.time()), EPG.OK, '{} ({:.2f}s)'.format(parser.epg_count(), time.time() - epg_start)]
                         epg.results.insert(0, result)
 
                     if result[1] == EPG.ERROR:
