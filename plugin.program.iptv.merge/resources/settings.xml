@@ -11,6 +11,7 @@
         <setting label="30005" id="page_size" type="number" default="200"/>
         <setting label="30070" id="start_ch_no" type="number" default="1"/>
         <setting label="30077" id="ask_to_add" type="bool" default="true"/>
+        <setting label="30081" id="remove_epg_orphans" type="bool" default="true"/>
         <setting label="30078" id="group_order" type="text" default=""/>
         <setting label="30006" type="action" action="RunPlugin(plugin://$ID/?_=setup)" option="close"/>
     </category>

@@ -82,5 +82,6 @@ class Language(BaseLanguage):
     GROUP_ORDER            = 30078
     HTTP_SETTING           = 30079
     HTTP_FORCE_SETTING     = 30080
+    REMOVE_EPG_ORPHANS     = 30081
 
 _ = Language()
