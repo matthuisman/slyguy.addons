@@ -54,7 +54,14 @@ class AddonError(Error):
 class XMLParser(object):
     def __init__(self, out, epg_ids=None):
         self._out = out
-        self._epg_ids = set(epg_ids or [])
+
+        if epg_ids is None:
+            self._epg_ids = set()
+            self._check_orphans = False
+        else:
+            self._epg_ids = set(epg_ids)
+            self._check_orphans = True
+
         self._counts = {
             'channel': {'added': 0, 'skipped': 0},
             'programme': {'added': 0, 'skipped': 0},
@@ -70,7 +77,10 @@ class XMLParser(object):
         self._add = False
 
     def epg_count(self):
-        return 'Added {added} / Skipped {skipped}'.format(**self._counts['programme'])
+        if self._check_orphans:
+            return 'Added {added} / Skipped {skipped}'.format(**self._counts['programme'])
+        else:
+            return 'Added {added}'.format(**self._counts['programme'])
 
     def _start_element(self, name, attrs):
         if name not in ('channel', 'programme'):
@@ -78,7 +88,15 @@ class XMLParser(object):
 
         self._buffer = self._buffer[self._parser.CurrentByteIndex-self._offset:]
         self._offset = self._parser.CurrentByteIndex
-        self._add = (name == 'programme' and 'channel' in attrs and attrs['channel'] in self._epg_ids) or (name == 'channel' and 'id' in attrs and attrs['id'] in self._epg_ids)
+
+        if not self._check_orphans:
+            self._add = True
+            return
+
+        if name == 'programme':
+            self._add = 'channel' in attrs and attrs['channel'] in self._epg_ids
+        elif name == 'channel':
+            self._add = 'id' in attrs and attrs['id'] in self._epg_ids
 
     def _end_element(self, name):
         if name not in ('channel', 'programme'):
@@ -455,7 +473,11 @@ class Merger(object):
 
             epgs = list(EPG.select().where(EPG.enabled == True).order_by(EPG.id))
             EPG.update({EPG.start_index: 0, EPG.end_index: 0, EPG.results: []}).where(EPG.enabled == False).execute()
-            epg_ids = Channel.epg_ids()
+
+            if settings.getBool('remove_epg_orphans', True):
+                epg_ids = Channel.epg_ids()
+            else:
+                epg_ids = None
 
             if self._playlist_epgs:
                 epg_urls = [x.path.lower() for x in epgs]
@@ -480,7 +502,7 @@ class Merger(object):
                         log.debug('Processing: {}'.format(epg.path))
                         self._process_source(epg, METHOD_EPG, self.tmp_file)
                         with FileIO(self.tmp_file, 'rb') as _in:
-                            parser = XMLParser(_out, epg_ids=epg_ids)
+                            parser = XMLParser(_out, epg_ids)
                             parser.parse(_in, epg)
                     except Exception as e:
                         log.exception(e)
