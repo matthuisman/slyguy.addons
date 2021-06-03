@@ -503,8 +503,17 @@ class Channel(database.Model):
         return lines
 
     @classmethod
-    def playlist_list(cls, radio=False):
-        query = cls.select(cls).join(Playlist).where(cls.visible == True, cls.radio==radio).order_by(cls.chno.asc(nulls='LAST'), cls.playlist.order, cls.order)
+    def epg_ids(cls):
+        query = cls.select(cls.epg_id).where(cls.visible == True).distinct()
+        with cls.merged():
+            return [x[0] for x in query.tuples()]
+
+    @classmethod
+    def playlist_list(cls, radio=None):
+        query = cls.select(cls).join(Playlist).where(cls.visible == True).order_by(cls.chno.asc(nulls='LAST'), cls.playlist.order, cls.order)
+
+        if radio is not None:
+            query = query.where(cls.radio == radio)
 
         with cls.merged():
             for channel in query:
