@@ -1,5 +1,5 @@
-import sys
+from slyguy.migrate import migrate
 
-from resources.lib.plugin import plugin
+message = 'My Foxtel Go add-on now supports Foxtel Now.\nTherefore this add-on has been depreciated\nClick Yes to install Foxtel Go add-on'
 
-plugin.dispatch(sys.argv[2])
+migrate('plugin.video.foxtel.go', copy_userdata=False, message=message)
