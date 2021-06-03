@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30018" type="bool" id="hide_locked" default="false" />
-        <setting label="30021" type="text" id="device_name" default="Kodi-{mac_address} on {system}" />
-        <setting label="30022" type="text" id="device_id" default="{username}{mac_address}" />
+        <setting label="30018" type="bool" id="hide_locked" default="false"/>
+        <setting label="30021" type="text" id="device_name" default="Kodi-{mac_address} on {system}"/>
+        <setting label="30022" type="text" id="device_id" default="{username}{mac_address}"/>
         <setting label="30008" type="bool" id="save_password" default="false"/>
         <setting label="30029" type="bool" id="legacy_mode" default="false"/>
     </category>
@@ -23,6 +23,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>

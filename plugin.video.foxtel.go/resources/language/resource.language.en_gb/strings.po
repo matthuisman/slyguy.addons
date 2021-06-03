@@ -77,7 +77,7 @@ msgid "Hide Locked Content"
 msgstr ""
 
 msgctxt "#30019"
-msgid "{channel} - {title}"
+msgid "{channel} | {title}"
 msgstr ""
 
 msgctxt "#30020"
