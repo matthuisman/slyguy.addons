@@ -330,13 +330,13 @@ class API(object):
 
         params = {
             'rate': 'WIREDHIGH',
-            'plt': PLT_DEVICE,
-            'appID': 'GO2',
-            'serviceID': 'GO',
+            'plt': 'ipstb',
+            'appID': 'PLAY2',
+            'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
 
-        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
 
@@ -353,7 +353,7 @@ class API(object):
         ## Get L3 License URL
         params['plt'] = 'andr_phone'
         params['appID'] = 'PLAY2'
-        data = self._session.post(LEGACY_PLAY.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(LICENSE_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
         license_url = data['fullLicenceUrl']
         #######
 
