@@ -393,7 +393,7 @@ def _process_entries(entries):
                     if not item.info['duration']:
                         item.info['duration'] = (end_date-start_date).total_seconds()
                 else:
-                    end_date = start_date.shift(hours=2)
+                    end_date = now.shift(hours=2)
 
                 if now < start_date:
                     item.label += ' [{}]'.format(start_date.humanize())
