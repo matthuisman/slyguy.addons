@@ -71,7 +71,7 @@ def _process_rows(rows):
             #gist['skipRecapEndTime']
             #gist['skipIntroEndTime']
 
-            start = arrow.get(gist['scheduleStartDate']) if gist['scheduleStartDate'] else None
+            start = arrow.get(gist['scheduleStartDate']/1000) if gist['scheduleStartDate'] else None
             if start and start > now:
                 label += ' [B][{}][/B]'.format(start.to('local').format('h:mma Do MMM YYYY'))
                 is_live = False
