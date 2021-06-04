@@ -1,5 +1,6 @@
 import arrow
 import string
+import codecs
 import re
 
 from kodi_six import xbmcplugin
@@ -305,3 +306,15 @@ def play_channel(id, **kwargs):
         headers = HEADERS,
         inputstream = inputstream.HLS(live=True),
     )
+
+@plugin.route()
+@plugin.merge()
+def playlist(output, **kwargs):
+    with codecs.open(output, 'w', encoding='utf8') as f:
+        f.write(u'#EXTM3U')
+
+        for row in api.live_channels():
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
+                id=row['Channel'], name=row['ChannelDisplay'], logo=row['ChannelLogo'].split('?')[0] + '?width=450',
+                    url=plugin.url_for(play_channel, id=row['Channel']), _is_live=True),
+            )
