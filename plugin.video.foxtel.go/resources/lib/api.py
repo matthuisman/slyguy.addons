@@ -329,15 +329,12 @@ class API(object):
             site_id = LIVE_SITEID
 
         params = {
-            'rate': 'WIREDHIGH',
-            'plt': PLT_DEVICE,
+            'rate': 'WIREDHD',
+            'plt': LEGACY_DEVICE if settings.getBool('legacy_mode', False) else PLT_DEVICE,
             'appID': 'GO2',
             'serviceID': 'GO',
             'format': 'json',
         }
-
-        if settings.getBool('legacy_mode', False):
-            params['plt'] = 'andr_phone'
 
         data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(
             endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()

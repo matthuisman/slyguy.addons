@@ -5,7 +5,7 @@ HEADERS = {
 LIVE_SITEID = '206'
 VOD_SITEID  = '296'
 
-BASE_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/now-atv-150'
+BASE_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/go-mobile-570'
 API_URL = BASE_URL + '/api{}'
 BUNDLE_URL = BASE_URL + '/bundleAPI/getHomeBundle.php'
 IMG_URL = BASE_URL + '/imageHelper.php?id={id}:png&w={width}{fragment}'
@@ -14,6 +14,7 @@ EPG_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/go-mobile-440/api/epg
 
 AES_IV = 'b2d40461b54d81c8c6df546051370328'
 PLT_DEVICE = 'andr_screen'
+LEGACY_DEVICE = 'andr_phone'
 EPG_EVENTS_COUNT = 6
 
 TYPE_LIVE  = '1'
