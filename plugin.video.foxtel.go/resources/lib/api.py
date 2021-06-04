@@ -329,15 +329,14 @@ class API(object):
             site_id = LIVE_SITEID
 
         params = {
-            'rate': 'WIREDHD',
-            'plt': LEGACY_DEVICE if settings.getBool('legacy_mode', False) else PLT_DEVICE,
+            'rate': 'WIREDHIGH',
+            'plt': PLT_DEVICE,
             'appID': 'GO2',
             'serviceID': 'GO',
             'format': 'json',
         }
 
-        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(
-            endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
 
@@ -350,16 +349,22 @@ class API(object):
 
         playback_url = streams[0]['url']
         playback_url = playback_url.replace('cm=yes&','') #without this = bad widevine key
+
+        ## Get L3 License URL
+        params['plt'] = 'andr_phone'
+        params['appID'] = 'PLAY2'
+        data = self._session.post(LEGACY_PLAY.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
         license_url = data['fullLicenceUrl']
+        #######
 
         params = {
             'sessionId': data['general']['sessionID'],
             'deviceId': userdata.get('deviceid'),
             'loginToken': userdata.get('token'),
             'sessionStatus': 'FINISHED',
+            'appID': 'GO2',
             'serviceID': 'GO',
             'format': 'json',
-            'appID': 'GO2',
         }
 
         url = '/playback.class.api.php/GOupdateSession/{}/{}'.format(data['general']['siteID'], data['general']['assetID'])

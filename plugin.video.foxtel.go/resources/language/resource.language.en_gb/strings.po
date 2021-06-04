@@ -116,10 +116,6 @@ msgctxt "#30028"
 msgid "Watchlist"
 msgstr ""
 
-msgctxt "#30029"
-msgid "Legacy Mode (enable if no playback)"
-msgstr ""
-
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

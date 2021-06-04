@@ -29,6 +29,5 @@ class Language(BaseLanguage):
     SEARCH_FOR         = 30026
     CONTINUE_WATCHING  = 30027
     WATCHLIST          = 30028
-    LEGACY_MODE        = 30029
 
 _ = Language()
