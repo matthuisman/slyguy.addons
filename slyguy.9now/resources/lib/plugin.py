@@ -1,4 +1,5 @@
 import string
+import codecs
 
 import arrow
 from kodi_six import xbmcplugin
@@ -378,3 +379,17 @@ def _parse_episode(row):
         playable = True,
         path = plugin.url_for(play, reference=row['video'].get('brightcoveId', row['video']['referenceId'])),
     )
+
+@plugin.route()
+@plugin.merge()
+def playlist(output, **kwargs):
+    data = api.channels()
+
+    with codecs.open(output, 'w', encoding='utf8') as f:
+        f.write(u'#EXTM3U')
+
+        for row in data['channels']:
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
+                id=row['slug'], name=row['name'], logo=row['image']['sizes']['w768'],
+                    url=plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId'])), _is_live=True),
+            )
