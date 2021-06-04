@@ -330,36 +330,32 @@ class API(object):
 
         params = {
             'rate': 'WIREDHIGH',
-            'plt': PLT_DEVICE,
-            'appID': 'GO2',
-            'serviceID': 'GO',
+            'plt': 'ipstb',
+            'appID': 'PLAY2',
+            'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
 
-        ## Get L3 License URL
-        data = self._session.post(LICENSE_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
-        if data.get('errorMessage'):
-            raise APIError(_(_.PLAYBACK_ERROR, msg=data['errorMessage']))
+        error = data.get('errorMessage')
 
-        license_url = data['fullLicenceUrl']
-        #######
-
-        ## Get best streams
-        params['plt'] = 'andr_screen'
-        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(
-            endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
-
-        if data.get('errorMessage'):
-            raise APIError(_(_.PLAYBACK_ERROR, msg=data['errorMessage']))
+        if error:
+            raise APIError(_(_.PLAYBACK_ERROR, msg=error))
 
         streams = sorted(data['media'].get('streams', []), key=lambda s: STREAM_PRIORITY.get(s['profile'].upper(), STREAM_PRIORITY['DEFAULT']), reverse=True)
         if not streams:
             raise APIError(_.NO_STREAM_ERROR)
-        ########
 
         playback_url = streams[0]['url']
         playback_url = playback_url.replace('cm=yes&','') #without this = bad widevine key
+
+        ## Get L3 License URL
+        params['plt'] = 'andr_phone'
+        params['appID'] = 'PLAY2'
+        data = self._session.post(LICENSE_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        license_url = data['fullLicenceUrl']
+        #######
 
         params = {
             'sessionId': data['general']['sessionID'],
