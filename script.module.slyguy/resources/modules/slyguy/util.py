@@ -344,7 +344,6 @@ def kodi_rpc(method, params=None, raise_on_error=False):
 
         return data['result']
     except Exception as e:
-        log.exception(e)
         if raise_on_error:
             raise
         else:
