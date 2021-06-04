@@ -329,21 +329,18 @@ class API(object):
             site_id = LIVE_SITEID
 
         params = {
-            'rate': 'WIFIHIGH',
+            'rate': 'WIREDHIGH',
             'plt': PLT_DEVICE,
             'appID': 'GO2',
             'serviceID': 'GO',
             'format': 'json',
         }
 
-        if not settings.getBool('legacy_mode', False):
-            params['plt'] = 'ipstb'
-            params['rate'] = 'WIREDHIGH'
-            url = PLAYBACK_URL
-        else:
-            url = '/playback.class.api.php/{endpoint}/{site_id}/1/{id}'
+        if settings.getBool('legacy_mode', False):
+            params['plt'] = 'andr_phone'
 
-        data = self._session.post(url.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(
+            endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
 
@@ -354,7 +351,8 @@ class API(object):
         if not streams:
             raise APIError(_.NO_STREAM_ERROR)
 
-        playback_url = streams[0]['url'].replace('cm=yes&','') #replace cm=yes to fix playback
+        playback_url = streams[0]['url']
+        playback_url = playback_url.replace('cm=yes&','') #without this = bad widevine key
         license_url = data['fullLicenceUrl']
 
         params = {
