@@ -627,12 +627,12 @@ class Channel(database.Model):
         return channel
 
 class Override(database.Model):
-    playlist   = peewee.ForeignKeyField(Playlist, backref="overrides", on_delete='cascade')
-    slug       = peewee.CharField(primary_key=True)
-    fields     = database.JSONField(default=dict)
-    attribs    = database.JSONField(default=dict)
+    playlist = peewee.ForeignKeyField(Playlist, backref="overrides", on_delete='cascade')
+    slug = peewee.CharField(primary_key=True)
+    fields = database.JSONField(default=dict)
+    attribs = database.JSONField(default=dict)
     properties = database.JSONField(default=dict)
-    headers    = database.JSONField(default=dict)
+    headers = database.JSONField(default=dict)
 
     def edit_logo(self, channel):
         self.fields['logo'] = self.fields.get('logo', channel.logo)
@@ -718,7 +718,6 @@ class Override(database.Model):
 
     @classmethod
     def clean(cls):
-        slugs = cls.select(cls.slug).join(Channel, on=(Channel.slug == cls.slug))
-        cls.delete().where((cls.slug.not_in(slugs)) | ((cls.fields=={}) & (cls.attribs=={}) & (cls.properties=={}))).execute()
+        cls.delete().where((cls.fields=={}) & (cls.attribs=={}) & (cls.properties=={}) & (cls.headers=={})).execute()
 
 database.tables.extend([Playlist, EPG, Channel, Override])

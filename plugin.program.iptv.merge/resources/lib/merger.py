@@ -449,6 +449,9 @@ class Merger(object):
                     outfile.write(channel.get_lines())
                     count += 1
 
+                if count == 0:
+                    outfile.write(u'\n\n#EXTINF:-1,EMPTY PLAYLIST\nhttp')
+
             log.debug('Wrote {} Channels'.format(count))
             Playlist.after_merge()
         finally:
