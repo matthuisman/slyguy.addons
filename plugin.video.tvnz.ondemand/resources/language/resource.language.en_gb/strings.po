@@ -49,6 +49,14 @@ msgctxt "#30011"
 msgid "0 - 9"
 msgstr ""
 
+msgctxt "#30012"
+msgid "Flatten Single Seasons"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Hide Empty Shows"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

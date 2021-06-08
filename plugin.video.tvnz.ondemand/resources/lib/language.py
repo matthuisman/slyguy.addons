@@ -13,5 +13,7 @@ class Language(BaseLanguage):
     BADGE            = 30009
     SHOWS_LETTER     = 30010
     ZERO_NINE        = 30011
+    FLATTEN_SEASONS  = 30012
+    HIDE_EMPTY_SHOWS = 30013
 
 _ = Language()

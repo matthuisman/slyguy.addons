@@ -17,13 +17,13 @@ api = API()
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.SHOWS, _bold=True),      path=plugin.url_for(shows))
+    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
-    folder.add_item(label=_(_.SEARCH, _bold=True),     path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True),    path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
     if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -34,13 +34,22 @@ def _process_show(data):
     if data['badge']:
         label = _(_.BADGE, label=label, badge=data['badge']['label'])
 
+    if not data['videosAvailable'] and settings.getBool('hide_emtpy_shows', True):
+        return None
+
     return plugin.Item(
         label = label,
-        info  = {'plot': data['synopsis']},
-        art   = {'thumb': data['tileImage']['src']+'?width=400', 'fanart': data['coverImage']['src']+'?width=1920&height=548'},
-        path  = plugin.url_for(show, slug=data['page']['href'].split('/')[-1]),
+        info = {
+            'plot': data['synopsis'],
+            'tvshowtitle': data['title'],
+            'mediatype': 'tvshow',
+        },
+        art = {
+            'thumb': _get_image(data['tileImage']),
+            'fanart': _get_image(data['coverImage'], '?width=1920&height=548'),
+        },
+        path = plugin.url_for(show, slug=data['page']['href'].split('/')[-1]),
     )
-
 
 def _process_video(data, showname, categories=None):
     label = '{}'.format(data['labels']['primary'])
@@ -48,9 +57,9 @@ def _process_video(data, showname, categories=None):
 
     replaces = {
         '${video.broadcastDateTime}': lambda: arrow.get(data['broadcastDateTime']).format('dddd D MMM'),
-        '${video.seasonNumber}'     : lambda: data['seasonNumber'],
-        '${video.episodeNumber}'    : lambda: data['episodeNumber'],
-        '${video.title}'            : lambda: data['title'],
+        '${video.seasonNumber}': lambda: data['seasonNumber'],
+        '${video.episodeNumber}': lambda: data['episodeNumber'],
+        '${video.title}': lambda: data['title'],
     }
 
     for replace in replaces:
@@ -86,11 +95,11 @@ def _process_video(data, showname, categories=None):
             pass
 
     return plugin.Item(
-        label    = label,
-        info     = info,
-        art      = {'thumb': data['image']['src']+'?width=400'},
+        label = label,
+        info = info,
+        art = {'thumb': data['image']['src']+'?width=400'},
         playable = path != None,
-        path     = path,
+        path = path,
     )
 
 @plugin.route()
@@ -153,9 +162,9 @@ def categories(**kwargs):
     for row in api.categories():
         folder.add_item(
             label = row['_embedded']['title'],
-            info  = {'plot': row['_embedded']['synopsis']},
-            art   = {'thumb': row['_embedded']['tileImage']['src']+'?width=400'},
-            path  = plugin.url_for(category, slug=row['href'].split('/')[-1]),
+            info = {'plot': row['_embedded']['synopsis']},
+            art = {'thumb': _get_image(row['_embedded']['tileImage'])},
+            path = plugin.url_for(category, slug=row['href'].split('/')[-1]),
         )
 
     return folder
@@ -168,16 +177,16 @@ def show(slug,  **kwargs):
     for i in _show['categories']:
         categories.append(i['label'])
 
-    fanart  = _show['coverImage']['src']+'?width=1920&height=548'
-    folder  = plugin.Folder(_show['title'], fanart=fanart)
+    fanart = _get_image(_show['coverImage'], '?width=1920&height=548')
+    folder = plugin.Folder(_show['title'], fanart=fanart)
 
     count = 0
     for row in sections:
         if row['_embedded']['sectionType'] == 'similarContent':
             folder.add_item(
                 label = row['label'],
-                art   = {'thumb': _show['tileImage']['src']+'?width=400'},
-                path  = plugin.url_for(similar, href=row['_embedded']['id'], label=_show['title'], fanart=fanart),
+                art = {'thumb': _get_image(_show['tileImage'])},
+                path = plugin.url_for(similar, href=row['_embedded']['id'], label=_show['title'], fanart=fanart),
             )
         else:
             for module in row['_embedded']['layout']['slots']['main']['modules']:
@@ -186,7 +195,7 @@ def show(slug,  **kwargs):
             
                 for _list in module['lists']:
                     count += 1
-                    if count == 1 and _show['videosAvailable'] == 1:
+                    if count == 1 and _show['videosAvailable'] == 1 and settings.getBool('flatten_single_season', True):
                         # Try to flatten
                         try:
                             data = embedded[embedded[_list['href']]['content'][0]['href']]
@@ -198,11 +207,12 @@ def show(slug,  **kwargs):
 
                     item = plugin.Item(
                         label = _list['label'] or module['label'],
-                        art   = {'thumb': _show['tileImage']['src']+'?width=400'},
-                        path  = plugin.url_for(video_list, href=_list['href'], label=_show['title'], fanart=fanart),
+                        art = {'thumb': _get_image(_show['tileImage'])},
+                        path = plugin.url_for(video_list, href=_list['href'], label=_show['title'], fanart=fanart),
                     )
 
                     if 'season' in item.label.lower():
+                        item.info['mediatype'] = 'season'
                         folder.items.insert(0, item)
                     else:
                         folder.items.append(item)
@@ -233,8 +243,8 @@ def video_list(href, label, fanart, **kwargs):
 
     if next_page:
         folder.add_item(
-            label       = _(_.NEXT_PAGE),
-            path        = plugin.url_for(video_list, href=next_page, label=label, fanart=fanart),
+            label = _(_.NEXT_PAGE),
+            path = plugin.url_for(video_list, href=next_page, label=label, fanart=fanart),
             specialsort = 'bottom',
         )
 
@@ -249,6 +259,9 @@ def similar(href, label, fanart, **kwargs):
         folder.add_items(item)
 
     return folder
+
+def _get_image(data, params='?width=400'):
+    return data['src'] + params if data else None
 
 @plugin.route()
 def search(**kwargs):
@@ -270,16 +283,16 @@ def search(**kwargs):
 
             item = plugin.Item(
                 label = row['title'],
-                info  = {'plot': row['searchDescription'] or row['synopsis']},
-                art   = {'thumb': row['tileImage']['src']+'?width=400'},
-                path  = plugin.url_for(category, slug=slug),
+                info = {'plot': row['searchDescription'] or row['synopsis']},
+                art = {'thumb': _get_image(row['tileImage'])},
+                path = plugin.url_for(category, slug=slug),
             )
         elif row['type'] == 'channel':
             item = plugin.Item(
                 label = row['title'],
-                info  = {'plot': row['searchDescription'] or row['synopsis']},
-                art   = {'thumb': row['tileImage']['src']+'?width=400'},
-                path  = plugin.url_for(play, channel=row['page']['href'].split('/')[-1], _is_live=True),
+                info = {'plot': row['searchDescription'] or row['synopsis']},
+                art = {'thumb': _get_image(row['tileImage'])},
+                path = plugin.url_for(play, channel=row['page']['href'].split('/')[-1], _is_live=True),
                 playable = True,
             )
         else:
@@ -299,8 +312,8 @@ def live_tv(**kwargs):
     for row in api.channels():
         folder.add_item(
             label = row['_embedded']['title'],
-            info  = {'plot': row['_embedded']['synopsis']},
-            art   = {'thumb': row['_embedded']['tileImage']['src']+'?width=400'},
+            info = {'plot': row['_embedded']['synopsis']},
+            art = {'thumb': _get_image(row['_embedded']['tileImage'])},
             playable = True,
             path = plugin.url_for(play, channel=row['href'].split('/')[-1], _is_live=True),
         )
