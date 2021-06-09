@@ -9,7 +9,9 @@ from __future__ import absolute_import
 
 import calendar
 import sys
-from datetime import datetime, timedelta
+import time
+from datetime import datetime as dt_datetime
+from datetime import timedelta
 from datetime import tzinfo as dt_tzinfo
 from math import trunc
 
@@ -51,7 +53,7 @@ class Arrow(object):
 
     """
 
-    resolution = datetime.resolution
+    resolution = dt_datetime.resolution
 
     _ATTRS = ["year", "month", "day", "hour", "minute", "second", "microsecond"]
     _ATTRS_PLURAL = ["{}s".format(a) for a in _ATTRS]
@@ -79,7 +81,7 @@ class Arrow(object):
         elif util.isstr(tzinfo):
             tzinfo = parser.TzinfoParser.parse(tzinfo)
 
-        self._datetime = datetime(
+        self._datetime = dt_datetime(
             year, month, day, hour, minute, second, microsecond, tzinfo
         )
 
@@ -101,7 +103,7 @@ class Arrow(object):
 
         if tzinfo is None:
             tzinfo = dateutil_tz.tzlocal()
-        dt = datetime.now(tzinfo)
+        dt = dt_datetime.now(tzinfo)
 
         return cls(
             dt.year,
@@ -126,7 +128,7 @@ class Arrow(object):
 
         """
 
-        dt = datetime.now(dateutil_tz.tzutc())
+        dt = dt_datetime.now(dateutil_tz.tzutc())
 
         return cls(
             dt.year,
@@ -159,7 +161,7 @@ class Arrow(object):
             )
 
         timestamp = util.normalize_timestamp(float(timestamp))
-        dt = datetime.fromtimestamp(timestamp, tzinfo)
+        dt = dt_datetime.fromtimestamp(timestamp, tzinfo)
 
         return cls(
             dt.year,
@@ -186,7 +188,7 @@ class Arrow(object):
             )
 
         timestamp = util.normalize_timestamp(float(timestamp))
-        dt = datetime.utcfromtimestamp(timestamp)
+        dt = dt_datetime.utcfromtimestamp(timestamp)
 
         return cls(
             dt.year,
@@ -265,7 +267,7 @@ class Arrow(object):
 
         """
 
-        dt = datetime.strptime(date_str, fmt)
+        dt = dt_datetime.strptime(date_str, fmt)
         if tzinfo is None:
             tzinfo = dt.tzinfo
 
@@ -893,13 +895,13 @@ class Arrow(object):
         locale = locales.get_locale(locale)
 
         if other is None:
-            utc = datetime.utcnow().replace(tzinfo=dateutil_tz.tzutc())
+            utc = dt_datetime.utcnow().replace(tzinfo=dateutil_tz.tzutc())
             dt = utc.astimezone(self._datetime.tzinfo)
 
         elif isinstance(other, Arrow):
             dt = other._datetime
 
-        elif isinstance(other, datetime):
+        elif isinstance(other, dt_datetime):
             if other.tzinfo is None:
                 dt = other.replace(tzinfo=self._datetime.tzinfo)
             else:
@@ -1145,7 +1147,7 @@ class Arrow(object):
         if isinstance(other, (timedelta, relativedelta)):
             return self.fromdatetime(self._datetime - other, self._datetime.tzinfo)
 
-        elif isinstance(other, datetime):
+        elif isinstance(other, dt_datetime):
             return self._datetime - other
 
         elif isinstance(other, Arrow):
@@ -1155,7 +1157,7 @@ class Arrow(object):
 
     def __rsub__(self, other):
 
-        if isinstance(other, datetime):
+        if isinstance(other, dt_datetime):
             return other - self._datetime
 
         return NotImplemented
@@ -1164,49 +1166,49 @@ class Arrow(object):
 
     def __eq__(self, other):
 
-        if not isinstance(other, (Arrow, datetime)):
+        if not isinstance(other, (Arrow, dt_datetime)):
             return False
 
         return self._datetime == self._get_datetime(other)
 
     def __ne__(self, other):
 
-        if not isinstance(other, (Arrow, datetime)):
+        if not isinstance(other, (Arrow, dt_datetime)):
             return True
 
         return not self.__eq__(other)
 
     def __gt__(self, other):
 
-        if not isinstance(other, (Arrow, datetime)):
+        if not isinstance(other, (Arrow, dt_datetime)):
             return NotImplemented
 
         return self._datetime > self._get_datetime(other)
 
     def __ge__(self, other):
 
-        if not isinstance(other, (Arrow, datetime)):
+        if not isinstance(other, (Arrow, dt_datetime)):
             return NotImplemented
 
         return self._datetime >= self._get_datetime(other)
 
     def __lt__(self, other):
 
-        if not isinstance(other, (Arrow, datetime)):
+        if not isinstance(other, (Arrow, dt_datetime)):
             return NotImplemented
 
         return self._datetime < self._get_datetime(other)
 
     def __le__(self, other):
 
-        if not isinstance(other, (Arrow, datetime)):
+        if not isinstance(other, (Arrow, dt_datetime)):
             return NotImplemented
 
         return self._datetime <= self._get_datetime(other)
 
     def __cmp__(self, other):
         if sys.version_info[0] < 3:  # pragma: no cover
-            if not isinstance(other, (Arrow, datetime)):
+            if not isinstance(other, (Arrow, dt_datetime)):
                 raise TypeError(
                     "can't compare '{}' to '{}'".format(type(self), type(other))
                 )
@@ -1433,7 +1435,7 @@ class Arrow(object):
         """Get datetime object for a specified expression."""
         if isinstance(expr, Arrow):
             return expr.datetime
-        elif isinstance(expr, datetime):
+        elif isinstance(expr, dt_datetime):
             return expr
         elif util.is_timestamp(expr):
             timestamp = float(expr)
@@ -1489,6 +1491,5 @@ class Arrow(object):
                 return end, sys.maxsize
             return end, limit
 
-
-Arrow.min = Arrow.fromdatetime(datetime.min)
-Arrow.max = Arrow.fromdatetime(datetime.max)
+Arrow.min = Arrow.fromdatetime(dt_datetime.min)
+Arrow.max = Arrow.fromdatetime(dt_datetime.max)
