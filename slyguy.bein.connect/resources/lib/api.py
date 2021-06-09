@@ -35,6 +35,10 @@ class API(object):
         except Exception as e:
             raise APIError('Failed to download app settings')
 
+    @mem_cache.cached(60*60)
+    def _app_version(self):
+        return self._session.get(APP_VERSION_URL).text.strip()
+
     def _set_authentication(self):
         device_token = userdata.get('device_token')
         auth_token = userdata.get('auth_token')
@@ -261,11 +265,12 @@ class API(object):
     def license_request(self, channel_id, challenge):
         self._create_session()
 
+        app_version = self._app_version()
         params = {
             'wskey': self._session.headers['X-AN-WebService-IdentityKey'],
             'playerName': PLAYER_NAME,
-            'checksum': self._checksum(channel_id),
-            'playerVersion': PLAYER_VERSION,
+            'playerVersion': app_version,
+            'checksum': self._checksum(channel_id, app_version),
             'idChannel': channel_id,
         }
 
@@ -278,11 +283,12 @@ class API(object):
     def play(self, channel_id):
         self._create_session(force=True)
 
+        app_version = self._app_version()
         payload = {
-            'playerVersion': PLAYER_VERSION,
             'idChannel': channel_id,
             'playerName': PLAYER_NAME,
-            'checksum': self._checksum(channel_id),
+            'playerVersion': app_version,
+            'checksum': self._checksum(channel_id, app_version),
             'languageId': 'eng',
             'authToken': userdata.get('auth_token'),
         }
@@ -318,8 +324,8 @@ class API(object):
 
         return data['result']['epg']
 
-    def _checksum(self, channel_id):
-        checksum = userdata.get('auth_token', '') + str(channel_id) + PLAYER_VERSION
+    def _checksum(self, channel_id, app_version):
+        checksum = userdata.get('auth_token', '') + str(channel_id) + app_version
         checksum = hmac.new(SECRET_KEY.encode('utf8'), msg=checksum.encode('utf8'), digestmod=hashlib.sha256).digest()
         return base64.b64encode(checksum).decode('utf8')
 
