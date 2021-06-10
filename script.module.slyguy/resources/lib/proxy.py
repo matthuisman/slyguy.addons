@@ -357,77 +357,80 @@ class RequestHandler(BaseHTTPRequestHandler):
         video_sets = []
         audio_sets = []
         lang_adap_sets = []
-        streams, all_streams, ids = [], [], []
+        streams, all_streams = [], []
         adap_parent = None
 
         default_language = self._session.get('default_language', '')
-        for adap_set in root.getElementsByTagName('AdaptationSet'):
-            adap_parent = adap_set.parentNode
 
-            highest_bandwidth = 0
-            is_video = False
-            is_trick = False
+        for period_index, period in enumerate(root.getElementsByTagName('Period')):
+            rep_index = 0
+            for adap_set in period.getElementsByTagName('AdaptationSet'):
+                adap_parent = adap_set.parentNode
 
-            for stream in adap_set.getElementsByTagName("Representation"):
-                attribs = {}
+                highest_bandwidth = 0
+                is_video = False
+                is_trick = False
 
-                ## Make sure Representation are last in adaptionset
-                adap_set.removeChild(stream)
-                adap_set.appendChild(stream)
-                #######
+                for stream in adap_set.getElementsByTagName("Representation"):
+                    attribs = {}
 
-                for key in adap_set.attributes.keys():
-                    attribs[key] = adap_set.getAttribute(key)
+                    ## Make sure Representation are last in adaptionset
+                    adap_set.removeChild(stream)
+                    adap_set.appendChild(stream)
+                    #######
 
-                for key in stream.attributes.keys():
-                    attribs[key] = stream.getAttribute(key)
+                    for key in adap_set.attributes.keys():
+                        attribs[key] = adap_set.getAttribute(key)
 
-                if default_language and 'audio' in attribs.get('mimeType', '') and attribs.get('lang').lower() == default_language.lower() and adap_set not in lang_adap_sets:
-                    lang_adap_sets.append(adap_set)
+                    for key in stream.attributes.keys():
+                        attribs[key] = stream.getAttribute(key)
 
-                bandwidth = 0
-                if 'bandwidth' in attribs:
-                    bandwidth = int(attribs['bandwidth'])
-                    if bandwidth > highest_bandwidth:
-                        highest_bandwidth = bandwidth
+                    if default_language and 'audio' in attribs.get('mimeType', '') and attribs.get('lang').lower() == default_language.lower() and adap_set not in lang_adap_sets:
+                        lang_adap_sets.append(adap_set)
 
-                if 'maxPlayoutRate' in attribs:
-                    is_trick = True
+                    bandwidth = 0
+                    if 'bandwidth' in attribs:
+                        bandwidth = int(attribs['bandwidth'])
+                        if bandwidth > highest_bandwidth:
+                            highest_bandwidth = bandwidth
 
-                if 'video' in attribs.get('mimeType', '') and not is_trick:
-                    is_video = True
+                    if 'maxPlayoutRate' in attribs:
+                        is_trick = True
 
-                    resolution = ''
-                    if 'width' in attribs and 'height' in attribs:
-                        resolution = '{}x{}'.format(attribs['width'], attribs['height'])
+                    if 'video' in attribs.get('mimeType', '') and not is_trick:
+                        is_video = True
 
-                    frame_rate = ''
-                    if 'frameRate'in attribs:
-                        frame_rate = attribs['frameRate']
-                        try:
-                            if '/' in str(frame_rate):
-                                split = frame_rate.split('/')
-                                frame_rate = float(split[0]) / float(split[1])
-                        except:
-                            frame_rate = ''
+                        resolution = ''
+                        if 'width' in attribs and 'height' in attribs:
+                            resolution = '{}x{}'.format(attribs['width'], attribs['height'])
 
-                    codecs = [x for x in attribs.get('codecs', '').split(',') if x]
-                    stream  = {'bandwidth': bandwidth, 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'id': attribs['id'], 'elem': stream}
-                    all_streams.append(stream)
+                        frame_rate = ''
+                        if 'frameRate'in attribs:
+                            frame_rate = attribs['frameRate']
+                            try:
+                                if '/' in str(frame_rate):
+                                    split = frame_rate.split('/')
+                                    frame_rate = float(split[0]) / float(split[1])
+                            except:
+                                frame_rate = ''
 
-                    if stream['id'] not in ids:
-                        streams.append(stream)
-                        ids.append(stream['id'])
+                        codecs = [x for x in attribs.get('codecs', '').split(',') if x]
+                        stream = {'bandwidth': bandwidth, 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream}
+                        all_streams.append(stream)
+                        rep_index += 1
 
-            adap_parent.removeChild(adap_set)
+                        if period_index == 0:
+                            streams.append(stream)
 
-            if is_trick:
-                continue
+                adap_parent.removeChild(adap_set)
 
-            if is_video:
-                video_sets.append([highest_bandwidth, adap_set, adap_parent])
-            else:
-                audio_sets.append([highest_bandwidth, adap_set, adap_parent])
+                if is_trick:
+                    continue
+
+                if is_video:
+                    video_sets.append([highest_bandwidth, adap_set, adap_parent])
+                else:
+                    audio_sets.append([highest_bandwidth, adap_set, adap_parent])
 
         video_sets.sort(key=lambda  x: x[0], reverse=True)
         audio_sets.sort(key=lambda  x: x[0], reverse=True)
@@ -547,7 +550,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         selected = self._quality_select(streams)
         if selected:
             for stream in all_streams:
-                if stream['id'] != selected['id']:
+                if stream['rep_index'] != selected['rep_index']:
                     stream['elem'].parentNode.removeChild(stream['elem'])
         #################
 
