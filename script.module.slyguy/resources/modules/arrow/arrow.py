@@ -1488,7 +1488,3 @@ class Arrow(object):
             if limit is None:
                 return end, sys.maxsize
             return end, limit
-
-
-Arrow.min = Arrow.fromdatetime(datetime.min)
-Arrow.max = Arrow.fromdatetime(datetime.max)

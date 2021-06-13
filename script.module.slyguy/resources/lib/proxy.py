@@ -102,12 +102,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = self._session.get('path_subs', {}).get(url) or url
 
         if url.lower().startswith('plugin'):
-            try:
-                new_url = self._plugin_request(url)
-            except Exception as e:
-                log.debug('Plugin requsted failed')
-                log.exception(e)
-                new_url = None
+            new_url = self._plugin_request(url)
 
             if url == self._session.get('license_url'):
                 self._session['license_url'] = new_url
@@ -169,15 +164,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = self._get_url()
-
-        if not url:
-            response = Response()
-            response.headers = {}
-            response.status_code = 404
-            response.stream = ResponseStream(response)
-            response.stream.content = b''
-            self._output_response(response)
-            return
 
         log.debug('GET IN: {}'.format(url))
         response = self._proxy_request('GET', url)
