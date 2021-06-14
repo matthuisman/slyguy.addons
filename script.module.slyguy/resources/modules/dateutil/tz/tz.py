@@ -37,6 +37,7 @@ ZERO = datetime.timedelta(0)
 EPOCH = datetime.datetime.utcfromtimestamp(0)
 EPOCHORDINAL = EPOCH.toordinal()
 
+from arrow.util import normalize_timestamp
 
 @six.add_metaclass(_TzSingleton)
 class tzutc(datetime.tzinfo):
@@ -257,7 +258,7 @@ class tzlocal(_tzinfo):
 
     def _naive_is_dst(self, dt):
         timestamp = _datetime_to_timestamp(dt)
-        return time.localtime(timestamp + time.timezone).tm_isdst
+        return time.localtime(normalize_timestamp(timestamp + time.timezone)).tm_isdst
 
     def _isdst(self, dt, fold_naive=True):
         # We can't use mktime here. It is unstable when deciding if
