@@ -474,7 +474,10 @@ def _parse_video(row):
     if row['currentAvailability']['appears']:
         available = arrow.get(row['currentAvailability']['appears'])
         if available > arrow.now():
-            item.label = _(_.AVAILABLE, label=item.label, date=available.to('local').format(_.AVAILABLE_FORMAT))
+            if available > arrow.now().shift(years=1):
+                item.label = _(_.COMING_SOON, label=item.label)
+            else:
+                item.label = _(_.AVAILABLE, label=item.label, date=available.to('local').format(_.AVAILABLE_FORMAT))
 
     return item
 
@@ -667,7 +670,6 @@ def play(content_id=None, family_id=None, skip_intro=None, **kwargs):
         path = media_stream,
         inputstream = ia,
         headers = headers,
-        use_proxy = True, #required for default languages
         proxy_data = {'default_language': original_language, 'original_language': original_language},
     )
 

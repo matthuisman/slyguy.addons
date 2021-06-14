@@ -141,6 +141,10 @@ msgid "Your login details are in-correct.\n"
 "Please check them and try again."
 msgstr ""
 
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr ""
+
 
 
 msgctxt "#30048"
