@@ -179,7 +179,7 @@ class API(object):
         params = {
             'start': 0,
             'rows': 30,
-            '_clientRegion': 'US',
+         #   '_clientRegion': 'US',
             'dma': dma['dma'] if dma else None,
             'showListing': 'true',
             'locale': 'en-us',
@@ -201,7 +201,7 @@ class API(object):
         params = {
             'start': (page-1)*rows,
             'rows': rows,
-            '_clientRegion': 'US',
+          #  '_clientRegion': 'US',
             'showListing': 'true',
             'locale': 'en-us',
             'at': AT,
@@ -222,6 +222,7 @@ class API(object):
             'syncBackVersion': '3.0',
             'mvpdId': 'AllAccess',
             'is60FPS': 'true',
+            #'did': self._device_id(),
             'locale': 'en-us',
             'at': AT,
         }

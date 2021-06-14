@@ -10,5 +10,7 @@ class Language(BaseLanguage):
     ASK_USERNAME         = 30006
     ASK_PASSWORD         = 30007
     DEVICE_ID            = 30008
+    REGION               = 30009
+    REGION_USA           = 30010
 
 _ = Language()
