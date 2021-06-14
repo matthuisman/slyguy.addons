@@ -35,6 +35,7 @@ class Language(BaseLanguage):
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
     BAD_CREDENTIALS          = 30044
+    COMING_SOON              = 30045
 
     PLAY_FROM_TIME           = 30048
     AVAILABLE                = 30049
