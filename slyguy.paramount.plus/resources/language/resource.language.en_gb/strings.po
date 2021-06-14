@@ -38,6 +38,14 @@ msgctxt "#30008"
 msgid "Device ID"
 msgstr ""
 
+msgctxt "#30009"
+msgid "Region"
+msgstr ""
+
+msgctxt "#30010"
+msgid "USA"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

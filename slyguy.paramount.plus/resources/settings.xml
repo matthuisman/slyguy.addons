@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30003" id="region_ip" type="ipaddress" default="0.0.0.0"/>
+        <setting label="30009" id="region_index" type="enum" default="0" lvalues="30010" />
+        <setting label="30003" id="region_ip" type="ipaddress" default="0.0.0.0" visible="eq(-1,0)"/>
         <setting label="30008" type="text" id="device_id" default="{mac_address}"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="$ADDON[script.module.slyguy 32063]" id="live_play_type" type="enum" default="0" lvalues="32066|32065|32064"/>
+        <setting label="$ADDON[script.module.slyguy 32063]" id="live_play_type" type="enum" default="0" lvalues="32066|32065|32064" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
@@ -21,6 +22,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
