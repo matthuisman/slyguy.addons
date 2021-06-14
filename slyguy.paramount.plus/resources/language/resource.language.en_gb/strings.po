@@ -1,0 +1,77 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Device Link"
+msgstr ""
+
+msgctxt "#30001"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Local Channel IP Address"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Login with"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Email / Password"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Device ID"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""
