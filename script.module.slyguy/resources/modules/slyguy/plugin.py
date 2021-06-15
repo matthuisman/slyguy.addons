@@ -488,7 +488,9 @@ class Folder(object):
     def display(self):
         handle = _handle()
         items  = [i for i in self.items if i]
+
         ep_sort = True
+        last_show_name = ''
 
         if not items and self.no_items_label:
             label = _(self.no_items_label, _label=True)
@@ -509,8 +511,13 @@ class Folder(object):
             if self.fanart and not item.art.get('fanart'):
                 item.art['fanart'] = self.fanart
 
-            if not item.info.get('episode'):
+            episode = item.info.get('episode')
+            show_name = item.info.get('tvshowtitle')
+            if not episode or not show_name or (last_show_name and show_name != last_show_name):
                 ep_sort = False
+
+            if not last_show_name:
+                last_show_name = show_name
 
             li = item.get_li()
             xbmcplugin.addDirectoryItem(handle, item.path, li, item.is_folder)
