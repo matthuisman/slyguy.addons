@@ -479,7 +479,7 @@ class Folder(object):
         self.content = content
         self.updateListing = updateListing
         self.cacheToDisc = cacheToDisc
-        self.sort_methods = sort_methods or [xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL]
+        self.sort_methods = sort_methods
         self.thumb = thumb or default_thumb
         self.fanart = fanart or default_fanart
         self.no_items_label = no_items_label
@@ -488,6 +488,7 @@ class Folder(object):
     def display(self):
         handle = _handle()
         items  = [i for i in self.items if i]
+        ep_sort = True
 
         if not items and self.no_items_label:
             label = _(self.no_items_label, _label=True)
@@ -508,11 +509,19 @@ class Folder(object):
             if self.fanart and not item.art.get('fanart'):
                 item.art['fanart'] = self.fanart
 
+            if not item.info.get('episode'):
+                ep_sort = False
+
             li = item.get_li()
             xbmcplugin.addDirectoryItem(handle, item.path, li, item.is_folder)
 
         if self.content: xbmcplugin.setContent(handle, self.content)
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)
+
+        if not self.sort_methods:
+            self.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL]
+            if not ep_sort:
+                self.sort_methods.pop(0)
 
         for sort_method in self.sort_methods:
             xbmcplugin.addSortMethod(handle, sort_method)
