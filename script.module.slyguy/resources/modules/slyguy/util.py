@@ -43,7 +43,7 @@ def get_dns_rewrites():
                 if not entry: # end of file
                     break
 
-                pattern, ip = entry.split(' ', 1)
+                ip, pattern = entry.split(' ', 1)
                 pattern = pattern.strip()
                 ip = ip.strip()
                 if not pattern or not ip:
