@@ -21,9 +21,9 @@ SHOWS_SLUG   = 'shows-a-z'
 IMAGE_WIDTH  = 400
 
 DEFAULT_PARAMS = {
-    'platform-id': 'web',
+    'platform-id': 'Web',
     'market-id': '-1',
-    'platform-version': '1.0.62513',
-    'api-version': '4.0',
+    'platform-version': '1.0.66159',
+    'api-version': '4.3.0.0',
  #   'signedUp': 'True'
 }

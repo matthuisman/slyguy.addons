@@ -1,5 +1,6 @@
 import codecs
 import re
+from xml.sax.saxutils import escape
 
 import arrow
 from kodi_six import xbmcplugin
@@ -356,6 +357,42 @@ def playlist(output, **kwargs):
                     chno=row['channelId'], id=row['channelId'], name=row['name'], logo=IMAGE_URL.format(url=row['channelLogo']['url'], width=IMAGE_WIDTH),
                         url=plugin.url_for(play_channel, slug=_get_url(row['contentLink']['url']), _is_live=True),
                 ))
+
+@plugin.route()
+@plugin.merge()
+def epg(output, **kwargs):
+    data = api.content(LIVE_TV_SLUG)
+
+    with codecs.open(output, 'w', encoding='utf8') as f:
+        f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
+
+        for section in data['items']:
+            if section['type'] != 'channelShelf':
+                continue
+
+            for channel in section['mediaItems']:
+                f.write(u'<channel id="{id}"></channel>'.format(id=channel['channelId']))
+
+            for channel in section['mediaItems']:
+                for epg in channel['schedules']['items']:
+                    start = arrow.get(epg['startTime'])
+                    stop  = arrow.get(epg['endTime'])
+
+                    icon = u'<icon src="{}"/>'.format(escape(IMAGE_URL.format(url=epg['mediaImage']['url'], width=IMAGE_WIDTH))) if epg['mediaImage'].get('url') else ''
+                    desc = u'<desc>{}</desc>'.format(escape(epg['synopsis'])) if epg['synopsis'] else ''
+                    genre = u'<category lang="en">{}</category>'.format(escape(epg['genre'])) if epg['genre'] else ''
+
+                    subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle']).strip()) if epg['subTitle'] else ''
+                    if not subtitle:
+                        subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle2']).strip()) if epg['subTitle2'] else ''
+
+                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{desc}{icon}{genre}</programme>'.format(
+                        id=channel['channelId'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg['title']), 
+                        subtitle=subtitle, desc=desc, icon=icon, genre=genre,
+                    ))
+
+        f.write(u'</tv>')
+
 
 @plugin.route()
 def login(**kwargs):
