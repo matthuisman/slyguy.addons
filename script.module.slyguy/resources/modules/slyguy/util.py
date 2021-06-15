@@ -22,7 +22,7 @@ import requests
 from .language import _
 from .log import log
 from .exceptions import Error
-from .constants import WIDEVINE_UUID, WIDEVINE_PSSH, DEFAULT_WORKERS, ADDON_PROFILE, CHUNK_SIZE
+from .constants import WIDEVINE_UUID, WIDEVINE_PSSH, DEFAULT_WORKERS, ADDON_PROFILE, CHUNK_SIZE, ADDON_ID, COMMON_ADDON
 
 def fix_url(url):
     parse = urlparse(url)
@@ -30,9 +30,19 @@ def fix_url(url):
     return urlunparse(parse)
 
 def get_dns_rewrites():
+    rewrites = _load_rewrites(ADDON_PROFILE)
+
+    if COMMON_ADDON.getAddonInfo('id') != ADDON_ID:
+        rewrites.extend(_load_rewrites(COMMON_ADDON.getAddonInfo('profile')))
+
+    log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
+
+    return rewrites
+
+def _load_rewrites(directory):
     rewrites = []
 
-    file_path = os.path.join(ADDON_PROFILE, 'dns_rewrites.txt')
+    file_path = os.path.join(xbmc.translatePath(directory), 'dns_rewrites.txt')
     if not os.path.exists(file_path):
         return rewrites
 
@@ -43,7 +53,11 @@ def get_dns_rewrites():
                 if not entry: # end of file
                     break
 
-                ip, pattern = entry.split(' ', 1)
+                try:
+                    ip, pattern = entry.split(None, 1)
+                except:
+                    continue
+
                 pattern = pattern.strip()
                 ip = ip.strip()
                 if not pattern or not ip:
@@ -51,7 +65,7 @@ def get_dns_rewrites():
 
                 rewrites.append((pattern, ip))
     except Exception as e:
-        log.debug('failed to parse dns_rewrites.txt')
+        log.debug('DNS Rewrites Failed: {}'.format(file_path))
         log.exception(e)
 
     return rewrites
