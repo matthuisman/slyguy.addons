@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 from six.moves.urllib_parse import quote, urlparse
 from kodi_six import xbmcgui, xbmc
-from slyguy.util import set_kodi_string, hash_6
+from slyguy.util import set_kodi_string, hash_6, get_dns_rewrites
 
 from .constants import *
 from .exceptions import GUIError
@@ -403,6 +403,7 @@ class Item(object):
                 'quality': QUALITY_DISABLED,
                 'manifest_middleware': None,
                 'type': None,
+                'dns_rewrites': get_dns_rewrites(),
             }
 
             if mimetype == 'application/vnd.apple.mpegurl':

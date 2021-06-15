@@ -775,6 +775,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if not self._session.get('session'):
             self._session['session'] = RawSession()
+            self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
         else:
             self._session['session'].headers.clear()
             #self._session['session'].cookies.clear() #lets handle cookies in session

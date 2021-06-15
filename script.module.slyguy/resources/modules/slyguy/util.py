@@ -17,17 +17,44 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 from six.moves import queue
 from six.moves.urllib.parse import urlparse, urlunparse
 from six import PY2
+import requests
 
 from .language import _
 from .log import log
 from .exceptions import Error
 from .constants import WIDEVINE_UUID, WIDEVINE_PSSH, DEFAULT_WORKERS, ADDON_PROFILE, CHUNK_SIZE
-from .session import requests
 
 def fix_url(url):
     parse = urlparse(url)
     parse = parse._replace(path=re.sub('/{2,}','/',parse.path))
     return urlunparse(parse)
+
+def get_dns_rewrites():
+    rewrites = []
+
+    file_path = os.path.join(ADDON_PROFILE, 'dns_rewrites.txt')
+    if not os.path.exists(file_path):
+        return rewrites
+
+    try:
+        with open(file_path, 'r') as f:
+            while True:
+                entry = f.readline()
+                if not entry: # end of file
+                    break
+
+                pattern, ip = entry.split(' ', 1)
+                pattern = pattern.strip()
+                ip = ip.strip()
+                if not pattern or not ip:
+                    continue
+
+                rewrites.append((pattern, ip))
+    except Exception as e:
+        log.debug('failed to parse dns_rewrites.txt')
+        log.exception(e)
+
+    return rewrites
 
 def url_sub(url):
     file_path = os.path.join(ADDON_PROFILE, 'url_subs.txt')
