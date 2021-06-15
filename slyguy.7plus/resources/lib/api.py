@@ -78,7 +78,9 @@ class API(object):
 
     @mem_cache.cached(60*5)
     def content(self, slug):
-        return self._session.get('https://component-cdn.swm.digital/content/{slug}'.format(slug=slug), params=self._default_params).json()
+        params = self._default_params
+        params['market-id'] = self._market_id()
+        return self._session.get('https://component-cdn.swm.digital/content/{slug}'.format(slug=slug), params=params).json()
 
     @mem_cache.cached(60*5)
     def component(self, slug, component_id):
