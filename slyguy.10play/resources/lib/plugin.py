@@ -3,8 +3,6 @@ import string
 import codecs
 import re
 
-from kodi_six import xbmcplugin
-
 from slyguy import plugin, settings, signals, inputstream, userdata, gui
 
 from .api import API
@@ -200,8 +198,14 @@ def season(show_id, season_id, **kwargs):
     return _season(int(show_id), int(season_id))
 
 def _parse_episode(row, use_name=False):
-    match = re.search('episode ([0-9]+)', row['customFields']['clip_title'], re.IGNORECASE)
-    episode = 0 if not match else int(match.group(1))
+    episode = 0
+    search = '{} {} {}'.format(row['customFields'].get('clip_title', ''), row['customFields'].get('episode_name', ''), row.get('name', ''))
+    patterns = ['episode ([0-9]+)', 'Ep. ?([0-9]+)']
+    for pattern in patterns:
+        match = re.search(pattern, search, re.IGNORECASE)
+        if match:
+            episode = int(match.group(1))
+            break
 
     if use_name:
         title = row['name']
@@ -228,7 +232,7 @@ def _parse_episode(row, use_name=False):
 def _season(show_id, season_id):
     show, episodes = api.season(show_id, season_id)
 
-    folder = plugin.Folder(show['tv_show'], fanart=show['tvBackgroundURL'], sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED, xbmcplugin.SORT_METHOD_UNSORTED])
+    folder = plugin.Folder(show['tv_show'], fanart=show['tvBackgroundURL'])
 
     for row in episodes:
         item = _parse_episode(row)
