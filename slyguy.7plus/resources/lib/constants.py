@@ -14,6 +14,7 @@ GIGYA_API_KEY = '3_kQ8RSBuBxTSP0b9TM3s3hH015iMCbIbj0NwqdUYzTTAWG1t2kjQgW4AE894-F
 SWM_API_KEY = 'HbdIri/lCCKv5uewH9AOCqZHfAqwjtwqY9TmruH+/JU='
 BRIGHTCOVE_URL = 'https://edge.api.brightcove.com/playback/v1/accounts/{}/videos/{}'
 IMAGE_URL = 'https://images.swm.digital/image?u={url}&q=70&w={width}'
+MARKET_ID_URL = 'https://market-cdn.swm.digital/v1/market/ip/'
 
 LIVE_TV_SLUG = 'live-tv'
 SHOWS_SLUG   = 'shows-a-z'

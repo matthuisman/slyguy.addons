@@ -30,6 +30,14 @@ class API(object):
         self._session.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
         self.logged_in = True
 
+    @mem_cache.cached(60*5)
+    def _market_id(self):
+        try:
+            return self._session.get(MARKET_ID_URL, params={'apikey': 'web'}).json()['_id']
+        except:
+            log.debug('Failed to get market id')
+            return '-1'
+
     def _oauth_token(self, payload):
         data = self._session.post('https://auth2.swm.digital/connect/token', data=payload, headers={'x-swm-apikey': SWM_API_KEY}).json()
         if 'Errors' in data:
@@ -85,7 +93,9 @@ class API(object):
 
     @mem_cache.cached(60*5)
     def video_player(self, slug):
-        return self._session.get('https://component.swm.digital/player/live/{slug}'.format(slug=slug), params=self._default_params).json()['videoPlayer']
+        params = self._default_params
+        params['market-id'] = self._market_id()
+        return self._session.get('https://component.swm.digital/player/live/{slug}'.format(slug=slug), params=params).json()['videoPlayer']
 
     def login(self, username, password):
         self.logout()
