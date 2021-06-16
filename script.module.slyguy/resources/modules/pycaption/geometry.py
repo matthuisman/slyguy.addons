@@ -35,7 +35,6 @@ class UnitEnum(Enum):
     CELL = 'c'
     PT = 'pt'
 
-
 class VerticalAlignmentEnum(Enum):
     """Enumeration object, specifying the allowed vertical alignment options
 
@@ -424,8 +423,6 @@ class Size(object):
         """
         if value is None:
             raise ValueError("Size must be initialized with a value.")
-        if not isinstance(unit,UnitEnum):
-            raise ValueError("Size must be initialized with a valid unit.")
 
         self.value = float(value)
         self.unit = unit
@@ -522,10 +519,13 @@ class Size(object):
         :rtype: Size
         """
 
+        units = [UnitEnum.CELL, UnitEnum.PERCENT, UnitEnum.PIXEL,
+                 UnitEnum.EM, UnitEnum.PT]
+
         raw_number = string
-        for unit in list(UnitEnum):
-            if raw_number.endswith(unit.value):
-                raw_number = raw_number.rstrip(unit.value)
+        for unit in units:
+            if raw_number.endswith(unit):
+                raw_number = raw_number.rstrip(unit)
                 break
         else:
             unit = None
@@ -555,7 +555,7 @@ class Size(object):
 
     def __repr__(self):
         return '<Size ({value} {unit})>'.format(
-            value=self.value, unit=self.unit.value
+            value=self.value, unit=self.unit
         )
 
     def __str__(self):
@@ -564,7 +564,7 @@ class Size(object):
             s = "{}".format(int(value))
         else:
             s = "{:.2f}".format(value).rstrip('0').rstrip('.')
-        return "{}{}".format(s, self.unit.value)
+        return "{}{}".format(s, self.unit)
 
     def to_xml_attribute(self, **kwargs):
         """Returns a unicode representation of this object, as an xml attribute
@@ -591,7 +591,7 @@ class Size(object):
         )
 
     def __bool__(self):
-        return self.unit in UnitEnum and self.value is not None
+        return self.value is not None
 
 
 class Padding(object):
