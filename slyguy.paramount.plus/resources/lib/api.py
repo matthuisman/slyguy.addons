@@ -181,7 +181,7 @@ class API(object):
         params = {
             'term': query,
             'termCount': 50,
-            'showCanVids': 'false',
+            'showCanVids': 'true',
             'locale': 'en-us',
             'at': AT,
         }
@@ -197,15 +197,15 @@ class API(object):
         self._refresh_token()
 
         params = {'locale': 'en-us', 'at': AT}
-        data = self._session.get('/v2.0/androidtv/video/cid/{}.json'.format(video_id), params=params).json()['itemList'][0]
+        video_data = self._session.get('/v2.0/androidtv/video/cid/{}.json'.format(video_id), params=params).json()['itemList'][0]
 
         params = {
-            'formats': 'mpeg-dash', 
-            'tracking': True, 
+            'formats': 'mpeg-dash',
+            'tracking': True,
             'format': 'SMIL'
         }
 
-        resp = self._session.get('https://link.theplatform.com/s/dJ5BDC/{}'.format(data['pid']), params=params)
+        resp = self._session.get('https://link.theplatform.com/s/dJ5BDC/{}'.format(video_data['pid']), params=params)
 
         root = ET.fromstring(resp.text)
         strip_namespaces(root)
@@ -220,7 +220,7 @@ class API(object):
         params = {'locale': 'en-us', 'at': AT, 'contentId': video_id}
         data = self._session.get('/v3.0/androidtv/irdeto-control/session-token.json', params=params).json()
 
-        return url, data['url'], data['ls_session']
+        return url, data['url'], data['ls_session'], video_data
 
     def _ip(self):
         params = {'locale': 'en-us', 'at': AT}
