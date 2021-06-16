@@ -65,6 +65,22 @@ def search(query=None, **kwargs):
                 art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
                 path = plugin.url_for(show, show_id=row['show_id']),
             )
+        elif row['term_type'] == 'movie':
+            data = row['videoList']['itemList'][0]
+
+            folder.add_item(
+                label = data['label'].strip() or data['title'].strip(),
+                info = {
+                    'plot': data.get('shortDescription', data['description']),
+                    'aired': str(arrow.get(data['airDate'])),
+                    'duration': data['duration'],
+                    'mediatype': 'movie',
+                    'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
+                },
+                art = {'thumb': _get_thumb(data['thumbnailSet'])},
+                path = plugin.url_for(play, video_id=data['contentId']),
+                playable = True,
+            )
 
     return folder
 
@@ -152,13 +168,13 @@ def season(show_id, season, **kwargs):
 
     folder = plugin.Folder(show['show']['results'][0]['title'], fanart=_image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
 
-    for row in sorted(api.episodes(show_id, season), key=lambda x: int(x['episodeNum'])):
+    for row in api.episodes(show_id, season):
         folder.add_item(
             label = row['label'].strip() or row['title'].strip(),
             info = {
                 'aired': row['_airDateISO'],
                 'dateadded': row['_pubDateISO'],
-                'plot': row['description'],
+                'plot': row['shortDescription'],
                 'season': row['seasonNum'],
                 'episode': row['episodeNum'],
                 'duration': row['duration'],
@@ -263,7 +279,7 @@ def select_profile(**kwargs):
 def _image(image_name, dimensions='w400'):
     return IMG_URL.format(dimensions=dimensions, file=image_name[6:]) if image_name else None
 
-def _thumbnail(image_url, dimensions='h243'):
+def _thumbnail(image_url, dimensions='w400'):
     return image_url.replace('https://thumbnails.cbsig.net/', 'https://thumbnails.cbsig.net/_x/{}/'.format(dimensions))
 
 def _select_profile():
@@ -285,16 +301,45 @@ def _select_profile():
     api.set_profile(values[index])
     gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=_image(userdata.get('profile_img')))
 
+def _get_thumb(thumbs, _type='PosterArt'):
+    if not thumbs:
+        return None
+
+    for row in thumbs:
+        if row['assetType'] == _type:
+            return _thumbnail(row['url'])
+
+    return _thumbnail(thumbs[0]['url'])
+
+def _parse_item(row):
+    if row['mediaType'] in ('Movie', 'Trailer'):
+        return plugin.Item(
+            label = row['title'],
+            info = {
+                'aired': row['_airDateISO'],
+                'dateadded': row['_pubDateISO'],
+                'genre': row['genre'],
+                'plot': row['shortDescription'],
+                'duration': row['duration'],
+                'mediatype': 'movie,'
+            },
+        )
+
+    else:
+        return plugin.Item()
+
 @plugin.route()
 @plugin.login_required()
 def play(video_id, **kwargs):
-    url, license_url, token = api.play(video_id)
+    url, license_url, token, data = api.play(video_id)
+
+    item = _parse_item(data)
 
     headers = {
         'authorization': 'Bearer {}'.format(token),
     }
 
-    return plugin.Item(
+    item.update(
         path = url,
         headers = headers,
         inputstream = inputstream.Widevine(
@@ -302,11 +347,13 @@ def play(video_id, **kwargs):
         ),
     )
 
+    return item
+
 @plugin.route()
 @plugin.login_required()
 def play_channel(slug, **kwargs):
     channels = api.live_channels()
-    
+
     for row in channels:
         if row['slug'] == slug:
             if row['dma']:
