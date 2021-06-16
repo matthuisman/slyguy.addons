@@ -46,6 +46,26 @@ msgctxt "#30010"
 msgid "USA"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Shows"
+msgstr ""
+
+msgctxt "#30012"
+msgid "[B]{count} Episodes[/B]"
+msgstr ""
+
+msgctxt "#30013"
+msgid "[B]{count} Clips[/B]"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Season {season}"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Clips"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

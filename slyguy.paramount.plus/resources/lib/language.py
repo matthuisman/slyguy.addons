@@ -12,5 +12,10 @@ class Language(BaseLanguage):
     DEVICE_ID            = 30008
     REGION               = 30009
     REGION_USA           = 30010
+    SHOWS                = 30011
+    EPISODE_COUNT        = 30012
+    CLIPS_COUNT          = 30013
+    SEASON               = 30014
+    CLIPS                = 30015
 
 _ = Language()

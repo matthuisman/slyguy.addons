@@ -26,7 +26,13 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
+        # folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+        # folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+        # folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
+        # folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -35,6 +41,135 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
+
+    return folder
+
+@plugin.route()
+def search(query=None, **kwargs):
+    if not query:
+        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
+        if not query:
+            return
+
+        userdata.set('search', query)
+
+    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+
+    for row in api.search(query):
+        if row['term_type'] == 'show':
+            folder.add_item(
+                label = row['title'],
+                info = {
+                    'mediatype': 'tvshow',
+                },
+                art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                path = plugin.url_for(show, show_id=row['show_id']),
+            )
+
+    return folder
+
+@plugin.route()
+def shows(group_id=None, **kwargs):
+    if group_id:
+        group = api.show_group(group_id)
+
+        folder = plugin.Folder(group['title'])
+        items = _process_shows(group['showGroupItems'])
+        folder.add_items(items)
+
+        return folder
+    else:
+        folder = plugin.Folder(_.SHOWS)
+
+        for row in api.show_groups():
+            folder.add_item(
+                label = row['title'],
+                path = plugin.url_for(shows, group_id=row['id']),
+            )
+
+        return folder
+
+def _process_shows(rows):
+    items = []
+
+    for row in rows:
+        plot = _(_.EPISODE_COUNT, count=row['episodeVideoCount']['totalEpisodes'])
+        if row['episodeVideoCount']['totalClips']:
+            plot += '\n'+ _(_.CLIPS_COUNT, count=row['episodeVideoCount']['totalClips'])
+
+        item = plugin.Item(
+            label = row['title'],
+            info = {
+                'genre': row['category'],
+                'mediatype': 'tvshow',
+                'plot': plot,
+            },
+            art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+            path = plugin.url_for(show, show_id=row['showId']),
+        )
+
+        items.append(item)
+
+    return items
+
+@plugin.route()
+def show(show_id, **kwargs):
+    show = api.show(show_id)
+
+    folder = plugin.Folder(show['show']['results'][0]['title'], thumb=_image(show['showAssets']['filepath_show_browse_poster']), fanart=_image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
+
+    plot = show['show']['results'][0]['about'] + '\n\n'
+
+    clip_count = 0
+    for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
+        clip_count += row['clipsCount']
+        if not row['totalCount']:
+            continue
+
+        folder.add_item(
+            label = _(_.SEASON, season=row['seasonNum']),
+            info = {
+                'plot': plot + _(_.EPISODE_COUNT, count=row['totalCount']),
+                'mediatype': 'season',
+                'tvshowtitle': show['show']['results'][0]['title'],
+            },
+            path = plugin.url_for(season, show_id=show_id, season=row['seasonNum']),
+        )
+
+    # if clip_count:
+    #     folder.add_item(
+    #         label = _.CLIPS,
+    #         info = {
+    #             'plot': plot + _(_.CLIPS_COUNT, count=clip_count),
+    #         }
+    #     )
+
+    return folder
+
+@plugin.route()
+def season(show_id, season, **kwargs):
+    show = api.show(show_id)
+
+    folder = plugin.Folder(show['show']['results'][0]['title'], fanart=_image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
+
+    for row in sorted(api.episodes(show_id, season), key=lambda x: int(x['episodeNum'])):
+        folder.add_item(
+            label = row['label'].strip() or row['title'].strip(),
+            info = {
+                'aired': row['_airDateISO'],
+                'dateadded': row['_pubDateISO'],
+                'plot': row['description'],
+                'season': row['seasonNum'],
+                'episode': row['episodeNum'],
+                'duration': row['duration'],
+                'genre': row['topLevelCategory'],
+                'mediatype': 'episode',
+                'tvshowtitle': show['show']['results'][0]['title'],
+            },
+            art = {'thumb': _thumbnail(row['thumbnail'])},
+            path = plugin.url_for(play, video_id=row['contentId']),
+            playable = True,
+        )
 
     return folder
 
@@ -125,8 +260,11 @@ def select_profile(**kwargs):
     _select_profile()
     gui.refresh()
 
-def _image(image_name, width=400):
-    return IMG_URL.format(width=width, file=image_name[6:]) if image_name else None
+def _image(image_name, dimensions='w400'):
+    return IMG_URL.format(dimensions=dimensions, file=image_name[6:]) if image_name else None
+
+def _thumbnail(image_url, dimensions='h243'):
+    return image_url.replace('https://thumbnails.cbsig.net/', 'https://thumbnails.cbsig.net/_x/{}/'.format(dimensions))
 
 def _select_profile():
     profiles = api.user()['accountProfiles']

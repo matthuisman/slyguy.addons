@@ -133,6 +133,60 @@ class API(object):
         userdata.set('profile_name', profile['name'])
         userdata.set('profile_img', profile['profilePicPath'])
 
+    @mem_cache.cached(60*10)
+    def show_groups(self):
+        params = {'includeAllShowGroups': 'true', 'locale': 'en-us', 'at': AT}
+        return self._session.get('/v2.0/androidtv/shows/groups.json', params=params).json()['showGroups']
+
+    @mem_cache.cached(60*10)
+    def show_group(self, group_id):
+        params = {'includeAllShowGroups': 'true', 'locale': 'en-us', 'at': AT}
+        return self._session.get('/v2.0/androidtv/shows/group/{}.json'.format(group_id), params=params).json()['group']
+
+    @mem_cache.cached(60*10)
+    def show(self, show_id):
+        params = {'locale': 'en-us', 'at': AT}
+        return self._session.get('/v3.0/androidtv/shows/{}.json'.format(show_id), params=params).json()
+
+    @mem_cache.cached(60*10)
+    def episodes(self, show_id, season):
+        params = {
+            'platformType': 'androidtv',
+            'rows': 1,
+            'begin': 0,
+            'locale': 'en-us',
+            'at': AT,
+        }
+
+        section_id = self._session.get('/v2.0/androidtv/shows/{}/videos/config/DEFAULT_APPS_FULL_EPISODES.json'.format(show_id), params=params).json()['section_display_seasons'][0]['sectionId']
+
+        params = {
+            'rows': 999,
+            'params': 'seasonNum={}'.format(season),
+            'begin': 0,
+            'seasonNum': season,
+            'locale': 'en-us',
+            'at': AT,
+        }
+
+        return self._session.get('/v2.0/androidtv/videos/section/{}.json'.format(section_id), params=params).json()['sectionItems']['itemList']
+
+    @mem_cache.cached(60*10)
+    def seasons(self, show_id):
+        params = {'locale': 'en-us', 'at': AT}
+        return self._session.get('/v3.0/androidtv/shows/{}/video/season/availability.json'.format(show_id), params=params).json()['video_available_season']['itemList']
+
+    @mem_cache.cached(60*10)
+    def search(self, query):
+        params = {
+            'term': query,
+            'termCount': 50,
+            'showCanVids': 'false',
+            'locale': 'en-us',
+            'at': AT,
+        }
+        return self._session.get('/v3.0/androidtv/contentsearch/search.json', params=params).json()['terms']
+
     def user(self):
         self._refresh_token()
 
