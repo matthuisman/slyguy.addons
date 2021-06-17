@@ -597,7 +597,7 @@ class Channel(database.Model):
 
         attribs = {}
         for key, value in re.findall('([\w-]+)="([^"]*)"', extinf):
-            attribs[key] = value.strip()
+            attribs[key.lower()] = value.strip()
 
         is_radio = attribs.pop('radio', 'false').lower() == 'true'
 
@@ -614,12 +614,12 @@ class Channel(database.Model):
             groups = []
 
         channel = Channel(
-            chno       = chno,
-            name       = name,
-            groups     = groups,
-            radio      = is_radio,
-            epg_id     = attribs.pop('tvg-id', None),
-            logo       = attribs.pop('tvg-logo', None),
+            chno = chno,
+            name = name,
+            groups = groups,
+            radio = is_radio,
+            epg_id = attribs.pop('tvg-id', attribs.get('tvg-name') or name),
+            logo = attribs.pop('tvg-logo', None),
         )
 
         channel.attribs = attribs
