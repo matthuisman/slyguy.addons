@@ -134,31 +134,59 @@ class API(object):
         userdata.set('profile_img', profile['profilePicPath'])
 
     @mem_cache.cached(60*10)
+    def trending_movies(self):
+        params = {'locale': 'en-us', 'at': AT}
+        return self._session.get('/v3.0/androidphone/movies/trending.json', params=params).json()
+
+    @mem_cache.cached(60*10)
+    def movies(self, genre=None, num_results=12, page=1):
+        params = {
+            'includeTrailerInfo': False,
+            'packageCode': 'CBS_ALL_ACCESS_AD_FREE_PACKAGE',
+            'platformType': 'androidphone',
+            'start': (page-1)*num_results,
+            'rows': num_results,
+            'includeContentInfo': True,
+            'locale': 'en-us',
+            'at': AT,
+        }
+
+        if genre:
+            params['genre'] = genre
+
+        return self._session.get('/v3.0/androidphone/movies.json', params=params).json()
+
+    @mem_cache.cached(60*10)
+    def movie_genres(self):
+        params = {'locale': 'en-us', 'at': AT}
+        return self._session.get('/v3.0/androidphone/movies/genre.json', params=params).json()['genres']
+
+    @mem_cache.cached(60*10)
     def show_groups(self):
         params = {'includeAllShowGroups': 'true', 'locale': 'en-us', 'at': AT}
-        return self._session.get('/v2.0/androidtv/shows/groups.json', params=params).json()['showGroups']
+        return self._session.get('/v2.0/androidphone/shows/groups.json', params=params).json()['showGroups']
 
     @mem_cache.cached(60*10)
     def show_group(self, group_id):
         params = {'includeAllShowGroups': 'true', 'locale': 'en-us', 'at': AT}
-        return self._session.get('/v2.0/androidtv/shows/group/{}.json'.format(group_id), params=params).json()['group']
+        return self._session.get('/v2.0/androidphone/shows/group/{}.json'.format(group_id), params=params).json()['group']
 
     @mem_cache.cached(60*10)
     def show(self, show_id):
         params = {'locale': 'en-us', 'at': AT}
-        return self._session.get('/v3.0/androidtv/shows/{}.json'.format(show_id), params=params).json()
+        return self._session.get('/v3.0/androidphone/shows/{}.json'.format(show_id), params=params).json()
 
     @mem_cache.cached(60*10)
     def episodes(self, show_id, season):
         params = {
-            'platformType': 'androidtv',
+            'platformType': 'apps',
             'rows': 1,
             'begin': 0,
             'locale': 'en-us',
             'at': AT,
         }
 
-        section_id = self._session.get('/v2.0/androidtv/shows/{}/videos/config/DEFAULT_APPS_FULL_EPISODES.json'.format(show_id), params=params).json()['section_display_seasons'][0]['sectionId']
+        section_id = self._session.get('/v2.0/androidphone/shows/{}/videos/config/DEFAULT_APPS_FULL_EPISODES.json'.format(show_id), params=params).json()['section_display_seasons'][0]['sectionId']
 
         params = {
             'rows': 999,
@@ -169,12 +197,12 @@ class API(object):
             'at': AT,
         }
 
-        return self._session.get('/v2.0/androidtv/videos/section/{}.json'.format(section_id), params=params).json()['sectionItems']['itemList']
+        return self._session.get('/v2.0/androidphone/videos/section/{}.json'.format(section_id), params=params).json()['sectionItems']['itemList']
 
     @mem_cache.cached(60*10)
     def seasons(self, show_id):
         params = {'locale': 'en-us', 'at': AT}
-        return self._session.get('/v3.0/androidtv/shows/{}/video/season/availability.json'.format(show_id), params=params).json()['video_available_season']['itemList']
+        return self._session.get('/v3.0/androidphone/shows/{}/video/season/availability.json'.format(show_id), params=params).json()['video_available_season']['itemList']
 
     @mem_cache.cached(60*10)
     def search(self, query):
@@ -185,11 +213,10 @@ class API(object):
             'locale': 'en-us',
             'at': AT,
         }
-        return self._session.get('/v3.0/androidtv/contentsearch/search.json', params=params).json()['terms']
+        return self._session.get('/v3.0/androidphone/contentsearch/search.json', params=params).json()['terms']
 
     def user(self):
         self._refresh_token()
-
         params = {'locale': 'en-us', 'at': AT}
         return self._session.get('/v3.0/androidtv/login/status.json', params=params).json()
 
@@ -205,7 +232,7 @@ class API(object):
             'format': 'SMIL'
         }
 
-        resp = self._session.get('https://link.theplatform.com/s/dJ5BDC/{}'.format(video_data['pid']), params=params)
+        resp = self._session.get(LINK_PLATFORM_URL.format(pid=video_data['pid']), params=params)
 
         root = ET.fromstring(resp.text)
         strip_namespaces(root)
@@ -224,7 +251,7 @@ class API(object):
 
     def _ip(self):
         params = {'locale': 'en-us', 'at': AT}
-        return self._session.get('https://www.paramountplus.com/apps/user/ip.json', params=params).json()['ip']
+        return self._session.get(IP_URL, params=params).json()['ip']
 
     def live_channels(self):
         self._refresh_token()
@@ -240,7 +267,7 @@ class API(object):
             'at': AT,
         }
 
-        data = self._session.get('/v3.0/androidtv/live/channels.json', params=params).json()
+        data = self._session.get('/v3.0/androidphone/live/channels.json', params=params).json()
 
         channels = []
         for row in data['channels']:
@@ -261,7 +288,7 @@ class API(object):
             'at': AT,
         }
 
-        return self._session.get('/v3.0/androidtv/live/channels/{slug}/listings.json'.format(slug=channel), params=params).json()['listing']
+        return self._session.get('/v3.0/androidphone/live/channels/{slug}/listings.json'.format(slug=channel), params=params).json()['listing']
 
     def dma(self):
         self._refresh_token()
@@ -281,7 +308,7 @@ class API(object):
             'at': AT,
         }
 
-        data = self._session.get('/v3.0/androidtv/dma.json', params=params).json()
+        data = self._session.get('/v3.0/androidphone/dma.json', params=params).json()
         if not data['success']:
             log.warning('Failed to get local CBS channel for IP address ({}). Server message: {}'.format(ip, data.get('message')))
             return None

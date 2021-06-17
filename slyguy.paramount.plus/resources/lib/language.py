@@ -17,5 +17,8 @@ class Language(BaseLanguage):
     CLIPS_COUNT          = 30013
     SEASON               = 30014
     CLIPS                = 30015
+    MOVIES               = 30016
+    A_Z                  = 30017
+    POPULAR              = 30018
 
 _ = Language()

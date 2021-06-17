@@ -66,6 +66,18 @@ msgctxt "#30015"
 msgid "Clips"
 msgstr ""
 
+msgctxt "#30016"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30017"
+msgid "A-Z"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Popular"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
