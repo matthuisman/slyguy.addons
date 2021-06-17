@@ -1,6 +1,6 @@
 from kodi_six import xbmc
 
-from slyguy import plugin, gui, settings, database, signals
+from slyguy import plugin, gui, settings, database, signals, userdata
 from slyguy.constants import ADDON_ID
 from slyguy.util import set_kodi_string, get_kodi_string
 
@@ -22,8 +22,9 @@ def home(**kwargs):
         )
 
     if gpio.SYSTEM == 'mock':
-        if settings.is_fresh():
+        if not userdata.get('_warning'):
             gui.ok(_.SYSTEM_UNSUPPORTED)
+            userdata.set('_warning', True)
 
         folder.title = _(_.SIMULATION, _color='red')
 
