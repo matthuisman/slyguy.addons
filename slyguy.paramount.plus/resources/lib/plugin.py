@@ -28,7 +28,7 @@ def home(**kwargs):
     else:
         # folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
         folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-        # folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
         # folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
         # folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
@@ -77,7 +77,7 @@ def search(query=None, **kwargs):
                     'mediatype': 'movie',
                     'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
                 },
-                art = {'thumb': _get_thumb(data['thumbnailSet'])},
+                art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
                 path = plugin.url_for(play, video_id=data['contentId']),
                 playable = True,
             )
@@ -85,16 +85,72 @@ def search(query=None, **kwargs):
     return folder
 
 @plugin.route()
-def shows(group_id=None, **kwargs):
-    if group_id:
-        group = api.show_group(group_id)
+def movies(genre=None, title=None, page=1, **kwargs):
+    folder = plugin.Folder(title or _.MOVIES)
+    page = int(page)
+    num_results = 50
 
-        folder = plugin.Folder(group['title'])
-        items = _process_shows(group['showGroupItems'])
-        folder.add_items(items)
+    if genre is None:
+        folder.add_item(
+            label = _.POPULAR,
+            path = plugin.url_for(movies, genre='popular', title=_.POPULAR),
+        )
+
+        folder.add_item(
+            label = _.A_Z,
+            path = plugin.url_for(movies, genre='', title=_.A_Z),
+        )
+
+        for row in api.movie_genres():
+            if row['displayOrder'] < 0:
+                continue
+
+            folder.add_item(
+                label = row['title'],
+                path = plugin.url_for(movies, genre=row['slug'], title=row['title']),
+            )
 
         return folder
+
+    if genre == 'popular':
+        data = api.trending_movies()
+        data['movies'] = [x['content'] for x in data['trending'] if x['content_type'] == 'movie']
+        data['numFound'] = len(data['movies'])
     else:
+        data = api.movies(genre=genre, num_results=num_results, page=page)
+
+    folder.title += ' ({})'.format(data['numFound'])
+
+    for row in data['movies']:
+        data = row['movieContent']
+        folder.add_item(
+            label = data['label'].strip() or data['title'].strip(),
+            info = {
+                'plot': data.get('shortDescription', data['description']),
+                'aired': data['_airDateISO'],
+                'dateadded': data['_pubDateISO'],
+                'genre': data['genre'],
+                'duration': data['duration'],
+                'mediatype': 'movie',
+                'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
+            },
+            art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
+            path = plugin.url_for(play, video_id=data['contentId']),
+            playable = True,
+        )
+
+    if len(folder.items) == num_results:
+        folder.add_item(
+            label = _(_.NEXT_PAGE, page=page+1),
+            path = plugin.url_for(movies, genre=genre, title=title, page=page+1),
+            specialsort = 'bottom',
+        )
+
+    return folder
+
+@plugin.route()
+def shows(group_id=None, **kwargs):
+    if group_id is None:
         folder = plugin.Folder(_.SHOWS)
 
         for row in api.show_groups():
@@ -105,13 +161,21 @@ def shows(group_id=None, **kwargs):
 
         return folder
 
+    data = api.show_group(group_id)
+
+    folder = plugin.Folder(data['title'] + ' ({})'.format(data['totalShowGroupCount']))
+    items = _process_shows(data['showGroupItems'])
+    folder.add_items(items)
+
+    return folder
+
 def _process_shows(rows):
     items = []
 
     for row in rows:
         plot = _(_.EPISODE_COUNT, count=row['episodeVideoCount']['totalEpisodes'])
-        if row['episodeVideoCount']['totalClips']:
-            plot += '\n'+ _(_.CLIPS_COUNT, count=row['episodeVideoCount']['totalClips'])
+        # if row['episodeVideoCount']['totalClips']:
+        #     plot += '\n'+ _(_.CLIPS_COUNT, count=row['episodeVideoCount']['totalClips'])
 
         item = plugin.Item(
             label = row['title'],
@@ -309,7 +373,7 @@ def _get_thumb(thumbs, _type='PosterArt'):
         if row['assetType'] == _type:
             return _thumbnail(row['url'])
 
-    return _thumbnail(thumbs[0]['url'])
+    return None
 
 def _parse_item(row):
     if row['mediaType'] in ('Movie', 'Trailer'):
