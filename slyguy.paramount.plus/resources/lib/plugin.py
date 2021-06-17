@@ -1,6 +1,7 @@
 import time
 import codecs
 from xml.sax.saxutils import escape
+from xml.dom.minidom import parseString
 
 import arrow
 from kodi_six import xbmc
@@ -463,11 +464,55 @@ def _parse_item(row):
     return plugin.Item()
 
 @plugin.route()
+@plugin.plugin_callback()
+def mpd_request(_data, _data_path, **kwargs):
+    root = parseString(_data)
+
+    dolby_vison = settings.getBool('dolby_vision', False)
+    h265 = settings.getBool('h265', False)
+    enable_4k = settings.getBool('4k_enabled', True)
+    enable_ac3 = settings.getBool('ac3_enabled', False)
+    enable_ec3 = settings.getBool('ec3_enabled', False)
+    enable_accessibility = settings.getBool('accessibility_enabled', False)
+
+    for elem in root.getElementsByTagName('Representation'):
+        parent = elem.parentNode
+        codecs = elem.getAttribute('codecs').lower()
+        height = int(elem.getAttribute('height') or 0)
+        width = int(elem.getAttribute('width') or 0)
+
+        if not dolby_vison and (codecs.startswith('dvhe') or codecs.startswith('dvh1')):
+            parent.removeChild(elem)
+
+        elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
+            parent.removeChild(elem)
+
+        elif not enable_4k and (height > 1080 or width > 1920):
+            parent.removeChild(elem)
+
+        elif not enable_ac3 and codecs == 'ac-3':
+            parent.removeChild(elem)
+
+        elif not enable_ec3 and codecs == 'ec-3':
+            parent.removeChild(elem)
+
+    for adap_set in root.getElementsByTagName('AdaptationSet'):
+        if not adap_set.getElementsByTagName('Representation') or \
+            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')):
+            adap_set.parentNode.removeChild(adap_set)
+
+    with open(_data_path, 'wb') as f:
+        f.write(root.toprettyxml(encoding='utf-8'))
+
+    return _data_path
+
+@plugin.route()
 @plugin.login_required()
 def play(video_id, **kwargs):
     url, license_url, token, data = api.play(video_id)
 
     item = _parse_item(data)
+    item.proxy_data['manifest_middleware'] = plugin.url_for(mpd_request)
 
     headers = {
         'authorization': 'Bearer {}'.format(token),
