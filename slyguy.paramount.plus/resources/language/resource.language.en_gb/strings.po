@@ -78,6 +78,10 @@ msgctxt "#30018"
 msgid "Popular"
 msgstr ""
 
+msgctxt "#30019"
+msgid "Featured"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

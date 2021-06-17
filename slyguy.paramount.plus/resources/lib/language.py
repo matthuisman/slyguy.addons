@@ -20,5 +20,6 @@ class Language(BaseLanguage):
     MOVIES               = 30016
     A_Z                  = 30017
     POPULAR              = 30018
+    FEATURED             = 30019
 
 _ = Language()
