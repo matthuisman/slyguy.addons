@@ -26,7 +26,7 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
-        # folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
         folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
@@ -45,41 +45,65 @@ def home(**kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
+def featured(slug=None, **kwargs):
+    folder = plugin.Folder(_.FEATURED)
 
-        userdata.set('search', query)
+    if slug is None:
+        for row in api.marquee():
+            if row['apps_target'] not in ('show', 'Video'):
+                continue
 
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+            folder.add_item(
+                label = row['apps_home_slide_copy'] or row['title'],
+                info = {
+                    'plot': row['tagline'] + '\n' + row['slide_action_title'],
+                },
+                art = {'thumb': _image(row['filepath_title_logo_regular'], 'h600'), 'fanart': _image(row['filepath_slide_regular'], 'w1920')},
+                path = plugin.url_for(show, show_id=row['show_id']) if row['apps_target'] == 'show' else plugin.url_for(play, video_id=row['apps_marquee_cid']),
+                playable = row['apps_target'] == 'Video',
+            )
 
-    for row in api.search(query):
-        if row['term_type'] == 'show':
+    for row in api.featured():
+        if row['model'] not in ('show', 'movie'):
+            continue
+
+        if slug:
+            if slug == row['apiParams']['name']:
+                for row in api.carousel(row['apiBaseUrl'], params=row['apiParams']):
+                    if row.get('showId'):
+                        folder.add_item(
+                            label = row['showTitle'],
+                            info = {
+                                'plot': row['about'],
+                                'mediatype': 'tvshow',
+                            },
+                            art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                            path = plugin.url_for(show, show_id=row['showId']),
+                        )
+
+                    elif row.get('movieContent'):
+                        data = row['movieContent']
+                        folder.add_item(
+                            label = data['label'].strip() or data['title'].strip(),
+                            info = {
+                                'plot': data.get('shortDescription', data['description']),
+                                'aired': data['_airDateISO'],
+                                'dateadded': data['_pubDateISO'],
+                                'genre': data['genre'],
+                                'duration': data['duration'],
+                                'mediatype': 'movie',
+                                'trailer': plugin.url_for(play, video_id=row['trailerContentId']) if row.get('trailerContentId') else None,
+                            },
+                            art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
+                            path = plugin.url_for(play, video_id=data['contentId']),
+                            playable = True,
+                        )
+
+                break
+        else:
             folder.add_item(
                 label = row['title'],
-                info = {
-                    'mediatype': 'tvshow',
-                },
-                art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
-                path = plugin.url_for(show, show_id=row['show_id']),
-            )
-        elif row['term_type'] == 'movie':
-            data = row['videoList']['itemList'][0]
-
-            folder.add_item(
-                label = data['label'].strip() or data['title'].strip(),
-                info = {
-                    'plot': data.get('shortDescription', data['description']),
-                    'aired': str(arrow.get(data['airDate'])),
-                    'duration': data['duration'],
-                    'mediatype': 'movie',
-                    'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
-                },
-                art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
-                path = plugin.url_for(play, video_id=data['contentId']),
-                playable = True,
+                path = plugin.url_for(featured, slug=row['apiParams']['name']),
             )
 
     return folder
@@ -283,6 +307,47 @@ def live_tv(**kwargs):
     return folder
 
 @plugin.route()
+def search(query=None, **kwargs):
+    if not query:
+        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
+        if not query:
+            return
+
+        userdata.set('search', query)
+
+    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+
+    for row in api.search(query):
+        if row['term_type'] == 'show':
+            folder.add_item(
+                label = row['title'],
+                info = {
+                    'mediatype': 'tvshow',
+                },
+                art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                path = plugin.url_for(show, show_id=row['show_id']),
+            )
+
+        elif row['term_type'] == 'movie':
+            data = row['videoList']['itemList'][0]
+
+            folder.add_item(
+                label = data['label'].strip() or data['title'].strip(),
+                info = {
+                    'plot': data.get('shortDescription', data['description']),
+                    'aired': str(arrow.get(data['airDate'])),
+                    'duration': data['duration'],
+                    'mediatype': 'movie',
+                    'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
+                },
+                art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
+                path = plugin.url_for(play, video_id=data['contentId']),
+                playable = True,
+            )
+
+    return folder
+
+@plugin.route()
 def login(**kwargs):
     if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
         result = _device_link()
@@ -376,6 +441,11 @@ def _get_thumb(thumbs, _type='PosterArt'):
     return None
 
 def _parse_item(row):
+    if row['mediaType'] == 'Standalone':
+        row['mediaType'] = 'Movie'
+    elif row['mediaType'] == 'Clip':
+        row['mediaType'] = 'Trailer'
+
     if row['mediaType'] in ('Movie', 'Trailer'):
         return plugin.Item(
             label = row['title'],
@@ -385,12 +455,12 @@ def _parse_item(row):
                 'genre': row['genre'],
                 'plot': row['shortDescription'],
                 'duration': row['duration'],
-                'mediatype': 'movie,'
+                'mediatype': 'movie' if row['mediaType'] == 'Movie' else 'video',
             },
+            art = {'thumb': _get_thumb(row['thumbnailSet'], 'Thumbnail') if row['mediaType'] == 'Trailer' else  _get_thumb(row['thumbnailSet'])},
         )
 
-    else:
-        return plugin.Item()
+    return plugin.Item()
 
 @plugin.route()
 @plugin.login_required()

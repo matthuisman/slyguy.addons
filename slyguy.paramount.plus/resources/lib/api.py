@@ -65,7 +65,7 @@ class API(object):
             return
 
         log.debug('Refreshing token')
-        self.set_profile(userdata.get('profile_id'), refresh=False)
+        self._set_profile(userdata.get('profile_id'))
 
     def login(self, username, password):
         params = {'locale': 'en-us', 'at': AT}
@@ -114,10 +114,11 @@ class API(object):
 
         self._set_authentication()
 
-    def set_profile(self, profile_id, refresh=True):
-        if refresh:
-            self._refresh_token()
+    def set_profile(self, profile_id):
+        self._set_profile(profile_id)
+        mem_cache.empty()
 
+    def _set_profile(self, profile_id):
         params = {'locale': 'en-us', 'at': AT}
         resp = self._session.post('/v2.0/androidtv/user/account/profile/switch/{}.json'.format(profile_id), params=params)
         data = resp.json()
@@ -133,6 +134,43 @@ class API(object):
         userdata.set('profile_name', profile['name'])
         userdata.set('profile_img', profile['profilePicPath'])
 
+    @mem_cache.cached(60*10)
+    def marquee(self):
+        params = {
+            'userState': 'SUBSCRIBER',
+            'locale': 'en-us', 
+            'at': 'ABCl1umexttG3Y+izLBp5A/IVEwj1Nf7VuVnDwO8KppReu3/95mflcTN55iMxUsb2Gk=',
+        }
+        return self._session.get('/v3.0/androidphone/home/marquee.json', params=params).json()['marquees']['homeMarquee'][0]['homeSlides']
+
+    @mem_cache.cached(60*10)
+    def carousel(self, url, params=None):
+        params = params or {}
+        params.update({
+           # '_clientRegion': 'US',
+            'start': 0,
+            'locale': 'en-us', 
+            'at': AT,
+        })
+
+        for key in params:
+            if type(params[key]) is list:
+                params[key] = ','.join(params[key])
+
+        return self._session.get('/v3.0/androidphone{}'.format(url), params=params).json()['carousel']
+
+    @mem_cache.cached(60*10)
+    def featured(self):
+        params = {
+            'minProximity': 1,
+            'minCarouselItems':5,
+            'maxCarouselItems': 20,
+            'rows': 15,
+            'locale': 'en-us', 
+            'at': AT,
+        }
+        return self._session.get('/v3.0/androidphone/home/configurator.json', params=params).json()['config']
+    
     @mem_cache.cached(60*10)
     def trending_movies(self):
         params = {'locale': 'en-us', 'at': AT}
@@ -321,4 +359,5 @@ class API(object):
         userdata.delete('profile_id')
         userdata.delete('auth_cookies')
         userdata.delete('device_id')
+        mem_cache.empty()
         self.new_session()
