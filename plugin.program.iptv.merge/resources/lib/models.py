@@ -618,7 +618,7 @@ class Channel(database.Model):
             name = name,
             groups = groups,
             radio = is_radio,
-            epg_id = attribs.pop('tvg-id', attribs.get('tvg-name') or name),
+            epg_id = attribs.pop('tvg-id', None) or attribs.get('tvg-name') or name,
             logo = attribs.pop('tvg-logo', None),
         )
 
