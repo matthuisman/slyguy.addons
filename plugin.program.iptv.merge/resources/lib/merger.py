@@ -138,6 +138,9 @@ class Merger(object):
     def _call_addon_method(self, plugin_url):
         dirs, files = xbmcvfs.listdir(plugin_url)
 
+        if not files:
+            raise AddonError('Plugin method failed')
+
         try:
             result, msg = int(files[0][0]), unquote(files[0][1:])
         except:
