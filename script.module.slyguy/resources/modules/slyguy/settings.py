@@ -1,15 +1,19 @@
 import json
+import os
 
-from kodi_six import xbmcaddon
+from kodi_six import xbmc, xbmcaddon
 
-from .constants import ADDON, COMMON_ADDON
+from .constants import ADDON, ADDON_ID, COMMON_ADDON
 from . import signals
+from .log import log
+from .util import remove_file
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     #refresh settings
     global ADDON
     ADDON = xbmcaddon.Addon(ADDON.getAddonInfo('id'))
+    check_corrupt(ADDON)
     common_settings.reset()
 
 def open():
@@ -68,31 +72,10 @@ def get(key, default=''):
 def set(key, value=''):
     ADDON.setSetting(key, str(value))
 
-def is_fresh():
-    fresh = getBool('_fresh', True)
-
-    if fresh:
-        setBool('_fresh', False)
-
-    return fresh
-
 class Settings(object):
-    _fresh = False
-
-    @property
-    def fresh(self):
-        return self._fresh
-
     def __init__(self, _addon=None):
         self._addon = _addon or ADDON
-
-    def is_fresh(self):
-        fresh = self.getBool('_fresh', True)
-        
-        if fresh:
-            self.setBool('_fresh', False)
-
-        return fresh
+        check_corrupt(self._addon)
 
     def open(self):
         self._addon.openSettings()
@@ -152,5 +135,23 @@ class Settings(object):
 
     def set(self, key, value=''):
         self._addon.setSetting(key, str(value))
+
+def check_corrupt(addon):
+    if addon.getAddonInfo('id') != ADDON_ID:
+        return
+
+    fresh = addon.getSetting('_fresh')
+    if fresh == 'false':
+        return
+
+    addon.setSetting('_fresh', 'false')
+    addon = xbmcaddon.Addon(addon.getAddonInfo('id'))
+
+    if addon.getSetting('_fresh') != 'false':
+        file_path = os.path.join(xbmc.translatePath(addon.getAddonInfo('profile')), 'settings.xml')
+        log.debug('Removing corrupt settings.xml: {}'.format(file_path))
+        remove_file(file_path)
+        addon = xbmcaddon.Addon(addon.getAddonInfo('id'))
+        addon.setSetting('_fresh', 'false')
 
 common_settings = Settings(COMMON_ADDON)
