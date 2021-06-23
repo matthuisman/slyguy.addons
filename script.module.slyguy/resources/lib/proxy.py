@@ -41,16 +41,16 @@ if not PORT:
 PROXY_PATH = 'http://{}:{}/'.format(HOST, PORT)
 settings.set('_proxy_path', PROXY_PATH)
 
-CODECS = {
-    'avc': 'H.264',
-    'hvc': 'H.265',
-    'hev': 'H.265',
-    'mp4v': 'MPEG-4',
-    'mp4s': 'MPEG-4',
-    'dvh': 'H.265 DV',
-}
+CODECS = [
+    ['avc', 'H.264'],
+    ['hvc', 'H.265'],
+    ['hev', 'H.265'],
+    ['mp4v', 'MPEG-4'],
+    ['mp4s', 'MPEG-4'],
+    ['dvh', 'H.265 Dolby Vision'],
+]
 
-CODEC_RANKING = ['MPEG-4', 'H.264', 'H.265', 'H.265 DV']
+CODEC_RANKING = ['MPEG-4', 'H.264', 'H.265', 'HDR', 'H.265 Dolby Vision']
 
 PROXY_GLOBAL = {
     'last_quality': QUALITY_BEST,
@@ -198,9 +198,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             highest = -1
 
             for codec in _codecs:
-                for key in CODECS:
-                    if codec.lower().startswith(key.lower()) and CODECS[key] in CODEC_RANKING:
-                        rank = CODEC_RANKING.index(CODECS[key])
+                for _codec in CODECS:
+                    if codec.lower().startswith(_codec[0].lower()) and _codec[1] in CODEC_RANKING:
+                        rank = CODEC_RANKING.index(_codec[1])
                         if not highest or rank > highest:
                             highest = rank
 
@@ -238,9 +238,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             codec_string = ''
             for codec in stream['codecs']:
-                for key in CODECS:
-                    if codec.lower().startswith(key.lower()):
-                        codec_string += ' ' + CODECS[key]
+                for _codec in CODECS:
+                    if codec.lower().startswith(_codec[0].lower()):
+                        codec_string += ' ' + _codec[1]
 
             return _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution=stream['resolution'], fps=fps, codecs=codec_string.strip()).replace('  ', ' ')
 
@@ -898,7 +898,11 @@ class ResponseStream(object):
             yield self._bytes
         else:
             while True:
-                chunk = self._response.raw.read(CHUNK_SIZE)
+                try:
+                    chunk = self._response.raw.read(CHUNK_SIZE)
+                except:
+                    chunk = None
+
                 if not chunk:
                     break
 
