@@ -495,10 +495,10 @@ def get_system_arch():
         system = platform.system()
 
     if system == 'Windows':
-        arch = platform.architecture()[0]
+        arch = platform.architecture()[0].lower()
     else:
         try:
-            arch = platform.machine()
+            arch = platform.machine().lower()
         except:
             arch = ''
 
@@ -517,6 +517,9 @@ def get_system_arch():
 
     elif arch == 'i686':
         arch = 'i386'
+
+    if 'appletv' in arch:
+        arch = 'arm64'
 
     log.debug('System: {}, Arch: {}'.format(system, arch))
 
