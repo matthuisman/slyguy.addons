@@ -87,7 +87,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
             title = re.sub('^([0-9]+\.)', '', row['cardData']['title'])
 
             info = {
-                'plot': row['cardData'].get('synopsis') or row['cardData'].get('subtitle'),
+                'plot': row['cardData'].get('synopsis') or row.get('infoPanelData', {}).get('shortSynopsis') or row['cardData'].get('subtitle'),
                 'mediatype': 'episode',
             }
 
@@ -113,7 +113,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
                 return 0
 
             def _get_season_episode(row):
-                titles = [row['cardData']['title'], row['cardData']['image']['altTag']]
+                titles = [row['cardData']['title'], row['cardData']['image'].get('altTag','')]
                 if 'infoPanelData' in row:
                     titles.insert(0, row['infoPanelData']['title'])
 
