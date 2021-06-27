@@ -540,3 +540,7 @@ msgid "Widevine license request failed\n"
 "Usual cause is Google revoking older Widevine versions\n"
 "Select Yes to check for new Widevine versions"
 msgstr ""
+
+msgctxt "#32125"
+msgid "tvOS does not support Widevine playback on Kodi"
+msgstr ""
