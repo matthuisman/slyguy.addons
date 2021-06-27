@@ -162,6 +162,7 @@ class BaseLanguage(object):
     WV_REVOKED                  = 32122
     WV_REVOKED_CONFIRM          = 32123
     WV_FAILED                   = 32124
+    IA_TVOS_ERROR               = 32125
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)

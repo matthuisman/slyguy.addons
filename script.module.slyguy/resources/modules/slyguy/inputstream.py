@@ -72,7 +72,7 @@ def install_iat_repo():
             repo_id = 'repository.inputstream.adaptive.testing.aarch64'
         else:
             repo_id = 'repository.inputstream.adaptive.testing.x86_64'
-    elif system in ('UWP', 'IOS'):
+    elif system in ('UWP', 'IOS', 'TVOS'):
         raise InputStreamError(_.IA_TESTING_NOT_AVAILABLE)
     else:
         repo_id = 'repository.inputstream.adaptive.testing'
@@ -223,9 +223,12 @@ def require_version(required_version, required=False):
 
 def install_widevine(reinstall=False):
     DST_FILES = {
-        'Linux':   'libwidevinecdm.so',
-        'Darwin':  'libwidevinecdm.dylib',
+        'Linux': 'libwidevinecdm.so',
+        'Darwin': 'libwidevinecdm.dylib',
+        'IOS': 'libwidevinecdm.dylib',
+        'TVOS': 'libwidevinecdm.dylib',
         'Windows': 'widevinecdm.dll',
+        'UWP': 'widevinecdm.dll',
     }
 
     if KODI_VERSION < 18:
@@ -237,19 +240,7 @@ def install_widevine(reinstall=False):
     if system == 'Android':
         return True
 
-    elif system == 'UWP':
-        raise InputStreamError(_.IA_UWP_ERROR)
-
-    elif system == 'IOS':
-        raise InputStreamError(_.IA_IOS_ERROR)
-
-    elif system == 'Linux' and arch == 'arm64':
-        raise InputStreamError(_.IA_AARCH64_ERROR)
-
-    elif arch == 'armv6':
-        raise InputStreamError(_.IA_ARMV6_ERROR)
-
-    elif system not in DST_FILES:
+    if system not in DST_FILES:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
     userdata     = Userdata(COMMON_ADDON)
@@ -259,7 +250,23 @@ def install_widevine(reinstall=False):
     last_check   = int(userdata.get('_wv_last_check', 0))
 
     if not installed:
-        reinstall = True
+        if system == 'UWP':
+            raise InputStreamError(_.IA_UWP_ERROR)
+
+        elif system == 'IOS':
+            raise InputStreamError(_.IA_IOS_ERROR)
+
+        elif system == 'TVOS':
+            raise InputStreamError(_.IA_TVOS_ERROR)
+
+        elif system == 'Linux' and arch == 'arm64':
+            raise InputStreamError(_.IA_AARCH64_ERROR)
+
+        elif arch == 'armv6':
+            raise InputStreamError(_.IA_ARMV6_ERROR)
+
+        else:
+            reinstall = True
 
     if not reinstall and time.time() - last_check < IA_CHECK_EVERY:
         return True
@@ -267,13 +274,13 @@ def install_widevine(reinstall=False):
     ## DO INSTALL ##
     userdata.set('_wv_last_check', int(time.time()))
 
-    widevine     = Session().gz_json(IA_MODULES_URL)['widevine']
-    wv_versions  = widevine['platforms'].get(system + arch, [])
+    widevine = Session().gz_json(IA_MODULES_URL)['widevine']
+    wv_versions = widevine['platforms'].get(system + arch, [])
 
     if not wv_versions:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
-    latest       = wv_versions[0]
+    latest = wv_versions[0]
     latest_known = userdata.get('_wv_latest_md5')
     userdata.set('_wv_latest_md5', latest['md5'])
 

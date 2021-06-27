@@ -487,6 +487,8 @@ def get_system_arch():
         system = 'Windows'
     elif xbmc.getCondVisibility('System.Platform.IOS'):
         system = 'IOS'
+    elif xbmc.getCondVisibility('System.Platform.TVOS'):
+        system = 'TVOS'
     elif xbmc.getCondVisibility('System.Platform.Darwin'):
         system = 'Darwin'
     elif xbmc.getCondVisibility('System.Platform.Linux') or xbmc.getCondVisibility('System.Platform.Linux.RaspberryPi'):
