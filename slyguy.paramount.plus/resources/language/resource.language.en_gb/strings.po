@@ -106,6 +106,18 @@ msgctxt "#30025"
 msgid "Dolby Digital (AC-3)"
 msgstr ""
 
+msgctxt "#30026"
+msgid "Canada"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Australia"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Widevine L1 Secure Device"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
