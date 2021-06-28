@@ -27,5 +27,8 @@ class Language(BaseLanguage):
     ACCESSIBILITY        = 30023
     EC3_ENABLED          = 30024
     AC3_ENABLED          = 30025
+    CANADA               = 30026
+    AUSTRALIA            = 30027
+    WV_SECURE            = 30028
 
 _ = Language()
