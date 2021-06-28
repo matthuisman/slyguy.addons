@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.samsung.tv.plus" name="Samsung TV Plus" provider-name="SlyGuy" version="0.0.1">
+<addon id="slyguy.samsung.tv.plus" name="Samsung TV Plus" provider-name="SlyGuy" version="0.0.2">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -8,7 +8,7 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <description lang="en">Just free TV. Whether you're a news buff, sports fan, gamer, an aspiring chef, or need something for the kids, Samsung TV Plus offers TV that everyone can enjoy.</description>
-    <!-- <reuselanguageinvoker>true</reuselanguageinvoker> -->
+    <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
