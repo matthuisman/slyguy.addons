@@ -9,5 +9,6 @@ IN = 'in'
 DE = 'de'
 ES = 'es'
 IT = 'it'
+KR = 'kr'
 
-REGIONS = [ALL, US, GB, CA, IN, DE, ES, IT]
+REGIONS = [ALL, US, GB, CA, IN, DE, ES, IT, KR]
