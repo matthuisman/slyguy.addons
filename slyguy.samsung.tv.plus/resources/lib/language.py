@@ -12,5 +12,6 @@ class Language(BaseLanguage):
     DE          = 30008
     ES          = 30009
     IT          = 30010
+    KR          = 30011
 
 _ = Language()

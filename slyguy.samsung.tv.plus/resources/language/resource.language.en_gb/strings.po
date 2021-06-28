@@ -45,6 +45,10 @@ msgctxt "#30010"
 msgid "Italy"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Korea"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
