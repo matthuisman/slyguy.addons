@@ -53,6 +53,14 @@ msgctxt "#30012"
 msgid "France"
 msgstr ""
 
+msgctxt "#30013"
+msgid "Switzerland"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Austria"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

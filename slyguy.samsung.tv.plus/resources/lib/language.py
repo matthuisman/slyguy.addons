@@ -14,5 +14,7 @@ class Language(BaseLanguage):
     IT          = 30010
     KR          = 30011
     FR          = 30012
+    CH          = 30013
+    AT          = 30014
 
 _ = Language()
