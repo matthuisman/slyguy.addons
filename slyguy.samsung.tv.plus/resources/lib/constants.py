@@ -1,3 +1,7 @@
+HEADERS = {
+    'user-agent': 'okhttp/4.9.0',
+}
+
 DATA_URL = 'https://i.mjh.nz/SamsungTVPlus/{region}.json.gz'
 EPG_URL = 'https://i.mjh.nz/SamsungTVPlus/{region}.xml.gz'
 
