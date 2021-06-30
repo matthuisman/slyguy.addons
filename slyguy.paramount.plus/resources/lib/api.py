@@ -18,9 +18,10 @@ class APIError(Error):
     pass
 
 class API(object):
-    def new_session(self):
+    def new_session(self, config):
         self.logged_in = False
-        self._session = Session(base_url=API_URL, headers=HEADERS)
+        self._config = config
+        self._session = Session(base_url=self._config.api_url, headers=HEADERS)
         self._set_authentication()
 
     def _set_authentication(self):
@@ -134,37 +135,52 @@ class API(object):
         userdata.set('profile_name', profile['name'])
         userdata.set('profile_img', profile['profilePicPath'])
 
-    def _params(self, params=None, secret=TV_SECRET):
-        _params = {'locale': 'en-us', 'at': self._at_token(secret)}
+    def _params(self, params=None):
+        _params = {'locale': 'en-us', 'at': self._config.tv_token}
         #_params = {'locale': 'en-us', 'at': self._at_token(secret), 'LOCATEMEIN': 'us'}
         if params:
             _params.update(params)
         return _params
 
-    def _at_token(self, secret):
-        payload = '{}|{}'.format(int(time())*1000, secret)
+    # def _at_token(self, secret):
+    #     payload = '{}|{}'.format(int(time())*1000, self._config.tv_secret)
 
-        try:
-            #python3
-            key = bytes.fromhex(AES_KEY)
-        except AttributeError:
-            #python2
-            key = str(bytearray.fromhex(AES_KEY))
+    #     try:
+    #         #python3
+    #         key = bytes.fromhex(self._config.aes_key)
+    #     except AttributeError:
+    #         #python2
+    #         key = str(bytearray.fromhex(self._config.aes_key))
 
-        iv = os.urandom(16)
-        encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
+    #     iv = os.urandom(16)
+    #     encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
 
-        ciphertext = encrypter.feed(payload)
-        ciphertext += encrypter.feed()
-        ciphertext = b'\x00\x10' + iv + ciphertext
+    #     ciphertext = encrypter.feed(payload)
+    #     ciphertext += encrypter.feed()
+    #     ciphertext = b'\x00\x10' + iv + ciphertext
 
-        return b64encode(ciphertext).decode('utf8')
+    #     return b64encode(ciphertext).decode('utf8')
+
+    # def app_config(self):
+    #     selected_region = None
+
+    #     for region in REGIONS:
+    #         params = {'locale': 'en-us', 'at': region['tv_token']}
+    #         resp = self._session.get('{}/apps-api/v2.0/androidtv/app/status.json'.format(region['base_url']), params=params)
+    #         if resp.ok:
+    #             data = resp.json()
+    #             if data['appVersion']['availableInRegion']:
+    #                 selected_region = [region, data]
+    #                 break
+
+    #     if not selected_region:
+    #         raise Exception('Unable to find a region for your location')
 
     @mem_cache.cached(60*10)
     def carousel(self, url, params=None):
         params = params or {}
         params.update({
-            '_clientRegion': COUNTRY_CODE,
+            '_clientRegion': self._config.country_code,
             'start': 0,
         })
 
@@ -230,7 +246,7 @@ class API(object):
             'begin': 0,
         }
 
-        section_id = self._session.get('/v2.0/androidphone/shows/{}/videos/config/DEFAULT_APPS_FULL_EPISODES.json'.format(show_id), params=self._params(params)).json()['section_display_seasons'][0]['sectionId']
+        section_id = self._session.get('/v2.0/androidphone/shows/{}/videos/config/{}.json'.format(show_id, self._config.episodes_section), params=self._params(params)).json()['section_display_seasons'][0]['sectionId']
 
         params = {
             'rows': 999,
@@ -304,16 +320,19 @@ class API(object):
         return url, data['url'], data['ls_session'], video_data
 
     def _ip(self):
-        return self._session.get(IP_URL, params=self._params()).json()['ip']
+        return self._session.get(self._config.ip_url, params=self._params()).json()['ip']
 
     def live_channels(self):
+        if not self._config.has_live_tv:
+            return []
+
         self._refresh_token()
         dma = self.dma()
 
         params = {
             'start': 0,
             'rows': 30,
-            '_clientRegion': COUNTRY_CODE,
+            '_clientRegion': self._config.country_code,
             'dma': dma['dma'] if dma else None,
             'showListing': 'true',
         }
@@ -333,7 +352,7 @@ class API(object):
         params = {
             'start': (page-1)*rows,
             'rows': rows,
-            '_clientRegion': COUNTRY_CODE,
+            '_clientRegion': self._config.country_code,
             'showListing': 'true',
         }
 
@@ -369,4 +388,4 @@ class API(object):
         userdata.delete('auth_cookies')
         userdata.delete('device_id')
         mem_cache.empty()
-        self.new_session()
+        self.new_session(self._config)

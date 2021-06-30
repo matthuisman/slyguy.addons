@@ -107,14 +107,10 @@ msgid "Dolby Digital (AC-3)"
 msgstr ""
 
 msgctxt "#30026"
-msgid "Canada"
+msgid "International"
 msgstr ""
 
 msgctxt "#30027"
-msgid "Australia"
-msgstr ""
-
-msgctxt "#30028"
 msgid "Widevine L1 Secure Device"
 msgstr ""
 

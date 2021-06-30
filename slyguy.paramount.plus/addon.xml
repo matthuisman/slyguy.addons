@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.paramount.plus" name="Paramount+" provider-name="SlyGuy" version="0.0.8">
+<addon id="slyguy.paramount.plus" name="Paramount+" provider-name="SlyGuy" version="0.0.9">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -9,13 +9,12 @@
   <extension point="xbmc.addon.metadata">
     <description lang="en">Watch thousands of episodes of your favorite shows on any device. Paramount+ includes on-demand and live content from CBS, BET, Comedy Central, Nickelodeon, MTV, VH1, Paramount, and more.
 
-USA region only currently.
 Subscription required.</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix for newer content not playing on non-L1 android devices</news>
+    <news>Support International regions</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
