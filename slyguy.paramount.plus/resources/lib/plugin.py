@@ -14,10 +14,12 @@ from .language import _
 from .constants import *
 
 api = API()
+config = Config()
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
-    api.new_session()
+    config.load()
+    api.new_session(config)
     plugin.logged_in = api.logged_in
 
 @plugin.route('')
@@ -27,10 +29,15 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
-        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        if config.has_featured:
+            folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+
         folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
-        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+
+        if config.has_live_tv:
+            folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+
         # folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
         # folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
@@ -38,7 +45,7 @@ def home(**kwargs):
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
-        folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': _image(userdata.get('profile_img'))}, info={'plot': userdata.get('profile_name')}, _kiosk=False, bookmark=False)
+        folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': config.image(userdata.get('profile_img'))}, info={'plot': userdata.get('profile_name')}, _kiosk=False, bookmark=False)
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
@@ -71,7 +78,7 @@ def featured(slug=None, **kwargs):
                         'plot': row['about'],
                         'mediatype': 'tvshow',
                     },
-                    art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                    art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
                     path = plugin.url_for(show, show_id=row['showId']),
                 )
 
@@ -115,7 +122,7 @@ def movies(genre=None, title=None, page=1, **kwargs):
         )
 
         for row in api.movie_genres():
-            if row['displayOrder'] < 0:
+            if row['slug'] in ('popular', 'a-z'):
                 continue
 
             folder.add_item(
@@ -197,7 +204,7 @@ def _process_shows(rows):
                 'mediatype': 'tvshow',
                 'plot': plot,
             },
-            art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+            art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
             path = plugin.url_for(show, show_id=row['showId']),
         )
 
@@ -209,7 +216,7 @@ def _process_shows(rows):
 def show(show_id, **kwargs):
     show = api.show(show_id)
 
-    folder = plugin.Folder(show['show']['results'][0]['title'], thumb=_image(show['showAssets']['filepath_show_browse_poster']), fanart=_image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
+    folder = plugin.Folder(show['show']['results'][0]['title'], thumb=config.image(show['showAssets']['filepath_show_browse_poster']), fanart=config.image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
 
     plot = show['show']['results'][0]['about'] + '\n\n'
 
@@ -243,7 +250,7 @@ def show(show_id, **kwargs):
 def season(show_id, season, **kwargs):
     show = api.show(show_id)
 
-    folder = plugin.Folder(show['show']['results'][0]['title'], fanart=_image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
+    folder = plugin.Folder(show['show']['results'][0]['title'], fanart=config.image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
 
     for row in api.episodes(show_id, season):
         folder.add_item(
@@ -259,7 +266,7 @@ def season(show_id, season, **kwargs):
                 'mediatype': 'episode',
                 'tvshowtitle': show['show']['results'][0]['title'],
             },
-            art = {'thumb': _thumbnail(row['thumbnail'])},
+            art = {'thumb': config.thumbnail(row['thumbnail'])},
             path = plugin.url_for(play, video_id=row['contentId']),
             playable = True,
         )
@@ -288,7 +295,7 @@ def live_tv(**kwargs):
             info = {
                 'plot': plot.strip('\n'),
             },
-            art = {'thumb': _image(row['filePathLogoSelected'])},
+            art = {'thumb': config.image(row['filePathLogoSelected'])},
             path = plugin.url_for(play_channel, slug=row['slug'], _is_live=True),
             playable = True,
         )
@@ -313,7 +320,7 @@ def search(query=None, **kwargs):
                 info = {
                     'mediatype': 'tvshow',
                 },
-                art = {'thumb': _image(row['showAssets']['filepath_show_browse_poster']), 'fanart': _image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
                 path = plugin.url_for(show, show_id=row['show_id']),
             )
 
@@ -338,7 +345,7 @@ def search(query=None, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
+    if config.has_device_link and gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
         result = _device_link()
     else:
         result = _email_password()
@@ -374,7 +381,7 @@ def _device_link():
     device_token = data['deviceToken']
     code = data['activationCode']
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=DEVICE_LINK_URL, code=code), heading=_.DEVICE_LINK) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=config.device_link_url, code=code), heading=_.DEVICE_LINK) as progress:
         while (time.time() - start) < max_time:
             for i in range(poll_time):
                 if progress.iscanceled() or monitor.waitForAbort(1):
@@ -394,12 +401,6 @@ def select_profile(**kwargs):
     _select_profile()
     gui.refresh()
 
-def _image(image_name, dimensions='w400'):
-    return IMG_URL.format(dimensions=dimensions, file=image_name[6:]) if image_name else None
-
-def _thumbnail(image_url, dimensions='w400'):
-    return image_url.replace('https://thumbnails.cbsig.net/', 'https://thumbnails.cbsig.net/_x/{}/'.format(dimensions))
-
 def _select_profile():
     profiles = api.user()['accountProfiles']
 
@@ -408,7 +409,7 @@ def _select_profile():
     default = -1
     for index, profile in enumerate(profiles):
         values.append(profile['id'])
-        options.append(plugin.Item(label=profile['name'], art={'thumb': _image(profile['profilePicPath'])}))
+        options.append(plugin.Item(label=profile['name'], art={'thumb': config.image(profile['profilePicPath'])}))
         if profile['id'] == userdata.get('profile_id'):
             default = index
 
@@ -417,7 +418,7 @@ def _select_profile():
         return
 
     api.set_profile(values[index])
-    gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=_image(userdata.get('profile_img')))
+    gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=config.image(userdata.get('profile_img')))
 
 def _get_thumb(thumbs, _type='PosterArt'):
     if not thumbs:
@@ -425,7 +426,7 @@ def _get_thumb(thumbs, _type='PosterArt'):
 
     for row in thumbs:
         if row['assetType'] == _type:
-            return _thumbnail(row['url'])
+            return config.thumbnail(row['url'])
 
     return None
 
@@ -535,7 +536,7 @@ def play_channel(slug, **kwargs):
                 info = {
                     'plot': row['description'],
                 },
-                art = {'thumb': _image(row['filePathLogoSelected'])},
+                art = {'thumb': config.image(row['filePathLogoSelected'])},
                 path = play_path,
                 inputstream = inputstream.HLS(live=True),
             )
@@ -561,7 +562,7 @@ def playlist(output, **kwargs):
                 continue
 
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                id=row['slug'], name=row['channelName'], logo=_image(row['filePathLogoSelected']), path=plugin.url_for(play_channel, slug=row['slug'], _is_live=True)))
+                id=row['slug'], name=row['channelName'], logo=config.image(row['filePathLogoSelected']), path=plugin.url_for(play_channel, slug=row['slug'], _is_live=True)))
 
 @plugin.route()
 @plugin.merge()
@@ -591,7 +592,7 @@ def epg(output, **kwargs):
                     start = arrow.get(row['startTimestamp'])
                     stop = arrow.get(row['endTimestamp'])
 
-                    icon = u'<icon src="{}"/>'.format(_image(row['filePathThumb'])) if row['filePathThumb'] else ''
+                    icon = u'<icon src="{}"/>'.format(config.image(row['filePathThumb'])) if row['filePathThumb'] else ''
                     desc = u'<desc>{}</desc>'.format(escape(row['description'])) if row['description'] else ''
 
                     f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{desc}{icon}</programme>'.format(
