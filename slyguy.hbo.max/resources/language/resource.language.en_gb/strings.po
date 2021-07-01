@@ -24,7 +24,8 @@ msgid "Go to Series"
 msgstr ""
 
 msgctxt "#30006"
-msgid "Unable to find a video for this content"
+msgid "Unable to find a video for this content\n"
+"Check your IP is in correct region"
 msgstr ""
 
 msgctxt "#30007"
@@ -69,6 +70,49 @@ msgstr ""
 
 msgctxt "#30018"
 msgid "Dolby Digital (AC-3)"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Series"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Originals"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Just Added"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Last Chance"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Coming Soon"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Trending Now"
+msgstr ""
+
+msgctxt "#30027"
+msgid "No data returned\n"
+"Usually caused if your IP is out of region\n"
+"or HBO Max is blocking your VPN"
+msgstr ""
+
+msgctxt "#30028"
+msgid "HBO Max has detected your out of region\n"
+"Check your IP is in correct region"
 msgstr ""
 
 ## COMMON SETTINGS ##

@@ -4,7 +4,7 @@ from time import time
 import arrow
 from kodi_six import xbmc
 
-from slyguy import userdata, settings
+from slyguy import userdata, settings, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
@@ -16,10 +16,13 @@ from .language import _
 class APIError(Error):
     pass
 
+class NotPairedError(APIError):
+    pass
+
 class API(object):
     def new_session(self):
         self.logged_in = False
-        self._session  = Session(HEADERS, base_url=BASE_URL, timeout=30)
+        self._session  = Session(HEADERS, timeout=30)
         self._set_authentication(userdata.get('access_token'))
 
     def _set_authentication(self, access_token):
@@ -41,8 +44,32 @@ class API(object):
 
         self._oauth_token(payload, {'Authorization': None})
 
+    def url(self, name, path=''):
+        config = self._client_config()
+
+        if name == 'tokens':
+            try:
+                if config['endpoints']['getTokens']['domain'] == 'userGateway':
+                    return 'https://gateway{userSubdomain}.{domain}.hbo.com{path}'.format(**config['routeKeys'], path=config['endpoints']['getTokens']['path'])
+            except KeyError:
+                pass
+
+            return 'https://oauth{globalUserSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
+
+        elif name == 'gateway':
+            return 'https://gateway{userSubdomain}.{domain}.hbo.com{path}'.format(**config['routeKeys'], path=path)
+
+        elif name == 'comet':
+            return 'https://comet{contentSubdomain}.{domain}.hbo.com{path}'.format(**config['routeKeys'], path=path)
+
+        elif name == 'artist':
+            return 'https://artist.{cdnDomain}.hbo.com{path}'.format(**config['routeKeys'], path=path)
+
+        else:
+            return None
+
     def _oauth_token(self, payload, headers=None):
-        data = self._session.post('/tokens', data=payload, headers=headers).json()
+        data = self._session.post(self.url('tokens'), data=payload, headers=headers).json()
         self._check_errors(data)
 
         self._set_authentication(data['access_token'])
@@ -66,9 +93,7 @@ class API(object):
 
         return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _format_id(settings.get('device_id'))))
 
-    def device_code(self):
-        self.logout()
-
+    def _guest_login(self):
         serial = self._device_serial()
 
         payload = {
@@ -82,10 +107,36 @@ class API(object):
             }
         }
 
-        data = self._session.post('/tokens', json=payload).json()
-        self._check_errors(data)
+        data = self._session.post(GUEST_AUTH, json=payload, headers={'Authorization': None}).json()
+        if 'code' in data and data['code'] == 'invalid_credentials':
+            raise APIError(_.BLOCKED_IP)
 
+        self._check_errors(data)
         self._set_authentication(data['access_token'])
+        return serial
+
+    @mem_cache.cached(60*30)
+    def _client_config(self):
+        serial = self._guest_login()
+
+        payload = {
+            'contract': 'hadron:1.1.2.0',
+            'preferredLanguages': ['en-us'],
+        }
+
+        data = self._session.post(CONFIG_URL, json=payload).json()
+        self._set_authentication(userdata.get('access_token'))
+
+        self._check_errors(data)
+        if data['features']['currentRegionOutOfFootprint']['enabled']:
+            raise APIError(_.GEO_LOCKED)
+
+        return data
+
+    def device_code(self):
+        self.logout()
+
+        serial = self._guest_login()
 
         payload = {
             'model': DEVICE_MODEL,
@@ -93,7 +144,8 @@ class API(object):
             'userIntent': 'login',
         }
 
-        data = self._session.post('/devices/activationCode', json=payload).json()
+        data = self._session.post(self.url('comet', '/devices/activationCode'), json=payload).json()
+        self._check_errors(data)
 
         return serial, data['activationCode']
 
@@ -119,56 +171,26 @@ class API(object):
 
         try:
             self._oauth_token(payload)
-            return True
-        except Exception as e:
+        except NotPairedError:
             return False
+        else:
+            return True
 
     def _check_errors(self, data, error=_.API_ERROR):
+        if not data:
+            raise APIError(_.BLOCKED_IP)
+
         if 'code' in data:
-            error_msg = data.get('message') or data.get('code')
-            raise APIError(_(error, msg=error_msg))
+            if data['code'] == 'not_paired':
+                raise NotPairedError()
+            else:
+                error_msg = data.get('message') or data.get('code')
+                raise APIError(_(error, msg=error_msg))
 
     def profiles(self):
         self._refresh_token()
         payload = [{'id': 'urn:hbo:profiles:mine'},]
-        return self._session.post('/content', json=payload).json()[0]['body']['profiles']
-
-    def delete_profile(self, profile_id):
-        self._refresh_token()
-        data = self._session.delete('https://profiles.api.hbo.com/profiles/{}'.format(profile_id)).json()
-        return data['success']
-
-    def add_profile(self, name, kids, avatar):
-        self._refresh_token()
-
-        payload = {
-            'avatarId': avatar,
-            'name': name,
-            'profileType': 'adult',
-        }
-
-        if kids:
-            payload.update({
-                'profileType': 'child',
-                'exitPinRequired': False,
-                'birth': {
-                    'year': arrow.now().year - 5,
-                    'month': arrow.now().month,
-                },
-                'parentalControls': {
-                    'movie': 'G',
-                    'tv': 'TV-G',
-                },
-            })
-
-        data = self._session.post('https://profiles.api.hbo.com/profiles', json=payload).json()
-        self._check_errors(data)
-
-        for row in data['results']['profiles']:
-            if row['name'] == name:
-                return row
-
-        raise APIError('Failed to create profile')
+        return self._session.post(self.url('comet', '/content'), json=payload).json()[0]['body']['profiles']
 
     def _age_category(self):
         month, year = userdata.get('profile', {}).get('birth', [0,0])
@@ -204,7 +226,7 @@ class API(object):
                 'age-category': self._age_category(),
             })
 
-        data = self._session.get('/express-content/{}'.format(slug), params=params).json()
+        data = self._session.get(self.url('comet', '/express-content/{}'.format(slug)), params=params).json()
         self._check_errors(data)
 
         _data = {}
@@ -250,7 +272,7 @@ class API(object):
             'id': 'urn:hbo:flexisearch:{}'.format(query),
         }]
 
-        data = self._session.post('/content', json=payload).json()
+        data = self._session.post(self.url('comet', '/content'), json=payload).json()
         self._check_errors(data)
 
         keys = {}
@@ -287,10 +309,9 @@ class API(object):
             }
         }]
 
-        data = self._session.post('/content', json=payload).json()[0]['body']
-        self._check_errors(data)
+        data = self._session.post(self.url('comet', '/content'), json=payload).json()[0]['body']
 
-        for row in data['manifests']:
+        for row in data.get('manifests', []):
             if row['type'] == 'urn:video:main':
                 return row, content_data
 
@@ -300,4 +321,6 @@ class API(object):
         userdata.delete('access_token')
         userdata.delete('expires')
         userdata.delete('refresh_token')
+        userdata.delete('config')
+        mem_cache.empty()
         self.new_session()
