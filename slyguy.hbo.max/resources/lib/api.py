@@ -50,20 +50,20 @@ class API(object):
         if name == 'tokens':
             try:
                 if config['endpoints']['getTokens']['domain'] == 'userGateway':
-                    return 'https://gateway{userSubdomain}.{domain}.hbo.com{path}'.format(**config['routeKeys'], path=config['endpoints']['getTokens']['path'])
+                    return 'https://gateway{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + config['endpoints']['getTokens']['path']
             except KeyError:
                 pass
 
             return 'https://oauth{globalUserSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
 
         elif name == 'gateway':
-            return 'https://gateway{userSubdomain}.{domain}.hbo.com{path}'.format(**config['routeKeys'], path=path)
+            return 'https://gateway{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
         elif name == 'comet':
-            return 'https://comet{contentSubdomain}.{domain}.hbo.com{path}'.format(**config['routeKeys'], path=path)
+            return 'https://comet{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
         elif name == 'artist':
-            return 'https://artist.{cdnDomain}.hbo.com{path}'.format(**config['routeKeys'], path=path)
+            return 'https://artist.{cdnDomain}.hbo.com'.format(**config['routeKeys']) + path
 
         else:
             return None
