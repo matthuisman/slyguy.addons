@@ -18,5 +18,16 @@ class Language(BaseLanguage):
     ENABLE_4K         = 30015
     DOLBY_VISION      = 30016
     ACCESSIBILITY     = 30017
+    DOLBY_DIGITAL     = 30018
+    FEATURED          = 30019
+    SERIES            = 30020
+    MOVIES            = 30021
+    ORIGINALS         = 30022
+    JUST_ADDED        = 30023
+    LAST_CHANCE       = 30024
+    COMING_SOON       = 30025
+    TRENDING_NOW      = 30026
+    BLOCKED_IP        = 30027
+    GEO_LOCKED        = 30028
 
 _ = Language()

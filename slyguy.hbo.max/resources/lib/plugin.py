@@ -25,7 +25,15 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
     else:
-        _home_menu(folder)
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:home', label=_.FEATURED))
+        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:series', label=_.SERIES))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:movies', label=_.MOVIES))
+        folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:originals', label=_.ORIGINALS))
+        folder.add_item(label=_(_.JUST_ADDED, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:just-added', label=_.JUST_ADDED))
+        folder.add_item(label=_(_.LAST_CHANCE, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:last-chance', label=_.LAST_CHANCE))
+        folder.add_item(label=_(_.COMING_SOON, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:coming-soon', label=_.COMING_SOON))
+        folder.add_item(label=_(_.TRENDING_NOW, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:trending', label=_.TRENDING_NOW))
+
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -40,12 +48,6 @@ def index(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
-
-def _home_menu(folder):
-    for row in api.content('urn:hbo:nav-menu:browse')['items']:
-        if 'hbomax-categories' in row['id']:
-            for item in row['items']:
-                folder.add_item(label=_(item['label'], _bold=True), path=plugin.url_for(page, slug=item['target'], label=item['label']))
 
 def _process_rows(rows, slug):
     items = []
@@ -285,9 +287,9 @@ def _avatar(profile, download=False):
     _type = profile.get('avatarImageType')
 
     if _type == 'user-upload':
-        url = 'https://gateway.api.hbo.com/accounts/user-images/profile/' + profile['avatarImageId'] + '?format=png&size=320x320&authorization=Bearer {}'.format(userdata.get('access_token'))
+        url = api.url('gateway', UPLOAD_AVATAR.format(image_id=profile['avatarImageId'], token=userdata.get('access_token')))
     elif _type == 'character':
-        url = 'https://play.hbomax.com/assets/images/characters/' + CHARACTERS.get(profile['avatarImageId'], CHARACTERS[DEFAULT_CHARACTER]) + '_320x320.png'
+        url = api.url('artist', CHARACTER_AVATAR.format(image_id=profile['avatarImageId']))
     else:
         return None
 
@@ -295,8 +297,13 @@ def _avatar(profile, download=False):
         return url
 
     dst_path = os.path.join(ADDON_PROFILE, 'profile.png')
-    Session().chunked_dl(url, dst_path)
-    return dst_path
+
+    try:
+        Session().chunked_dl(url, dst_path)
+    except:
+        return None
+    else:
+        return dst_path
 
 def _select_profile():
     profiles = api.profiles()
@@ -326,7 +333,7 @@ def _set_profile(profile, switching=True):
     if settings.getBool('kid_lockdown', False) and profile['profileType'] == 'child':
         userdata.set('kid_lockdown', True)
 
-    _profile = {'id': profile['profileId'], 'name': profile['name'], 'avatar': _avatar(profile, download=True)}
+    _profile = {'id': profile['profileId'], 'name': profile['name'], 'avatar': _avatar(profile, download=switching)}
     if profile['profileType'] == 'child':
         _profile.update({
             'child': 1,
