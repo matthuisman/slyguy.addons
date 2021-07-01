@@ -61,6 +61,10 @@ msgctxt "#30014"
 msgid "Austria"
 msgstr ""
 
+msgctxt "#30015"
+msgid "Show Mini EPG"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

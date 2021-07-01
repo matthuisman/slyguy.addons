@@ -1,5 +1,6 @@
 import codecs
 
+import arrow
 from slyguy import plugin, inputstream, mem_cache, settings
 from slyguy.session import Session
 from slyguy.util import gzip_extract
@@ -32,13 +33,35 @@ def _channels():
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
+    if settings.getBool('show_epg', True):
+        now = arrow.now()
+        EPG_EVENTS_COUNT = 5
+    else:
+        EPG_EVENTS_COUNT = None
+
     channels = _channels()
     for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
         channel = channels[id]
         
+        if not EPG_EVENTS_COUNT:
+            plot = channel['description']
+        else:
+            plot = u''
+            count = 0
+            for index, row in enumerate(channel.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == EPG_EVENTS_COUNT:
+                        break
+
         folder.add_item(
             label = _(_.CH_LABEL, chno=channel['chno'], name=channel['name']),
-            info = {'plot': channel['description']},
+            info = {'plot': plot},
             art = {'thumb': channel['logo']},
             playable = True,
             path = plugin.url_for(play, id=id, _is_live=True),
