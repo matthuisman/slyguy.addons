@@ -16,5 +16,6 @@ class Language(BaseLanguage):
     FR          = 30012
     CH          = 30013
     AT          = 30014
+    SHOW_EPG    = 30015
 
 _ = Language()
