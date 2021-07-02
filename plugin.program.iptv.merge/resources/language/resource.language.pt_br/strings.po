@@ -1,0 +1,385 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Output Directory"
+msgstr "Diretório de saída"
+
+msgctxt "#30002"
+msgid "Auto Merge Sources"
+msgstr "Unir fontes automaticamente"
+
+msgctxt "#30003"
+msgid "Hours between merges"
+msgstr "Horas entre as uniões"
+
+msgctxt "#30004"
+msgid "Reload IPTV Simple Client after merge"
+msgstr "Recarrecar o IPTV Simple Client após união"
+
+msgctxt "#30005"
+msgid "Channels per page"
+msgstr "Canais por página"
+
+msgctxt "#30006"
+msgid "Setup IPTV Simple Client"
+msgstr "Configurar IPTV Simple Client"
+
+msgctxt "#30007"
+msgid ""
+"IPTV Simple Client Setup Complete\n"
+"You can now add Playlists and then run a merge"
+msgstr ""
+"Configuração do IPTV Simple Client completa\n"
+"Agora você pode adicionar Playlists e rodar uma união"
+
+msgctxt "#30008"
+msgid "Setting up IPTV Simple Client..."
+msgstr "Configurando IPTV Simple Client..."
+
+msgctxt "#30009"
+msgid "Playlists"
+msgstr "Playlists"
+
+msgctxt "#30010"
+msgid "Add Playlist"
+msgstr "Adicionar Playlist"
+
+msgctxt "#30011"
+msgid "Delete Playlist"
+msgstr "Remover Playlist"
+
+msgctxt "#30012"
+msgid "That source already exists"
+msgstr "Essa fonte já existe"
+
+msgctxt "#30013"
+msgid "URL"
+msgstr "URL"
+
+msgctxt "#30014"
+msgid "File"
+msgstr "Arquivo"
+
+msgctxt "#30015"
+msgid "Add-on"
+msgstr "Add-on"
+
+msgctxt "#30016"
+msgid "Select source type"
+msgstr "Escolha o tipo de fonte"
+
+msgctxt "#30017"
+msgid "Enter source URL"
+msgstr "Entre com a URL da fonte"
+
+msgctxt "#30018"
+msgid "Select source file"
+msgstr "Escolha o arquivo da fonte"
+
+msgctxt "#30019"
+msgid ""
+"No compatible add-ons found\n"
+"Make sure the add-on is installed and enabled"
+msgstr ""
+"Sem add-ons compatíveis encontrados\n"
+"Tenha certeza que o add-on está instalado e ativado"
+
+msgctxt "#30020"
+msgid "Select source add-on"
+msgstr "Escolha o add-on fonte"
+
+msgctxt "#30021"
+msgid "Add EPG"
+msgstr "Adicionar EPG"
+
+msgctxt "#30022"
+msgid "Edit Playlist"
+msgstr "Editar Playlist"
+
+msgctxt "#30023"
+msgid "Source: {value}"
+msgstr "Fonte: {value}"
+
+msgctxt "#30024"
+msgid "Archive Type: {value}"
+msgstr "Tipo de arquivamento: {value}"
+
+msgctxt "#30025"
+msgid "Not Archived"
+msgstr "Não arquivado"
+
+msgctxt "#30026"
+msgid "gzip"
+msgstr "gzip"
+
+msgctxt "#30027"
+msgid "Enabled: {value}"
+msgstr "Habilitado: {value}"
+
+msgctxt "#30028"
+msgid "Ignore Playlist Channel Numbers: {value}"
+msgstr "Ignorar números dos canais da Playlist: {value}"
+
+msgctxt "#30029"
+msgid "Starting Channel Number: {value}"
+msgstr "Número de canal inicial: {value}"
+
+msgctxt "#30030"
+msgid "Default Visible Channels: {value}"
+msgstr "Padrão de canais visíveis: {value}"
+
+msgctxt "#30031"
+msgid "Group Name: {value}"
+msgstr "Nome de grupo: {value}"
+
+msgctxt "#30032"
+msgid "Ignore Playlist Groups: {value}"
+msgstr "Ignorar grupos da Playlist: {value}"
+
+msgctxt "#30033"
+msgid "Group Name: {value}"
+msgstr "Nome do grupo: {value}"
+
+msgctxt "#30034"
+msgid "Enter Group Name"
+msgstr "Entrar com o nome do grupo"
+
+msgctxt "#30035"
+msgid "Enter Starting Channel Number"
+msgstr "Entrar com o número inicial de canal"
+
+msgctxt "#30036"
+msgid "Select Archive Type"
+msgstr "Escolha o tipo de arquivamento"
+
+msgctxt "#30037"
+msgid "Manage TV"
+msgstr "Gerenciar TV"
+
+msgctxt "#30038"
+msgid "All Channels"
+msgstr "Todos canais"
+
+msgctxt "#30039"
+msgid "Delete EPG"
+msgstr "Remover EPG"
+
+msgctxt "#30040"
+msgid "Edit EPG"
+msgstr "Editar EPG"
+
+msgctxt "#30041"
+msgid "EPG Source: {value}"
+msgstr "Fonte do EPG: {value}"
+
+msgctxt "#30042"
+msgid "{label} (DISABLED)"
+msgstr "{label} (DESABILITADO)"
+
+msgctxt "#30043"
+msgid "Merge Complete"
+msgstr "União finalizada"
+
+msgctxt "#30044"
+msgid "Run Merge"
+msgstr "Rodar união"
+
+msgctxt "#30045"
+msgid "Merge Started"
+msgstr "União iniciada"
+
+msgctxt "#30046"
+msgid "A merge is already in progress"
+msgstr "Uma união já está em andamento"
+
+msgctxt "#30047"
+msgid "Enter Channel URL"
+msgstr "Entre com a URL do canal"
+
+msgctxt "#30048"
+msgid "Next ({page})"
+msgstr "Próxima ({page})"
+
+msgctxt "#30049"
+msgid "{chno} {name}"
+msgstr "{chno} {name}"
+
+msgctxt "#30050"
+msgid "{label} [COLOR red](HIDDEN)[/COLOR]"
+msgstr "{label} [COLOR red](OCULTO)[/COLOR]"
+
+msgctxt "#30051"
+msgid "(NO NAME)"
+msgstr "(SEM NOME)"
+
+msgctxt "#30052"
+msgid "Show Channel"
+msgstr "Mostrar canal"
+
+msgctxt "#30053"
+msgid "Hide Channel"
+msgstr "Esconder canal"
+
+msgctxt "#30054"
+msgid "Play Channel"
+msgstr "Tocar canal"
+
+msgctxt "#30055"
+msgid "Delete Channel"
+msgstr "Remover canal"
+
+msgctxt "#30056"
+msgid "Reset Channel"
+msgstr "Redefinir canal"
+
+msgctxt "#30057"
+msgid "Edit Channel"
+msgstr "Editar canal"
+
+msgctxt "#30058"
+msgid "[COLOR blue]{label}[/COLOR]"
+msgstr "[COLOR blue]{label}[/COLOR]"
+
+msgctxt "#30059"
+msgid "Playlist"
+msgstr "Playlist"
+
+msgctxt "#30060"
+msgid "Add Channel"
+msgstr "Adicionar canal"
+
+msgctxt "#30061"
+msgid "EPGs"
+msgstr "EPGs"
+
+msgctxt "#30062"
+msgid ""
+"Add-on source timed out\n"
+"{url}"
+msgstr ""
+"Tempo de fonte do add-on expirado\n"
+"{url}"
+
+msgctxt "#30063"
+msgid ""
+"Add-on source failed\n"
+"{url}"
+msgstr ""
+"Fonte do add-on falhou\n"
+"{url}"
+
+msgctxt "#30064"
+msgid ""
+"Local path not found\n"
+"{path}"
+msgstr ""
+"Caminho local não encontrado\n"
+"{path}"
+
+msgctxt "#30065"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "#30066"
+msgid "Use IPTV Merge Proxy for HTTP streams"
+msgstr "Utilizar proxy do IPTV Merge para streams HTTP"
+
+msgctxt "#30067"
+msgid "Add-on Settings"
+msgstr "Configurações do add-on"
+
+msgctxt "#30068"
+msgid ""
+"[B][COLOR orange]Pending[/COLOR][/B]\n"
+"\n"
+"'Run Merge' in main menu\n"
+"to force a merge"
+msgstr ""
+"[B][COLOR orange]Pendente[/COLOR][/B]\n"
+"\n"
+"'Rodar união' no menu principal\n"
+"para forçar uma união"
+
+msgctxt "#30069"
+msgid ""
+"[B][COLOR gray]Disabled[/COLOR][/B]\n"
+"\n"
+"Will not be included in merges"
+msgstr ""
+"[B][COLOR gray]Desabilitado[/COLOR][/B]\n"
+"\n"
+"Não será incluso nas uniões"
+
+msgctxt "#30070"
+msgid "Starting Channel Number"
+msgstr "Número de canal inicial"
+
+msgctxt "#30071"
+msgid "Manage Radio"
+msgstr "Gerir rádio"
+
+msgctxt "#30072"
+msgid "{group} (RADIO)"
+msgstr "{group} (RÁDIO)"
+
+msgctxt "#30073"
+msgid "Run merge on boot"
+msgstr "Rodar união no boot"
+
+msgctxt "#30074"
+msgid "xz"
+msgstr "xz"
+
+msgctxt "#30075"
+msgid "Auto (Guess)"
+msgstr "Automático (adivinhar)"
+
+msgctxt "#30076"
+msgid "Insert Playlist"
+msgstr "Inserir Playlist"
+
+msgctxt "#30077"
+msgid "Ask to add Playlist/EPG"
+msgstr "Perguntar para adicionar Playlist/EPG"
+
+msgctxt "#30078"
+msgid "Group Order Override"
+msgstr "Sobrescrever ordem de grupo"
+
+msgctxt "#30079"
+msgid "HTTP API Server"
+msgstr "HTTP API Server"
+
+msgctxt "#30080"
+msgid "HTTP Request Forces Merge"
+msgstr "Requisição HTTP força união"
+
+msgctxt "#30081"
+msgid "Remove EPG Orphans"
+msgstr "Remover EPG órfãos"
+
+# # COMMON SETTINGS ##
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Perguntar"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Melhor"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Inferior"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Bypass"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Custom"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Desabilitado"
