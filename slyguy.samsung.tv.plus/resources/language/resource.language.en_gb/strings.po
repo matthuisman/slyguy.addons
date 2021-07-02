@@ -6,7 +6,7 @@ msgid "Live TV"
 msgstr ""
 
 msgctxt "#30001"
-msgid "{chno} | {name}"
+msgid "Show Channel Numbers"
 msgstr "
 
 msgctxt "#30002"
@@ -18,51 +18,31 @@ msgid "ALL"
 msgstr ""
 
 msgctxt "#30004"
-msgid "USA"
+msgid "Show Mini EPG"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Great Britain"
+msgid "Added to Merge"
 msgstr ""
 
 msgctxt "#30006"
-msgid "Canada"
+msgid "Removed from Merge"
 msgstr ""
 
 msgctxt "#30007"
-msgid "India"
+msgid "Included in Merge"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Germany"
+msgid "{count} Channels"
 msgstr ""
 
 msgctxt "#30009"
-msgid "Spain"
+msgid "Add to Merge"
 msgstr ""
 
 msgctxt "#30010"
-msgid "Italy"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Korea"
-msgstr ""
-
-msgctxt "#30012"
-msgid "France"
-msgstr ""
-
-msgctxt "#30013"
-msgid "Switzerland"
-msgstr ""
-
-msgctxt "#30014"
-msgid "Austria"
-msgstr ""
-
-msgctxt "#30015"
-msgid "Show Mini EPG"
+msgid "Remove from Merge"
 msgstr ""
 
 ## COMMON SETTINGS ##
