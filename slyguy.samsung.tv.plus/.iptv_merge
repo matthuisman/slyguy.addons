@@ -1,4 +1,4 @@
 {
     "playlist": "plugin://$ID/?_=playlist&output=$FILE",
-    "epg":      "plugin://$ID/?_=epg&output=$FILE"
+    "epg": "https://i.mjh.nz/SamsungTVPlus/all.xml.gz"
 }
