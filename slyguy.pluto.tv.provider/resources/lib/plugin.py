@@ -1,23 +1,13 @@
+import uuid
 import codecs
-from xml.sax.saxutils import escape
 
 import arrow
-
-from slyguy import plugin, inputstream, signals, settings
+from slyguy import plugin, inputstream, mem_cache, settings, userdata, gui
 from slyguy.session import Session
 from slyguy.util import gzip_extract
-from slyguy.language import _
-from slyguy.log import log
 
-from .api import API
 from .language import _
 from .constants import *
-
-api = API()
-
-@signals.on(signals.BEFORE_DISPATCH)
-def before_dispatch():
-    api.new_session()
 
 @plugin.route('')
 def home(**kwargs):
@@ -32,137 +22,246 @@ def home(**kwargs):
 
     return folder
 
-@plugin.route()
-def live_tv(**kwargs):
-    folder = plugin.Folder(_.LIVE_TV)
+@mem_cache.cached(60*15)
+def _data():
+    return Session().gz_json(DATA_URL)
 
-    now = arrow.now()
-    channels = api.channels()
-    EPG_EVENTS_COUNT = 5
+def _app_data():
+    data = _data()
 
-    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
+    region = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 0}
+    for key in data['regions']:
+        data['regions'][key]['sort'] = 1
+        region['channels'].update(data['regions'][key]['channels'])
+
+    data['regions'][ALL] = region
+
+    return data
+
+def _process_channels(channels, group=ALL):
+    items = []
+
+    show_chno = settings.getBool('show_chno', True)
+
+    if settings.getBool('show_mini_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        epg_count = None
+
+    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
         channel = channels[id]
 
-        plot = u''
-        count = 0
-        for row in channel.get('programs', []):
-            start = arrow.get(row['start']).to('utc')
-            stop  = arrow.get(row['stop']).to('utc')
+        if group != ALL and channel['group'] != group:
+            continue
 
-            if (now > start and now < stop) or start > now:
-                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row['title'])
-                count += 1
-                if count == EPG_EVENTS_COUNT:
-                    break
+        if not epg_count:
+            plot = channel.get('description', '')
+        else:
+            plot = u''
+            count = 0
+            for index, row in enumerate(channel.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
 
-        folder.add_item(
-            label = _(_.CH_LABEL, chno=channel['chno'], name=channel['name']),
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        item = plugin.Item(
+            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
+            info = {'plot': plot},
             art = {'thumb': channel['logo']},
-            info = {'plot': plot.strip('\n')},
             playable = True,
             path = plugin.url_for(play, id=id, _is_live=True),
         )
+        items.append(item)
+
+    return items
+
+@plugin.route()
+def live_tv(code=None, group=None, **kwargs):
+    data = _app_data()
+    regions = userdata.get('merge_regions', [])
+
+    if not code:
+        folder = plugin.Folder(_.LIVE_TV)
+
+        for code in sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name'])):
+            region = data['regions'][code]
+            ch_count = len(region['channels'])
+            in_merge = code in regions
+
+            folder.add_item(
+                label = _(u'{name} ({count})'.format(name=region['name'], count=ch_count), _color='FF19f109' if in_merge else ''),
+                art = {'thumb': region.get('logo')},
+                info = {
+                    'plot': u'{}\n\n{}\n\n{}'.format(region['name'], _(_.CHANNEL_COUNT, count=ch_count), _(_.MERGE_INCLUDED, _color='FF19f109') if in_merge else ''),
+                },
+                context = ((_.MERGE_REMOVE if in_merge else _.MERGE_ADD, 'RunPlugin({})'.format(plugin.url_for(toggle_merge, code=code))),),
+                path = plugin.url_for(live_tv, code=code),
+            )
+
+        return folder
+
+    region = data['regions'][code]
+    folder = plugin.Folder(region['name'])
+    channels = region['channels']
+
+    if group is None:
+        groups = {}
+        all_count = 0
+        for id in channels:
+            channel = channels[id]
+            all_count += 1
+            if channel['group'] not in groups:
+                groups[channel['group']] = 1
+            else:
+                groups[channel['group']] += 1
+
+        folder = plugin.Folder(region['name'])
+
+        folder.add_item(
+            label = _(u'{name} ({count})'.format(name=_.ALL, count=all_count)),
+            art = {'thumb': region.get('logo')},
+            path = plugin.url_for(live_tv, code=code, group=ALL),
+        )
+
+        for group in sorted(groups):
+            folder.add_item(
+                label = _(u'{name} ({count})'.format(name=group, count=groups[group])),
+                art = {'thumb': region.get('logo')},
+                info = {
+                    'plot': u'{}\n\n{}'.format(group, _(_.CHANNEL_COUNT, count=groups[group])),
+                },
+                path = plugin.url_for(live_tv, code=code, group=group)
+            )
+
+        folder.add_item(
+            label = _.SEARCH,
+            art = {'thumb': region.get('logo')},
+            path = plugin.url_for(search, code=code),
+        )
+
+        return folder
+
+    folder = plugin.Folder(region['name'] if group == ALL else group)
+    items = _process_channels(channels, group=group)
+    folder.add_items(items)
+    return folder
+
+@plugin.route()
+def search(code, query=None, **kwargs):
+    if not query:
+        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
+        if not query:
+            return
+
+        userdata.set('search', query)
+
+    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+
+    data = _app_data()
+
+    results = {}
+    for id in data['regions'][code]['channels']:
+        channel = data['regions'][code]['channels'][id]
+        search_t = '{} {} {}'.format(channel['name'], channel['chno'], channel['group'])
+        if query.lower() in search_t.lower():
+            results[id] = channel
+
+    items = _process_channels(results)
+    folder.add_items(items)
 
     return folder
 
 @plugin.route()
+def toggle_merge(code, **kwargs):
+    data = _app_data()
+
+    regions = userdata.get('merge_regions', [])
+    region = data['regions'][code]
+
+    if code in regions:
+        if code == ALL:
+            regions = [ALL]
+
+        regions.remove(code)
+    else:
+        if code == ALL:
+            regions = []
+
+        regions.append(code)
+
+    if ALL in regions and code != ALL:
+        regions.remove(ALL)
+
+    gui.notification(_.MERGE_ADDED if code in regions else _.MERGE_REMOVED, heading=region['name'], icon=region['logo'])
+    userdata.set('merge_regions', regions)
+    gui.refresh()
+
+def _get_url(channel):
+    device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(uuid.getnode())))
+
+    url = channel['url_alt'] if settings.getBool('show_adverts', True) else channel['url']
+    url = url.replace('%7BPSID%7D', device_id)
+
+    return url
+
+@plugin.route()
 def play(id, **kwargs):
-    channel = api.all_channels()[id]
+    data = _app_data()
+    data['regions'].pop(ALL, None)
 
-    item = plugin.Item(
+    channel = None
+    region = None
+    for code in data['regions']:
+        channels = data['regions'][code]['channels']
+        if id in channels:
+            channel = channels[id]
+            region = data['regions'][code]
+            break
+
+    if not channel:
+        raise Exception('Unable to find that channel')
+
+    headers = data.get('headers', {})
+    headers.update(region.get('headers', {}))
+    headers.update(channel.get('headers', {}))
+
+    return plugin.Item(
         label = channel['name'],
+        info = {'plot': channel.get('description', '')},
         art = {'thumb': channel['logo']},
-        path = api.play(id) if settings.getBool('use_alt_streams', False) else channel['url'],
-        headers = api._session.headers,
         inputstream = inputstream.HLS(live=True, x_discontinuity=True),
+        headers = headers,
+        path = _get_url(channel),
     )
-
-    return item
 
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    channels = api.channels()
+    data = _app_data()
+    data['regions'].pop(ALL, None)
+
+    regions = userdata.get('merge_regions', [])
+    if ALL in regions:
+        regions = [x for x in data['regions']]
+    else:
+        regions = [x for x in regions if x in data['regions']]
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
-        for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
-            channel = channels[id]
-            f.write(u'\n#EXTINF:-1 tvg-chno="{chno}" tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{group}",{name}\n{url}'.format(
-                chno = channel['chno'], id = id, name = channel['name'], group = channel['group'], logo = channel['logo'], url = plugin.url_for(play, id=id, _is_live=True),
-            ))
+        for code in regions:
+            region = data['regions'][code]
+            channels = region['channels']
 
-@plugin.route()
-@plugin.merge()
-def epg(output, **kwargs):
-    region = settings.getEnum('region', REGIONS, default=US)
-
-    if region not in (LOCAL, CUSTOM):
-        epg_url = MH_EPG_URL.format(region=region)
-
-        try:
-            Session().chunked_dl(epg_url, output)
-            if epg_url.endswith('.gz'):
-                gzip_extract(output)
-            return
-        except Exception as e:
-            log.exception(e)
-            log.debug('Failed to get remote epg: {}. Fall back to scraping'.format(epg_url))
-
-    def process_epg(channels):
-        count = 0
-        for id in channels:
-            channel = channels[id]
-            for row in channel.get('programs', []):
-                start = arrow.get(row['start']).to('utc')
-                stop  = arrow.get(row['stop']).to('utc')
-                title = row['title']
-                description = row['episode']['description']
-                subtitle = row['episode']['name']
-                category = row['episode']['genre']
-                icon = None
-
-                if subtitle.lower().strip() == title.lower().strip():
-                    subtitle = None
-
-                f.write(u'<programme channel="{}" start="{}" stop="{}"><title>{}</title><desc>{}</desc>{}{}{}</programme>'.format(
-                        id,
-                        start.format('YYYYMMDDHHmmss Z'),
-                        stop.format('YYYYMMDDHHmmss Z'),
-                        escape(title),
-                        escape(description),
-                        u'<icon src="{}"/>'.format(escape(icon)) if icon else '',
-                        u'<sub-title>{}</sub-title>'.format(escape(subtitle)) if subtitle else '',
-                        u'<category>{}</category>'.format(escape(category)) if category else '',
-                    ))
-
-                count += 1
-
-        return count
-
-    HOUR_SHIFT = 6
-    now = arrow.now()
-    start = now.replace(minute=0, second=0, microsecond=0).to('utc')
-    stop = start.shift(hours=HOUR_SHIFT)
-    END_TIME = start.shift(days=settings.getInt('epg_days', 3))
-
-    with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
-
-        channels = api.epg(start, stop)
-        for id in channels:
-            f.write(u'<channel id="{id}"/>'.format(id=id))
-
-        added = process_epg(channels)
-        while stop < END_TIME:
-            start = stop
-            stop  = start.shift(hours=HOUR_SHIFT)
-
-            channels = api.epg(start, stop)
-            added = process_epg(channels)
-
-            if added <= len(channels):
-                break
-
-        f.write(u'</tv>')
+            for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
+                channel = channels[id]
+                f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{region};{group}",{name}\n{url}'.format(
+                    id=id, chno=channel['chno'], name=channel['name'], logo=channel['logo'], region=region['name'], group=channel['group'], url=plugin.url_for(play, id=id, _is_live=True),
+                ))
