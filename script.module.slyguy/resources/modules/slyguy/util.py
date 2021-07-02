@@ -35,7 +35,8 @@ def get_dns_rewrites():
     if COMMON_ADDON.getAddonInfo('id') != ADDON_ID:
         rewrites.extend(_load_rewrites(COMMON_ADDON.getAddonInfo('profile')))
 
-    log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
+    if rewrites:
+        log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
 
     return rewrites
 

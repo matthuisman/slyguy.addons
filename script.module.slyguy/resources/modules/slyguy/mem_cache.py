@@ -1,6 +1,7 @@
 import sys
 from time import time
 from functools import wraps
+from copy import deepcopy
 
 from six.moves import cPickle
 
@@ -40,7 +41,7 @@ def set(key, value, expires=CACHE_EXPIRY):
         expires = int(time() + expires)
 
     log('Cache Set: {}'.format(key))
-    cache.data[key] = [value, expires]
+    cache.data[key] = [deepcopy(value), expires]
 
 def get(key, default=None):
     try:
