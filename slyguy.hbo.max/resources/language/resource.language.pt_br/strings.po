@@ -1,0 +1,157 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Device Link"
+msgstr "Device Link"
+
+msgctxt "#30002"
+msgid ""
+"1. Go to [B]hbomax.com/tvsignin[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+"1. Acesse [B]hbomax.com/tvsignin[/B]\n"
+"2. Digite o código: [B]{code}[/B]"
+
+msgctxt "#30003"
+msgid "Device ID"
+msgstr "Device ID"
+
+msgctxt "#30004"
+msgid ""
+"API request failed\n"
+"Server Error: {msg}"
+msgstr ""
+"Falha na requisição de API\n"
+"Erro no servidor: {msg}"
+
+msgctxt "#30005"
+msgid "Go to Series"
+msgstr "Ir para seriados"
+
+msgctxt "#30006"
+msgid ""
+"Unable to find a video for this content\n"
+"Check your IP is in correct region"
+msgstr ""
+"Não foi possível encontrar um vídeo para este conteúdo\n"
+"Verifique se seu IP está na região correta"
+
+msgctxt "#30007"
+msgid "Dolby Digital Plus (EC-3)"
+msgstr "Dolby Digital Plus (EC-3)"
+
+msgctxt "#30009"
+msgid "Widevine L1 Secure Device"
+msgstr "Widevine L1 Secure Device"
+
+msgctxt "#30010"
+msgid "Play Next Episode"
+msgstr "Tocar próximo episódio"
+
+msgctxt "#30011"
+msgid "Skip Intros"
+msgstr "Pular introduções"
+
+msgctxt "#30012"
+msgid "Play Next Recommended Movie"
+msgstr "Tocar próximo filme recomendado"
+
+msgctxt "#30013"
+msgid "Skip Credits"
+msgstr "Pular créditos"
+
+msgctxt "#30014"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30015"
+msgid "4K"
+msgstr "4K"
+
+msgctxt "#30016"
+msgid "Dolby Vision"
+msgstr "Dolby Vision"
+
+msgctxt "#30017"
+msgid "Accessibility Audio"
+msgstr "Áudio acessível"
+
+msgctxt "#30018"
+msgid "Dolby Digital (AC-3)"
+msgstr "Dolby Digital (AC-3)"
+
+msgctxt "#30019"
+msgid "Featured"
+msgstr "Destaques"
+
+msgctxt "#30020"
+msgid "Series"
+msgstr "Seriados"
+
+msgctxt "#30021"
+msgid "Movies"
+msgstr "Filmes"
+
+msgctxt "#30022"
+msgid "Originals"
+msgstr "Originais"
+
+msgctxt "#30023"
+msgid "Just Added"
+msgstr "Recém adicionados"
+
+msgctxt "#30024"
+msgid "Last Chance"
+msgstr "Última chance"
+
+msgctxt "#30025"
+msgid "Coming Soon"
+msgstr "Em breve"
+
+msgctxt "#30026"
+msgid "Trending Now"
+msgstr "Bombando agora"
+
+msgctxt "#30027"
+msgid ""
+"No data returned\n"
+"Usually caused if your IP is out of region\n"
+"or HBO Max is blocking your VPN"
+msgstr ""
+"Nenhum dado retornado\n"
+"Normalmente por seu IP está em uma região não suportada\n"
+"ou a HBO Max está bloqueando sua VPN"
+
+msgctxt "#30028"
+msgid ""
+"HBO Max has detected your out of region\n"
+"Check your IP is in correct region"
+msgstr ""
+"HBO Max te detectou fora de uma região\n"
+"Verifique se seu IP está na região correta"
+
+# # COMMON SETTINGS ##
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Perguntar"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Melhor"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Inferior"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Bypass"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Custom"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Desabilitado"
