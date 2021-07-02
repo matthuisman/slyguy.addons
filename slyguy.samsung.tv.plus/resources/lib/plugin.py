@@ -37,30 +37,49 @@ def _app_data():
 
     return data
 
-@plugin.route()
-def toggle_merge(code, **kwargs):
-    data = _app_data()
+def _process_channels(channels, group=ALL):
+    items = []
 
-    regions = userdata.get('merge_regions', [])
-    region = data['regions'][code]
+    show_chno = settings.getBool('show_chno', True)
 
-    if code in regions:
-        if code == ALL:
-            regions = [ALL]
-
-        regions.remove(code)
+    if settings.getBool('show_epg', True):
+        now = arrow.now()
+        epg_count = 5
     else:
-        if code == ALL:
-            regions = []
+        epg_count = None
 
-        regions.append(code)
+    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
+        channel = channels[id]
 
-    if ALL in regions and code != ALL:
-        regions.remove(ALL)
+        if group != ALL and channel['group'] != group:
+            continue
 
-    gui.notification(_.MERGE_ADDED if code in regions else _.MERGE_REMOVED, heading=region['name'], icon=region['logo'])
-    userdata.set('merge_regions', regions)
-    gui.refresh()
+        if not epg_count:
+            plot = channel['description']
+        else:
+            plot = u''
+            count = 0
+            for index, row in enumerate(channel.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        item = plugin.Item(
+            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
+            info = {'plot': plot},
+            art = {'thumb': channel['logo']},
+            playable = True,
+            path = plugin.url_for(play, id=id, _is_live=True),
+        )
+        items.append(item)
+
+    return items
 
 @plugin.route()
 def live_tv(code=None, group=None, **kwargs):
@@ -74,9 +93,6 @@ def live_tv(code=None, group=None, **kwargs):
             region = data['regions'][code]
             ch_count = len(region['channels'])
             in_merge = code in regions
-
-            if code == ALL:
-                region['name'] = _(region['name'], _bold=True)
 
             folder.add_item(
                 label = _(u'{name} ({count})'.format(name=region['name'], count=ch_count), _color='FF19f109' if in_merge else ''),
@@ -108,7 +124,7 @@ def live_tv(code=None, group=None, **kwargs):
         folder = plugin.Folder(region['name'])
 
         folder.add_item(
-            label = _(u'{name} ({count})'.format(name=_.ALL, count=all_count), _bold=True),
+            label = _(u'{name} ({count})'.format(name=_.ALL, count=all_count)),
             art = {'thumb': region.get('logo')},
             path = plugin.url_for(live_tv, code=code, group=ALL),
         )
@@ -117,51 +133,75 @@ def live_tv(code=None, group=None, **kwargs):
             folder.add_item(
                 label = _(u'{name} ({count})'.format(name=group, count=groups[group])),
                 art = {'thumb': region.get('logo')},
+                info = {
+                    'plot': u'{}\n\n{}'.format(group, _(_.CHANNEL_COUNT, count=groups[group])),
+                },
                 path = plugin.url_for(live_tv, code=code, group=group)
             )
+
+        folder.add_item(
+            label = _.SEARCH,
+            art = {'thumb': region.get('logo')},
+            path = plugin.url_for(search, code=code),
+        )
 
         return folder
 
     folder = plugin.Folder(region['name'] if group == ALL else group)
-    show_chno = settings.getBool('show_chno', True)
+    items = _process_channels(channels, group=group)
+    folder.add_items(items)
+    return folder
 
-    if settings.getBool('show_epg', True):
-        now = arrow.now()
-        EPG_EVENTS_COUNT = 5
-    else:
-        EPG_EVENTS_COUNT = None
+@plugin.route()
+def search(code, query=None, **kwargs):
+    if not query:
+        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
+        if not query:
+            return
 
-    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
-        channel = channels[id]
+        userdata.set('search', query)
 
-        if group != ALL and channel['group'] != group:
-            continue
-        
-        if not EPG_EVENTS_COUNT:
-            plot = channel['description']
-        else:
-            plot = u''
-            count = 0
-            for index, row in enumerate(channel.get('programs', [])):
-                start = arrow.get(row[0])
-                try: stop = arrow.get(channel['programs'][index+1][0])
-                except: stop = start.shift(hours=1)
+    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
 
-                if (now > start and now < stop) or start > now:
-                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
-                    count += 1
-                    if count == EPG_EVENTS_COUNT:
-                        break
+    data = _app_data()
 
-        folder.add_item(
-            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
-            info = {'plot': plot},
-            art = {'thumb': channel['logo']},
-            playable = True,
-            path = plugin.url_for(play, id=id, _is_live=True),
-        )
+    results = {}
+    for id in data['regions'][code]['channels']:
+        channel = data['regions'][code]['channels'][id]
+        search_t = '{} {} {}'.format(channel['name'], channel['chno'], channel['group'])
+        if query.lower() in search_t.lower():
+            results[id] = channel
+
+    items = _process_channels(results)
+    folder.add_items(items)
 
     return folder
+
+@plugin.route()
+def toggle_merge(code, **kwargs):
+    data = _app_data()
+
+    regions = userdata.get('merge_regions', [])
+    region = data['regions'][code]
+
+    if code in regions:
+        if code == ALL:
+            regions = [ALL]
+
+        regions.remove(code)
+    else:
+        if code == ALL:
+            regions = []
+
+        regions.append(code)
+
+    if ALL in regions and code != ALL:
+        regions.remove(ALL)
+
+    gui.notification(_.MERGE_ADDED if code in regions else _.MERGE_REMOVED, heading=region['name'], icon=region['logo'])
+    userdata.set('merge_regions', regions)
+    gui.refresh()
+
 
 @plugin.route()
 def play(id, **kwargs):
