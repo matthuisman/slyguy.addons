@@ -2,76 +2,51 @@ msgid ""
 msgstr ""
 
 msgctxt "#30000"
-msgid "US"
-msgstr ""
-
-msgctxt "#30001"
-msgid "UK"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Local"
-msgstr ""
-
-msgctxt "#30003"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#30004"
 msgid "Live TV"
 msgstr ""
 
-msgctxt "#30005"
-msgid "{chno} | {name}"
-msgstr ""
+msgctxt "#30001"
+msgid "Show Channel Numbers"
+msgstr "
 
-msgctxt "#30006"
+msgctxt "#30002"
 msgid "Region"
 msgstr ""
 
-msgctxt "#30007"
-msgid "Region IP Address"
-msgstr ""
-
-msgctxt "#30008"
-msgid "No channels returned\n"
-"Check region is set correctly in settings"
-msgstr ""
-
-msgctxt "#30009"
-msgid "Germany"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Spain"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Canada"
-msgstr ""
-
-msgctxt "#30012"
+msgctxt "#30003"
 msgid "All"
 msgstr ""
 
-msgctxt "#30013"
-msgid "Brazil"
+msgctxt "#30004"
+msgid "Show Mini EPG"
 msgstr ""
 
-msgctxt "#30014"
-msgid "Show Mini EPG (slower listings)"
+msgctxt "#30005"
+msgid "Added to Merge"
 msgstr ""
 
-msgctxt "#30015"
-msgid "Mexico"
+msgctxt "#30006"
+msgid "Removed from Merge"
 msgstr ""
 
-msgctxt "#30016"
-msgid "France"
+msgctxt "#30007"
+msgid "Included in Merge"
 msgstr ""
 
-msgctxt "#30017"
-msgid "Use alternative streams (with ads)"
+msgctxt "#30008"
+msgid "{count} Channels"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Add to Merge"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Remove from Merge"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Show Adverts"
 msgstr ""
 
 ## COMMON SETTINGS ##
