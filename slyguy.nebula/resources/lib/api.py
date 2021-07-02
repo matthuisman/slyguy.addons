@@ -56,11 +56,12 @@ class API(object):
 
         log.debug('Refreshing token')
 
-        data = self._session.get('https://api.watchnebula.com/api/v1/zype/auth-info/', params={'from': 'Android'}, json={}).json()
-        if 'access_token' not in data:
-            self._session.post('https://api.watchnebula.com/api/v1/zype/auth-info/new/', json={})
-
+        data = self._session.get('https://api.watchnebula.com/api/v1/auth/user/', params={'from': 'Android'}, json={}).json()
+        if 'zype_auth_info' in data:
+            data = data['zype_auth_info' ]
+        else:
             for i in range(5):
+                self._session.post('https://api.watchnebula.com/api/v1/zype/auth-info/new/', json={})
                 sleep(1)
                 data = self._session.get('https://api.watchnebula.com/api/v1/zype/auth-info/', params={'from': 'Android'}, json={}).json()
                 if 'access_token' in data:
