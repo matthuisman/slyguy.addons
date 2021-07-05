@@ -57,8 +57,8 @@ class API(object):
         log.debug('Refreshing token')
 
         data = self._session.get('https://api.watchnebula.com/api/v1/auth/user/', params={'from': 'Android'}, json={}).json()
-        if 'zype_auth_info' in data:
-            data = data['zype_auth_info' ]
+        if 'zype_auth_info' in data and data['zype_auth_info']:
+            data = data['zype_auth_info']
         else:
             for i in range(5):
                 self._session.post('https://api.watchnebula.com/api/v1/zype/auth-info/new/', json={})
@@ -67,7 +67,7 @@ class API(object):
                 if 'access_token' in data:
                     break
 
-        if data.get('detail'):
+        if not data or data.get('detail'):
             self.logout()
             raise APIError('Unable to refresh token')
 
