@@ -1,19 +1,12 @@
 import codecs
-from xml.sax.saxutils import escape
 
 import arrow
-
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy.session import Session
+from slyguy.mem_cache import cached
 
-from .api import API
 from .constants import *
 from .language import _
-
-api = API()
-
-@signals.on(signals.BEFORE_DISPATCH)
-def before_dispatch():
-    api.new_session()
 
 @plugin.route('')
 def home(**kwargs):
@@ -30,15 +23,38 @@ def home(**kwargs):
 
     return folder
 
-def _get_station_li(callsign, station):
+@cached(60*15)
+def _app_data():
+    return Session().gz_json(DATA_URL)
+
+def _get_station_li(callsign, station, epg_count=None, now=None):
     name = station['name']
     if not station['url']:
         name = _(_.NO_STREAM_LABEL, name=name)
 
+    if not epg_count:
+        plot = station.get('description', '')
+    else:
+        plot = u''
+        count = 0
+        for index, row in enumerate(station.get('programs', [])):
+            start = arrow.get(row[0])
+            try: stop = arrow.get(station['programs'][index+1][0])
+            except: stop = start.shift(hours=1)
+
+            if (now > start and now < stop) or start > now:
+                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                count += 1
+                if count == epg_count:
+                    break
+
     return plugin.Item(
-        label    = name, 
-        art      = {'thumb': station['logo']},
-        path     = plugin.url_for(play, callsign=callsign, _is_live=True), 
+        label = name,
+        info = {
+            'plot': plot,
+        },
+        art = {'thumb': station['logo']},
+        path = plugin.url_for(play, callsign=callsign, _is_live=True),
         playable = True,
     )
 
@@ -62,13 +78,20 @@ def states(**kwargs):
 def stations(state=None, label=None, **kwargs):
     folder = plugin.Folder(label or _.STATIONS)
 
+    if settings.getBool('show_mini_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        now = None
+        epg_count = None
+
     all_stations = _filtered_stations()
     for callsign in sorted(all_stations, key=lambda x: all_stations[x]['name'].lower()):
         station = all_stations[callsign]
         if state and state not in station['states']:
             continue
         
-        item = _get_station_li(callsign, station)
+        item = _get_station_li(callsign, station, epg_count=epg_count, now=now)
         folder.add_items(item)
 
     return folder
@@ -81,6 +104,13 @@ def search(**kwargs):
 
     userdata.set('search', query)
 
+    if settings.getBool('show_mini_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        now = None
+        epg_count = None
+
     all_stations = _filtered_stations()
     folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
     
@@ -90,14 +120,14 @@ def search(**kwargs):
 
         states = [x.lower() for x in station['states']]
         if query == callsign.lower() or query in station['name'].lower():
-            item = _get_station_li(callsign, station)
+            item = _get_station_li(callsign, station, epg_count=epg_count, now=now)
             folder.add_items(item)
 
     return folder
 
 def _filtered_stations():
     stations = {}
-    all_stations = api.all_stations()
+    all_stations = _app_data()['stations']
 
     for callsign in all_stations:
         station = all_stations[callsign]
@@ -109,19 +139,19 @@ def _filtered_stations():
 
 @plugin.route()
 def play(callsign, **kwargs):
-    all_stations = api.all_stations()
+    app_data = _app_data()
+    all_stations = app_data['stations']
     station = all_stations[callsign]
 
     if not station['url']:
         plugin.exception(_.NO_STREAM_MSG)
 
     item = plugin.Item(
-        label       = station['name'],
-        path        = station['url'],
-        art         = {'thumb': station['logo']},
-        headers     = HEADERS,
+        label = station['name'],
+        path = station['url'],
+        art = {'thumb': station['logo']},
+        headers = app_data['headers'],
         inputstream = inputstream.HLS(live=True),
-        geolock     = 'US',
     )
 
     return item
@@ -129,7 +159,7 @@ def play(callsign, **kwargs):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    all_stations = api.all_stations()
+    all_stations = _app_data()['stations']
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U\n')
