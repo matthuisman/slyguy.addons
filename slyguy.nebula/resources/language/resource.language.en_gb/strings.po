@@ -14,7 +14,7 @@ msgid "Featured"
 msgstr ""
 
 msgctxt "#30004"
-msgid "My Library"
+msgid "My Videos"
 msgstr ""
 
 msgctxt "#30005"
@@ -59,27 +59,20 @@ msgid "Followed [B]{creator}[/B]"
 msgstr ""
 
 msgctxt "#30015"
-msgid "Latest Videos"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Featured Creators"
-msgstr ""
-
-msgctxt "#30017"
 msgid "Unfollow [B]{creator}[/B]"
 msgstr ""
 
-msgctxt "#30018"
+msgctxt "#30016"
 msgid "Unfollowed [B]{creator}[/B]"
 msgstr ""
 
-msgctxt "#30019"
-msgid "My Library - Show Creators"
+msgctxt "#30017"
+msgid "[B]{creator}[/B]\n\n"
+"{description}"
 msgstr ""
 
-msgctxt "#30020"
-msgid "My Library - Videos Per Creator"
+msgctxt "#30018"
+msgid "My Creators"
 msgstr ""
 
 ## COMMON SETTINGS ##

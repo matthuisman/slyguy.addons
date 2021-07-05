@@ -24,9 +24,10 @@ def home(**kwargs):
     else:
         folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
         folder.add_item(label=_(_.VIDEOS, _bold=True), path=plugin.url_for(videos))
-     #   folder.add_item(label=_(_.PODCASTS, _bold=True), path=plugin.url_for(podcasts))
         folder.add_item(label=_(_.CREATORS, _bold=True), path=plugin.url_for(creators))
-        folder.add_item(label=_(_.MY_LIBRARY, _bold=True), path=plugin.url_for(my_library))
+        folder.add_item(label=_(_.PODCASTS, _bold=True), path=plugin.url_for(podcast_creators))
+        folder.add_item(label=_(_.MY_VIDEOS, _bold=True), path=plugin.url_for(my_videos))
+        folder.add_item(label=_(_.MY_CREATORS, _bold=True), path=plugin.url_for(my_creators))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -39,63 +40,145 @@ def home(**kwargs):
     return folder
 
 @plugin.route()
-def featured(**kwargs):
+def featured(index=None, **kwargs):
     folder = plugin.Folder(_.FEATURED)
+    index = int(index) if index else None
 
-    folder.add_item(label=_.LATEST_VIDEOS, path=plugin.url_for(playlist, label=_.LATEST_VIDEOS))
-    folder.add_item(label=_.FEATURED_CREATORS, path=plugin.url_for(feature, feature_type='Featured Creators'))
+    for count, row in enumerate(api.featured()):
+        if row['type'] == 'heroes':
+            continue
 
-    for row in api.collections():
-        folder.add_item(label=row['title'], path=plugin.url_for(feature, feature_type=row['title']))
+        if index is None:
+            folder.add_item(
+                label = row['title'], 
+                path = plugin.url_for(featured, index=count),
+            )
+
+        elif count == index:
+            folder = plugin.Folder(row['title'])
+
+            if row['type'] in ('latest_videos',):
+                items = _parse_videos(row['items'])
+                folder.add_items(items)
+
+            elif row['type'] in ('podcast_channels',):
+                items = _parse_podcast_creators(row['items'])
+                folder.add_items(items)
+
+            elif row['type'] in ('featured_creators','video_channels'):
+                items = _parse_creators(row['items'])
+                folder.add_items(items)
 
     return folder
 
 @plugin.route()
-def feature(feature_type, **kwargs):
-    folder = plugin.Folder(feature_type)
+def videos(category=None, title=None, page=1, **kwargs):
+    page = int(page)
+    page_size = settings.getInt('page_size', 50)
 
-    creators = api.creators()
-    def get_creator(content_id):
-        for creator in creators:
-            if creator['_id'] == content_id:
-                return creator
+    if category is None:
+        folder = plugin.Folder(_.VIDEOS)
 
-    featured = []
-    for row in api.featured(feature_type):
-        featured.append(get_creator(row['content_id']))
+        folder.add_item(
+            label = _.EVERYTHING,
+            path = plugin.url_for(videos, category='', title=_.EVERYTHING),
+        )
 
-    items = _parse_creators(featured)
+        for row in api.categories():
+            folder.add_item(
+                label = row['title'],
+                art = {'thumb': row['assets']['avatar-big-light']},
+                path = plugin.url_for(videos, category=row['slug'], title=row['title']),
+            )
+    
+        return folder
+
+    folder = plugin.Folder(title)
+
+    data = api.videos(category=category, page=page, page_size=page_size)
+    items = _parse_videos(data['results'])
     folder.add_items(items)
 
-    return folder
-
-@plugin.route()
-def videos(**kwargs):
-    folder = plugin.Folder(_.VIDEOS)
-
-    for row in api.categories():
+    if data['next']:
         folder.add_item(
-            label = row['title'],
-            path = plugin.url_for(playlist, label=row['title'], playlist_id=row['id']),
+            label = _(_.NEXT_PAGE, page=page+1),
+            path  = plugin.url_for(videos, category=category, title=title, page=page+1),
         )
 
     return folder
 
 @plugin.route()
-def creators(**kwargs):
-    folder = plugin.Folder(_.CREATORS)
+def podcast_creators(category=None, title=None, page=1, **kwargs):
+    page = int(page)
+    page_size = settings.getInt('page_size', 50)
 
-    items = _parse_creators(api.creators())
+    if category is None:
+        folder = plugin.Folder(_.PODCASTS)
+
+        folder.add_item(
+            label = _.EVERYTHING,
+            path = plugin.url_for(podcast_creators, category='', title=_.EVERYTHING),
+        )
+
+        for row in api.podcast_categories():
+            folder.add_item(
+                label = row['title'],
+                art = {'thumb': row['assets']['avatar-big-light']},
+                path = plugin.url_for(podcast_creators, category=row['slug'], title=row['title']),
+            )
+    
+        return folder
+
+    folder = plugin.Folder(title)
+
+    data = api.podcast_creators(category=category, page=page, page_size=page_size)
+    items = _parse_podcast_creators(data['results'])
     folder.add_items(items)
+
+    if data['next']:
+        folder.add_item(
+            label = _(_.NEXT_PAGE, page=page+1),
+            path  = plugin.url_for(podcast_creators, category=category, title=title, page=page+1),
+        )
 
     return folder
 
-def _get_creator(slug):
-    for creator in api.creators():
-        if creator['friendly_title'] == slug:
-            return creator
+@plugin.route()
+def creators(category=None, title=None, page=1, **kwargs):
+    page = int(page)
+    page_size = settings.getInt('page_size', 50)
 
-    return None
+    if category is None:
+        folder = plugin.Folder(_.CREATORS)
+
+        folder.add_item(
+            label = _.EVERYTHING,
+            path = plugin.url_for(creators, category='', title=_.EVERYTHING),
+        )
+
+        for row in api.categories():
+            folder.add_item(
+                label = row['title'],
+                art = {'thumb': row['assets']['avatar-big-light']},
+                path = plugin.url_for(creators, category=row['slug'], title=row['title']),
+            )
+    
+        return folder
+
+    folder = plugin.Folder(title)
+
+    data = api.creators(category=category, page=page, page_size=page_size)
+
+    items = _parse_creators(data['results'])
+    folder.add_items(items)
+
+    if data['next']:
+        folder.add_item(
+            label = _(_.NEXT_PAGE, page=page+1),
+            path  = plugin.url_for(creators, page=page+1),
+        )
+
+    return folder
 
 def _parse_creators(rows, following=False):
     items = []
@@ -103,161 +186,187 @@ def _parse_creators(rows, following=False):
     for row in rows:
         item = plugin.Item(
             label = row['title'],
-            info = {'plot': row['bio']},
-            art = {'thumb': row['avatar'], 'fanart': row['banner']},
-            path = plugin.url_for(creator_list, slug=row['friendly_title']),
+            info = {'plot': row['description']},
+            art = {'thumb': row['assets']['avatar']['512']['original'], 'fanart': row['assets']['banner']['1920']['original']},
+            path = plugin.url_for(creator_videos, slug=row['slug']),
         )
 
         if following:
-            item.context.append((_(_.UNFOLLOW_CREATOR, creator=row['title']), 'RunPlugin({})'.format(plugin.url_for(unfollow_creator, slug=row['friendly_title']))))
+            item.context.append((_(_.UNFOLLOW_CREATOR, creator=row['title']), 'RunPlugin({})'.format(plugin.url_for(unfollow_creator, slug=row['slug'], title=row['title'], icon=row['assets']['avatar']['512']['original']))))
         else:
-            item.context.append((_(_.FOLLOW_CREATOR, creator=row['title']), 'RunPlugin({})'.format(plugin.url_for(follow_creator, slug=row['friendly_title']))))
+            item.context.append((_(_.FOLLOW_CREATOR, creator=row['title']), 'RunPlugin({})'.format(plugin.url_for(follow_creator, slug=row['slug'], title=row['title'], icon=row['assets']['avatar']['512']['original']))))
 
         items.append(item)
 
     return items
 
-def _parse_videos(rows, creator=None, following=False):
-    if creator:
-        creators = False
-    else:
-        creators = api.creators()
+def _parse_podcast_creators(rows):
+    items = []
 
+    for row in rows:
+        item = plugin.Item(
+            label = row['title'],
+            info = {'plot': _(_.POCAST_CREATOR, creator=row['creator'], description=row['description']).strip()},
+            art = {'thumb': row['assets']['regular']},
+            path = plugin.url_for(podcasts, slug=row['slug']),
+        )
+
+        items.append(item)
+
+    return items
+
+def _parse_videos(rows, creator_page=False, following=False):
     items = []
     for row in rows:
-        is_live = row['is_zype_live']
+        is_live = False
+        published = arrow.get(row['published_at'])
 
-        def get_creator():
-            for category in row['categories']:
-                if category['value']:
-                    for _creator in creators:
-                        if _creator['title'] == category['value'][0]:
-                            return _creator
+        try:
+            thumb = row['assets']['thumbnail']['720']['original']
+        except:
+            thumb = row['assets']['thumbnail']['720']
 
-        if creators:
-            creator = get_creator()
+        item = plugin.Item(
+            label = row['title'],
+            info = {
+                'duration': row['duration'],
+                'plot': _(_.VIDE_PLOT, creator=row['channel_title'], published=published.humanize(), description=row['short_description'] or row['description']).strip(),
+                #'season': row.get('season'),
+                #'episode': row.get('episode'),
+                'tvshowtitle': row['channel_title'],
+                'aired': str(published),
+                'mediatype': 'episode',
+            },
+            art = {'thumb': thumb, 'fanart': row['assets']['channel_avatar']['512']['original']},
+            path = plugin.url_for(play, slug=row['slug'], _is_live=is_live),
+            playable = True,
+        )
 
+        if following:
+            item.context.append((_(_.UNFOLLOW_CREATOR, creator=row['channel_title']), 'RunPlugin({})'.format(plugin.url_for(unfollow_creator, slug=row['channel_slug'], title=row['channel_title'], icon=row['assets']['channel_avatar']['512']['original']))))
+        else:
+            item.context.append((_(_.FOLLOW_CREATOR, creator=row['channel_title']), 'RunPlugin({})'.format(plugin.url_for(follow_creator, slug=row['channel_slug'], title=row['channel_title'], icon=row['assets']['channel_avatar']['512']['original']))))
+        
+        if not creator_page:
+            item.context.append((_(_.CREATOR_CHANNEL, creator=row['channel_title']), 'Container.Update({})'.format(plugin.url_for(creator_videos, slug=row['channel_slug'], title=row['channel_title'], icon=row['assets']['channel_avatar']['512']['original']))))
+
+        items.append(item)
+
+    return items
+
+def _parse_podcasts(rows):
+    items = []
+    for row in rows:
+        is_live = False
         published = arrow.get(row['published_at'])
 
         item = plugin.Item(
             label = row['title'],
             info = {
                 'duration': row['duration'],
-                'plot': _(_.VIDE_PLOT, creator=creator['title'], published=published.humanize(), description=row['short_description'] or row['description']).strip(),
-                'season': row.get('season'),
-                'episode': row.get('episode'),
-                'tvshowtitle': creator['title'],
-                'mediatype': 'episode',
+                'plot': row['description'].strip(),
+                'aired': str(published),
             },
-            art = {'thumb': row['thumbnails'][0]['url'], 'fanart': creator['banner']},
-            path = plugin.url_for(play, video_id=row['_id'], _is_live=is_live),
+            art = {'thumb': row['assets']['regular']},
+            path = plugin.url_for(play_podcast, channel=row['channel_slug'], episode=row['slug'], _is_live=is_live),
             playable = True,
-            custom = {'published': published},
         )
-
-        if following:
-            item.context.append((_(_.UNFOLLOW_CREATOR, creator=creator['title']), 'RunPlugin({})'.format(plugin.url_for(unfollow_creator, slug=creator['friendly_title']))))
-        else:
-            item.context.append((_(_.FOLLOW_CREATOR, creator=creator['title']), 'RunPlugin({})'.format(plugin.url_for(follow_creator, slug=creator['friendly_title']))))
-
-        if creators:
-            item.context.append((_(_.CREATOR_CHANNEL, creator=creator['title']), 'Container.Update({})'.format(plugin.url_for(creator_list, slug=creator['friendly_title']))))
 
         items.append(item)
 
     return items
 
 @plugin.route()
-def playlist(label, playlist_id=None, page=1, **kwargs):
+def my_videos(page=1, **kwargs):
     page = int(page)
+    page_size = settings.getInt('page_size', 50)
+    data = api.my_videos(page=page, page_size=page_size)
 
-    folder = plugin.Folder(label)
-
-    data = api.videos(playlist_id, page=page, items_per_page=settings.getInt('page_size', 20))
-    items = _parse_videos(data['response'])
+    folder = plugin.Folder(_.MY_VIDEOS)
+    items = _parse_videos(data['results'], following=True)
     folder.add_items(items)
 
-    if data['pagination']['pages'] > page:
+    if data['next']:
         folder.add_item(
-            label = _(_(_.NEXT_PAGE, page=page+1), _bold=True),
-            path  = plugin.url_for(playlist, label=label, playlist_id=playlist_id, page=page+1),
+            label = _(_.NEXT_PAGE, page=page+1),
+            path = plugin.url_for(my_videos, page=page+1),
         )
 
     return folder
 
 @plugin.route()
-def creator_list(slug, page=1, **kwargs):
+def my_creators(page=1, **kwargs):
     page = int(page)
-    creator = _get_creator(slug)
+    page_size = settings.getInt('page_size', 50)
+    data = api.my_creators(page=page, page_size=page_size)
 
-    folder = plugin.Folder(creator['title'], fanart=creator['banner'])
-
-    data = api.videos(creator['playlist_id'], page=page, items_per_page=settings.getInt('page_size', 20))
-    items = _parse_videos(data['response'], creator=creator)
+    folder = plugin.Folder(_.MY_CREATORS)
+    items = _parse_creators(data['results'], following=True)
     folder.add_items(items)
 
-    if data['pagination']['pages'] > page:
+    if data['next']:
         folder.add_item(
-            label = _(_(_.NEXT_PAGE, page=page+1), _bold=True),
-            path  = plugin.url_for(creator_list, slug=slug, page=page+1),
+            label = _(_.NEXT_PAGE, page=page+1),
+            path = plugin.url_for(my_creators, page=page+1),
         )
 
     return folder
 
 @plugin.route()
-def follow_creator(slug, **kwargs):
-    with gui.progress(background=True, percent=90):
-        creator = _get_creator(slug)
-        api.follow_creator(creator['_id'])
+def podcasts(slug, page=1, **kwargs):
+    page = int(page)
+    page_size = settings.getInt('page_size', 50)
 
-    gui.notification(_(_.FOLLOWED_CREATOR, creator=creator['title']), icon=creator['avatar'])
+    data = api.podcasts(slug, page=page, page_size=page_size)
+
+    folder = plugin.Folder(data['details']['title'])
+
+    items = _parse_podcasts(data['episodes']['results'])
+    folder.add_items(items)
+
+    if data['episodes']['next']:
+        folder.add_item(
+            label = _(_.NEXT_PAGE, page=page+1),
+            path  = plugin.url_for(podcasts, slug=slug, page=page+1),
+        )
+
+    return folder
 
 @plugin.route()
-def unfollow_creator(slug, **kwargs):
-    with gui.progress(background=True, percent=90):
-        creator = _get_creator(slug)
-        api.unfollow_creator(creator['_id'])
+def creator_videos(slug, page=1, **kwargs):
+    page = int(page)
+    page_size = settings.getInt('page_size', 50)
 
-    gui.notification(_(_.UNFOLLOWED_CREATOR, creator=creator['title']), icon=creator['avatar'])
+    data = api.creator(slug, page=page, page_size=page_size)
+
+    folder = plugin.Folder(data['details']['title'], fanart=data['details']['assets']['avatar']['512']['original'])
+
+    items = _parse_videos(data['episodes']['results'], creator_page=True)
+    folder.add_items(items)
+
+    if data['episodes']['next']:
+        folder.add_item(
+            label = _(_.NEXT_PAGE, page=page+1),
+            path  = plugin.url_for(creator_videos, slug=slug, page=page+1),
+        )
+
+    return folder
+
+@plugin.route()
+def follow_creator(slug, title, icon, **kwargs):
+    api.follow_creator(slug)
+    gui.notification(_(_.FOLLOWED_CREATOR, creator=title), icon=icon)
+
+@plugin.route()
+def unfollow_creator(slug, title, icon, **kwargs):
+    api.unfollow_creator(slug)
+    gui.notification(_(_.UNFOLLOWED_CREATOR, creator=title), icon=icon)
     gui.refresh()
-
-@plugin.route()
-def my_library(**kwargs):
-    folder = plugin.Folder(_.MY_LIBRARY, cacheToDisc=False, no_items_method='list')
-
-    creators = api.creators()
-    def get_creator(content_id):
-        for creator in creators:
-            if creator['_id'] == content_id:
-                return creator
-
-    tasks = []
-    _creators = []
-    for row in api.following():
-        _creator = get_creator(row['channel'])
-        if _creator:
-            _creators.append(_creator)
-            task = lambda x=_creator['playlist_id']: api.videos(x, items_per_page=settings.getInt('my_library_vids_per_creator', 10))
-            tasks.append(task)
-
-    if settings.getBool('my_library_show_creators', True):
-        items = _parse_creators(_creators, following=True)
-        folder.add_items(items)
-
-    videos = []
-    for result in async_tasks(tasks, workers=10):
-        videos.extend(result['response'])
-
-    items = _parse_videos(videos, following=True)
-    items = sorted(items, key=lambda x: x.custom['published'], reverse=True)
-
-    folder.add_items(items)
-
-    return folder
 
 @plugin.route()
 def search(query=None, page=1, **kwargs):
     page = int(page)
+    page_size = settings.getInt('page_size', 50)
 
     if not query:
         query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
@@ -269,16 +378,21 @@ def search(query=None, page=1, **kwargs):
     folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
 
     if page == 1:
-        items = _parse_creators(api.creators(query=query))
+        data = api.search_creators(query=query)
+        items = _parse_creators(data['results'])
         folder.add_items(items)
 
-    data = api.videos(query=query, page=page, items_per_page=settings.getInt('page_size', 20))
-    items = _parse_videos(data['response'])
+        data = api.search_podcasts(query=query)
+        items = _parse_podcast_creators(data['results'])
+        folder.add_items(items)
+
+    data = api.search_videos(query=query, page=page, page_size=page_size)
+    items = _parse_videos(data['results'])
     folder.add_items(items)
 
-    if data['pagination']['pages'] > page:
+    if data['next']:
         folder.add_item(
-            label = _(_(_.NEXT_PAGE, page=page+1), _bold=True),
+            label = _(_.NEXT_PAGE, page=page+1),
             path  = plugin.url_for(search, query=query, page=page+1),
         )
 
@@ -301,8 +415,8 @@ def login(**kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(video_id, **kwargs):
-    url, subtitles = api.play(video_id)
+def play(slug, **kwargs):
+    url, subtitles = api.play(slug)
 
     item = plugin.Item(
         path = url,
@@ -311,6 +425,23 @@ def play(video_id, **kwargs):
 
     for idx, row in enumerate(subtitles):
         item.subtitles.append([row['file'], row['label']])
+
+    return item
+
+@plugin.route()
+@plugin.login_required()
+def play_podcast(channel, episode, **kwargs):
+    data = api.play_podcast(channel, episode)
+
+    item = plugin.Item(
+        label = data['title'],
+        info = {
+            'plot': data['description'],
+        },
+        art = {'thumb': data['assets']['regular']},
+        path = data['episode_url'],
+        use_proxy = False,
+    )
 
     return item
 

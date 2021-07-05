@@ -4,7 +4,7 @@ class Language(BaseLanguage):
     ASK_USERNAME       = 30001
     ASK_PASSWORD       = 30002
     FEATURED           = 30003
-    MY_LIBRARY         = 30004
+    MY_VIDEOS          = 30004
     VIDEOS             = 30005
     EVERYTHING         = 30006
     VIDEOS             = 30007
@@ -15,11 +15,9 @@ class Language(BaseLanguage):
     PAGE_SIZE          = 30012
     CREATOR_CHANNEL    = 30013
     FOLLOWED_CREATOR   = 30014
-    LATEST_VIDEOS      = 30015
-    FEATURED_CREATORS  = 30016
-    UNFOLLOW_CREATOR   = 30017
-    UNFOLLOWED_CREATOR = 30018
-    SHOW_CREATORS      = 30019
-    CREATOR_VIDS       = 30020
+    UNFOLLOW_CREATOR   = 30015
+    UNFOLLOWED_CREATOR = 30016
+    POCAST_CREATOR     = 30017
+    MY_CREATORS        = 30018
 
 _ = Language()
