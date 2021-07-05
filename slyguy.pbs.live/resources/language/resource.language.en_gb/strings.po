@@ -13,15 +13,15 @@ msgctxt "#30002"
 msgid "Stations"
 msgstr ""
 
-
+msgctxt "#30003"
+msgid "Show Mini EPG"
+msgstr ""
 
 msgctxt "#30004"
 msgid "{name} [B](No Stream)[/B]"
 msgstr ""
 
-
-
-msgctxt "#30012"
+msgctxt "#30005"
 msgid "Show stations without streams"
 msgstr ""
 
