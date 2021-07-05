@@ -280,6 +280,9 @@ class API(object):
         def get_data(device):
             video_data = self._session.get('/v2.0/{}/video/cid/{}.json'.format(device, video_id), params=self._params()).json()['itemList'][0]
 
+            if 'pid' not in video_data:
+                raise APIError('Check your subscription is valid')
+
             params = {
                 #'formats': 'mpeg-dash',
                 'Tracking': 'true',

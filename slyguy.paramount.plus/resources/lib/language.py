@@ -29,5 +29,6 @@ class Language(BaseLanguage):
     AC3_ENABLED          = 30025
     INTERNATIONAL        = 30026
     WV_SECURE            = 30027
+    IGNORE_SUBS          = 30028
 
 _ = Language()
