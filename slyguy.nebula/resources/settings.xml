@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30012" id="page_size" type="number" default="20"/>
-        <setting label="30020" id="my_library_vids_per_creator" type="number" default="10"/>
-        <setting label="30019" id="my_library_show_creators" type="bool" default="true"/>
+        <setting label="30012" id="page_size" type="number" default="50"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -16,6 +14,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>

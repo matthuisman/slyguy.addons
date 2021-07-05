@@ -1,7 +1,8 @@
-from time import time, sleep
+from time import time
 
 from slyguy import userdata, mem_cache
 from slyguy.log import log
+from slyguy.util import jwt_data
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
@@ -14,180 +15,213 @@ class APIError(Error):
 class API(object):
     def new_session(self):
         self.logged_in = False
-        self._session = Session(headers=HEADERS)
-        self._set_auth(userdata.get('key'))
+        self._session = Session(headers=HEADERS, base_url=BASE_URL)
+        self.logged_in = userdata.get('key', None) != None
 
-    def _set_auth(self, key):
-        if not key:
-            return
+        #LEGACY
+        userdata.delete('token')
+        userdata.delete('user_id')
 
-        self._session.headers.update({'Authorization': 'Token {}'.format(key)})
-        self.logged_in = True
+    def _set_auth(self, token):
+        self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
 
     def login(self, username, password):
-        try:
-            payload = {
-                'email': username,
-                'password': password,
-            }
+        self.logout()
 
-            data = self._session.post('https://api.watchnebula.com/api/v1/auth/login/', json=payload).json()
-            key = data.get('key')
+        payload = {
+            'email': username,
+            'password': password,
+        }
 
-            if not key:
-                msg = data['non_field_errors'][0]
-                raise APIError(msg)
+        data = self._session.post('https://api.watchnebula.com/api/v1/auth/login/', json=payload).json()
+        if 'key' not in data or not data['key']:
+            msg = data['non_field_errors'][0]
+            raise APIError(msg)
 
-            userdata.set('key', key)
-            self._set_auth(key)
+        userdata.set('key', data['key'])
 
-            data = self._session.get('https://api.watchnebula.com/api/v1/auth/user/', params={'from': 'Android'}, json={}).json()
-            userdata.set('user_id', data['zobject_user_id'])
+    def _refresh_token(self, force=False):
+        token = userdata.get('auth_token')
+        if token and not force and userdata.get('expires', 0) > time():
+            self._set_auth(token)
+            return
 
-            self._token(force=True)
-        except:
-            self.logout()
-            raise
+        log.debug('Refreshing token' if token else 'Fetching token')
 
-    def _token(self, force=False):
-        token = userdata.get('token')
-        if not self.logged_in or (not force and userdata.get('expires', 0) > time()):
-            return token
+        key = userdata.get('key')
+        data = self._session.post('https://api.watchnebula.com/api/v1/authorization/', params={'from': 'Android'}, json={}, headers={'Authorization': 'Token {}'.format(key)}).json()
 
-        log.debug('Refreshing token')
+        token = data['token']
+        jwt = jwt_data(token)
 
-        data = self._session.get('https://api.watchnebula.com/api/v1/auth/user/', params={'from': 'Android'}, json={}).json()
-        if 'zype_auth_info' in data and data['zype_auth_info']:
-            data = data['zype_auth_info']
-        else:
-            for i in range(5):
-                self._session.post('https://api.watchnebula.com/api/v1/zype/auth-info/new/', json={})
-                sleep(1)
-                data = self._session.get('https://api.watchnebula.com/api/v1/zype/auth-info/', params={'from': 'Android'}, json={}).json()
-                if 'access_token' in data:
-                    break
+        userdata.set('auth_token', token)
+        userdata.set('expires', jwt['exp'] - 10)
 
-        if not data or data.get('detail'):
-            self.logout()
-            raise APIError('Unable to refresh token')
-
-        userdata.set('token', data['access_token'])
-        userdata.set('expires', data['expires_at'] - 30)
-        # if 'refresh_token' in data:
-        #     userdata.set('refresh_token', data['refresh_token'])
-
-        return data['access_token']
+        self._set_auth(token)
 
     @mem_cache.cached(expires=60*5)
     def categories(self):
-        params = {
-            'access_token': self._token(),
-        }
-
-        data = self._session.get('https://api.zype.com/playlists/relationships', params=params).json()['playlists']
-
-        categories = [{'id': None, 'title': _.EVERYTHING}]
-        for row in data:
-            if not row['active'] or not row['priority'] == 0:
-                continue
-
-            for playlist in sorted(row['playlists'], key=lambda x: x['priority']):
-                categories.append({'id': playlist['id'], 'title': playlist['title']})
-
-        return categories
-
-    def featured(self, feature_type):
-        params = {
-            'zobject_type': 'featured',
-            'feature_type': feature_type,
-            'page': 1,
-            'per_page': 500,
-            'sort': 'order',
-            'access_token': self._token(),
-        }
-
-        return self._session.get('https://api.zype.com/zobjects', params=params).json()['response']
-
-    def collections(self):
-        params = {
-            'zobject_type': 'collection',
-            'page': 1,
-            'per_page': 500,
-            'sort': 'order',
-            'access_token': self._token(),
-        }
-
-        return self._session.get('https://api.zype.com/zobjects', params=params).json()['response']
-
-    def following(self):
-        params = {
-            'zobject_type': 'following',
-            'user': userdata.get('user_id'),
-            'page': 1,
-            'per_page': 500,
-            'sort': 'title',
-            'access_token': self._token(),
-        }
-
-        return self._session.get('https://api.zype.com/zobjects', params=params).json()['response']
+        self._refresh_token()
+        return self._session.get('/video/categories/').json()['results']
 
     @mem_cache.cached(expires=60*5)
-    def creators(self, query=None):
-        params = {
-            'zobject_type': 'channel',
-            'page': 1,
-            'per_page': 500,
-            'sort': 'title',
-            'access_token': self._token(),
-        }
+    def podcast_categories(self):
+        self._refresh_token()
+        return self._session.get('/podcast/categories/').json()['results']
 
-        if query:
-            params['q'] = query
+    @mem_cache.cached(expires=60*5)
+    def podcast_creators(self, category='', page=1, page_size=100):
+        self._refresh_token()
 
-        return self._session.get('https://api.zype.com/zobjects', params=params).json()['response']
-
-    def follow_creator(self, creator_id):
-        payload = {
-            'channel_id': creator_id,
-        }
-
-        self._session.post('https://api.watchnebula.com/api/v1/zype/follow/', json=payload).json()
-
-    def unfollow_creator(self, creator_id):
-        payload = {
-            'channel_id': creator_id,
-        }
-
-        self._session.post('https://api.watchnebula.com/api/v1/zype/unfollow/', json=payload).json()
-
-    def videos(self, playlist_id=None, page=1, items_per_page=100, query=None):
         params = {
             'page': page,
-            'per_page': items_per_page,
-            'sort': 'published_at',
-            'order': 'desc',
-            'access_token': self._token(),
+            'page_size': page_size,
         }
 
-        if playlist_id:
-            params['playlist_id.inclusive'] = playlist_id
+        if category:
+            params['category'] = category
 
-        if query:
-            params['q'] = query
+        return self._session.get('/podcast/channels/', params=params).json()
 
-        return self._session.get('https://api.zype.com/videos', params=params).json()
-
-    def play(self, video_id):
-        # return 'https://player.zype.com/manifest/{video_id}.m3u8?access_token={token}&ad_enabled=false&https=true'.format(video_id=video_id, token=self._token())
+    @mem_cache.cached(expires=60*5)
+    def podcasts(self, slug, page=1, page_size=100):
+        self._refresh_token()
 
         params = {
-            'autoplay': 'undefined',
-            'access_token': self._token(force=True),
+            'page': page,
+            'page_size': page_size,
         }
 
-        data = self._session.get('https://player.zype.com/embed/{video_id}'.format(video_id=video_id), params=params).json()
+        return self._session.get('/podcast/channels/{slug}/'.format(slug=slug), params=params).json()
+
+    @mem_cache.cached(expires=60*5)
+    def search_videos(self, query, page=1, page_size=100):
+        self._refresh_token()
+
+        params = {
+            'page': page,
+            'page_size': page_size,
+            'text': query,
+        }
+
+        return self._session.get('/search/video/', params=params).json()
+
+    @mem_cache.cached(expires=60*5)
+    def search_creators(self, query):
+        self._refresh_token()
+
+        params = {
+            'text': query,
+        }
+
+        return self._session.get('/search/channel/video/', params=params).json()  
+
+    @mem_cache.cached(expires=60*5)
+    def search_podcasts(self, query):
+        self._refresh_token()
+
+        params = {
+            'text': query,
+        }
+
+        return self._session.get('/search/channel/podcast/', params=params).json()  
+
+    @mem_cache.cached(expires=60*5)
+    def featured(self):
+        self._refresh_token()
+        return self._session.get('/featured/').json()
+
+    @mem_cache.cached(expires=60*5)
+    def videos(self, category='', page=1, page_size=100):
+        self._refresh_token()
+
+        params = {
+            'page': page,
+            'page_size': page_size,
+        }
+
+        if category:
+            params['category'] = category
+
+        return self._session.get('/video/', params=params).json()
+
+    def my_videos(self, page=1, page_size=100):
+        self._refresh_token()
+
+        params = {
+            'page': page,
+            'page_size': page_size,
+        }
+
+        return self._session.get('/library/video/', params=params).json()
+
+    def my_creators(self, page=1, page_size=100):
+        self._refresh_token()
+
+        params = {
+            'page': page,
+            'page_size': page_size,
+        }
+
+        return self._session.get('/library/video/channels/', params=params).json()
+
+    @mem_cache.cached(expires=60*5)
+    def creator(self, slug, page=1, page_size=100):
+        self._refresh_token()
+
+        params = {
+            'page': page,
+            'page_size': page_size,
+        }
+
+        return self._session.get('/video/channels/{slug}/'.format(slug=slug), params=params).json()
+
+    @mem_cache.cached(expires=60*5)
+    def creators(self, category='', page=1, page_size=100, random=False):
+        self._refresh_token()
+
+        params = {
+            'page': page,
+            'page_size': page_size,
+        }
+
+        if category:
+            params['category'] = category
+
+        if random:
+            params['random'] = 'true'
+
+        return self._session.get('/video/channels/', params=params).json()
+
+    def follow_creator(self, slug):
+        self._refresh_token()
+
+        payload = {
+            'channel_slug': slug,
+        }
+
+        if not self._session.post('/engagement/video/follow/', json=payload).ok:
+            raise APIError('Failed to follow creator')
+
+    def unfollow_creator(self, slug):
+        self._refresh_token()
+
+        payload = {
+            'channel_slug': slug,
+        }
+
+        if not self._session.post('/engagement/video/unfollow/', json=payload).ok:
+            raise APIError('Failed to unfollow creator')
+
+    def play(self, slug):
+        self._refresh_token()
+        
+        data = self._session.get('/video/{slug}/stream/'.format(slug=slug)).json()
+        resp = self._session.head(data['iframe'])
+        url = resp.headers.get('Location').replace('.html', '')
+
+        data = Session(headers=HEADERS).get(url).json()
         if 'response' not in data:
-            log.debug(data)
             raise APIError('{}'.format(data.get('message', 'unknown error getting playdata')))
 
         play_url = data['response']['body']['outputs'][0]['url']
@@ -195,32 +229,13 @@ class API(object):
 
         return play_url, subtitles
 
+    def play_podcast(self, channel, episode):
+        self._refresh_token()
+        return self._session.get('/podcast/channels/{channel}/episodes/{episode}/'.format(channel=channel, episode=episode)).json()
+
     def logout(self):
         userdata.delete('key')
-        userdata.delete('token')
+        userdata.delete('auth_token')
         userdata.delete('expires')
-        userdata.delete('user_id')
+        mem_cache.empty()
         self.new_session()
-
-    # @mem_cache.cached(expires=60*5)
-    # def playlists(self):
-    #     params = {
-    #         'active': True,
-    #         'page': 1,
-    #         'per_page': 500,
-    #         'access_token': self._token(),
-    #     }
-
-    #     return self._session.get('https://api.zype.com/playlists', params=params).json()['response']:
-
-    # @mem_cache.cached(expires=60*5)
-    # def podcasts(self):
-    #     params = {
-    #         'zobject_type': 'podcast',
-    #         'page': 1,
-    #         'per_page': 500,
-    #         'sort': 'title',
-    #         'access_token': self._token(),
-    #     }
-
-    #     return self._session.get('https://api.zype.com/zobjects', params=params).json()['response']
