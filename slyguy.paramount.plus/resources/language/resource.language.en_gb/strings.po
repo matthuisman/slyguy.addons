@@ -114,6 +114,10 @@ msgctxt "#30027"
 msgid "Widevine L1 Secure Device"
 msgstr ""
 
+msgctxt "#30028"
+msgid "Ignore subtitles"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

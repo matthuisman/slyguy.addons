@@ -463,6 +463,7 @@ def mpd_request(_data, _data_path, **kwargs):
     enable_ac3 = settings.getBool('ac3_enabled', False)
     enable_ec3 = settings.getBool('ec3_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
+    ignore_subs = settings.getBool('ignore_subs', False)
 
     for elem in root.getElementsByTagName('Representation'):
         parent = elem.parentNode
@@ -487,7 +488,8 @@ def mpd_request(_data, _data_path, **kwargs):
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
         if not adap_set.getElementsByTagName('Representation') or \
-            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')):
+            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')) or \
+                (ignore_subs and adap_set.getAttribute('contentType') == 'text'):
             adap_set.parentNode.removeChild(adap_set)
 
     with open(_data_path, 'wb') as f:
