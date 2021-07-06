@@ -14,7 +14,7 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 from slyguy import database, gui, settings, plugin, inputstream
 from slyguy.exceptions import Error
 from slyguy.constants import DEFAULT_USERAGENT
-from slyguy.util import hash_6, get_addon, kodi_rpc
+from slyguy.util import hash_6, get_addon, kodi_rpc, run_plugin
 from slyguy.log import log
 
 from .constants import *
@@ -212,11 +212,6 @@ class Source(database.Model):
         self.save()
 
         if self.source_type == self.TYPE_ADDON:
-            for key in data.get('settings', {}):
-                value = data['settings'][key].replace('$ID', self.path)
-                log.debug('Set setting {}={} for addon {}'.format(key, value, self.path))
-                addon.setSetting(key, value)
-
             if creating:
                 if self.__class__ == Playlist and METHOD_EPG in data:
                     epg = EPG(source_type=EPG.TYPE_ADDON, path=self.path)
@@ -227,6 +222,15 @@ class Source(database.Model):
                     playlist = Playlist(source_type=Playlist.TYPE_ADDON, path=self.path)
                     try: playlist.save()
                     except: pass
+
+            for key in data.get('settings', {}):
+                value = data['settings'][key].replace('$ID', self.path)
+                log.debug('Set setting {}={} for addon {}'.format(key, value, self.path))
+                addon.setSetting(key, value)
+
+            if 'configure' in data:
+                path = data['configure'].replace('$ID', self.path)
+                run_plugin(path, wait=True)
 
         return True
 

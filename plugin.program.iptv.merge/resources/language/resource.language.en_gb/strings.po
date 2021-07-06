@@ -333,6 +333,50 @@ msgctxt "#30081"
 msgid "Remove EPG Orphans"
 msgstr ""
 
+msgctxt "#30082"
+msgid "Configure Source"
+msgstr ""
+
+msgctxt "#30083"
+msgid "Use Starting Channel Number: {value}"
+msgstr ""
+
+msgctxt "#30084"
+msgid "Are you sure you want to delete this playlist?"
+msgstr ""
+
+msgctxt "#30085"
+msgid "Are you sure you want to delete this EPG?"
+msgstr ""
+
+msgctxt "#30086"
+msgid "Disable Playlist"
+msgstr ""
+
+msgctxt "#30087"
+msgid "Enable Playlist"
+msgstr ""
+
+msgctxt "#30088"
+msgid "Move Up"
+msgstr ""
+
+msgctxt "#30089"
+msgid "Move Down"
+msgstr ""
+
+msgctxt "#30090"
+msgid "Are you sure you want to delete this channel?"
+msgstr ""
+
+msgctxt "#30091"
+msgid "Disable EPG"
+msgstr ""
+
+msgctxt "#30092"
+msgid "Enable EPG"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

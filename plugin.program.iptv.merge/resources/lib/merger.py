@@ -10,7 +10,7 @@ from six.moves.urllib.parse import unquote_plus
 
 from slyguy import settings, database, gui, router
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
@@ -136,7 +136,7 @@ class Merger(object):
         self._playlist_epgs = []
 
     def _call_addon_method(self, plugin_url):
-        dirs, files = xbmcvfs.listdir(plugin_url)
+        dirs, files = run_plugin(plugin_url, wait=True)
 
         if not files:
             raise AddonError('Plugin method failed')
