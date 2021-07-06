@@ -13,7 +13,7 @@ import threading
 import socket
 from contextlib import closing
 
-from kodi_six import xbmc, xbmcgui, xbmcaddon
+from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 from six.moves import queue
 from six.moves.urllib.parse import urlparse, urlunparse
 from six import PY2
@@ -23,6 +23,14 @@ from .language import _
 from .log import log
 from .exceptions import Error
 from .constants import WIDEVINE_UUID, WIDEVINE_PSSH, DEFAULT_WORKERS, ADDON_PROFILE, CHUNK_SIZE, ADDON_ID, COMMON_ADDON
+
+def run_plugin(path, wait=False):
+    if wait:
+        dirs, files = xbmcvfs.listdir(path)
+        return dirs, files
+    else:
+        xbmc.executebuiltin('RunPlugin({})'.format(path))
+        return [], []
 
 def fix_url(url):
     parse = urlparse(url)
