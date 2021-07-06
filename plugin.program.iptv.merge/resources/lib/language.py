@@ -83,5 +83,16 @@ class Language(BaseLanguage):
     HTTP_SETTING           = 30079
     HTTP_FORCE_SETTING     = 30080
     REMOVE_EPG_ORPHANS     = 30081
+    CONFIGURE_ADDON        = 30082
+    USE_STARTING_CHNO      = 30083
+    CONF_DELETE_PLAYLIST   = 30084
+    CONF_DELETE_EPG        = 30085
+    DISABLE_PLAYLIST       = 30086
+    ENABLE_PLAYLIST        = 30087
+    MOVE_UP                = 30088
+    MOVE_DOWN              = 30089
+    CONF_DELETE_CHANNEL    = 30090
+    DISABLE_EPG            = 30091
+    ENABLE_EPG             = 30092
 
 _ = Language()

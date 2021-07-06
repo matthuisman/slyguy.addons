@@ -1,10 +1,10 @@
 import os
 from difflib import SequenceMatcher
 
-from kodi_six import xbmc
+from kodi_six import xbmc, xbmcvfs
 
 from slyguy import plugin, settings, gui, userdata
-from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon
+from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin
 from slyguy.constants import ADDON_PROFILE, ADDON_ICON
 from slyguy.exceptions import PluginError
 
@@ -50,7 +50,7 @@ def home(**kwargs):
 
     if settings.getBool('http_api'):
         folder.add_item(
-            label = 'HTTP API Running',
+            label = "HTTP API Running",
             path = plugin.url_for(http_info),
         )
 
@@ -63,7 +63,7 @@ def home(**kwargs):
 
 @plugin.route()
 def http_info(**kwargs):
-    gui.text('Playlist URL\n[B]{}[/B]\n\nEPG URL\n[B]{}[/B]'.format(userdata.get('_playlist_url'), userdata.get('_epg_url')))
+    gui.text("Playlist URL\n[B]{}[/B]\n\nEPG URL\n[B]{}[/B]".format(userdata.get('_playlist_url'), userdata.get('_epg_url')))
 
 @plugin.route()
 def shift_playlist(playlist_id, shift, **kwargs):
@@ -84,19 +84,16 @@ def playlists(**kwargs):
 
     for playlist in playlists:
         context = [
-            ('Disable Playlist' if playlist.enabled else 'Enable Playlist', "RunPlugin({})".format(plugin.url_for(edit_playlist_value, playlist_id=playlist.id, method=Playlist.toggle_enabled.__name__))),
-            (_.DELETE_PLAYLIST, "RunPlugin({})".format(plugin.url_for(delete_playlist, playlist_id=playlist.id))),
-            (_.INSERT_PLAYLIST, "RunPlugin({})".format(plugin.url_for(new_playlist, position=playlist.order))),
+            (_.DISABLE_PLAYLIST if playlist.enabled else _.ENABLE_PLAYLIST, 'RunPlugin({})'.format(plugin.url_for(edit_playlist_value, playlist_id=playlist.id, method=Playlist.toggle_enabled.__name__))),
+            (_.DELETE_PLAYLIST, 'RunPlugin({})'.format(plugin.url_for(delete_playlist, playlist_id=playlist.id))),
+            (_.INSERT_PLAYLIST, 'RunPlugin({})'.format(plugin.url_for(new_playlist, position=playlist.order))),
         ]
 
-        if playlist.source_type == Playlist.TYPE_ADDON:
-            context.append((_.ADDON_SETTINGS, "Addon.OpenSettings({})".format(playlist.path)))
-
         if playlist.order > 1:
-            context.append(('Move Up', 'RunPlugin({})'.format(plugin.url_for(shift_playlist, playlist_id=playlist.id, shift=-1))))
+            context.append((_.MOVE_UP, 'RunPlugin({})'.format(plugin.url_for(shift_playlist, playlist_id=playlist.id, shift=-1))))
 
         if playlist.order < len(playlists)+1:
-            context.append(('Move Down', 'RunPlugin({})'.format(plugin.url_for(shift_playlist, playlist_id=playlist.id, shift=1))))
+            context.append((_.MOVE_DOWN, 'RunPlugin({})'.format(plugin.url_for(shift_playlist, playlist_id=playlist.id, shift=1))))
 
         folder.add_item(
             label   = playlist.name,
@@ -119,12 +116,9 @@ def epgs(**kwargs):
 
     for epg in EPG.select().order_by(EPG.id):
         context = [
-            ('Disable EPG' if epg.enabled else 'Enable EPG', "RunPlugin({})".format(plugin.url_for(edit_epg_value, epg_id=epg.id, method=EPG.toggle_enabled.__name__))),
-            (_.DELETE_EPG, "RunPlugin({})".format(plugin.url_for(delete_epg, epg_id=epg.id))),
+            (_.DISABLE_EPG if epg.enabled else _.ENABLE_EPG, 'RunPlugin({})'.format(plugin.url_for(edit_epg_value, epg_id=epg.id, method=EPG.toggle_enabled.__name__))),
+            (_.DELETE_EPG, 'RunPlugin({})'.format(plugin.url_for(delete_epg, epg_id=epg.id))),
         ]
-
-        if epg.source_type == EPG.TYPE_ADDON:
-            context.append(('Add-on Settings', "Addon.OpenSettings({})".format(epg.path)))
 
         folder.add_item(
             label   = epg.name,
@@ -143,7 +137,7 @@ def epgs(**kwargs):
 
 @plugin.route()
 def delete_playlist(playlist_id, **kwargs):
-    if not gui.yes_no('Are you sure you want to delete this playlist?'):
+    if not gui.yes_no(_.CONF_DELETE_PLAYLIST):
         return
 
     playlist_id = int(playlist_id)
@@ -155,7 +149,7 @@ def delete_playlist(playlist_id, **kwargs):
 
 @plugin.route()
 def delete_epg(epg_id, **kwargs):
-    if not gui.yes_no('Are you sure you want to delete this EPG?'):
+    if not gui.yes_no(_.CONF_DELETE_EPG):
         return
 
     epg_id = int(epg_id)
@@ -217,6 +211,13 @@ def edit_playlist(playlist_id, **kwargs):
         return folder
 
     if playlist.source_type == Playlist.TYPE_ADDON:
+        addon, data = merge_info(playlist.path)
+        if 'configure' in data:
+            folder.add_item(
+                label = _.CONFIGURE_ADDON,
+                path  = plugin.url_for(configure_addon, addon_id=playlist.path),
+            )
+
         folder.add_item(
             label = _.ADDON_SETTINGS,
             path  = plugin.url_for(open_settings, addon_id=playlist.path),
@@ -233,7 +234,7 @@ def edit_playlist(playlist_id, **kwargs):
     )
 
     folder.add_item(
-        label = _('Use Starting Channel Number: {value}', value=playlist.use_start_chno),
+        label = _(_.USE_STARTING_CHNO, value=playlist.use_start_chno),
         path  = plugin.url_for(edit_playlist_value, playlist_id=playlist.id, method=Playlist.toggle_use_start_chno.__name__),
     )
 
@@ -259,6 +260,13 @@ def edit_playlist(playlist_id, **kwargs):
     )
 
     return folder
+
+@plugin.route()
+def configure_addon(addon_id, **kwargs):
+    addon, data = merge_info(addon_id)
+    if 'configure' in data:
+        path = data['configure'].replace('$ID', addon_id)
+        run_plugin(path, wait=True)
 
 @plugin.route()
 def edit_playlist_value(playlist_id, method, **kwargs):
@@ -288,6 +296,13 @@ def edit_epg(epg_id, **kwargs):
     )
 
     if epg.source_type == EPG.TYPE_ADDON:
+        addon, data = merge_info(epg.path)
+        if 'configure' in data:
+            folder.add_item(
+                label = _.CONFIGURE_ADDON,
+                path  = plugin.url_for(configure_addon, addon_id=epg.path),
+            )
+
         folder.add_item(
             label = _.ADDON_SETTINGS,
             path  = plugin.url_for(open_settings, addon_id=epg.path),
@@ -384,23 +399,23 @@ def _process_channels(query):
             label = _(_.CHANNEL_HIDDEN, label=label)
 
         if channel.url:
-            context.append((_.PLAY_CHANNEL, "PlayMedia({})".format(channel.get_play_path())))
+            context.append((_.PLAY_CHANNEL, 'PlayMedia({})'.format(channel.get_play_path())))
 
         context.append((_.HIDE_CHANNEL if channel.visible else _.SHOW_CHANNEL,
-            "RunPlugin({})".format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.toggle_visible.__name__))))
+            'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.toggle_visible.__name__))))
 
-        #context.append((_.EDIT_CHANNEL, "RunPlugin({})".format(plugin.url_for(edit_channel, slug=channel.slug))))
+        #context.append((_.EDIT_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(edit_channel, slug=channel.slug))))
 
-        context.append(('Channel Number', "RunPlugin({})".format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_chno.__name__))))
-        context.append(('Channel Name', "RunPlugin({})".format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_name.__name__))))
-        context.append(('Channel Logo', "RunPlugin({})".format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_logo.__name__))))
-        context.append(('Channel Groups', "RunPlugin({})".format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_groups.__name__))))
-        context.append(('EPG ID', "RunPlugin({})".format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_epg_id.__name__))))
+        context.append(("Channel Number", 'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_chno.__name__))))
+        context.append(("Channel Name", 'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_name.__name__))))
+        context.append(("Channel Logo", 'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_logo.__name__))))
+        context.append(("Channel Groups", 'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_groups.__name__))))
+        context.append(("EPG ID", 'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.edit_epg_id.__name__))))
 
         if channel.custom:
-            context.append((_.DELETE_CHANNEL, "RunPlugin({})".format(plugin.url_for(reset_channel, slug=channel.slug))))
+            context.append((_.DELETE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(reset_channel, slug=channel.slug))))
         elif channel.modified:
-            context.append((_.RESET_CHANNEL, "RunPlugin({})".format(plugin.url_for(reset_channel, slug=channel.slug))))
+            context.append((_.RESET_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(reset_channel, slug=channel.slug))))
 
         items.append(plugin.Item(
             label     = label,
@@ -423,7 +438,7 @@ def reset_channel(slug, **kwargs):
     channel = Channel.get_by_id(slug)
 
     if channel.custom:
-        if not gui.yes_no('Are you sure you want to delete this channel?'):
+        if not gui.yes_no(_.CONF_DELETE_CHANNEL):
             return
 
         channel.delete_instance()
@@ -434,7 +449,7 @@ def reset_channel(slug, **kwargs):
 
 @plugin.route()
 def edit_channel_value(slug, method, **kwargs):
-    channel = Channel.select(Channel, Override).where(Channel.slug == slug).join(Override, join_type="LEFT OUTER JOIN", on=(Channel.slug == Override.slug), attr='override').get()
+    channel = Channel.select(Channel, Override).where(Channel.slug == slug).join(Override, join_type='LEFT OUTER JOIN', on=(Channel.slug == Override.slug), attr='override').get()
 
     create = False
     if not hasattr(channel, 'override'):
@@ -673,5 +688,9 @@ def setup_addon(addon_id, **kwargs):
         if not epg.enabled:
             epg.enabled = True
             epg.save()
+
+    if 'configure' in data:
+        path = data['configure'].replace('$ID', addon_id)
+        run_plugin(path, wait=True)
 
     set_kodi_string('_iptv_merge_force_run', '1')
