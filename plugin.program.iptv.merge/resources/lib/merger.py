@@ -6,7 +6,7 @@ import re
 import xml.parsers.expat
 
 from kodi_six import xbmc, xbmcvfs
-from six.moves.urllib.parse import unquote
+from six.moves.urllib.parse import unquote_plus
 
 from slyguy import settings, database, gui, router
 from slyguy.log import log
@@ -141,14 +141,7 @@ class Merger(object):
         if not files:
             raise AddonError('Plugin method failed')
 
-        try:
-            result, msg = int(files[0][0]), unquote(files[0][1:])
-        except:
-            # LEGACY
-            log.debug('Please update your add-on to return 1 instead of ok')
-            msg = unquote(files[0])
-            result = msg.lower() == 'ok'
-
+        result, msg = int(files[0][0]), unquote_plus(files[0][1:])
         if not result:
             raise AddonError(msg)
 
