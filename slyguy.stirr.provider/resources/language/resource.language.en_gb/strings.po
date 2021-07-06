@@ -6,7 +6,11 @@ msgid "Live TV"
 msgstr ""
 
 msgctxt "#30001"
-msgid "{chno} | {name}"
+msgid "Show Mini EPG"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Show Channel Numbers"
 msgstr ""
 
 ## COMMON SETTINGS ##

@@ -1,5 +1,6 @@
 import codecs
 
+import arrow
 from slyguy import plugin, inputstream, mem_cache, settings
 from slyguy.session import Session
 
@@ -20,20 +21,45 @@ def home(**kwargs):
     return folder
 
 @mem_cache.cached(60*5)
-def _channels():
+def _app_data():
     return Session().gz_json(DATA_URL)
 
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
-    channels = _channels()
-    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
+    show_chno = settings.getBool('show_chno', True)
+
+    if settings.getBool('show_mini_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        epg_count = None
+
+    channels = _app_data()['channels']
+
+    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
         channel = channels[id]
         
+        if not epg_count:
+            plot = channel.get('description', '')
+        else:
+            plot = u''
+            count = 0
+            for index, row in enumerate(channel.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
         folder.add_item(
-            label = _(_.CH_LABEL, chno=channel['chno'], name=channel['name']),
-            info = {'plot': channel['description']},
+            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
+            info = {'plot': plot},
             art = {'thumb': channel['logo']},
             playable = True,
             path = plugin.url_for(play, id=id, _is_live=True),
@@ -43,11 +69,14 @@ def live_tv(**kwargs):
 
 @plugin.route()
 def play(id, **kwargs):
-    channel = _channels()[id]
+    data = _app_data()
+    channel = data['channels'][id]
+
     return plugin.Item(
         label = channel['name'],
         info = {'plot': channel['description']},
         art = {'thumb': channel['logo']},
+        headers = data['headers'],
         inputstream = inputstream.HLS(live=True, x_discontinuity=True),
         path = channel['url'],
     )
@@ -55,7 +84,7 @@ def play(id, **kwargs):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    channels = _channels()
+    channels = _app_data()['channels']
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
