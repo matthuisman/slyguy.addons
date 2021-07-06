@@ -45,6 +45,10 @@ msgctxt "#30010"
 msgid "Remove from Merge"
 msgstr ""
 
+msgctxt "#30011"
+msgid "No regions selected to be merged"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

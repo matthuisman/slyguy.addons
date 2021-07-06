@@ -13,5 +13,6 @@ class Language(BaseLanguage):
     CHANNEL_COUNT  = 30008
     MERGE_ADD      = 30009
     MERGE_REMOVE   = 30010
+    NO_REGIONS     = 30011
 
 _ = Language()
