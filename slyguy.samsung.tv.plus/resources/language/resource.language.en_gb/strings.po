@@ -22,30 +22,14 @@ msgid "Show Mini EPG"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Added to Merge"
+msgid "Select Regions for merge"
 msgstr ""
 
 msgctxt "#30006"
-msgid "Removed from Merge"
-msgstr ""
-
-msgctxt "#30007"
-msgid "Included in Merge"
-msgstr ""
-
-msgctxt "#30008"
 msgid "{count} Channels"
 msgstr ""
 
-msgctxt "#30009"
-msgid "Add to Merge"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Remove from Merge"
-msgstr ""
-
-msgctxt "#30011"
+msgctxt "#30007"
 msgid "No regions selected to be merged"
 msgstr ""
 

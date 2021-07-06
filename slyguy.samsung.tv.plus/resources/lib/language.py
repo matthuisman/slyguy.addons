@@ -7,12 +7,8 @@ class Language(BaseLanguage):
     REGION         = 30002
     ALL            = 30003
     SHOW_EPG       = 30004
-    MERGE_ADDED    = 30005
-    MERGE_REMOVED  = 30006
-    MERGE_INCLUDED = 30007
-    CHANNEL_COUNT  = 30008
-    MERGE_ADD      = 30009
-    MERGE_REMOVE   = 30010
-    NO_REGIONS     = 30011
+    SELECT_REGIONS = 30005
+    CHANNEL_COUNT  = 30006
+    NO_REGIONS     = 30007
 
 _ = Language()

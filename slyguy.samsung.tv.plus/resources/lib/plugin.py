@@ -84,7 +84,6 @@ def _process_channels(channels, group=ALL):
 @plugin.route()
 def live_tv(code=None, group=None, **kwargs):
     data = _app_data()
-    regions = userdata.get('merge_regions', [])
 
     if not code:
         folder = plugin.Folder(_.LIVE_TV)
@@ -92,17 +91,17 @@ def live_tv(code=None, group=None, **kwargs):
         for code in sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name'])):
             region = data['regions'][code]
             ch_count = len(region['channels'])
-            in_merge = code in regions
 
-            folder.add_item(
-                label = _(u'{name} ({count})'.format(name=region['name'], count=ch_count), _color='FF19f109' if in_merge else ''),
+            item = plugin.Item(
+                label = _(u'{name} ({count})'.format(name=region['name'], count=ch_count)),
                 art = {'thumb': region.get('logo')},
                 info = {
-                    'plot': u'{}\n\n{}\n\n{}'.format(region['name'], _(_.CHANNEL_COUNT, count=ch_count), _(_.MERGE_INCLUDED, _color='FF19f109') if in_merge else ''),
+                    'plot': u'{}\n\n{}'.format(region['name'], _(_.CHANNEL_COUNT, count=ch_count)),
                 },
-                context = ((_.MERGE_REMOVE if in_merge else _.MERGE_ADD, 'RunPlugin({})'.format(plugin.url_for(toggle_merge, code=code))),),
                 path = plugin.url_for(live_tv, code=code),
             )
+
+            folder.add_items(item)
 
         return folder
 
@@ -178,32 +177,6 @@ def search(code, query=None, **kwargs):
     return folder
 
 @plugin.route()
-def toggle_merge(code, **kwargs):
-    data = _app_data()
-
-    regions = userdata.get('merge_regions', [])
-    region = data['regions'][code]
-
-    if code in regions:
-        if code == ALL:
-            regions = [ALL]
-
-        regions.remove(code)
-    else:
-        if code == ALL:
-            regions = []
-
-        regions.append(code)
-
-    if ALL in regions and code != ALL:
-        regions.remove(ALL)
-
-    gui.notification(_.MERGE_ADDED if code in regions else _.MERGE_REMOVED, heading=region['name'], icon=region['logo'])
-    userdata.set('merge_regions', regions)
-    gui.refresh()
-
-
-@plugin.route()
 def play(id, **kwargs):
     data = _app_data()
     channel = data['regions'][ALL]['channels'][id]
@@ -224,10 +197,7 @@ def playlist(output, **kwargs):
     data['regions'].pop(ALL, None)
 
     regions = userdata.get('merge_regions', [])
-    if ALL in regions:
-        regions = [x for x in data['regions']]
-    else:
-        regions = [x for x in regions if x in data['regions']]
+    regions = [x for x in regions if x in data['regions']]
 
     if not regions:
         raise Exception(_.NO_REGIONS)
@@ -244,3 +214,26 @@ def playlist(output, **kwargs):
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{region};{group}",{name}\n{url}'.format(
                     id=id, chno=channel['chno'], name=channel['name'], logo=channel['logo'], region=region['name'], group=channel['group'], url=plugin.url_for(play, id=id, _is_live=True),
                 ))
+
+@plugin.route()
+def configure_merge(**kwargs):
+    data = _app_data()
+    data['regions'].pop(ALL, None)
+
+    user_regions = userdata.get('merge_regions', [])
+    avail_regions = sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name']))
+
+    options = []
+    preselect = []
+    for index, code in enumerate(avail_regions):
+        region = data['regions'][code]
+        options.append(plugin.Item(label=region['name'], art={'thumb': region['logo']}))
+        if code in user_regions:
+            preselect.append(index)
+
+    indexes = gui.select(heading=_.SELECT_REGIONS, options=options, multi=True, useDetails=True, preselect=preselect)
+    if indexes is None:
+        return
+
+    user_regions = [avail_regions[i] for i in indexes]
+    userdata.set('merge_regions', user_regions)
