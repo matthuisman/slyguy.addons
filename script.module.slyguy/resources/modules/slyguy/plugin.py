@@ -20,8 +20,8 @@ from .exceptions import Error, PluginError, FailedPlayback
 from .util import set_kodi_string, get_addon, remove_file
 
 ## SHORTCUTS
-url_for         = router.url_for
-dispatch        = router.dispatch
+url_for = router.url_for
+dispatch = router.dispatch
 ############
 
 def exception(msg=''):

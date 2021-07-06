@@ -10,7 +10,7 @@ from functools import cmp_to_key
 
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
-from six.moves.urllib.parse import urlparse, urljoin, unquote, parse_qsl, quote_plus
+from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl, quote_plus
 from kodi_six import xbmc, xbmcvfs
 from requests import ConnectionError
 
@@ -56,6 +56,16 @@ PROXY_GLOBAL = {
     'last_quality': QUALITY_BEST,
     'session': {},
 }
+
+def _lang_allowed(lang, lang_list):
+    for _lang in lang_list:
+        if not _lang:
+            continue
+
+        if lang.startswith(_lang):
+            return True
+
+    return False
 
 class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
@@ -124,7 +134,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not files:
             raise Exception('No data returned from plugin')
 
-        path = unquote(files[0])
+        path = unquote_plus(files[0])
         split = path.split('|')
         url = split[0]
 
@@ -147,7 +157,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         log.debug('PLUGIN MANIFEST MIDDLEWARE REQUEST: {}'.format(url))
         dirs, files = xbmcvfs.listdir(url)
 
-        path = unquote(files[0])
+        path = unquote_plus(files[0])
         split = path.split('|')
         data_path = split[0]
 
@@ -427,6 +437,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         for elem in audio_sets:
             elem[2].appendChild(elem[1])
 
+
         ## Set default languae
         if lang_adap_sets:
             for elem in root.getElementsByTagName('Role'):
@@ -445,9 +456,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         if adap_parent:
             for idx, subtitle in enumerate(self._session.get('subtitles') or []):
                 elem = root.createElement('AdaptationSet')
+                elem.setAttribute('contentType', 'text')
                 elem.setAttribute('mimeType', subtitle[0])
                 elem.setAttribute('lang', subtitle[1])
                 elem.setAttribute('id', 'caption_{}'.format(idx))
+                #elem.setAttribute('forced', 'true')
+                #elem.setAttribute('original', 'true')
+                #elem.setAttribute('default', 'true')
+                #elem.setAttribute('impaired', 'true')
 
                 elem2 = root.createElement('Representation')
                 elem2.setAttribute('id', 'caption_rep_{}'.format(idx))
@@ -464,6 +480,15 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 adap_parent.appendChild(elem)
         ##################
+
+        ## REMOVE SUBS
+        # if subs_whitelist:
+        #     for adap_set in root.getElementsByTagName('AdaptationSet'):
+        #         if adap_set.getAttribute('contentType') == 'text':
+        #             language = adap_set.getAttribute('lang')
+        #             if not _lang_allowed(language.lower().strip(), subs_whitelist):
+        #                 adap_set.parentNode.removeChild(adap_set)
+        ##
 
         ## Convert BaseURLS
         base_url_parents = []
@@ -581,16 +606,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         if audio_whitelist:
             audio_whitelist.append(original_language)
             audio_whitelist.append(default_language)
-
-        def _lang_allowed(lang, lang_list):
-            for _lang in lang_list:
-                if not _lang:
-                    continue
-
-                if lang.startswith(_lang):
-                    return True
-
-            return False
 
         default_groups = []
         groups = defaultdict(list)
