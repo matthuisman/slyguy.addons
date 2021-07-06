@@ -127,7 +127,7 @@ def search(**kwargs):
 
 def _filtered_stations():
     stations = {}
-    all_stations = _app_data()['stations']
+    all_stations = _app_data()['channels']
 
     for callsign in all_stations:
         station = all_stations[callsign]
@@ -140,7 +140,7 @@ def _filtered_stations():
 @plugin.route()
 def play(callsign, **kwargs):
     app_data = _app_data()
-    all_stations = app_data['stations']
+    all_stations = app_data['channels']
     station = all_stations[callsign]
 
     if not station['url']:
@@ -159,7 +159,7 @@ def play(callsign, **kwargs):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    all_stations = _app_data()['stations']
+    all_stations = _app_data()['channels']
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U\n')
