@@ -14,5 +14,6 @@ class Language(BaseLanguage):
     MERGE_ADD      = 30009
     MERGE_REMOVE   = 30010
     SHOW_ADVERTS   = 30011
+    NO_REGIONS     = 30012
 
 _ = Language()

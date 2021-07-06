@@ -253,6 +253,9 @@ def playlist(output, **kwargs):
     else:
         regions = [x for x in regions if x in data['regions']]
 
+    if not regions:
+        raise Exception(_.NO_REGIONS)
+
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
