@@ -80,7 +80,7 @@ def live_tv(provider=None, **kwargs):
             path = plugin.url_for(live_tv, provider=''),
         )
 
-        for provider in sorted(set([x['providerDisplayName'] for x in channels])):
+        for provider in providers:
             folder.add_item(
                 label = provider,
                 path = plugin.url_for(live_tv, provider=provider),
@@ -170,14 +170,17 @@ def logout(**kwargs):
 @plugin.merge()
 @plugin.login_required()
 def playlist(output, **kwargs):
-    channels = api.channels()
+    user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
+    if not user_providers:
+        raise PluginError(_.NO_PROVIDERS)
 
-    avail_providers = [x['providerDisplayName'] for x in channels]
-    user_providers = userdata.get('merge_providers', [])
-    providers = [x for x in user_providers if x in avail_providers]
+    channels = api.channels()
+    avail_providers = set([x['providerDisplayName'] for x in channels])
+    providers = [x for x in avail_providers if x.lower() in user_providers]
+    userdata.set('merge_providers', providers)
 
     if not providers:
-        raise Exception(_.NO_PROVIDERS)
+        raise PluginError(_.NO_PROVIDERS)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
@@ -194,18 +197,30 @@ def playlist(output, **kwargs):
 @plugin.merge()
 @plugin.login_required()
 def epg(output, **kwargs):
+    user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
+    if not user_providers:
+        raise PluginError(_.NO_PROVIDERS)
+
     channels = api.epg()
+    avail_providers = set([x['providerDisplayName'] for x in channels])
+    providers = [x for x in avail_providers if x.lower() in user_providers]
+    userdata.set('merge_providers', providers)
+
+    if not providers:
+        raise PluginError(_.NO_PROVIDERS)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
         for channel in channels:
+            if channel['providerDisplayName'] not in providers:
+                continue
+
             f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
 
-            channel['upcomingEpisodes'].insert(0, channel['currentEpisode'])
-            for program in channel['upcomingEpisodes']:
+            def write_program(program):
                 if not program:
-                    continue
+                    return
 
                 start = arrow.get(program['airTime']).to('utc')
                 stop = start.shift(minutes=program['duration'])
@@ -224,6 +239,10 @@ def epg(output, **kwargs):
                 f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}{desc}</programme>'.format(
                     id=channel['id'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(program['title']), subtitle=subtitle, episode=episode, icon=icon, desc=desc))
 
+            write_program(channel['currentEpisode'])
+            for program in channel['upcomingEpisodes']:
+                write_program(program)
+
         f.write(u'</tv>')
 
 @plugin.route()
@@ -231,23 +250,24 @@ def epg(output, **kwargs):
 def configure_merge(**kwargs):
     channels = api.channels()
 
-    user_providers = userdata.get('merge_providers', [])
+    user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
     avail_providers = sorted(set([x['providerDisplayName'] for x in channels]))
 
     if len(avail_providers) == 1:
-        userdata.set('merge_providers', avail_providers)
+        user_providers = [avail_providers[0].lower()]
+        userdata.set('merge_providers', user_providers)
         return
 
     options = []
     preselect = []
     for index, provider in enumerate(avail_providers):
         options.append(provider)
-        if provider in user_providers:
+        if provider.lower() in user_providers:
             preselect.append(index)
 
     indexes = gui.select(heading=_.SELECT_PROVIDERS, options=options, multi=True, preselect=preselect)
     if indexes is None:
         return
 
-    user_providers = [avail_providers[i] for i in indexes]
+    user_providers = [avail_providers[i].lower() for i in indexes]
     userdata.set('merge_providers', user_providers)
