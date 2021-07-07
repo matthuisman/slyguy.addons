@@ -109,13 +109,6 @@ def search(**kwargs):
 
     userdata.set('search', query)
 
-    if settings.getBool('show_mini_epg', True):
-        now = arrow.now()
-        epg_count = 5
-    else:
-        now = None
-        epg_count = None
-
     folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
     
     stations = _filtered_stations()
