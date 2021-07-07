@@ -1,7 +1,7 @@
 import time
 
 from kodi_six import xbmc, xbmcvfs, xbmcaddon
-from six.moves.urllib.parse import unquote
+from six.moves.urllib.parse import unquote_plus
 
 from slyguy import router, settings, userdata, gui
 from slyguy.constants import ADDON_DEV, KODI_VERSION
@@ -31,7 +31,7 @@ def start():
 
             url = router.url_for('run_merge', forced=int(forced))
             dirs, files = xbmcvfs.listdir(url)
-            result, msg = int(files[0][0]), unquote(files[0][1:])
+            result, msg = int(files[0][0]), unquote_plus(files[0][1:])
             if result:
                 restart_queued = True
 
