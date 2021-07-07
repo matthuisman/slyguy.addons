@@ -13,7 +13,6 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 
 from slyguy import database, gui, settings, plugin, inputstream
 from slyguy.exceptions import Error
-from slyguy.constants import DEFAULT_USERAGENT
 from slyguy.util import hash_6, get_addon, kodi_rpc, run_plugin
 from slyguy.log import log
 
@@ -27,7 +26,6 @@ def play_channel(slug, **kwargs):
 
     headers = {
         'user-agent': DEFAULT_USERAGENT,
-        'referer': '%20',
     }
 
     if len(split) > 1:
