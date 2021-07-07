@@ -2,7 +2,7 @@ import codecs
 from xml.sax.saxutils import escape
 
 import arrow
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, settings, userdata, signals, inputstream, mem_cache
 from slyguy.constants import LIVE_HEAD
 from slyguy.exceptions import PluginError
 
@@ -37,9 +37,11 @@ def home(**kwargs):
 
     return folder
 
-def _get_channels(provider=None, query=None):
-    channels = api.channels()
+@mem_cache.cached(60*5)
+def _channels():
+    return api.channels()
 
+def _get_channels(channels, provider=None, query=None):
     items = []
     for channel in channels:
         if provider and provider != channel['providerDisplayName']:
@@ -65,7 +67,7 @@ def _get_channels(provider=None, query=None):
 
 @plugin.route()
 def live_tv(provider=None, **kwargs):
-    channels = api.channels()
+    channels = _channels()
     providers = sorted(set([x['providerDisplayName'] for x in channels]))
 
     if provider is None and len(providers) > 1:
@@ -85,7 +87,7 @@ def live_tv(provider=None, **kwargs):
         return folder
 
     folder = plugin.Folder(provider if provider else _.LIVE_TV)
-    items = _get_channels(provider=provider)
+    items = _get_channels(channels, provider=provider)
     folder.add_items(items)
     return folder
 
@@ -96,9 +98,10 @@ def search(**kwargs):
         return
 
     userdata.set('search', query)
+    channels = _channels()
 
     folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-    items = _get_channels(query=query)
+    items = _get_channels(channels, query=query)
     folder.add_items(items)
     return folder
 
@@ -158,6 +161,7 @@ def logout(**kwargs):
         return
 
     api.logout()
+    mem_cache.empty()
     gui.refresh()
 
 @plugin.route()
@@ -188,10 +192,12 @@ def playlist(output, **kwargs):
 @plugin.merge()
 @plugin.login_required()
 def epg(output, **kwargs):
+    channels = api.epg()
+
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
-        for channel in api.epg():
+        for channel in channels:
             f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
 
             channel['upcomingEpisodes'].insert(0, channel['currentEpisode'])
