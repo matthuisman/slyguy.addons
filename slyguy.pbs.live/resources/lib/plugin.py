@@ -27,36 +27,53 @@ def home(**kwargs):
 def _app_data():
     return Session().gz_json(DATA_URL)
 
-def _get_station_li(callsign, station, epg_count=None, now=None):
-    name = station['name']
-    if not station['url']:
-        name = _(_.NO_STREAM_LABEL, name=name)
+def _process_stations(stations, state=None, query=None):
+    query = query.lower().strip() if query else None
 
-    if not epg_count:
-        plot = station.get('description', '')
+    if settings.getBool('show_mini_epg', True):
+        now = arrow.now()
+        epg_count = 5
     else:
-        plot = u''
-        count = 0
-        for index, row in enumerate(station.get('programs', [])):
-            start = arrow.get(row[0])
-            try: stop = arrow.get(station['programs'][index+1][0])
-            except: stop = start.shift(hours=1)
+        now = None
+        epg_count = None
 
-            if (now > start and now < stop) or start > now:
-                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
-                count += 1
-                if count == epg_count:
-                    break
+    items = []
+    for callsign in sorted(stations, key=lambda x: stations[x]['name'].lower()):
+        station = stations[callsign]
+        if state and state not in station['states']:
+            continue
 
-    return plugin.Item(
-        label = name,
-        info = {
-            'plot': plot,
-        },
-        art = {'thumb': station['logo']},
-        path = plugin.url_for(play, callsign=callsign, _is_live=True),
-        playable = True,
-    )
+        if query and (query not in station['name'].lower() and query != callsign.lower()):
+            continue
+
+        if not epg_count:
+            plot = station.get('description', '')
+        else:
+            plot = u''
+            count = 0
+            for index, row in enumerate(station.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(station['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        item = plugin.Item(
+            label = _(_.NO_STREAM_LABEL, name=station['name']) if not station['url'] else station['name'],
+            info = {
+                'plot': plot,
+            },
+            art = {'thumb': station['logo']},
+            path = plugin.url_for(play, callsign=callsign, _is_live=True),
+            playable = True,
+        )
+        items.append(item)
+
+    return items
 
 @plugin.route()
 def states(**kwargs):
@@ -78,21 +95,9 @@ def states(**kwargs):
 def stations(state=None, label=None, **kwargs):
     folder = plugin.Folder(label or _.STATIONS)
 
-    if settings.getBool('show_mini_epg', True):
-        now = arrow.now()
-        epg_count = 5
-    else:
-        now = None
-        epg_count = None
-
-    all_stations = _filtered_stations()
-    for callsign in sorted(all_stations, key=lambda x: all_stations[x]['name'].lower()):
-        station = all_stations[callsign]
-        if state and state not in station['states']:
-            continue
-        
-        item = _get_station_li(callsign, station, epg_count=epg_count, now=now)
-        folder.add_items(item)
+    stations = _filtered_stations()
+    items = _process_stations(stations, state=state)
+    folder.add_items(items)
 
     return folder
 
@@ -111,17 +116,11 @@ def search(**kwargs):
         now = None
         epg_count = None
 
-    all_stations = _filtered_stations()
     folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
     
-    query = query.lower().strip()
-    for callsign in all_stations:
-        station = all_stations[callsign]
-
-        states = [x.lower() for x in station['states']]
-        if query == callsign.lower() or query in station['name'].lower():
-            item = _get_station_li(callsign, station, epg_count=epg_count, now=now)
-            folder.add_items(item)
+    stations = _filtered_stations()
+    items = _process_stations(stations, query=query)
+    folder.add_items(items)
 
     return folder
 
