@@ -1,0 +1,5 @@
+{
+    "playlist": "plugin://$ID/?_=playlist&output=$FILE",
+    "epg": "plugin://$ID/?_=epg&output=$FILE",
+    "configure": "plugin://$ID/?_=configure_merge"
+}
