@@ -1,4 +1,5 @@
 import codecs
+from xml.sax.saxutils import escape
 
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
@@ -187,7 +188,32 @@ def playlist(output, **kwargs):
 @plugin.merge()
 @plugin.login_required()
 def epg(output, **kwargs):
-    raise Exception('Not implemented yet')
+    with codecs.open(output, 'w', encoding='utf8') as f:
+        f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
+
+        for channel in api.epg():
+            f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
+
+            channel['upcomingEpisodes'].insert(0, channel['currentEpisode'])
+            for program in channel['upcomingEpisodes']:
+                start = arrow.get(program['airTime']).to('utc')
+                stop = start.shift(minutes=program['duration'])
+
+                series = program.get('seasonNumber') or 0
+                episode = program.get('episodeNumber') or 0
+                icon = program.get('primaryImageUrl')
+                desc = program.get('description')
+                subtitle = program.get('episodeTitle')
+
+                icon = u'<icon src="{}"/>'.format(escape(icon)) if icon else ''
+                episode = u'<episode-num system="onscreen">S{}E{}</episode-num>'.format(series, episode) if series and episode else ''
+                subtitle = u'<sub-title>{}</sub-title>'.format(escape(subtitle)) if subtitle else ''
+                desc = u'<desc>{}</desc>'.format(escape(desc)) if desc else ''
+
+                f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}{desc}</programme>'.format(
+                    id=channel['id'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(program['title']), subtitle=subtitle, episode=episode, icon=icon, desc=desc))
+
+        f.write(u'</tv>')
 
 @plugin.route()
 @plugin.login_required()
