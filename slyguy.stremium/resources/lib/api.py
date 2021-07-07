@@ -1,6 +1,6 @@
 from time import time
 
-from slyguy import userdata, mem_cache
+from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
@@ -49,7 +49,6 @@ class API(object):
         userdata.set('expires', int(time()) + int(data['expires_in']) - 30)
         self._set_authentication()
 
-    @mem_cache.cached(60*5)
     def channels(self):
         self._refresh_token()
 
@@ -96,5 +95,4 @@ class API(object):
         userdata.delete('access_token')
         userdata.delete('refresh_token')
         userdata.delete('expires')
-        mem_cache.empty()
         self.new_session()
