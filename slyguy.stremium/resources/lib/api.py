@@ -67,9 +67,14 @@ class API(object):
 
         return self._session.get('/playbackAuthenticated', params=params).json()
 
-    def epg(self):
+    def epg(self, id=None):
         self._refresh_token()
-        return self._session.get('/programGuide').json()
+
+        params = {}
+        if id:
+            params['channelId'] = id
+
+        return self._session.get('/programGuide', params=params).json()
 
     def login(self, email, password, register=False):
         self.logout()
