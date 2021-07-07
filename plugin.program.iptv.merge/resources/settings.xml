@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30001" id="output_dir" type="folder" source="" option="writeable" default="special://userdata/addon_data/plugin.program.iptv.merge"/>
+        <setting label="30001" id="output_dir" type="folder" source="files" option="writeable" default="special://userdata/addon_data/plugin.program.iptv.merge"/>
         <setting label="30002" id="auto_merge" type="bool" default="true"/>
         <setting label="30003" id="reload_time_hours" type="slider" default="12" range="1,1,48" option="int" visible="eq(-1,true)"/>
         <setting label="30073" id="boot_merge" type="bool" default="false"/>

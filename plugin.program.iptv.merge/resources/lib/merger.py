@@ -10,7 +10,7 @@ from six.moves.urllib.parse import unquote_plus
 
 from slyguy import settings, database, gui, router
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, safe_copy
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
@@ -127,12 +127,17 @@ class XMLParser(object):
 
 class Merger(object):
     def __init__(self, output_path=None, forced=False):
-        self.output_path = output_path or xbmc.translatePath(settings.get('output_dir', '').strip() or ADDON_PROFILE)
-        if not os.path.exists(self.output_path):
-            os.makedirs(self.output_path)
+        self.working_path = ADDON_PROFILE
+        self.output_path = output_path or xbmc.translatePath(settings.get('output_dir', '').strip() or self.working_path)
+
+        if not xbmcvfs.exists(self.working_path):
+            xbmcvfs.mkdirs(self.working_path)
+
+        if not xbmcvfs.exists(self.output_path):
+            xbmcvfs.mkdirs(self.output_path)
 
         self.forced = forced
-        self.tmp_file = os.path.join(self.output_path, 'iptv_merge_tmp')
+        self.tmp_file = os.path.join(self.working_path, 'iptv_merge_tmp')
         self._playlist_epgs = []
 
     def _call_addon_method(self, plugin_url):
@@ -194,8 +199,7 @@ class Merger(object):
         elif not xbmcvfs.exists(path):
             raise Error(_(_.LOCAL_PATH_MISSING, path=path))
         else:
-            log.debug('Copying local file: {} > {}'.format(path, file_path))
-            xbmcvfs.copy(path, file_path)
+            safe_copy(path, file_path)
 
         if archive_type == Source.ARCHIVE_AUTO:
             archive_type = Source.auto_archive_type(path)
@@ -341,9 +345,10 @@ class Merger(object):
 
     def playlists(self, refresh=True):
         playlist_path = os.path.join(self.output_path, PLAYLIST_FILE_NAME)
-        if not refresh and os.path.exists(playlist_path):
+        if not refresh and xbmcvfs.exists(playlist_path):
             return playlist_path
 
+        working_path = os.path.join(self.working_path, PLAYLIST_FILE_NAME)
         start_time = time.time()
         database.connect()
 
@@ -403,7 +408,7 @@ class Merger(object):
             count = 0
             starting_ch_no = settings.getInt('start_ch_no', 1)
 
-            with codecs.open(playlist_path, 'w', encoding='utf8') as outfile:
+            with codecs.open(working_path, 'w', encoding='utf8') as outfile:
                 outfile.write(u'#EXTM3U')
 
                 group_order = settings.get('group_order')
@@ -450,9 +455,11 @@ class Merger(object):
 
             log.debug('Wrote {} Channels'.format(count))
             Playlist.after_merge()
+            safe_copy(working_path, playlist_path)
         finally:
-            if progress: progress.close()
             database.close()
+            if progress: progress.close()
+            remove_file(self.tmp_file)
 
         log.debug('Playlist Merge Time: {0:.2f}'.format(time.time() - start_time))
 
@@ -460,11 +467,13 @@ class Merger(object):
 
     def epgs(self, refresh=True):
         epg_path = os.path.join(self.output_path, EPG_FILE_NAME)
-        if not refresh and os.path.exists(epg_path):
+        if not refresh and xbmcvfs.exists(epg_path):
             return epg_path
 
+        working_path = os.path.join(self.working_path, EPG_FILE_NAME)
+        epg_path_tmp = os.path.join(self.working_path, EPG_FILE_NAME+'_tmp')
+
         start_time = time.time()
-        epg_path_tmp = os.path.join(self.output_path, EPG_FILE_NAME+'_tmp')
         database.connect()
 
         try:
@@ -514,7 +523,7 @@ class Merger(object):
                         _seek_file(_out, file_index)
 
                         if epg.start_index > 0:
-                            if copy_partial_data(epg_path, _out, epg.start_index, epg.end_index):
+                            if copy_partial_data(working_path, _out, epg.start_index, epg.end_index):
                                 log.debug('Last used XML data loaded successfully')
                                 epg.start_index = file_index
                                 epg.end_index = _out.tell()
@@ -536,14 +545,15 @@ class Merger(object):
 
                 _out.write(b'</tv>')
 
-            remove_file(epg_path)
-            shutil.move(epg_path_tmp, epg_path)
-        finally:
-            if progress: progress.close()
+            remove_file(working_path)
+            shutil.move(epg_path_tmp, working_path)
 
+            safe_copy(working_path, epg_path)
+        finally:
+            database.close()
+            if progress: progress.close()
             remove_file(self.tmp_file)
             remove_file(epg_path_tmp)
-            database.close()
 
         log.debug('EPG Merge Time: {0:.2f}'.format(time.time() - start_time))
 

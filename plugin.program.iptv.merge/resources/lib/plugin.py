@@ -559,19 +559,9 @@ def _setup():
     with gui.progress(_.SETTING_UP_IPTV) as progress:
         kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
 
-        output_dir    = settings.get('output_dir', '').strip() or ADDON_PROFILE
+        output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
         playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-        epg_path      = os.path.join(output_dir, EPG_FILE_NAME)
-
-        if not os.path.exists(xbmc.translatePath(playlist_path)):
-            with open(xbmc.translatePath(playlist_path), 'w') as f:
-                f.write('''#EXTM3U
-#EXTINF:-1 tvg-id="iptv_merge" tvg-chno="1000" tvg-logo="{}",{}
-{}'''.format(ADDON_ICON, 'IPTV Merge: Click me to run a merge!', plugin.url_for(merge)))
-
-        if not os.path.exists(xbmc.translatePath(epg_path)):
-            with open(xbmc.translatePath(epg_path), 'w') as f:
-                f.write('''<?xml version="1.0" encoding="utf-8" ?><tv><channel id="iptv_merge"></channel></tv>''')
+        epg_path = os.path.join(output_dir, EPG_FILE_NAME)
 
         ## IMPORT ANY CURRENT SOURCES ##
         cur_epg_url  = addon.getSetting('epgUrl')
@@ -591,8 +581,8 @@ def _setup():
         cur_m3u_url  = addon.getSetting('m3uUrl')
         cur_m3u_path = addon.getSetting('m3uPath')
         cur_m3u_type = addon.getSetting('m3uPathType')
-        start_chno   = int(addon.getSetting('startNum') or 1)
-        #user_agent   = addon.getSetting('userAgent')
+        start_chno = int(addon.getSetting('startNum') or 1)
+        #user_agent = addon.getSetting('userAgent')
 
         if xbmc.translatePath(cur_m3u_path) != xbmc.translatePath(playlist_path) and os.path.exists(xbmc.translatePath(cur_m3u_path)):
             playlist = Playlist(source_type=Playlist.TYPE_FILE, path=cur_m3u_path, enabled=cur_m3u_type == '0')
@@ -639,6 +629,8 @@ def _setup():
         set_kodi_setting('pvrmanager.preselectplayingchannel', True)
         set_kodi_setting('pvrmanager.backendchannelorder', True)
         set_kodi_setting('pvrmanager.usebackendchannelnumbers', True)
+
+    set_kodi_string('_iptv_merge_force_run', '1')
 
     gui.ok(_.SETUP_IPTV_COMPLETE)
 
