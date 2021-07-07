@@ -3,7 +3,6 @@ from time import time
 from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import jwt_data
 from slyguy.log import log
 
 from .constants import *
@@ -68,6 +67,10 @@ class API(object):
         }
 
         return self._session.get('/playbackAuthenticated', params=params).json()
+
+    def epg(self):
+        self._refresh_token()
+        return self._session.get('/programGuide').json()
 
     def login(self, email, password, register=False):
         self.logout()
