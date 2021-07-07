@@ -4,7 +4,7 @@ import socket
 
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
-from six.moves.urllib.parse import unquote
+from six.moves.urllib.parse import unquote_plus
 
 from kodi_six import xbmcvfs
 
@@ -39,7 +39,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         log.debug('PLUGIN REQUEST: {}'.format(path))
         dirs, files = xbmcvfs.listdir(path)
-        result, msg = int(files[0][0]), unquote(files[0][1:])
+        result, msg = int(files[0][0]), unquote_plus(files[0][1:])
         if not result:
             raise Exception(msg)
 

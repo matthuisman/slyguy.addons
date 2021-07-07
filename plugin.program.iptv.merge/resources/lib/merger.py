@@ -345,10 +345,11 @@ class Merger(object):
 
     def playlists(self, refresh=True):
         playlist_path = os.path.join(self.output_path, PLAYLIST_FILE_NAME)
-        if not refresh and xbmcvfs.exists(playlist_path):
-            return playlist_path
-
         working_path = os.path.join(self.working_path, PLAYLIST_FILE_NAME)
+
+        if not refresh and xbmcvfs.exists(playlist_path) and xbmcvfs.exists(working_path):
+            return working_path
+
         start_time = time.time()
         database.connect()
 
@@ -463,15 +464,15 @@ class Merger(object):
 
         log.debug('Playlist Merge Time: {0:.2f}'.format(time.time() - start_time))
 
-        return playlist_path
+        return working_path
 
     def epgs(self, refresh=True):
         epg_path = os.path.join(self.output_path, EPG_FILE_NAME)
-        if not refresh and xbmcvfs.exists(epg_path):
-            return epg_path
-
         working_path = os.path.join(self.working_path, EPG_FILE_NAME)
         epg_path_tmp = os.path.join(self.working_path, EPG_FILE_NAME+'_tmp')
+
+        if not refresh and xbmcvfs.exists(epg_path) and xbmcvfs.exists(working_path):
+            return working_path
 
         start_time = time.time()
         database.connect()
@@ -557,4 +558,4 @@ class Merger(object):
 
         log.debug('EPG Merge Time: {0:.2f}'.format(time.time() - start_time))
 
-        return epg_path
+        return working_path
