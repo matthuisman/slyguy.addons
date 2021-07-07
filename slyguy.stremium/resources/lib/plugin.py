@@ -50,9 +50,11 @@ def _get_channels(channels, provider=None, query=None):
         if query and query not in channel['title'].lower():
             continue
 
-        start = arrow.get(channel['currentEpisode']['airTime'])
-        end = start.shift(minutes=channel['currentEpisode']['duration'])
-        plot = '[{} - {}]\n{}'.format(start.to('local').format('h:mma'), end.to('local').format('h:mma'), channel['currentEpisode']['title'])
+        plot = ''
+        if channel['currentEpisode']:
+            start = arrow.get(channel['currentEpisode']['airTime'])
+            end = start.shift(minutes=channel['currentEpisode']['duration'])
+            plot = u'[{} - {}]\n{}'.format(start.to('local').format('h:mma'), end.to('local').format('h:mma'), channel['currentEpisode']['title'])
 
         item = plugin.Item(
             label = channel['title'],
@@ -74,7 +76,7 @@ def live_tv(provider=None, **kwargs):
         folder = plugin.Folder(_.LIVE_TV)
 
         folder.add_item(
-            label = 'All',
+            label = _.ALL,
             path = plugin.url_for(live_tv, provider=''),
         )
 
@@ -202,6 +204,9 @@ def epg(output, **kwargs):
 
             channel['upcomingEpisodes'].insert(0, channel['currentEpisode'])
             for program in channel['upcomingEpisodes']:
+                if not program:
+                    continue
+
                 start = arrow.get(program['airTime']).to('utc')
                 stop = start.shift(minutes=program['duration'])
 

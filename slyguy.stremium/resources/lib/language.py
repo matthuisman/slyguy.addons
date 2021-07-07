@@ -9,5 +9,6 @@ class Language(BaseLanguage):
     LIVE_TV            = 30005
     SELECT_PROVIDERS   = 30006
     NO_PROVIDERS       = 30007
+    ALL                = 30008
 
 _ = Language()
