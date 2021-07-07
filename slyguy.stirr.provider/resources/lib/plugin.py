@@ -1,7 +1,7 @@
 import codecs
 
 import arrow
-from slyguy import plugin, inputstream, mem_cache, settings
+from slyguy import plugin, inputstream, mem_cache, settings, gui, userdata
 from slyguy.session import Session
 
 from .language import _
@@ -12,6 +12,7 @@ def home(**kwargs):
     folder = plugin.Folder()
 
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -24,23 +25,24 @@ def home(**kwargs):
 def _app_data():
     return Session().gz_json(DATA_URL)
 
-@plugin.route()
-def live_tv(**kwargs):
-    folder = plugin.Folder(_.LIVE_TV)
+def _process_channels(channels, query=None):
+    query = query.lower().strip() if query else None
 
     show_chno = settings.getBool('show_chno', True)
-
     if settings.getBool('show_mini_epg', True):
         now = arrow.now()
         epg_count = 5
     else:
+        now = None
         epg_count = None
 
-    channels = _app_data()['channels']
-
+    items = []
     for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
         channel = channels[id]
-        
+
+        if query and (query not in channel['name'].lower() and (not show_chno or query != str(channel['chno']))):
+            continue
+
         if not epg_count:
             plot = channel.get('description', '')
         else:
@@ -57,13 +59,40 @@ def live_tv(**kwargs):
                     if count == epg_count:
                         break
 
-        folder.add_item(
+        item = plugin.Item(
             label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
             info = {'plot': plot},
             art = {'thumb': channel['logo']},
             playable = True,
             path = plugin.url_for(play, id=id, _is_live=True),
         )
+        items.append(item)
+
+    return items
+
+@plugin.route()
+def live_tv(**kwargs):
+    folder = plugin.Folder(_.LIVE_TV)
+
+    channels = _app_data()['channels']
+    items = _process_channels(channels)
+    folder.add_items(items)
+
+    return folder
+
+@plugin.route()
+def search(**kwargs):
+    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
+    if not query:
+        return
+
+    userdata.set('search', query)
+
+    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+
+    channels = _app_data()['channels']
+    items = _process_channels(channels, query=query)
+    folder.add_items(items)
 
     return folder
 
