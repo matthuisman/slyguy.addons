@@ -54,7 +54,7 @@ def get(key, default=None):
         return default
     else:
         log('Cache Hit: {}'.format(key))
-        return row[0]
+        return deepcopy(row[0])
 
 def delete(key):
     return int(cache.data.pop(key, None) != None)
