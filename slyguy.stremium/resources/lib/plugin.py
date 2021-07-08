@@ -1,4 +1,5 @@
 import codecs
+import re
 from xml.sax.saxutils import escape
 
 import arrow
@@ -41,12 +42,51 @@ def home(**kwargs):
 def _channels():
     return api.channels()
 
-def _get_channels(channels, provider=None, query=None):
-    items = []
+def _providers(playlist=False, epg=False):
+    if not playlist and not epg:
+        hide_public = settings.getBool('hide_public', False)
+        hide_custom = settings.getBool('hide_custom', False)
+    else:
+        hide_public, hide_custom = False, False
+
+    remove_numbers = settings.getBool('remove_numbers', False)
+
+    if epg:
+        channels = api.epg()
+    elif playlist:
+        channels = api.channels()
+    else:
+        channels = _channels()
+
+    providers = {}
+    if not playlist and not epg:
+        providers[ALL] = {'name': _.ALL, 'channels': [], 'logo': None, 'sort': 0}
+
     for channel in channels:
-        if provider and provider != channel['providerDisplayName']:
+        key = channel['providerDisplayName'].lower()
+
+        if (key == PUBLIC and hide_public) or (key == CUSTOM and hide_custom):
             continue
 
+        if key not in providers:
+            sort = 2 if key in (PUBLIC, CUSTOM) else 1
+            providers[key] = {'name': channel['providerDisplayName'], 'channels': [], 'logo': PROVIDER_ART.get(key, None), 'sort': sort}
+
+        if remove_numbers:
+            channel['title'] = re.sub('^[0-9]+\.[0-9]+', '', channel['title']).strip()
+
+        providers[key]['channels'].append(channel)
+        if not playlist and not epg:
+            providers[ALL]['channels'].append(channel)
+
+    if not playlist and not epg and len(providers) == 2:
+        providers.pop(ALL)
+
+    return providers
+
+def _get_channels(channels, query=None):
+    items = []
+    for channel in sorted(channels, key=lambda x: x['title']):
         if query and query not in channel['title'].lower():
             continue
 
@@ -69,27 +109,28 @@ def _get_channels(channels, provider=None, query=None):
 
 @plugin.route()
 def live_tv(provider=None, **kwargs):
-    channels = _channels()
-    providers = sorted(set([x['providerDisplayName'] for x in channels]))
+    providers = _providers()
 
-    if provider is None and len(providers) > 1:
+    if len(providers) == 1:
+        provider = list(providers.keys())[0]
+
+    if provider is None:
         folder = plugin.Folder(_.LIVE_TV)
 
-        folder.add_item(
-            label = _.ALL,
-            path = plugin.url_for(live_tv, provider=''),
-        )
+        for slug in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'])):
+            provider = providers[slug]
 
-        for provider in providers:
             folder.add_item(
-                label = provider,
-                path = plugin.url_for(live_tv, provider=provider),
+                label = _(u'{name} ({count})'.format(name=provider['name'], count=len(provider['channels']))),
+                art = {'thumb': provider['logo']},
+                path = plugin.url_for(live_tv, provider=slug),
             )
 
         return folder
 
-    folder = plugin.Folder(provider if provider else _.LIVE_TV)
-    items = _get_channels(channels, provider=provider)
+    provider = _providers()[provider]
+    folder = plugin.Folder(provider['name'])
+    items = _get_channels(provider['channels'])
     folder.add_items(items)
     return folder
 
@@ -100,10 +141,10 @@ def search(**kwargs):
         return
 
     userdata.set('search', query)
-    channels = _channels()
 
     folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-    items = _get_channels(channels, query=query)
+    provider = _providers()[ALL]
+    items = _get_channels(provider['channels'], query=query)
     folder.add_items(items)
     return folder
 
@@ -174,24 +215,21 @@ def playlist(output, **kwargs):
     if not user_providers:
         raise PluginError(_.NO_PROVIDERS)
 
-    channels = api.channels()
-    avail_providers = set([x['providerDisplayName'] for x in channels])
-    providers = [x for x in avail_providers if x.lower() in user_providers]
-    userdata.set('merge_providers', providers)
-
+    avail_providers = _providers(playlist=True)
+    providers = [x for x in avail_providers if x in user_providers]
     if not providers:
         raise PluginError(_.NO_PROVIDERS)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
-        for channel in channels:
-            if channel['providerDisplayName'] not in providers:
-                continue
+        for key in providers:
+            provider = avail_providers[key]
 
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{provider}",{name}\n{url}'.format(
-                id=channel['id'], name=channel['title'], logo=channel['thumb'], provider=channel['providerDisplayName'], url=plugin.url_for(play, id=channel['id'], _is_live=True),
-            ))
+            for channel in provider['channels']:
+                f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{provider}",{name}\n{url}'.format(
+                    id=channel['id'], name=channel['title'], logo=channel['thumb'], provider=provider['name'], url=plugin.url_for(play, id=channel['id'], _is_live=True),
+                ))
 
 @plugin.route()
 @plugin.merge()
@@ -201,73 +239,70 @@ def epg(output, **kwargs):
     if not user_providers:
         raise PluginError(_.NO_PROVIDERS)
 
-    channels = api.epg()
-    avail_providers = set([x['providerDisplayName'] for x in channels])
-    providers = [x for x in avail_providers if x.lower() in user_providers]
-    userdata.set('merge_providers', providers)
-
+    avail_providers = _providers(epg=True)
+    providers = [x for x in avail_providers if x in user_providers]
     if not providers:
         raise PluginError(_.NO_PROVIDERS)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
-        for channel in channels:
-            if channel['providerDisplayName'] not in providers:
-                continue
+        for key in providers:
+            provider = avail_providers[key]
+            for channel in provider['channels']:
+                f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
 
-            f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
+                def write_program(program):
+                    if not program:
+                        return
 
-            def write_program(program):
-                if not program:
-                    return
+                    start = arrow.get(program['airTime']).to('utc')
+                    stop = start.shift(minutes=program['duration'])
 
-                start = arrow.get(program['airTime']).to('utc')
-                stop = start.shift(minutes=program['duration'])
+                    series = program.get('seasonNumber') or 0
+                    episode = program.get('episodeNumber') or 0
+                    icon = program.get('primaryImageUrl')
+                    desc = program.get('description')
+                    subtitle = program.get('episodeTitle')
 
-                series = program.get('seasonNumber') or 0
-                episode = program.get('episodeNumber') or 0
-                icon = program.get('primaryImageUrl')
-                desc = program.get('description')
-                subtitle = program.get('episodeTitle')
+                    icon = u'<icon src="{}"/>'.format(escape(icon)) if icon else ''
+                    episode = u'<episode-num system="onscreen">S{}E{}</episode-num>'.format(series, episode) if series and episode else ''
+                    subtitle = u'<sub-title>{}</sub-title>'.format(escape(subtitle)) if subtitle else ''
+                    desc = u'<desc>{}</desc>'.format(escape(desc)) if desc else ''
 
-                icon = u'<icon src="{}"/>'.format(escape(icon)) if icon else ''
-                episode = u'<episode-num system="onscreen">S{}E{}</episode-num>'.format(series, episode) if series and episode else ''
-                subtitle = u'<sub-title>{}</sub-title>'.format(escape(subtitle)) if subtitle else ''
-                desc = u'<desc>{}</desc>'.format(escape(desc)) if desc else ''
+                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}{desc}</programme>'.format(
+                        id=channel['id'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(program['title']), subtitle=subtitle, episode=episode, icon=icon, desc=desc))
 
-                f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}{desc}</programme>'.format(
-                    id=channel['id'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(program['title']), subtitle=subtitle, episode=episode, icon=icon, desc=desc))
-
-            write_program(channel['currentEpisode'])
-            for program in channel['upcomingEpisodes']:
-                write_program(program)
+                write_program(channel['currentEpisode'])
+                for program in channel['upcomingEpisodes']:
+                    write_program(program)
 
         f.write(u'</tv>')
 
 @plugin.route()
 @plugin.login_required()
 def configure_merge(**kwargs):
-    channels = api.channels()
-
     user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
-    avail_providers = sorted(set([x['providerDisplayName'] for x in channels]))
+    avail_providers = _providers(playlist=True)
 
     if len(avail_providers) == 1:
-        user_providers = [avail_providers[0].lower()]
-        userdata.set('merge_providers', user_providers)
+        userdata.set('merge_providers', list(avail_providers.keys())[0])
         return
 
     options = []
+    values = []
     preselect = []
-    for index, provider in enumerate(avail_providers):
-        options.append(provider)
-        if provider.lower() in user_providers:
+    for index, key in enumerate(sorted(avail_providers, key=lambda x: (avail_providers[x]['sort'], avail_providers[x]['name']))):
+        provider = avail_providers[key]
+
+        values.append(key)
+        options.append(plugin.Item(label=provider['name'], art={'thumb': provider['logo']}))
+        if key in user_providers:
             preselect.append(index)
 
-    indexes = gui.select(heading=_.SELECT_PROVIDERS, options=options, multi=True, preselect=preselect)
+    indexes = gui.select(heading=_.SELECT_PROVIDERS, options=options, useDetails=True, multi=True, preselect=preselect)
     if indexes is None:
         return
 
-    user_providers = [avail_providers[i].lower() for i in indexes]
+    user_providers = [values[i] for i in indexes]
     userdata.set('merge_providers', user_providers)

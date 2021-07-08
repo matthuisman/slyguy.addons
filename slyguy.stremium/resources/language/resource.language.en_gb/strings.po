@@ -37,6 +37,18 @@ msgctxt "#30008"
 msgid "All"
 msgstr ""
 
+msgctxt "#30009"
+msgid "Hide Public"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Hide Custom"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Remove Numbers from Channel name"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
