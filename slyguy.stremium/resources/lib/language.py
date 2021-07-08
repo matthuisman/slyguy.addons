@@ -10,5 +10,8 @@ class Language(BaseLanguage):
     SELECT_PROVIDERS   = 30006
     NO_PROVIDERS       = 30007
     ALL                = 30008
+    HIDE_PUBLIC        = 30009
+    HIDE_CUSTOM        = 30010
+    REMOVE_NUMBERS     = 30011
 
 _ = Language()
