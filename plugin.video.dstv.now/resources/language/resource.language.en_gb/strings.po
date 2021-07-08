@@ -22,7 +22,7 @@ msgid "TV Shows"
 msgstr ""
 
 msgctxt "#30005"
-msgid "1. Go to: [B]now.dstv.com/tv[/B]\n"
+msgid "1. Go to: [B]https://now.dstv.com/tv[/B]\n"
 "2. Enter code: [B]{code}[/B]"
 msgstr ""
 
