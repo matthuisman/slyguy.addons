@@ -285,10 +285,6 @@ def configure_merge(**kwargs):
     user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
     avail_providers = _providers(playlist=True)
 
-    if len(avail_providers) == 1:
-        userdata.set('merge_providers', list(avail_providers.keys())[0])
-        return
-
     options = []
     values = []
     preselect = []
