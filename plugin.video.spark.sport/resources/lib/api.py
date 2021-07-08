@@ -51,6 +51,7 @@ class API(object):
         data = self._session.put('/oam/v2/user/tokens').json()
 
         if 'errorMessage' in data:
+            self.logout()
             raise APIError(_(_.TOKEN_ERROR, msg=data['errorMessage']))
 
         self._set_token(data['sessionToken'])
