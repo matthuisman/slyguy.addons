@@ -50,7 +50,7 @@ def featured(index=None, **kwargs):
 
         if index is None:
             folder.add_item(
-                label = row['title'], 
+                label = row['title'],
                 path = plugin.url_for(featured, index=count),
             )
 
@@ -90,7 +90,7 @@ def videos(category=None, title=None, page=1, **kwargs):
                 art = {'thumb': row['assets']['avatar-big-light']},
                 path = plugin.url_for(videos, category=row['slug'], title=row['title']),
             )
-    
+
         return folder
 
     folder = plugin.Folder(title)
@@ -126,7 +126,7 @@ def podcast_creators(category=None, title=None, page=1, **kwargs):
                 art = {'thumb': row['assets']['avatar-big-light']},
                 path = plugin.url_for(podcast_creators, category=row['slug'], title=row['title']),
             )
-    
+
         return folder
 
     folder = plugin.Folder(title)
@@ -162,7 +162,7 @@ def creators(category=None, title=None, page=1, **kwargs):
                 art = {'thumb': row['assets']['avatar-big-light']},
                 path = plugin.url_for(creators, category=row['slug'], title=row['title']),
             )
-    
+
         return folder
 
     folder = plugin.Folder(title)
@@ -175,7 +175,7 @@ def creators(category=None, title=None, page=1, **kwargs):
     if data['next']:
         folder.add_item(
             label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(creators, page=page+1),
+            path  = plugin.url_for(creators, category=category, title=title, page=page+1),
         )
 
     return folder
@@ -246,7 +246,7 @@ def _parse_videos(rows, creator_page=False, following=False):
             item.context.append((_(_.UNFOLLOW_CREATOR, creator=row['channel_title']), 'RunPlugin({})'.format(plugin.url_for(unfollow_creator, slug=row['channel_slug'], title=row['channel_title'], icon=row['assets']['channel_avatar']['512']['original']))))
         else:
             item.context.append((_(_.FOLLOW_CREATOR, creator=row['channel_title']), 'RunPlugin({})'.format(plugin.url_for(follow_creator, slug=row['channel_slug'], title=row['channel_title'], icon=row['assets']['channel_avatar']['512']['original']))))
-        
+
         if not creator_page:
             item.context.append((_(_.CREATOR_CHANNEL, creator=row['channel_title']), 'Container.Update({})'.format(plugin.url_for(creator_videos, slug=row['channel_slug'], title=row['channel_title'], icon=row['assets']['channel_avatar']['512']['original']))))
 
