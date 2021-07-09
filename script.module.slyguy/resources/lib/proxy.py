@@ -590,6 +590,22 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         response.stream.content = mpd
 
+    def _parse_m3u8_sub(self, m3u8, master_url):
+        lines = []
+
+        for line in m3u8.splitlines():
+            if not line.startswith('#') and '/beacon?' in line.lower():
+                parse = urlparse(line)
+                params = dict(parse_qsl(parse.query))
+                for key in params:
+                    if key.lower() == 'redirect_path':
+                        line = params[key]
+                        log.debug('M3U8 Fix: Beacon removed')
+
+            lines.append(line)
+
+        return '\n'.join(lines)
+
     def _parse_m3u8_master(self, m3u8, master_url):
         def _process_media(line):
             attribs = {}
@@ -750,6 +766,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         if is_master:
             m3u8 = self._manifest_middleware(m3u8)
             m3u8 = self._parse_m3u8_master(m3u8, response.url)
+        else:
+            m3u8 = self._parse_m3u8_sub(m3u8, response.url)
 
         base_url = urljoin(response.url, '/')
 
