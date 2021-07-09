@@ -86,7 +86,7 @@ def _providers(playlist=False, epg=False):
 
 def _get_channels(channels, query=None):
     items = []
-    for channel in sorted(channels, key=lambda x: x['title']):
+    for channel in sorted(channels, key=lambda x: x['title'].lower().strip()):
         if query and query not in channel['title'].lower():
             continue
 
@@ -117,7 +117,7 @@ def live_tv(provider=None, **kwargs):
     if provider is None:
         folder = plugin.Folder(_.LIVE_TV)
 
-        for slug in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'])):
+        for slug in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'].lower())):
             provider = providers[slug]
 
             folder.add_item(
@@ -223,10 +223,10 @@ def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
-        for key in providers:
+        for key in sorted(providers, key=lambda x: (avail_providers[x]['sort'], avail_providers[x]['name'].lower())):
             provider = avail_providers[key]
 
-            for channel in provider['channels']:
+            for channel in sorted(provider['channels'], key=lambda x: x['title'].lower().strip()):
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{provider}",{name}\n{url}'.format(
                     id=channel['id'], name=channel['title'], logo=channel['thumb'], provider=provider['name'], url=plugin.url_for(play, id=channel['id'], _is_live=True),
                 ))
@@ -249,6 +249,7 @@ def epg(output, **kwargs):
 
         for key in providers:
             provider = avail_providers[key]
+
             for channel in provider['channels']:
                 f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
 
