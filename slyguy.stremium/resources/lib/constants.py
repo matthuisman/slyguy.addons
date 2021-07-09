@@ -20,6 +20,6 @@ PROVIDER_ART = {
     'philo': 'https://k.slyguy.xyz/.images/stremium/philo.png',
     'spectrum': 'https://k.slyguy.xyz/.images/stremium/spectrum.png',
     'frndlytv': 'https://k.slyguy.xyz/.images/stremium/frndlytv.png',
-    'sling tv': 'https://k.slyguy.xyz/.images/stremium/sling.png',
+    'sling': 'https://k.slyguy.xyz/.images/stremium/sling.png',
     'vidgo': 'https://k.slyguy.xyz/.images/stremium/vidgo.png',
 }
