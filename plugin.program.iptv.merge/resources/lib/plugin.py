@@ -563,36 +563,18 @@ def _setup():
         playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
         epg_path = os.path.join(output_dir, EPG_FILE_NAME)
 
-        ## IMPORT ANY CURRENT SOURCES ##
+        ## IMPORT ANY CURRENT URL SOURCES ##
         cur_epg_url  = addon.getSetting('epgUrl')
-        cur_epg_path = addon.getSetting('epgPath')
         cur_epg_type = addon.getSetting('epgPathType')
-
-        if xbmc.translatePath(cur_epg_path) != xbmc.translatePath(epg_path) and os.path.exists(xbmc.translatePath(cur_epg_path)):
-            epg = EPG(source_type=EPG.TYPE_FILE, path=cur_epg_path, enabled=cur_epg_type == '0')
-            try: epg.save()
-            except: pass
-
         if cur_epg_url:
             epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
             try: epg.save()
             except: pass
 
         cur_m3u_url  = addon.getSetting('m3uUrl')
-        cur_m3u_path = addon.getSetting('m3uPath')
         cur_m3u_type = addon.getSetting('m3uPathType')
         start_chno = int(addon.getSetting('startNum') or 1)
         #user_agent = addon.getSetting('userAgent')
-
-        if xbmc.translatePath(cur_m3u_path) != xbmc.translatePath(playlist_path) and os.path.exists(xbmc.translatePath(cur_m3u_path)):
-            playlist = Playlist(source_type=Playlist.TYPE_FILE, path=cur_m3u_path, enabled=cur_m3u_type == '0')
-            if start_chno != 1:
-                playlist.use_start_chno = True
-                playlist.start_chno = start_chno
-
-            try: playlist.save()
-            except: pass
-
         if cur_m3u_url:
             playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
             if start_chno != 1:
@@ -601,7 +583,7 @@ def _setup():
 
             try: playlist.save()
             except: pass
-        #####
+        ################################
 
         addon.setSetting('epgPath', epg_path)
         addon.setSetting('m3uPath', playlist_path)
