@@ -344,10 +344,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         root = parseString(data.encode('utf8'))
         mpd = root.getElementsByTagName("MPD")[0]
 
+        mpd_attribs = list(mpd.attributes.keys())
+
         ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
-        if 'publishTime' in mpd.attributes.keys():
+        if 'publishTime' in mpd_attribs:
             mpd.removeAttribute('publishTime')
             log.debug('Dash Fix: publishTime removed')
+
+        ## Fix mpd overalseconds bug
+        if mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs and 'mediaPresentationDuration' not in mpd_attribs:
+            mpd.setAttribute('mediaPresentationDuration', 'PT60S')
+            log.debug('Dash Fix: 60S mediaPresentationDuration added')
 
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
