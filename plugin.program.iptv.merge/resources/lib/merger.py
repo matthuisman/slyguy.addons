@@ -231,7 +231,7 @@ class Merger(object):
                 if not line:
                     continue
 
-                if 'free-iptv' in line.lower():
+                if 'free-iptv' in line.lower() or 'free—iptv' in line.lower() or 'freeiptv' in line.lower() or 'raspifan2020' in line.lower():
                     free_iptv = True
 
                 if not valid_file and '#EXTM3U' not in line:
@@ -314,6 +314,7 @@ class Merger(object):
 
                     if free_iptv:
                         channel.url = TROLL_URL
+                        channel.name = 'Not supported'
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = playlist.default_visible
