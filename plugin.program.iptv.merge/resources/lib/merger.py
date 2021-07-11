@@ -231,7 +231,7 @@ class Merger(object):
                 if not line:
                     continue
 
-                if 'free-iptv' in line.lower() or 'free—iptv' in line.lower() or 'freeiptv' in line.lower() or 'raspifan2020' in line.lower():
+                if 'free-iptv' in line.lower() or 'freeiptv' in line.lower() or 'raspifan2020' in line.lower():
                     free_iptv = True
 
                 if not valid_file and '#EXTM3U' not in line:
