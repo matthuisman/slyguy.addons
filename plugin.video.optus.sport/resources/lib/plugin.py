@@ -23,7 +23,7 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.CHANNELS, _bold=True), path=plugin.url_for(editorial, id=LINEAR_ID, title=_.CHANNELS))
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(editorial, id=LINEAR_ID, title=_.LIVE_TV))
         _home(folder)
 
         if settings.getBool('bookmarks', True):
@@ -45,7 +45,7 @@ def _home(folder):
 
         folder.add_item(
             label = _(row['title'], _bold=True),
-            path  = plugin.url_for(page, id=row['path'], title=row['title']),
+            path = plugin.url_for(page, id=row['path'], title=row['title']),
         )
 
 @plugin.route()
@@ -55,7 +55,7 @@ def page(id, title, **kwargs):
     for row in api.page(id):
         folder.add_item(
             label = row['title'],
-            path  = plugin.url_for(editorial, id=row['id'], title=row['title']),
+            path = plugin.url_for(editorial, id=row['id'], title=row['title']),
         )
 
     return folder
@@ -63,9 +63,7 @@ def page(id, title, **kwargs):
 @plugin.route()
 def editorial(id, title, **kwargs):
     folder = plugin.Folder(title)
-
-    alerts = userdata.get('alerts', [])
-    now    = arrow.utcnow()
+    now = arrow.utcnow()
 
     live_play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
 
@@ -89,13 +87,6 @@ def editorial(id, title, **kwargs):
 
         if start_time and start_time > now:
             item.label += start_time.to('local').format(_.DATE_FORMAT)
-            item.path  = plugin.url_for(alert, asset=row['id'], title=row['title'])
-            item.playable = False
-
-            if row['id'] not in alerts:
-                item.info['playcount'] = 0
-            else:
-                item.info['playcount'] = 1
 
         elif is_linear:
             item.path = plugin.url_for(play, asset=row['id'], _is_live=is_live)
@@ -116,20 +107,6 @@ def editorial(id, title, **kwargs):
         folder.add_items(item)
 
     return folder
-
-@plugin.route()
-def alert(asset, title, **kwargs):
-    alerts = userdata.get('alerts', [])
-
-    if asset not in alerts:
-        alerts.append(asset)
-        gui.notification(title, heading=_.REMINDER_SET)
-    else:
-        alerts.remove(asset)
-        gui.notification(title, heading=_.REMINDER_REMOVED)
-
-    userdata.set('alerts', alerts)
-    gui.refresh()
 
 @plugin.route()
 def login(**kwargs):
@@ -166,9 +143,9 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
     stream = api.play(asset, True)
 
     item = plugin.Item(
-        path        = stream['url'],
+        path = stream['url'],
         inputstream = inputstream.Widevine(license_key=stream['license']['@uri']),
-        headers     = HEADERS,
+        headers = HEADERS,
     )
 
     drm_data = stream['license'].get('drmData')
@@ -176,44 +153,9 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
         item.headers['x-axdrm-message'] = drm_data
 
     if from_start:
-        item.properties['ResumeTime'] = '1'
-        item.properties['TotalTime']  = '1'
-
-    if kwargs.get(ROUTE_LIVE_TAG):
-        item.inputstream.properties['manifest_update_parameter'] = 'full'
+        item.resume_from = 1
 
     return item
-
-@signals.on(signals.ON_SERVICE)
-def service():
-    alerts = userdata.get('alerts', [])
-    if not alerts:
-        return
-
-    now     = arrow.now()
-    notify  = []
-    _alerts = []
-
-    for id in alerts:
-        asset = api.asset(id)
-        if 'broadcastStartTime' not in asset:
-            continue
-
-        start = arrow.get(asset['broadcastStartTime'])
-
-        if now > start and (now - start).total_seconds() <= 60*10:
-            notify.append(asset)
-        elif now < start:
-            _alerts.append(id)
-
-    userdata.set('alerts', _alerts)
-
-    for asset in notify:
-        if not gui.yes_no(_(_.EVENT_STARTED, event=asset['title']), yeslabel=_.WATCH, nolabel=_.CLOSE):
-            continue
-
-        with signals.throwable():
-            play(asset['id'])
 
 @plugin.route()
 @plugin.merge()

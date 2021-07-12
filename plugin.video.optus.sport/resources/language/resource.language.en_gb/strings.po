@@ -15,7 +15,7 @@ msgid "Failed to login.\n"
 msgstr ""
 
 msgctxt "#30004"
-msgid "Channels"
+msgid "Live TV"
 msgstr ""
 
 msgctxt "#30005"
@@ -37,26 +37,6 @@ msgstr ""
 
 msgctxt "#30009"
 msgid " (ddd MMM D, h:mm A)"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Reminder Set"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Reminder Removed"
-msgstr ""
-
-msgctxt "#30012"
-msgid "{event} has just started"
-msgstr ""
-
-msgctxt "#30013"
-msgid "Watch"
-msgstr ""
-
-msgctxt "#30014"
-msgid "Close"
 msgstr ""
 
 ## COMMON SETTINGS ##

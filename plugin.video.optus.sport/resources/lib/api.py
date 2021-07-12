@@ -113,11 +113,13 @@ class API(object):
             else:
                 raise APIError(r.json()['error'].get('description'))
 
-        data = r.json()
-
-        stream = data['playback']['items']['item']
-        if type(stream) is list:
-            stream = stream[0]
+        try:
+            data = r.json()
+            stream = data['playback']['items']['item']
+            if type(stream) is list:
+                stream = stream[0]
+        except:
+            stream = None
 
         if not stream:
             raise APIError(_.NO_STREAM)
