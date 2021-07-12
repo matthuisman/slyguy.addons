@@ -242,7 +242,7 @@ class Item(object):
 
         if self.label:
             li.setLabel(self.label)
-            if not self.info.get('plot'):
+            if not (self.info.get('plot') or '').strip():
                 self.info['plot'] = self.label
 
             if not self.info.get('title'):
