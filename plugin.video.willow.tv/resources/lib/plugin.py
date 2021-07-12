@@ -24,8 +24,8 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE, _bold=True),     path=plugin.url_for(live))
-        folder.add_item(label=_(_.PLAYED, _bold=True),   path=plugin.url_for(played))
+        folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
+        folder.add_item(label=_(_.PLAYED, _bold=True), path=plugin.url_for(played))
         folder.add_item(label=_(_.UPCOMING, _bold=True), path=plugin.url_for(upcoming))
 
         if settings.getBool('bookmarks', True):
@@ -71,7 +71,7 @@ def select_source(match_id, sources, **kwargs):
     sources = json.loads(sources)
 
     options = [x['priority'] for x in sources]
-    labels  = [x['title'] for x in sources]
+    labels = [x['title'] for x in sources]
 
     index = gui.select(_.PLAYBACK_SOURCE, options=labels)
     if index < 0:
@@ -90,8 +90,8 @@ def played(**kwargs):
     for row in data['vod']:
         folder.add_item(
             label = row['title'],
-            art   = {'thumb': row['img']},
-            path  = plugin.url_for(series, series_id=row['sid']),
+            art = {'thumb': row['img']},
+            path = plugin.url_for(series, series_id=row['sid']),
         )
 
     return folder
@@ -109,10 +109,10 @@ def series(series_id, **kwargs):
         thumb = TEAMS_IMAGE_URL.format(team1=row['team1'], team2=row['team2']).replace(' ', '')
 
         folder.add_item(
-            label     = row['subtitle'],
-            art       = {'thumb': thumb},
-            info      = {'plot': _(_.MATCH_PLOT, series=row['seriesName'], match=row['subtitle'], start=start)},
-            path      = plugin.url_for(match, title=row['subtitle'], thumb=thumb, match_id=row['mid']),
+            label = row['subtitle'],
+            art = {'thumb': thumb},
+            info = {'plot': _(_.MATCH_PLOT, series=row['seriesName'], match=row['subtitle'], start=start)},
+            path = plugin.url_for(match, title=row['subtitle'], thumb=thumb, match_id=row['mid']),
         )
 
     return folder
@@ -161,10 +161,10 @@ def match(match_id, title='', thumb='', index=None, **kwargs):
                 label = _(_.MULTIPART_VIDEO, label=label, part=count+1)
 
             folder.add_item(
-                label     = label,
-                art       = {'thumb': row['img']},
-                path      = path,
-                playable  = path != None,
+                label = label,
+                art = {'thumb': row['img']},
+                path = path,
+                playable = path != None,
                 is_folder = False,
             )
 
@@ -177,39 +177,33 @@ def play_live(match_id, priority=1, **kwargs):
 def _play_live(match_id, priority=1):
     match_id = int(match_id)
     priority = int(priority)
-
     url = api.play_live(match_id, priority)
     return _play(url, live=True)
 
 @plugin.route()
 def play_highlight(match_id, content_id, **kwargs):
-    match_id   = int(match_id)
+    match_id = int(match_id)
     content_id = int(content_id)
-
     url = api.play_highlight(match_id, content_id)
     return _play(url)
 
 @plugin.route()
 def play_replay(match_id, content_id, **kwargs):
-    match_id   = int(match_id)
+    match_id = int(match_id)
     content_id = int(content_id)
-
     url = api.play_replay(match_id, content_id)
     return _play(url)
 
 def _play(url, live=False):
     return plugin.Item(
-        path        = url,
-        headers     = HEADERS,
+        path = url,
+        headers = HEADERS,
         inputstream = inputstream.HLS(live=live),
-        art         = False,
     )
 
 @plugin.route()
 def upcoming(**kwargs):
     folder = plugin.Folder(_.UPCOMING, no_items_label=_.NO_MATCHES)
-
-    alerts = userdata.get('alerts', [])
 
     data = api.upcoming_matches()
     for row in data['upcoming']:
@@ -221,38 +215,16 @@ def upcoming(**kwargs):
             thumb = TEAMS_IMAGE_URL.format(team1=row['team1'], team2=row['team2']).replace(' ', '')
 
         item = plugin.Item(
-            label     = _(_.UPCOMING_MATCH, label=row['subtitle'], start=start),
-            art       = {'thumb': thumb},
-            info      = {'plot': _(_.MATCH_PLOT, series=row['seriesName'], match=row['subtitle'], start=start)},
-            path      = plugin.url_for(alert, match_id=row['mid'], title=row['subtitle']),
-            playable  = False,
-            is_folder = False,
+            label = _(_.UPCOMING_MATCH, label=row['subtitle'], start=start),
+            art = {'thumb': thumb},
+            info = {'plot': _(_.MATCH_PLOT, series=row['seriesName'], match=row['subtitle'], start=start)},
+            path = plugin.url_for(play_live, match_id=row['mid']),
+            playable = True,
         )
-
-        if row['mid'] not in alerts:
-            item.info['playcount'] = 0
-        else:
-            item.info['playcount'] = 1
 
         folder.add_items(item)
 
     return folder
-
-@plugin.route()
-def alert(match_id, title, **kwargs):
-    match_id = int(match_id)
-
-    alerts   = userdata.get('alerts', [])
-
-    if match_id not in alerts:
-        alerts.append(match_id)
-        gui.notification(title, heading=_.REMINDER_SET)
-    else:
-        alerts.remove(match_id)
-        gui.notification(title, heading=_.REMINDER_REMOVED)
-
-    userdata.set('alerts', alerts)
-    gui.refresh()
 
 @plugin.route()
 def login(**kwargs):
@@ -276,33 +248,3 @@ def logout(**kwargs):
 
     api.logout()
     gui.refresh()
-
-@signals.on(signals.ON_SERVICE)
-def service():
-    alerts = userdata.get('alerts', [])
-    if not alerts:
-        return
-
-    data = api.live_matches()
-    if not data['live']:
-        return
-
-    notify  = []
-
-    for row in data['live']:
-        if row['mid'] in alerts:
-            alerts.remove(row['mid'])
-            notify.append(row)
-
-    userdata.set('alerts', alerts)
-
-    for row in notify:
-        if not gui.yes_no(_(_.MATCH_STARTED, match=row['subtitle']), yeslabel=_.WATCH, nolabel=_.CLOSE):
-            continue
-
-        with signals.throwable():
-            sources  = row['stream']['video_sources']
-            priority = sources[0]['priority']
-
-            item     = _play_live(match_id=row['mid'], priority=1)
-            item.play()

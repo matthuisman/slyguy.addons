@@ -39,14 +39,6 @@ msgctxt "#30009"
 msgid "No Matches"
 msgstr ""
 
-msgctxt "#30010"
-msgid "Reminder Set"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Reminder Removed"
-msgstr ""
-
 msgctxt "#30012"
 msgid "{label} [{start}]"
 msgstr ""
@@ -61,24 +53,12 @@ msgid "{series}\n\n"
 "{start}"
 msgstr ""
 
-msgctxt "#30015"
-msgid "{match} has just started"
-msgstr ""
-
 msgctxt "#30016"
 msgid "{label} [Part {part}]"
 msgstr ""
 
 msgctxt "#30017"
 msgid "Playback Source"
-msgstr ""
-
-msgctxt "#30018"
-msgid "Watch"
-msgstr ""
-
-msgctxt "#30019"
-msgid "Close"
 msgstr ""
 
 msgctxt "#30020"
