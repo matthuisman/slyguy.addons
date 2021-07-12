@@ -10,7 +10,10 @@ TYPE_IPTV_MANAGER = 2
 TYPE_INTEGRATION = 3
 
 DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+
 TROLL_URL = 'https://archive.org/download/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp4'
+TROLL_NAME = 'Moved to https://github.com/iptv-org/iptv'
+TROLLS = ['free-iptv', 'Food4Monkeys', u'Free\u0097IPTV',]
 
 INTEGRATIONS = {
     'plugin.video.iptvsimple.addons': {
