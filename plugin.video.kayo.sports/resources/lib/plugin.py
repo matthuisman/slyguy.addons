@@ -114,31 +114,10 @@ def shows(**kwargs):
     return folder 
 
 @plugin.route()
-def search(query=None, page=1, **kwargs):
-    page = int(page)
-
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    data    = api.search(query=query, page=page)
-    pages   = data['pages']
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query, page=page, total_pages=pages))
-
-    items = _parse_contents(data.get('results', []))
-    folder.add_items(items)
-
-    if pages > page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, next=page+1, total_pages=pages, _bold=True),
-            path  = plugin.url_for(search, query=query, page=page+1),
-        )
-
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    data = api.search(query=query, page=page)
+    return _parse_contents(data.get('results', [])), data['pages'] > page
 
 @plugin.route()
 def sports(**kwargs):
@@ -207,20 +186,6 @@ def panel(id, sport=None, **kwargs):
     folder = plugin.Folder(data['title'])
     folder.add_items(_parse_contents(data.get('contents', [])))
     return folder
-
-@plugin.route()
-def alert(asset, title, **kwargs):
-    alerts = userdata.get('alerts', [])
-
-    if asset not in alerts:
-        alerts.append(asset)
-        gui.notification(title, heading=_.REMINDER_SET)
-    else:
-        alerts.remove(asset)
-        gui.notification(title, heading=_.REMINDER_REMOVED)
-
-    userdata.set('alerts', alerts)
-    gui.refresh()
 
 @plugin.route()
 @plugin.login_required()
@@ -369,7 +334,7 @@ def _parse_contents(rows):
 
 def _parse_section(row):
     # If not asset, we are probably linking directly to a sport or something..
-    if 'asset' not in row:
+    if 'asset' not in row or row.get('type') == 'search-icon':
         return
 
     asset = row['asset']
@@ -415,30 +380,6 @@ def _makeDate(now, start=None):
     else:
         return start.to('local').format('DD MMM YY')
 
-#     function makeDuration(e) {
-#         var t = e.nowTimeDate,
-#             a = e.startTimeDate,
-#             r = e.endTimeDate;
-#         if (!(0, _is_valid2.default)(a)) return "";
-#         if (!(0, _is_valid2.default)(r)) return makeDate({
-#             nowTimeDate: t,
-#             startTimeDate: a
-#         });
-#         var i = (0, _dateFns.format)(t, "YYYY") === (0, _dateFns.format)(r, "YYYY"),
-#             n = (0, _dateFns.format)(a, "D"),
-#             o = (0, _dateFns.format)(a, "MMM"),
-#             s = (0, _dateFns.format)(r, "D"),
-#             d = (0, _dateFns.format)(r, "MMM"),
-#             u = (0, _dateFns.format)(r, "YYYY");
-#         return n === s && o === d ? n + " " + o : n !== s && o === d ? n + "-" + s + " " + o : i ? n + " " + o + " - " + s + " " + d : n + " " + o + " - " + s + " " + d + " " + u
-#     }
-# def _makeDuration(now, start=None, end=None):
-#     if not start:
-#         return ''
-
-#     if not end:
-#         return _makeDate(now, start)
-
 def _makeHumanised(now, start=None):
     if not start:
         return ''
@@ -461,7 +402,6 @@ def _makeHumanised(now, start=None):
 def _parse_video(row):
     asset   = row['asset']
     display = row['contentDisplay']
-    alerts  = userdata.get('alerts', [])
     
     now      = arrow.now()
     start    = arrow.get(asset['transmissionTime'])
@@ -500,14 +440,6 @@ def _parse_video(row):
 
     if now < start:
         is_live = True
-        toggle_alert = plugin.url_for(alert, asset=asset['id'], title=asset['title'])
-
-        if asset['id'] not in userdata.get('alerts', []):
-            item.info['playcount'] = 0
-            item.context.append((_.SET_REMINDER, "RunPlugin({})".format(toggle_alert)))
-        else:
-            item.info['playcount'] = 1
-            item.context.append((_.REMOVE_REMINDER, "RunPlugin({})".format(toggle_alert)))
 
     elif asset['assetType'] == 'live-linear':
         is_live = True
@@ -532,11 +464,11 @@ def _parse_video(row):
 @plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
-    asset      = api.stream(id)
+    asset = api.stream(id)
 
     start_from = int(start_from)
     play_type  = int(play_type)
-    is_live    = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
+    is_live = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
 
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
@@ -556,14 +488,14 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     providers = [prefer_cdn]
     providers.extend([s['provider'] for s in streams])
 
-    streams  = sorted(streams, key=lambda k: (providers.index(k['provider']), SUPPORTED_FORMATS.index(k['mediaFormat'])))
-    stream   = streams[0]
+    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), SUPPORTED_FORMATS.index(k['mediaFormat'])))
+    stream = streams[0]
 
     log.debug('Stream CDN: {provider} | Stream Format: {mediaFormat}'.format(**stream))
 
     item = plugin.Item(
-        path    = stream['manifest']['uri'],
-        art     = False,
+        path = stream['manifest']['uri'],
+        art = False,
         headers = HEADERS,
     )
 
@@ -601,43 +533,6 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         item.properties['TotalTime']  = start_from
 
     return item
-
-@signals.on(signals.ON_SERVICE)
-def service():
-    alerts = userdata.get('alerts', [])
-    if not alerts:
-        return
-
-    now     = arrow.now()
-    notify  = []
-    _alerts = []
-    
-    for id in alerts:
-        asset = api.event(id)
-        start = arrow.get(asset.get('preCheckTime', asset['transmissionTime']))
-
-        #If we are streaming and started less than 10 minutes ago
-        if asset.get('isStreaming', False) and (now - start).total_seconds() <= 60*10:
-            notify.append(asset)
-        elif start > now:
-            _alerts.append(id)
-
-    userdata.set('alerts', _alerts)
-
-    for asset in notify:
-        if not gui.yes_no(_(_.EVENT_STARTED, event=asset['title']), yeslabel=_.WATCH, nolabel=_.CLOSE):
-            continue
-
-        with signals.throwable():
-            start_from = 1
-            start      = arrow.get(asset['transmissionTime'])
-            
-            if start < now and 'preCheckTime' in asset:
-                precheck = arrow.get(asset['preCheckTime'])
-                if precheck < start:
-                    start_from = (start - precheck).seconds
-
-            play(id=asset['id'], start_from=start_from, play_type=settings.getEnum('live_play_type', LIVE_PLAY_TYPES, default=FROM_CHOOSE))
 
 @plugin.route()
 @plugin.merge()

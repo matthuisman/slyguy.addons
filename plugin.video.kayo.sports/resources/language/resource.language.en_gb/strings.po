@@ -39,10 +39,6 @@ msgctxt "#30009"
 msgid "Unable to find suitable stream for this asset"
 msgstr ""
 
-msgctxt "#30010"
-msgid "{title} [Starts {humanize}]"
-msgstr ""
-
 msgctxt "#30011"
 msgid "{title} [LIVE]"
 msgstr ""
@@ -55,48 +51,14 @@ msgctxt "#30014"
 msgid "Show Hero Contents"
 msgstr ""
 
-msgctxt "#30015"
-msgid "Set Reminder"
-msgstr ""
 
-msgctxt "#30016"
-msgid "Remove Reminder"
-msgstr ""
-
-msgctxt "#30017"
-msgid "Reminder Set"
-msgstr ""
-
-msgctxt "#30018"
-msgid "Reminder Removed"
-msgstr ""
-
-msgctxt "#30019"
-msgid "This event hasn't started yet.\n"
-"It starts {start}.\n"
-"Tip: You can set a reminder via the context menu."
-msgstr ""
-
-msgctxt "#30021"
-msgid "Watch"
-msgstr ""
-
-msgctxt "#30022"
-msgid "Close"
-msgstr ""
-
-msgctxt "#30023"
-msgid "{event} has started!"
-msgstr ""
 
 msgctxt "#30025"
 msgid "Inputstream HLS is required to watch this content\n"
 "Check Inputstream Adaptive is installed and enabled"
 msgstr ""
 
-msgctxt "#30026"
-msgid "Search: {query} ({page}/{total_pages})"
-msgstr ""
+
 
 msgctxt "#30027"
 msgid "Featured"

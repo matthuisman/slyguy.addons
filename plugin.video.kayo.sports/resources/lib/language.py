@@ -10,20 +10,14 @@ class Language(BaseLanguage):
     SHOWS                 = 30007
     SPORTS                = 30008
     NO_STREAM             = 30009
-    STARTING_SOON         = 30010
+
     LIVE                  = 30011
+
     SELECT_PROFILE        = 30013
     SHOW_HERO             = 30014
-    SET_REMINDER          = 30015
-    REMOVE_REMINDER       = 30016
-    REMINDER_SET          = 30017
-    REMINDER_REMOVED      = 30018
-    GAME_NOT_STARTED      = 30019
-    WATCH                 = 30021
-    CLOSE                 = 30022
-    EVENT_STARTED         = 30023
+
     HLS_REQUIRED          = 30025
-    SEARCH_FOR            = 30026
+
     FEATURED              = 30027
     NEXT_PAGE             = 30028
     LIVE_CHANNELS         = 30029
