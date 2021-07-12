@@ -364,39 +364,22 @@ def unfollow_creator(slug, title, icon, **kwargs):
     gui.refresh()
 
 @plugin.route()
-def search(query=None, page=1, **kwargs):
-    page = int(page)
+@plugin.search()
+def search(query, page, **kwargs):
     page_size = settings.getInt('page_size', 50)
 
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+    items = []
     if page == 1:
         data = api.search_creators(query=query)
         items = _parse_creators(data['results'])
-        folder.add_items(items)
 
         data = api.search_podcasts(query=query)
-        items = _parse_podcast_creators(data['results'])
-        folder.add_items(items)
+        items.extend(_parse_podcast_creators(data['results']))
 
     data = api.search_videos(query=query, page=page, page_size=page_size)
-    items = _parse_videos(data['results'])
-    folder.add_items(items)
+    items.extend(_parse_videos(data['results']))
 
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(search, query=query, page=page+1),
-        )
-
-    return folder
+    return items, data['next']
 
 @plugin.route()
 def login(**kwargs):
