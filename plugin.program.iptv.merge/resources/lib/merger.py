@@ -220,7 +220,7 @@ class Merger(object):
         if playlist.use_start_chno:
             chnos = {'tv': playlist.start_chno, 'radio': playlist.start_chno}
 
-        free_iptv = False
+        free_iptv = 'free-iptv' in playlist.path.lower()
         valid_file = False
         default_attribs = {}
 
@@ -231,7 +231,7 @@ class Merger(object):
                 if not line:
                     continue
 
-                if 'free-iptv' in line.lower() or 'freeiptv' in line.lower() or 'raspifan2020' in line.lower():
+                if 'free' in line.lower() and 'iptv' in line.lower():
                     free_iptv = True
 
                 if not valid_file and '#EXTM3U' not in line:
@@ -314,7 +314,7 @@ class Merger(object):
 
                     if free_iptv:
                         channel.url = TROLL_URL
-                        channel.name = 'Not supported'
+                        channel.name = 'Moved to https://github.com/iptv-org/iptv'
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = playlist.default_visible
