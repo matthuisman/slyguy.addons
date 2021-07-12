@@ -544,3 +544,11 @@ msgstr ""
 msgctxt "#32125"
 msgid "tvOS does not support Widevine playback on Kodi"
 msgstr ""
+
+msgctxt "#32126"
+msgid "New Search"
+msgstr ""
+
+msgctxt "#32127"
+msgid "Remove search"
+msgstr ""
