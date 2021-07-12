@@ -64,38 +64,8 @@ msgid "Failed to refresh authentication token\n"
 "Server Message: {msg}"
 msgstr ""
 
-
-
-msgctxt "#30020"
-msgid "Set Reminder"
-msgstr ""
-
-msgctxt "#30021"
-msgid "Remove Reminder"
-msgstr ""
-
-msgctxt "#30022"
+msgctxt "#30015"
 msgid "Freemium"
-msgstr ""
-
-msgctxt "#30023"
-msgid "Reminder Set"
-msgstr ""
-
-msgctxt "#30024"
-msgid "Reminder Removed"
-msgstr ""
-
-msgctxt "#30025"
-msgid "{event} has just started"
-msgstr ""
-
-msgctxt "#30026"
-msgid "Watch"
-msgstr ""
-
-msgctxt "#30027"
-msgid "Close"
 msgstr ""
 
 ## COMMON SETTINGS ##

@@ -45,23 +45,10 @@ def featured(**kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
-    # rows = api.whats_on(query)
-    # items = _process_rows(rows)
-
+@plugin.search()
+def search(query, page, **kwargs):
     rows = api.search(query)
-    folder.add_items(_process_rows(rows))
-
-    return folder
+    return _process_rows(rows), False
 
 @plugin.route()
 def sports(**kwargs):
@@ -76,8 +63,8 @@ def sports(**kwargs):
 
         folder.add_item(
             label = row['name'],
-            art   = {'thumb': IMG_URL.format(row['images']['channelLogo'])},
-            path  = plugin.url_for(page, page_id=page_info['RAILS_V3_PAGE_ID']),
+            art = {'thumb': IMG_URL.format(row['images']['channelLogo'])},
+            path = plugin.url_for(page, page_id=page_info['RAILS_V3_PAGE_ID']),
         )
 
     return folder
@@ -90,9 +77,8 @@ def whats_on(**kwargs):
     return folder
 
 def _process_rows(rows):
-    items  = []
-    alerts = userdata.get('alerts', [])
-    now    = arrow.utcnow()
+    items = []
+    now = arrow.utcnow()
 
     for row in rows:
         try:
@@ -100,18 +86,16 @@ def _process_rows(rows):
         except:
             thumb = None
 
-        description = row.get('shortDescription') or None
-
         start_time = arrow.get(row.get('startTime') or None)
-        end_time   = arrow.get(row.get('endTime') or None)
-        now        = arrow.utcnow()
+        end_time = arrow.get(row.get('endTime') or None)
+        now = arrow.utcnow()
 
         item = plugin.Item(
-            label     = row['name'],
-            info      = {'plot': description},
-            art       = {'thumb': thumb},
-            path      = plugin.url_for(play, id=row['id']),
-            playable  = True,
+            label = row['name'],
+            info = {'plot': row.get('shortDescription')},
+            art = {'thumb': thumb},
+            path = plugin.url_for(play, id=row['id']),
+            playable = True,
             is_folder = False,
         )
 
@@ -134,13 +118,6 @@ def _process_rows(rows):
 
         elif start_time > now.shift(seconds=10):
             item.label += start_time.to('local').format(_.DATE_FORMAT)
-            item.path = plugin.url_for(alert, asset=row['id'], title=row['name'])
-            item.playable = False
-
-            if row['id'] not in alerts:
-                item.info['playcount'] = 0
-            else:
-                item.info['playcount'] = 1
 
         items.append(item)
 
@@ -167,20 +144,6 @@ def _page(page_id):
         items.append(item)
 
     return {'title':page_data['title'], 'items':items}
-
-@plugin.route()
-def alert(asset, title, **kwargs):
-    alerts = userdata.get('alerts', [])
-
-    if asset not in alerts:
-        alerts.append(asset)
-        gui.notification(title, heading=_.REMINDER_SET)
-    else:
-        alerts.remove(asset)
-        gui.notification(title, heading=_.REMINDER_REMOVED)
-
-    userdata.set('alerts', alerts)
-    gui.refresh()
 
 @plugin.route()
 def page(page_id, **kwargs):
@@ -249,38 +212,6 @@ def logout(**kwargs):
 
     api.logout()
     gui.refresh()
-
-@signals.on(signals.ON_SERVICE)
-def service():
-    api.refresh_token()
-    alerts = userdata.get('alerts', [])
-    if not alerts:
-        return
-
-    now     = arrow.now()
-    notify  = []
-    _alerts = []
-
-    for id in alerts:
-        entity = api.entitiy(id)
-        if not entity:
-            continue
-
-        start = arrow.get(entity.get('startTime'))
-
-        if now > start and (now - start).total_seconds() <= 60*10:
-            notify.append(entity)
-        elif now < start:
-            _alerts.append(id)
-
-    userdata.set('alerts', _alerts)
-
-    for entity in notify:
-        if not gui.yes_no(_(_.EVENT_STARTED, event=entity['name']), yeslabel=_.WATCH, nolabel=_.CLOSE):
-            continue
-
-        with signals.throwable():
-            play(id=entity['id'], play_type=settings.getEnum('live_play_type', LIVE_PLAY_TYPES, default=FROM_CHOOSE))
 
 @plugin.route()
 @plugin.merge()

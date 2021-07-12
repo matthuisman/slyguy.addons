@@ -15,14 +15,6 @@ class Language(BaseLanguage):
     NO_MPD_ERROR     = 30012
     NO_ENTITLEMENT   = 30013
     TOKEN_ERROR      = 30014
-
-    SET_REMINDER     = 30020
-    REMOVE_REMINDER  = 30021
-    FREEMIUM         = 30022
-    REMINDER_SET     = 30023
-    REMINDER_REMOVED = 30024
-    EVENT_STARTED    = 30025
-    WATCH            = 30026
-    CLOSE            = 30027
+    FREEMIUM         = 30015
 
 _ = Language()
