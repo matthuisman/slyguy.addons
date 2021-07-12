@@ -160,6 +160,7 @@ def playlist(output, **kwargs):
     if not regions:
         raise Exception(_.NO_REGIONS)
 
+    added = []
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
@@ -168,6 +169,11 @@ def playlist(output, **kwargs):
             channels = region['channels']
 
             for id in sorted(channels.keys(), key=lambda x: channels[x]['name']):
+                if id in added:
+                    continue
+                else:
+                    added.append(id)
+
                 channel = channels[id]
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{region}",{name}\n{url}'.format(
                     id=id, name=channel['name'], logo=channel['logo'], region=region['name'], url=plugin.url_for(play, id=id, _is_live=True),
