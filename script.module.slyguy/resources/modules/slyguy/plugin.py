@@ -138,6 +138,66 @@ def merge():
         return decorated_function
     return lambda f: decorator(f)
 
+# @plugin.search()
+def search():
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(query=None, new=None, remove=None, page=1, **kwargs):
+            page = int(page)
+
+            if remove:
+                queries = userdata.get('queries', [])
+                if remove in queries:
+                    queries.remove(remove)
+                userdata.set('queries', queries)
+                gui.refresh()
+
+            elif new:
+                query = gui.input(_.SEARCH).strip()
+                if not query:
+                    return
+
+                queries = userdata.get('queries', [])
+                if query in queries:
+                    queries.remove(query)
+
+                queries.insert(0, query)
+                userdata.set('queries', queries)
+                gui.refresh()
+
+            elif query is None:
+                folder = Folder(_.SEARCH)
+
+                folder.add_item(
+                    label = _(_.NEW_SEARCH, _bold=True),
+                    path = url_for(f, new=1),
+                )
+
+                for query in userdata.get('queries', []):
+                    folder.add_item(
+                        label = query,
+                        path = url_for(f, query=query),
+                        context = ((_.REMOVE_SEARCH, 'RunPlugin({})'.format(url_for(f, remove=query))),),
+                    )
+
+                return folder
+
+            else:
+                folder = Folder(_(_.SEARCH_FOR, query=query))
+                items, more_results = f(query=query, page=page, **kwargs)
+                folder.add_items(items)
+
+                if more_results:
+                    folder.add_item(
+                        label = _(_.NEXT_PAGE, page=page+1),
+                        path  = url_for(f, query=query, page=page+1),
+                    )
+
+                return folder
+
+        return decorated_function
+    return lambda f: decorator(f)
+
 def resolve(error=False):
     handle = _handle()
     if handle > 0:
