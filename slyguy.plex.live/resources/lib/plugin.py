@@ -13,6 +13,7 @@ def home(**kwargs):
     folder = plugin.Folder()
 
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -119,20 +120,10 @@ def live_tv(code=None, **kwargs):
     return folder
 
 @plugin.route()
-def search(code, query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     data = _app_data()
-    items = _process_channels(data['regions'][ALL]['channels'], query=query)
-    folder.add_items(items)
-    return folder
+    return _process_channels(data['regions'][ALL]['channels'], query=query), False
 
 @plugin.route()
 def play(id, **kwargs):
