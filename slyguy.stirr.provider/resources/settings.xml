@@ -2,7 +2,6 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30001" id="show_mini_epg" type="bool" default="true"/>
-        <setting label="30002" id="show_chno" type="bool" default="true"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

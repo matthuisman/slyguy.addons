@@ -25,10 +25,11 @@ def home(**kwargs):
 def _app_data():
     return Session().gz_json(DATA_URL)
 
-def _process_channels(channels, query=None):
+def _get_channels(query=None):
+    channels = _app_data()['channels']
+
     query = query.lower().strip() if query else None
 
-    show_chno = settings.getBool('show_chno', True)
     if settings.getBool('show_mini_epg', True):
         now = arrow.now()
         epg_count = 5
@@ -37,10 +38,10 @@ def _process_channels(channels, query=None):
         epg_count = None
 
     items = []
-    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
+    for id in sorted(channels.keys(), key=lambda x: channels[x]['name']):
         channel = channels[id]
 
-        if query and (query not in channel['name'].lower() and (not show_chno or query != str(channel['chno']))):
+        if query and (query not in channel['name'].lower()):
             continue
 
         if not epg_count:
@@ -60,7 +61,7 @@ def _process_channels(channels, query=None):
                         break
 
         item = plugin.Item(
-            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
+            label = channel['name'],
             info = {'plot': plot},
             art = {'thumb': channel['logo']},
             playable = True,
@@ -73,28 +74,14 @@ def _process_channels(channels, query=None):
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
-
-    channels = _app_data()['channels']
-    items = _process_channels(channels)
+    items = _get_channels()
     folder.add_items(items)
-
     return folder
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
-    channels = _app_data()['channels']
-    items = _process_channels(channels, query=query)
-    folder.add_items(items)
-
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    return _get_channels(query=query), False
 
 @plugin.route()
 def play(id, **kwargs):
@@ -118,8 +105,8 @@ def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
-        for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
+        for id in sorted(channels.keys(), key=lambda x: channels[x]['name']):
             channel = channels[id]
-            f.write(u'\n#EXTINF:-1 tvg-chno="{chno}" tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                chno = channel['chno'], id = id, name = channel['name'], logo = channel['logo'], url = plugin.url_for(play, id=id, _is_live=True),
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
+                id = id, name = channel['name'], logo = channel['logo'], url = plugin.url_for(play, id=id, _is_live=True),
             ))

@@ -9,10 +9,6 @@ msgctxt "#30001"
 msgid "Show Mini EPG"
 msgstr ""
 
-msgctxt "#30002"
-msgid "Show Channel Numbers"
-msgstr ""
-
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
