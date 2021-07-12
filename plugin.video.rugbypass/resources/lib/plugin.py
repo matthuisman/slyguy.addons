@@ -6,7 +6,7 @@ from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLA
 
 from .constants import SERVICE_TIME, GAMES_EXPIRY, GAMES_CACHE_KEY, IMG_URL
 from .api import API
-from .models import Game, Alert
+from .models import Game
 from .language import _
 
 api = API()
@@ -72,52 +72,28 @@ def upcoming(**kwargs):
     return show_games(Game.state == Game.UPCOMING, order_by=Game.start.asc(), title=_.UPCOMING)
 
 @plugin.route()
-def alerts(slug, **kwargs):
-    game   = get_game(slug)
-    alerts = userdata.get('alerts', [])
-
-    if game.id not in alerts:
-        alerts.append(game.id)
-        gui.notification(_.REMINDER_SET, heading=game.title, icon=game.image)
-    else:
-        alerts.remove(game.id)
-        gui.notification(_.REMINDER_REMOVED, heading=game.title, icon=game.image)
-
-    userdata.set('alerts', alerts)
-    gui.refresh()
-
-@plugin.route()
 def show_score(slug, **kwargs):
     game = get_game(slug)
     gui.ok(heading=game.title, message=game.result)
 
 @plugin.route()
-def play(slug, game_type, play_type=PLAY_FROM_LIVE, **kwargs):
-    game = get_game(slug)
-    return _get_play_item(game, game_type, play_type)
-
 @plugin.login_required()
-def _get_play_item(game, game_type, play_type=PLAY_FROM_LIVE):
+def play(slug, game_type, play_type=PLAY_FROM_LIVE, **kwargs):
     play_type = int(play_type)
-    item      = parse_game(game)
-    is_live   = game.state == Game.LIVE
+
+    game = get_game(slug)
+    item = parse_game(game)
+    is_live = game.state == Game.LIVE
 
     item.inputstream = inputstream.HLS(live=is_live)
 
     if play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START)):
-        item.properties['ResumeTime'] = '1'
-        item.properties['TotalTime']  = '1'
+        item.resume_from = 1
         if is_live and not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
     item.path = api.get_play_url(game, game_type)
-
     return item
-
-@signals.on(signals.ON_SERVICE)
-def service():
-    update_games()
-    check_alerts()
 
 def show_games(query, order_by=None, title=None):
     folder = plugin.Folder(title, no_items_label=_.NO_GAMES)
@@ -151,29 +127,18 @@ def get_game(slug):
 
 def parse_game(game):
     item = plugin.Item(
-        label     = game.title,
-        is_folder = False,
-        playable  = game.state != Game.UPCOMING,
-        art       = {'thumb': game.image},
-        info      = {
-            'title':    game.title,
-            'plot':     game.description,
+        label = game.title,
+        art = {'thumb': game.image},
+        info = {
+            'title': game.title,
+            'plot': game.description,
             'duration': game.duration,
-            'aired':    game.aired,
+            'aired': game.aired,
         },
+        playable = True,
     )
 
-    if game.state == Game.UPCOMING:
-        item.path = plugin.url_for(alerts, slug=game.slug)
-
-        if game.id not in userdata.get('alerts', []):
-            item.info['playcount'] = 0
-            item.context.append((_.SET_REMINDER, "RunPlugin({0})".format(item.path)))
-        else:
-            item.info['playcount'] = 1
-            item.context.append((_.REMOVE_REMINDER, "RunPlugin({0})".format(item.path)))
-
-    elif game.state == Game.LIVE:
+    if game.state in (Game.LIVE, Game.UPCOMING):
         item.path = plugin.url_for(play, slug=game.slug, game_type=Game.FULL, play_type=settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK), _is_live=True)
 
         item.context.append((_.WATCH_LIVE, "PlayMedia({0})".format(
@@ -201,31 +166,3 @@ def parse_game(game):
         )))
 
     return item
-
-def check_alerts():
-    alerts = userdata.get('alerts', [])
-    if not alerts: return
-
-    for game in Game.select().where(Game.id << alerts):
-        if game.state == Game.LIVE:
-            alerts.remove(game.id)
-
-            _to_start = game.start - arrow.utcnow().timestamp
-
-            if settings.getInt('alert_when') == Alert.STREAM_START:
-                message = _.STREAM_STARTED
-            elif settings.getInt('alert_when') == Alert.KICK_OFF and _to_start > 0 and _to_start <= SERVICE_TIME:
-                message = _.KICKOFF
-            else:
-                continue
-
-            if settings.getInt('alert_type') == Alert.NOTIFICATION:
-                gui.notification(message, heading=game.title, time=5000, icon=game.image)
-
-            elif gui.yes_no(message, heading=game.title, yeslabel=_.WATCH, nolabel=_.CLOSE):
-                _get_play_item(game, Game.FULL, play_type=settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)).play()
-
-        elif game.state != Game.UPCOMING:
-            alerts.remove(game.id)
-
-    userdata.set('alerts', alerts)

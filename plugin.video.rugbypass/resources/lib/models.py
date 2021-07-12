@@ -74,11 +74,4 @@ class Game(database.Model):
     def image(self):
         return IMG_URL.format('/teams/{}_ph_eb.png'.format(self.info['home']['code']))
 
-class Alert(object):
-    DIALOG = 0
-    NOTIFICATION = 1
-
-    STREAM_START = 0
-    KICK_OFF = 1
-
 database.tables.append(Game)

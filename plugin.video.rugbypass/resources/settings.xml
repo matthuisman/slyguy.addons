@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30026" id="alert_type" type="enum" default="0" lvalues="30027|30028"/>
-        <setting label="30029" id="alert_when" type="enum" default="0" lvalues="30030|30031"/>
         <setting label="30032" id="show_score" type="bool" default="false"/>
         <setting label="30033" id="show_hours" type="slider" default="0" range="0,6,168" option="int" subsetting="true" enable="eq(-1,true)"/>
     </category>
@@ -12,8 +10,8 @@
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
-        <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="true"/>
-        <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="true"/>
+        <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="false"/>
     </category>
 

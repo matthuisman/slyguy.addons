@@ -26,14 +26,6 @@ msgid "Failed to login with below error:\n"
 "{error_msg}"
 msgstr ""
 
-msgctxt "#30010"
-msgid "Reminder Set"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Reminder Removed"
-msgstr ""
-
 msgctxt "#30012"
 msgid "Unable to get content url for this game"
 msgstr ""
@@ -44,14 +36,6 @@ msgstr ""
 
 msgctxt "#30014"
 msgid "Could not find that game"
-msgstr ""
-
-msgctxt "#30015"
-msgid "Set Reminder"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Remove Reminder"
 msgstr ""
 
 msgctxt "#30017"
@@ -74,46 +58,6 @@ msgctxt "#30021"
 msgid "Show Score"
 msgstr ""
 
-msgctxt "#30022"
-msgid "Live stream has started"
-msgstr ""
-
-msgctxt "#30023"
-msgid "Is about to kick-off"
-msgstr ""
-
-msgctxt "#30024"
-msgid "Watch"
-msgstr ""
-
-msgctxt "#30025"
-msgid "Close"
-msgstr ""
-
-msgctxt "#30026"
-msgid "Reminder Type"
-msgstr ""
-
-msgctxt "#30027"
-msgid "Pop-up Dialog"
-msgstr ""
-
-msgctxt "#30028"
-msgid "Notification"
-msgstr ""
-
-msgctxt "#30029"
-msgid "Reminder When"
-msgstr ""
-
-msgctxt "#30030"
-msgid "Stream Starts"
-msgstr ""
-
-msgctxt "#30031"
-msgid "Kick-off Time"
-msgstr ""
-
 msgctxt "#30032"
 msgid "Show scores"
 msgstr ""
@@ -121,7 +65,6 @@ msgstr ""
 msgctxt "#30033"
 msgid "after ? hours"
 msgstr ""
-
 
 msgctxt "#30036"
 msgid "A draw ({win_score} all)"
@@ -158,26 +101,6 @@ msgctxt "#30043"
 msgid "Request was GEO blocked (blackout area)"
 msgstr ""
 
-msgctxt "#30044"
-msgid "Default Live Play Action"
-msgstr ""
-
-msgctxt "#30045"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#30046"
-msgid "From Live"
-msgstr ""
-
-msgctxt "#30047"
-msgid "From Start"
-msgstr ""
-
-msgctxt "#30048"
-msgid "Play From?"
-msgstr ""
-
 msgctxt "#30049"
 msgid "Inputstream HLS required to watch streams From Live.\n"
 "Check HLS is enabled in settings and Inputstream Adaptive is installed"
@@ -186,14 +109,6 @@ msgstr ""
 msgctxt "#30050"
 msgid "Failed to get games list.\n"
 "Check your subscription"
-msgstr ""
-
-
-
-
-
-msgctxt "#30059"
-msgid "Next Page ({page})"
 msgstr ""
 
 ## COMMON SETTINGS ##
