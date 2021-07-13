@@ -20,6 +20,10 @@ from .models import Source, Playlist, EPG, Channel, merge_info
 from .language import _
 from . import iptv_manager
 
+TROLL_URL = 'https://'
+TROLL_NAME = 'Use https://github.com/iptv-org/iptv'
+TROLLS = ['free-iptv', 'Food4Monkeys', u'Free\u0097IPTV', 'Raspifan2020']
+
 def copy_partial_data(file_path, _out, start_index, end_index):
     if start_index < 1 or end_index < start_index:
         return
