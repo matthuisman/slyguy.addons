@@ -79,12 +79,9 @@ def _process_media(row, in_watchlist=False):
 
     if settings.getBool('sync_playback', False):
         try:
-            resume_from = row['user_media']['progress_in_seconds']
+            item.resume_from = row['user_media']['progress_in_seconds']
         except:
-            resume_from = 0
-
-        item.properties['ResumeTime'] = resume_from
-        item.properties['TotalTime']  = resume_from
+            item.resume_from = 0
 
     return item
 
@@ -356,7 +353,6 @@ def play(id, **kwargs):
     item = plugin.Item(
         path = data['encodings'][0]['master_playlist_url'],
         inputstream = inputstream.MPD(),
-        use_proxy = True, #required for default language
         proxy_data = {'default_language': 'English'},
     )
 
