@@ -625,8 +625,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         item.inputstream = inputstream.Widevine(license_key=plugin.url_for(license_request))
 
     if start_from:
-        item.properties['ResumeTime'] = start_from
-        item.properties['TotalTime']  = start_from
+        item.resume_from = start_from
 
     return item
 
