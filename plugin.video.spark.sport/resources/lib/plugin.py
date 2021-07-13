@@ -2,7 +2,7 @@ import codecs
 
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_LIVE_TAG, LIVE_HEAD
+from slyguy.constants import *
 
 from .api import API
 from .language import _
@@ -190,9 +190,6 @@ def play(id, play_type=PLAY_FROM_LIVE, **kwargs):
     play_type = int(play_type)
     if from_start and (play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
         item.resume_from = 1
-    elif ROUTE_LIVE_TAG in kwargs:
-        ## Need below to seek to live over multi-periods
-        item.resume_from = LIVE_HEAD
 
     return item
 
