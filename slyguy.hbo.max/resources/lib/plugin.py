@@ -486,8 +486,9 @@ def play(slug, **kwargs):
                     item.play_next['next_file'] = 'urn:hbo:feature:' + slug.split(':')[3]
                     break
 
-    for row in data.get('textTracks', []):
-        item.subtitles.append([row['url'], row['language']])
+    if not settings.getBool('ignore_subs', False):
+        for row in data.get('textTracks', []):
+            item.subtitles.append([row['url'], row['language']])
 
     return item
 

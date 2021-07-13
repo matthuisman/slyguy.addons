@@ -8,6 +8,7 @@ class Language(BaseLanguage):
     GO_TO_SERIES      = 30005
     NO_VIDEO_FOUND    = 30006
     EC3_ENABLED       = 30007
+    IGNORE_SUBS       = 30008
     L1_SECURE_DEVICE  = 30009
     PLAY_NEXT_EPISODE = 30010
     SKIP_INTROS       = 30011
