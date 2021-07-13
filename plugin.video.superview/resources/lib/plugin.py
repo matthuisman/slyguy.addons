@@ -92,8 +92,7 @@ def play(slug, play_type=PLAY_FROM_LIVE, **kwargs):
 
     play_type = int(play_type)
     if play_type == PLAY_FROM_LIVE or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START)):
-        item.properties['ResumeTime'] = 1
-        item.properties['TotalTime']  = 1
+        item.resume_from = 1
 
     return item
 
