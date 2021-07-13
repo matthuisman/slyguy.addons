@@ -329,9 +329,7 @@ def play(livestream=None, brightcoveId=None, channel=None, **kwargs):
         item = plugin.Item(path=livestream, art=False, inputstream=inputstream.HLS(live=True))
         
         if kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START):
-            item.properties['ResumeTime'] = '1'
-            item.properties['TotalTime']  = '1'
-            
+            item.resume_from = 1
             item.inputstream = inputstream.HLS(force=True, live=True)
             if not item.inputstream.check():
                 plugin.exception(_.LIVE_HLS_REQUIRED)
