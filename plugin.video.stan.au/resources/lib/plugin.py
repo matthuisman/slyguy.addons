@@ -103,7 +103,7 @@ def continue_watching(**kwargs):
         if row['programType'] == 'movie':
             folder.add_item(
                 label = row['title'],
-                properties = {'ResumeTime': row['position'], 'TotalTime': row['totalDuration']},
+                resume_from = row['position'],
                 art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 path = plugin.url_for(play, program_id=row['programId']),
                 playable = True,
@@ -111,7 +111,7 @@ def continue_watching(**kwargs):
         elif row['programType'] == 'episode':
             folder.add_item(
                 label = row['title'],
-                properties = {'ResumeTime': row['position'], 'TotalTime': row['totalDuration']},
+                resume_from = row['position'],
                 art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 info = {'tvshowtitle': row['seriesTitle'], 'mediatype': 'episode', 'season': row['tvSeasonNumber'], 'episode': row['tvSeasonEpisodeNumber']},
                 context = ((_(_.GOTO_SERIES, series=row['seriesTitle']), 'Container.Update({})'.format(plugin.url_for(series, series_id=row['seriesId']))),),
@@ -505,15 +505,14 @@ def _play(program_id, play_type=None, is_live=False):
     )
 
     if is_live and (play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
-        item.properties['ResumeTime'] = '1'
-        item.properties['TotalTime']  = '1'
+        item.resume_from = 1
 
     for row in play_data.get('captions', []):
         item.subtitles.append([row['url'], row['language']])
 
     # for chapter in program_data.get('chapters', []):
     #     if chapter['name'] == 'Intro':
-    #         item.properties['TotalTime'] = item.properties['ResumeTime'] = str(chapter['end']/1000 - 1)
+    #         item.resume_from = str(chapter['end']/1000 - 1)
     #     elif chapter['name'] == 'Credits':
     #         item.play_next = {'time': chapter['start']/1000}
 
