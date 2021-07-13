@@ -76,7 +76,6 @@ ROUTE_WEBVTT           = '_webvtt'
 
 #### INPUTSTREAM ADAPTIVE #####
 IA_ADDON_ID      = 'inputstream.adaptive'
-IA_TESTING_ID    = 'inputstream.adaptive.testing'
 IA_VERSION_KEY   = '_version'
 IA_HLS_MIN_VER   = '2.0.0'
 IA_PR_MIN_VER    = '2.2.19'

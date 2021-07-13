@@ -18,19 +18,11 @@ from .language import _
 from .util import md5sum, remove_file, get_system_arch, hash_6, kodi_rpc, get_addon
 from .exceptions import InputStreamError
 
-ADDON_ID = IA_ADDON_ID
-
 def get_id():
-    if KODI_VERSION != 18:
-        return IA_ADDON_ID
-
-    return ADDON_ID
+    return IA_ADDON_ID
 
 def get_ia_addon(required=False, install=True):
     addon_id = get_id()
-
-    if addon_id == IA_TESTING_ID:
-        install_iat_repo()
 
     addon = get_addon(addon_id, required=False, install=install)
 
@@ -58,28 +50,6 @@ def get_ia_addon(required=False, install=True):
 
     return addon
 
-def install_iat_repo():
-    addon = get_addon(IA_TESTING_ID, install=False)
-    if addon:
-        return
-
-    system, arch = get_system_arch()
-
-    if system == 'Linux':
-        if arch == 'armv7' or arch == 'armv6':
-            repo_id = 'repository.inputstream.adaptive.testing.armhf'
-        elif ('aarch64' in arch or 'arm64' in arch):
-            repo_id = 'repository.inputstream.adaptive.testing.aarch64'
-        else:
-            repo_id = 'repository.inputstream.adaptive.testing.x86_64'
-    elif system in ('UWP', 'IOS', 'TVOS'):
-        raise InputStreamError(_.IA_TESTING_NOT_AVAILABLE)
-    else:
-        repo_id = 'repository.inputstream.adaptive.testing'
-
-    get_addon(repo_id, required=True)
-    time.sleep(2)
-
 class InputstreamItem(object):
     manifest_type = ''
     license_type  = ''
@@ -91,13 +61,11 @@ class InputstreamItem(object):
     response      = None
     properties    = None
     minversion    = None
-    x_discontinuity = False
 
-    def __init__(self, minversion=None, properties=None, x_discontinuity=False):
+    def __init__(self, minversion=None, properties=None):
         if minversion:
             self.minversion = minversion
         self.properties = properties or {}
-        self.x_discontinuity = x_discontinuity
 
     @property
     def addon_id(self):
@@ -126,11 +94,6 @@ class HLS(InputstreamItem):
         legacy   = settings.getBool('use_ia_hls', False)
         hls_live = settings.getBool('use_ia_hls_live', legacy)
         hls_vod  = settings.getBool('use_ia_hls_vod', legacy)
-
-        if self.x_discontinuity and KODI_VERSION == 18:
-            global ADDON_ID
-            ADDON_ID = IA_TESTING_ID
-
         return (self.force or (self.live and hls_live) or (not self.live and hls_vod)) and require_version(self.minversion, required=self.force)
 
 class MPD(InputstreamItem):
