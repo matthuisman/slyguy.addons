@@ -93,7 +93,7 @@ def play(id, **kwargs):
         info = {'plot': channel['description']},
         art = {'thumb': channel['logo']},
         headers = data['headers'],
-        inputstream = inputstream.HLS(live=True, x_discontinuity=True),
+        inputstream = inputstream.HLS(live=True),
         path = channel['url'],
     )
 
