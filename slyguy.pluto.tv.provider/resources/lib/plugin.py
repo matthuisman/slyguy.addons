@@ -209,7 +209,7 @@ def play(id, **kwargs):
         label = channel['name'],
         info = {'plot': channel.get('description', '')},
         art = {'thumb': channel['logo']},
-        inputstream = inputstream.HLS(live=True, x_discontinuity=True),
+        inputstream = inputstream.HLS(live=True),
         headers = headers,
         path = _get_url(channel),
     )
