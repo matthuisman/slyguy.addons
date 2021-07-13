@@ -4,7 +4,7 @@ import codecs
 import arrow
 from kodi_six import xbmcplugin
 from slyguy import plugin, gui, settings, userdata, inputstream
-from slyguy.constants import ROUTE_LIVE_TAG, IA_TESTING_ID
+from slyguy.constants import *
 
 from .api import API
 from .constants import HEADERS
@@ -314,9 +314,9 @@ def live_tv(**kwargs):
 
     if data.get('events'):
         folder.add_item(
-            label = _(_.LIVE_EVENTS, _bold=True), 
+            label = _(_.LIVE_EVENTS, _bold=True),
             info  = {'plot': _(_.EVENT_COUNT, count=len(data['events']), _bold=True)},
-            path = plugin.url_for(live_events), 
+            path = plugin.url_for(live_events),
             specialsort = 'bottom',
         )
 
