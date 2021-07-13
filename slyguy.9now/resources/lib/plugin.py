@@ -332,9 +332,7 @@ def play(reference, **kwargs):
         item = api.get_brightcove_src(reference)
     except:
         if original_reference.endswith('-ssai'):
-            # SSAI streams need IA Testing in Kodi 18
             item = api.get_brightcove_src(original_reference)
-            inputstream.ADDON_ID = IA_TESTING_ID
         else:
             raise
 
