@@ -336,7 +336,6 @@ def _play(account, reference, live=False):
 
     if live and item.inputstream:
         item.inputstream.live = True
-        item.inputstream.x_discontinuity = True
 
     return item
 
