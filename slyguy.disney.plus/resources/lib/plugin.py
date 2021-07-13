@@ -353,8 +353,7 @@ def _process_rows(rows, content_class=None):
                 item = _parse_video(row)
 
             if item.playable and settings.getBool('disney_sync', False):
-                item.properties['ResumeTime'] = continue_watching.get(row['contentId'], 0)
-                item.properties['TotalTime'] = continue_watching.get(row['contentId'], 0)
+                item.resume_from = continue_watching.get(row['contentId'], 0)
 
         elif content_type == 'DmcSeries':
             item = _parse_series(row)
