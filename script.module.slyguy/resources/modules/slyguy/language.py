@@ -165,6 +165,7 @@ class BaseLanguage(object):
     IA_TVOS_ERROR               = 32125
     NEW_SEARCH                  = 32126
     REMOVE_SEARCH               = 32127
+    NEWS_HEADING                = 32128
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)

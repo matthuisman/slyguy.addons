@@ -17,7 +17,7 @@ from .log import log
 from .language import _
 from .session import Session
 from .exceptions import Error, PluginError, FailedPlayback
-from .util import set_kodi_string, get_addon, remove_file
+from .util import set_kodi_string, get_addon, remove_file, user_country
 
 ## SHORTCUTS
 url_for = router.url_for
@@ -464,7 +464,7 @@ class Item(gui.Item):
         self.bookmark  = bookmark
         self.quality   = quality
 
-    def get_li(self):
+    def get_li(self, *args, **kwargs):
         # if settings.getBool('use_cache', True) and self.cache_key:
         #     url = url_for(ROUTE_CLEAR_CACHE, key=self.cache_key)
         #     self.context.append((_.PLUGIN_CONTEXT_CLEAR_CACHE, 'RunPlugin({})'.format(url)))
@@ -482,7 +482,7 @@ class Item(gui.Item):
             url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
             self.context.append((_.PLAYBACK_QUALITY, 'PlayMedia({},noresume)'.format(url)))
 
-        return super(Item, self).get_li()
+        return super(Item, self).get_li(*args, **kwargs)
 
     def play(self, **kwargs):
         self.playable = True
@@ -490,7 +490,7 @@ class Item(gui.Item):
         quality = kwargs.get(QUALITY_TAG, self.quality)
         is_live = ROUTE_LIVE_TAG in kwargs
 
-        if is_live and self.resume_from is None and KODI_VERSION > 17:
+        if self.resume_from is None and is_live and KODI_VERSION > 17:
             self.resume_from = LIVE_HEAD
 
         if quality is None:
@@ -502,7 +502,7 @@ class Item(gui.Item):
 
         self.proxy_data['quality'] = quality
 
-        li     = self.get_li()
+        li = self.get_li()
         handle = _handle()
 
         if self.play_next:
@@ -588,10 +588,7 @@ class Folder(object):
 
         xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=self.updateListing, cacheToDisc=self.cacheToDisc)
 
-        plugin_msg = settings.common_settings.get('_next_plugin_msg')
-        if plugin_msg:
-            settings.common_settings.set('_next_plugin_msg', '')
-            gui.ok(plugin_msg)
+        process_news()
 
     def add_item(self, *args, **kwargs):
         position = kwargs.pop('_position', None)
@@ -619,3 +616,57 @@ class Folder(object):
             self.items.append(items)
         else:
             raise Exception('add_items only accepts an Item or list of Items')
+
+def process_news():
+    news = settings.common_settings.get('_news')
+    if not news:
+        return
+
+    settings.common_settings.set('_news', '')
+
+    try:
+        news = json.loads(news)
+        _time = time.time()
+
+        if _time > news.get('timestamp', _time) + NEWS_MAX_TIME:
+            log.debug('news is too old')
+            return
+
+        if news.get('country'):
+            valid = False
+            cur_country = user_country().lower()
+
+            for rule in [x.lower().strip() for x in news['country'].split(',')]:
+                if not rule:
+                    continue
+                elif not rule.startswith('!') and cur_country == rule:
+                    valid = True
+                    break
+                else:
+                    valid = cur_country != rule[1:] if rule.startswith('!') else cur_country == rule
+
+            if not valid:
+                log.debug('news is only for country: {}'.format(news['country']))
+                return
+
+        if news.get('requires') and not get_addon(news['requires'], install=False):
+            log.debug('news is only for users with addon {} installed'.format(news['requires']))
+            return
+
+        elif news['type'] == 'message':
+            gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
+
+        elif news['type'] == 'addon_release':
+            if get_addon(news['addon_id'], install=False):
+                log.debug('addon_release {} already installed'.format(news['addon_id']))
+                return
+
+            if gui.yes_no(news['message'], news.get('heading', _.NEWS_HEADING)):
+                addon = get_addon(news['addon_id'], install=True)
+                if not addon:
+                    return
+
+                url = url_for('', _addon_id=news['addon_id'])
+                xbmc.executebuiltin('ActivateWindow(Videos,{})'.format(url))
+    except Exception as e:
+        log.exception(e)

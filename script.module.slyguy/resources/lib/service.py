@@ -8,14 +8,13 @@ from kodi_six import xbmc
 
 from slyguy import gui, router, settings
 from slyguy.session import Session
-from slyguy.util import hash_6, kodi_rpc, get_addon, user_country
+from slyguy.util import kodi_rpc, get_addon
 from slyguy.log import log
 from slyguy.constants import ROUTE_SERVICE, ROUTE_SERVICE_INTERVAL, KODI_VERSION
 
 from .proxy import Proxy
 from .monitor import monitor
 from .player import Player
-from .language import _
 from .constants import *
 
 session = Session(timeout=15)
@@ -73,60 +72,7 @@ def _check_news():
         return
 
     settings.set('_last_news_id', news['id'])
-
-    if _time > news.get('timestamp', _time) + NEWS_MAX_TIME:
-        log.debug('news is too old')
-        return
-
-    if news.get('country'):
-        valid = False
-        cur_country = user_country().lower()
-
-        for rule in [x.lower().strip() for x in news['country'].split(',')]:
-            if not rule:
-                continue
-            elif not rule.startswith('!') and cur_country == rule:
-                valid = True
-                break
-            else:
-                valid = cur_country != rule[1:] if rule.startswith('!') else cur_country == rule
-
-        if not valid:
-            log.debug('news is only for country: {}'.format(news['country']))
-            return
-
-    if news.get('requires') and not get_addon(news['requires'], install=False):
-        log.debug('news is only for users with addon {} installed'.format(news['requires']))
-        return
-
-    if news['type'] == 'next_plugin_msg':
-        settings.set('_next_plugin_msg', news['message'])
-
-    elif news['type'] == 'message':
-        def _interact_thread():
-            gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
-
-        thread = Thread(target=_interact_thread)
-        thread.daemon = True
-        thread.start()
-
-    elif news['type'] == 'addon_release':
-        if get_addon(news['addon_id'], install=False):
-            log.debug('addon_release {} already installed'.format(news['addon_id']))
-            return
-
-        def _interact_thread():
-            if gui.yes_no(news['message'], news.get('heading', _.NEWS_HEADING)):
-                addon = get_addon(news['addon_id'], install=True)
-                if not addon:
-                    return
-
-                url = router.url_for('', _addon_id=news['addon_id'])
-                xbmc.executebuiltin('ActivateWindow(Videos,{})'.format(url))
-
-        thread = Thread(target=_interact_thread)
-        thread.daemon = True
-        thread.start()
+    settings.set('_news', json.dumps(news))
 
 def start():
     log.debug('Shared Service: Started')
