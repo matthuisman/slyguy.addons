@@ -5,6 +5,7 @@ from gzip import GzipFile
 
 import requests
 from six import BytesIO
+from kodi_six import xbmc
 
 from . import userdata, settings
 from .util import get_dns_rewrites
@@ -79,7 +80,7 @@ class Session(RawSession):
         json_text = GzipFile(fileobj=BytesIO(resp.content)).read()
         return json.loads(json_text)
 
-    def request(self, method, url, timeout=None, attempts=None, verify=None, error_msg=None, **kwargs):
+    def request(self, method, url, timeout=None, attempts=None, verify=None, error_msg=None, retry_not_ok=False, retry_delay=1000, **kwargs):
         method = method.upper()
 
         if not url.startswith('http'):
@@ -95,7 +96,9 @@ class Session(RawSession):
         #url = PROXY_PATH + url
 
         for i in range(1, attempts+1):
-            attempt = 'Attempt {}/{}: '.format(i, attempts) if i > 1 else ''
+            attempt = 'Attempt {}/{}: '.format(i, attempts)
+            if i > 1 and retry_delay:
+                xbmc.sleep(retry_delay)
 
             try:
                 log('{}{} {} {}'.format(attempt, method, url, kwargs if method != 'POST' else ""))
@@ -114,12 +117,18 @@ class Session(RawSession):
             if resp is None:
                 raise SessionError(error_msg or _.NO_RESPONSE_ERROR)
 
-            resp.json = lambda func=resp.json, error_msg=error_msg: json_override(func, error_msg)
+            if retry_not_ok and not resp.ok:
+                print("NOT OK!!")
+                continue
+            else:
+                break
 
-            if self.after_request:
-                self.after_request(resp)
+        resp.json = lambda func=resp.json, error_msg=error_msg: json_override(func, error_msg)
 
-            return resp
+        if self.after_request:
+            self.after_request(resp)
+
+        return resp
 
     def save_cookies(self):
         if not self._cookies_key:
