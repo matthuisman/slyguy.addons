@@ -14,60 +14,12 @@ msgid "Failed to login.\n"
 "Server Message: {msg}"
 msgstr ""
 
-msgctxt "#30004"
-msgid "Add Profile"
-msgstr ""
-
 msgctxt "#30005"
 msgid "Select Profile"
 msgstr ""
 
-msgctxt "#30006"
-msgid "Delete Profile"
-msgstr ""
-
 msgctxt "#30007"
 msgid "Profile Activated"
-msgstr ""
-
-msgctxt "#30008"
-msgid "Random Pick"
-msgstr ""
-
-msgctxt "#30009"
-msgid "Select Avatar"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Used"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Not Used"
-msgstr ""
-
-msgctxt "#30012"
-msgid "Profile Name"
-msgstr ""
-
-msgctxt "#30013"
-msgid "{name} is already being used"
-msgstr ""
-
-msgctxt "#30014"
-msgid "Select profile to delete"
-msgstr ""
-
-msgctxt "#30015"
-msgid "Delete {name}'s profile?"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Profile history, watchlist, and activity will be deleted. There is no way to undo this."
-msgstr ""
-
-msgctxt "#30017"
-msgid "Profile Deleted"
 msgstr ""
 
 msgctxt "#30018"
@@ -134,6 +86,10 @@ msgctxt "#30032"
 msgid "Failed to fetch auth token\n"
 "Make sure your IP address is allowed (not geo-blocked)\n"
 "Try accessing the content via other means (offical app / website) to confirm it's a Kodi add-on issue"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Failed to get that page. Please try again"
 msgstr ""
 
 ## COMMON SETTINGS ##

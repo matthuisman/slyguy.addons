@@ -95,24 +95,16 @@ def genre(slug, title, genre, subgenre=None, **kwargs):
     return folder
 
 @plugin.route()
-def search(query=None,**kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
+@plugin.search()
+def search(query, page, **kwargs):
     data = api.search(query=query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
 
     if 'panels' in data:
         items = _parse_contents(data['panels'][0].get('contents', []))
-        folder.add_items(items)
+    else:
+        items = []
 
-    return folder
-
+    return items, False
 
 @plugin.route()
 def show(show_id, title, **kwargs):
@@ -139,14 +131,20 @@ def show(show_id, title, **kwargs):
                     },
                     path = plugin.url_for(season, show_id=show_id, season_id=row['data']['id'], title=title),
                 )
-                seasons.append(item)
+
+                try:
+                    season_num = int(re.search('[0-9]+', item.label).group(0))
+                except:
+                    season_num = 999
+
+                seasons.append([season_num, item])
         elif row['panelType'] == 'synopsis-carousel-tabbed' and row['title'] == 'Episodes':
             episodes.extend(_parse_contents(row.get('contents', [])))
         elif row['panelType'] == 'hero-carousel':
             heros.extend(_parse_contents(row.get('contents', [])))
 
     if seasons:
-        folder.add_items(seasons)
+        folder.add_items([x[1] for x in sorted(seasons, key=lambda x: x[0])])
     elif episodes:
         folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
         folder.add_items(episodes)
@@ -397,7 +395,8 @@ def login(**kwargs):
     if not result:
         return
 
-    _select_profile()
+    try: _select_profile()
+    except: pass
     gui.refresh()
 
 def _device_link():
@@ -454,7 +453,6 @@ def _select_profile():
 
     options = []
     values  = []
-    can_delete = []
     default = -1
 
     for index, profile in enumerate(profiles):
@@ -465,28 +463,11 @@ def _select_profile():
             default = index
             _set_profile(profile, notify=False)
 
-        elif not profile['root_flag']:
-            can_delete.append(profile)
-
-    options.append(plugin.Item(label=_(_.ADD_PROFILE, _bold=True)))
-    values.append('_add')
-
-    if can_delete:
-        options.append(plugin.Item(label=_(_.DELETE_PROFILE, _bold=True)))
-        values.append('_delete')
-
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
     if index < 0:
         return
 
-    selected = values[index]
-
-    if selected == '_delete':
-        _delete_profile(can_delete)
-    elif selected == '_add':
-        _add_profile(taken_names=[x['name'].lower() for x in profiles], taken_avatars=[x['avatar_id'] for x in profiles])
-    else:
-        _set_profile(selected)
+    _set_profile(values[index])
 
 def _get_avatar(avatar_id):
     if avatar_id is None:
@@ -501,66 +482,6 @@ def _set_profile(profile, notify=True):
 
     if notify:
         gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=_get_avatar(profile['avatar_id']))
-
-def _delete_profile(profiles):
-    options = []
-    for index, profile in enumerate(profiles):
-        options.append(plugin.Item(label=profile['name'], art={'thumb': _get_avatar(profile['avatar_id'])}))
-
-    index = gui.select(_.SELECT_DELETE_PROFILE, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    selected = profiles[index]
-    if gui.yes_no(_.DELETE_PROFILE_INFO, heading=_(_.DELTE_PROFILE_HEADER, name=selected['name'])) and api.delete_profile(selected).ok:
-        gui.notification(_.PROFILE_DELETED, heading=selected['name'], icon=_get_avatar(selected['avatar_id']))
-
-def _add_profile(taken_names, taken_avatars):
-    ## PROFILE AVATAR ##
-    options = [plugin.Item(label=_(_.RANDOM_AVATAR, _bold=True)),]
-    values  = ['_random',]
-    avatars = []
-    unused  = []
-
-    for avatar in api.profile_config()['avatars']:
-        values.append(avatar['id'])
-        avatars.append(avatar['id'])
-
-        if avatar['id'] in taken_avatars:
-            label = _(_.AVATAR_USED, _bold=True)
-        else:
-            label =_.AVATAR_NOT_USED
-            unused.append(avatar['id'])
-
-        options.append(plugin.Item(label=label, art={'thumb': _get_avatar(avatar['id'])}))
-
-    index = gui.select(_.SELECT_AVATAR, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    avatar_id = values[index]
-    if avatar_id == '_random':
-        avatar_id = random.choice(unused or avatars)
-
-    ## PROFILE NAME ##
-    name = ''
-    while True:
-        name = gui.input(_.PROFILE_NAME, default=name).strip()
-        if not name:
-            return
-
-        elif name.lower() in taken_names:
-            gui.notification(_(_.PROFILE_NAME_TAKEN, name=name))
-
-        else:
-            break
-
-    ## ADD PROFILE ##
-    profile = api.add_profile(name, avatar_id)
-    if 'message' in profile:
-        raise PluginError(profile['message'])
-
-    _set_profile(profile)
 
 @plugin.route()
 @plugin.plugin_callback()

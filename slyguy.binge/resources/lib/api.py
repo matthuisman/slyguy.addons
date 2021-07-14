@@ -110,7 +110,15 @@ class API(object):
             'q': query,
         }
 
-        return self._session.get('https://api.binge.com.au/v1/search/types/landing', params=params).json()
+        return self._retry_request('https://api.binge.com.au/v1/search/types/landing', params).json()
+
+    def _retry_request(self, url, params=None, attempts=2):
+        resp = self._session.get(url, params=params, attempts=attempts, retry_not_ok=True, retry_delay=3000)
+
+        if not resp.ok:
+            raise APIError(_.PAGE_ERROR)
+
+        return resp
 
     #landing has heros and panels
     def landing(self, name, params=None):
@@ -120,7 +128,7 @@ class API(object):
 
         _params.update(params or {})
 
-        return self._session.get('https://api.binge.com.au/v1/content/types/landing/names/{}'.format(name), params=_params).json()
+        return self._retry_request('https://api.binge.com.au/v1/content/types/landing/names/{}'.format(name), _params).json()
 
     def panel(self, link=None, panel_id=None):
         self._refresh_token()
@@ -134,30 +142,7 @@ class API(object):
 
     def profiles(self):
         self._refresh_token()
-
-        try:
-            return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
-        except:
-            return []
-
-    def add_profile(self, name, avatar_id):
-        self._refresh_token()
-
-        payload = {
-            'name': name,
-            'avatar_id': avatar_id,
-            'onboarding_status': 'welcomeScreen',
-        }
-
-        return self._session.post('https://profileapi.streamotion.com.au/user/profile/type/ares', json=payload, headers=self._auth_header).json()
-
-    def delete_profile(self, profile):
-        self._refresh_token()
-
-        return self._session.delete('https://profileapi.streamotion.com.au/user/profile/type/ares/{profile_id}'.format(profile_id=profile['id']), headers=self._auth_header)
-
-    def profile_config(self):
-        return self._session.get('https://resources.streamotion.com.au/production/binge/profile/profile-config.json').json()
+        return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
 
     def license_request(self, data):
         self._refresh_token()
