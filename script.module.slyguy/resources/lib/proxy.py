@@ -911,8 +911,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         response = self._proxy_request('POST', url)
         self._output_response(response)
 
-        if not response.ok and url == self._session.get('license_url') and gui.yes_no(_.WV_FAILED, heading=_.IA_WIDEVINE_DRM):
-            inputstream.install_widevine(reinstall=True)
+        # if not response.ok and url == self._session.get('license_url') and gui.yes_no(_.WV_FAILED, heading=_.IA_WIDEVINE_DRM):
+        #     inputstream.install_widevine(reinstall=True)
 
 class Response(object):
     pass
