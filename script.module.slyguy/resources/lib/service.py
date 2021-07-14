@@ -20,10 +20,6 @@ from .constants import *
 session = Session(timeout=15)
 
 def _check_updates():
-    #Leia and below. Matrix and above use X-Kodi-Recheck-After
-    if KODI_VERSION > 18:
-        return
-
     _time = int(time())
     if _time < settings.getInt('_last_updates_check', 0) + UPDATES_CHECK_TIME:
         return
