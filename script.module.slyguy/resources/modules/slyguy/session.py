@@ -140,3 +140,5 @@ class Session(RawSession):
         with open(dst_path, 'wb') as f:
             for chunk in resp.iter_content(CHUNK_SIZE):
                 f.write(chunk)
+
+        return resp
