@@ -22,7 +22,7 @@ from . import iptv_manager
 
 TROLL_URL = 'https://'
 TROLL_NAME = 'Free-IPTV playlists not supported'
-TROLLS = ['free-iptv', 'Food4Monkeys', u'Free\u0097IPTV', 'Raspifan2020', '3eeynA4', 'omDl2kB']
+TROLLS = ['free-iptv', 'Food4Monkeys', u'Free\u0097IPTV', 'Raspifan2020', '3eeynA4', 'omDl2kB', 'omG1nwS', 'F R E E - I P T V']
 
 class AddonError(Error):
     pass
