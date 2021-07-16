@@ -1,5 +1,5 @@
 {
     "version":  3,
     "playlist": "plugin://$ID/?_=playlist&output=$FILE",
-    "epg":      "https://i.mjh.nz/Stirr/epg.xml.gz"
+    "epg":      "https://i.mjh.nz/Stirr/all.xml.gz"
 }
