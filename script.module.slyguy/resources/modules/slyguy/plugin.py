@@ -101,11 +101,10 @@ def plugin_callback():
                 log.exception(e)
                 path = None
 
-            folder = Folder()
+            folder = Folder(show_news=False)
             folder.add_item(
                 path = quote_plus(path or ''),
             )
-
             return folder
         return decorated_function
     return lambda func: decorator(func)
@@ -115,8 +114,6 @@ def merge():
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            folder = Folder()
-
             result = False
             try:
                 message = f(*args, **kwargs) or ''
@@ -129,12 +126,11 @@ def merge():
             else:
                 result = True
 
+            folder = Folder(show_news=False)
             folder.add_item(
                 path = quote_plus(u'{}{}'.format(int(result), message)),
             )
-
             return folder
-
         return decorated_function
     return lambda f: decorator(f)
 
@@ -526,7 +522,7 @@ class Item(gui.Item):
 
 #Plugin.Folder()
 class Folder(object):
-    def __init__(self, title=None, items=None, content='videos', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='dialog'):
+    def __init__(self, title=None, items=None, content='videos', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='dialog', show_news=True):
         self.title = title
         self.items = items or []
         self.content = content
@@ -537,6 +533,7 @@ class Folder(object):
         self.fanart = fanart or default_fanart
         self.no_items_label = no_items_label
         self.no_items_method = no_items_method
+        self.show_news = show_news
 
     def display(self):
         handle = _handle()
@@ -588,7 +585,8 @@ class Folder(object):
 
         xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=self.updateListing, cacheToDisc=self.cacheToDisc)
 
-        process_news()
+        if self.show_news:
+            process_news()
 
     def add_item(self, *args, **kwargs):
         position = kwargs.pop('_position', None)

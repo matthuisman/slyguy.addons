@@ -12,13 +12,13 @@ import arrow
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl, quote_plus
-from kodi_six import xbmc, xbmcvfs
+from kodi_six import xbmc
 from requests import ConnectionError
 
 from slyguy import settings, gui, inputstream
 from slyguy.log import log
 from slyguy.constants import *
-from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url
+from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin
 from slyguy.plugin import failed_playback
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
@@ -130,8 +130,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = add_url_args(url, _data_path=data_path, _headers=json.dumps(self._headers))
 
         log.debug('PLUGIN REQUEST: {}'.format(url))
-        dirs, files = xbmcvfs.listdir(url)
-
+        dirs, files = run_plugin(url, wait=True)
         if not files:
             raise Exception('No data returned from plugin')
 
@@ -156,7 +155,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = add_url_args(url, _data_path=data_path, _headers=json.dumps(self._headers))
 
         log.debug('PLUGIN MANIFEST MIDDLEWARE REQUEST: {}'.format(url))
-        dirs, files = xbmcvfs.listdir(url)
+        dirs, files = run_plugin(url, wait=True)
+        if not files:
+            raise Exception('No data returned from plugin')
 
         path = unquote_plus(files[0])
         split = path.split('|')
