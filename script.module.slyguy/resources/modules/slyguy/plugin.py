@@ -486,9 +486,6 @@ class Item(gui.Item):
         quality = kwargs.get(QUALITY_TAG, self.quality)
         is_live = ROUTE_LIVE_TAG in kwargs
 
-        if self.resume_from is None and is_live and KODI_VERSION > 17:
-            self.resume_from = LIVE_HEAD
-
         if quality is None:
             quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
             if quality == QUALITY_CUSTOM:
