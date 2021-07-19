@@ -4,6 +4,7 @@ from xml.sax.saxutils import escape
 
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream, mem_cache
+from slyguy.constants import LIVE_HEAD
 from slyguy.exceptions import PluginError
 
 from .api import API
@@ -194,6 +195,7 @@ def play(id, **kwargs):
         inputstream = ia,
         headers = headers,
         cookies = cookies,
+        resume_from = LIVE_HEAD, ## Need to seek to live over multi-periods
     )
 
 @plugin.route()
