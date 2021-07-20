@@ -52,20 +52,9 @@ def _get_url(url):
     return params['channel-id']
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
-    items = _process_rows(api.search(query))
-    folder.add_items(items)
-
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    return _process_rows(api.search(query)), False
 
 def _process_rows(rows, slug='', expand_media=False, season_name=''):
     items = []
@@ -155,7 +144,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
 
         if row['type'] in ('SeriesCard', 'contentLinkedImage'):
             item = plugin.Item(
-                label = row.get('title') or row.get('cName') or row['image']['altTag'],
+                label = row.get('title') or row['image']['altTag'] or row.get('cName'),
                 info = {'plot': row.get('lozengeText')},
                 art = {'thumb': IMAGE_URL.format(url=row['image']['url'], width=IMAGE_WIDTH)},
             )
