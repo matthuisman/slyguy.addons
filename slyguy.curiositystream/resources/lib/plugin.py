@@ -236,31 +236,16 @@ def featured(id=None, **kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, page=1, **kwargs):
-    page = int(page)
-
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-        userdata.set('search', query)
-
+@plugin.search()
+def search(query, page, **kwargs):
     data = api.filter_media('keyword', query, page=page)
     total_pages = int(data['paginator']['total_pages'])
 
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query, page=page, total_pages=total_pages))
-
+    items = []
     for row in data['data']:
-        item = _process_media(row)
-        folder.add_items([item])
+        items.append(_process_media(row))
 
-    if total_pages > page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, next_page=page+1),
-            path  = plugin.url_for(search, query=query, page=page+1),
-        )
-
-    return folder
+    return items, total_pages > page
 
 @plugin.route()
 def watchlist(page=1, **kwargs):
