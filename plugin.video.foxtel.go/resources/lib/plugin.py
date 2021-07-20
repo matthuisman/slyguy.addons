@@ -64,24 +64,20 @@ def user_catalog(catalog_name, **kwargs):
     return folder
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+@plugin.search()
+def search(query, page, **kwargs):
     data = api.search(query)
+    hide_locked = settings.getBool('hide_locked')
 
     #total_results = data['groupCount'] #pagination
     entitlements = _get_entitlements()
 
+    items = []
     for group in sorted(data['groups'], key=lambda d: d['score'], reverse=True):
         hitcount = int(group['hitCount'])
 
         for hit in group['hits']:
-            meta           = hit['metadata']
+            meta = hit['metadata']
 
             try:
                 channelTag = hit['relevantSchedules'][0]['feature']['channelTag']
@@ -92,59 +88,58 @@ def search(**kwargs):
                     channelTag = None
 
             meta['locked'] = entitlements and channelTag and channelTag not in entitlements
-
-            if meta['locked'] and settings.getBool('hide_locked'):
+            if meta['locked'] and hide_locked:
                 continue
 
-            season  = int(meta.get('seasonNumber', 0))
+            season = int(meta.get('seasonNumber', 0))
             episode = int(meta.get('episodeNumber', 0))
 
             if meta['contentType'].upper() == 'MOVIE':
-                folder.add_item(
+                items.append(plugin.Item(
                     label = _(_.LOCKED, label=meta['title']) if meta['locked'] else meta['title'],
                     info  = {
-                        'mediatype':   'movie',
-                        'plot':        meta.get('shortSynopsis'),
-                    #    'duration':    int(elem.get('duration') or 0),
-                        'year':        int(meta.get('yearOfRelease') or 0),
+                        'plot': meta.get('shortSynopsis'),
+                    #    'duration': int(elem.get('duration') or 0),
+                        'year': int(meta.get('yearOfRelease') or 0),
+                        'mediatype': 'movie',
                     },
                     art = {'thumb': 'https://images1.resources.foxtel.com.au/{}?w=400'.format(hit['images']['title']['portrait'][0]['URI']), 'fanart':'https://images1.resources.foxtel.com.au/{}?w=800'.format(hit['images']['title']['landscape'][0]['URI'])},
                     playable = True,
                     path = plugin.url_for(play_program, show_id=meta['titleId'], program_id=hit['id']),
-                )
+                ))
             elif hitcount <= 1 and season > 0 and episode > 0:
                 label = _(_.EPISODE_MENU_TITLE, title=meta['title'], season=season, episode=episode)
                 go_to_show = plugin.url_for(show, show_id=meta['titleId'])
 
-                folder.add_item(
+                items.append(plugin.Item(
                     label = _(_.LOCKED, label=label) if meta['locked'] else label,
                     info  = {
-                            'plot':        'S{} EP{} - {}\n\n{}'.format(season, episode, meta.get('episodeTitle', meta['title']), meta.get('shortSynopsis')),
-                            'episode':     episode,
-                            'season':      season,
+                            'plot': 'S{} EP{} - {}\n\n{}'.format(season, episode, meta.get('episodeTitle', meta['title']), meta.get('shortSynopsis')),
+                            'episode': episode,
+                            'season': season,
                             'tvshowtitle': meta['title'],
-                        #  'duration':    int(elem.get('duration') or 0),
-                            'year':        int(meta.get('yearOfRelease') or 0),
-                            'mediatype':   'episode',
+                        #  'duration': int(elem.get('duration') or 0),
+                            'year': int(meta.get('yearOfRelease') or 0),
+                            'mediatype': 'episode',
                     },
                     art = {'thumb': 'https://images1.resources.foxtel.com.au/{}?w=400'.format(hit['images']['episode']['landscape'][0]['URI']), 'fanart': 'https://images1.resources.foxtel.com.au/{}?w=800'.format(hit['images']['episode']['landscape'][0]['URI'])},
                     playable = True,
                     path = plugin.url_for(play_program, show_id=meta['titleId'], program_id=hit['id']),
                     context = [(_(_.GO_TO_SHOW_CONTEXT, title=meta['title']), "Container.Update({})".format(go_to_show))],
-                )
+                ))
             else:
-                folder.add_item(
+                items.append(plugin.Item(
                     label = _(_.LOCKED, label=meta['title']) if meta['locked'] else meta['title'],
                     info  = {
                         'tvshowtitle': meta['title'],
-                        'year':        int(meta.get('yearOfRelease') or 0),
+                        'year': int(meta.get('yearOfRelease') or 0),
+                        'mediatype': 'tvshow',
                     },
                     art = {'thumb': 'https://images1.resources.foxtel.com.au/{}?w=400'.format(hit['images']['default']['landscape'][0]['URI']), 'fanart': 'https://images1.resources.foxtel.com.au/{}?w=800'.format(hit['images']['default']['landscape'][0]['URI'])},
                     path = plugin.url_for(show, show_id=meta['titleId']),
-                )
+                ))
 
-
-    return folder
+    return items, False
 
 @plugin.route()
 def kids(**kwargs):
@@ -161,7 +156,7 @@ def _bundle(folder, mode=''):
 
         folder.add_item(
             label = block['name'],
-            path  = plugin.url_for(assets, title=block['name'], _filter=block['data'], menu=0),
+            path = plugin.url_for(assets, title=block['name'], _filter=block['data'], menu=0),
         )
 
 @plugin.route()
@@ -175,7 +170,7 @@ def assets(title, asset_type=ASSET_BOTH, _filter=None, menu=1, **kwargs):
         def _add_menu(menuitem):
             item = plugin.Item(
                 label = menuitem['text'],
-                path  = plugin.url_for(assets, title=title, asset_type=asset_type, _filter=menuitem['data'], menu=int(len(menuitem.get('menuItem', [])) > 0)),
+                path = plugin.url_for(assets, title=title, asset_type=asset_type, _filter=menuitem['data'], menu=int(len(menuitem.get('menuItem', [])) > 0)),
             )
 
             folder.add_items([item])
@@ -187,7 +182,7 @@ def assets(title, asset_type=ASSET_BOTH, _filter=None, menu=1, **kwargs):
             for row in data['content'].get('contentGroup', []):
                 item = plugin.Item(
                     label = row['name'],
-                    path  = plugin.url_for(assets, title=title, asset_type=asset_type, _filter=row['data'], menu=0),
+                    path = plugin.url_for(assets, title=title, asset_type=asset_type, _filter=row['data'], menu=0),
                 )
 
                 folder.add_items([item])
@@ -238,10 +233,10 @@ def _parse_movie(elem):
         label = _(_.LOCKED, label=elem['title']) if elem['locked'] else elem['title'],
         art   = {'thumb': _image(elem['image']), 'fanart': _image(elem.get('widescreenImage', elem['image']), 600)},
         info  = {
-            'mediatype': 'movie',
             'plot': elem.get('synopsis'),
             'duration': int(elem.get('duration') or 0),
             'year': int(elem.get('year') or 0),
+            'mediatype': 'movie',
         },
         path  = plugin.url_for(play, media_type=TYPE_VOD, id=elem.get('mediaId', elem['id'])),
         playable = True,
@@ -252,10 +247,10 @@ def _parse_show(elem):
         label = _(_.LOCKED, label=elem['title']) if elem['locked'] else elem['title'],
         art   = {'thumb': _image(elem['image']), 'fanart': _image(elem.get('widescreenImage', elem['image']), 600)},
         info  = {
-            'mediatype': 'tvshow',
             'plot': elem.get('synopsis'),
             'tvshowtitle': elem['title'],
             'year': int(elem.get('year') or 0),
+            'mediatype': 'tvshow',
         },
         path  = plugin.url_for(show, show_id=elem['showId']),
     )
@@ -316,8 +311,8 @@ def show(show_id, season=None, **kwargs):
             folder.add_item(
                 label =  _(_.SEASON, season_number=item['season']),
                 info = {
-                    'mediatype': 'season',
                     'tvshowtitle': data['title'],
+                    'mediatype': 'season',
                 },
                 path = plugin.url_for(show, show_id=show_id, season=item['season']),
                 art = {'thumb': _image(data['image'])},
