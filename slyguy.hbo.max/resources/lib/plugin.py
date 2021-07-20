@@ -235,22 +235,10 @@ def _image(url, size='360x203', protection=False):
     return url
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     data = api.search(query)
-    if data:
-        items = _process_rows(data['items'], 'search')
-        folder.add_items(items)
-
-    return folder
+    return _process_rows(data['items'], 'search') if data else [], False
 
 @plugin.route()
 def login(**kwargs):

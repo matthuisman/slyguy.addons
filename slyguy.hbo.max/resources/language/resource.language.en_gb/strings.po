@@ -25,7 +25,7 @@ msgstr ""
 
 msgctxt "#30006"
 msgid "Unable to find a video for this content\n"
-"Check your IP is in correct region"
+"Check your subscription is valid and your IP is in correct region"
 msgstr ""
 
 msgctxt "#30007"
