@@ -21,13 +21,13 @@ def home(**kwargs):
     if not plugin.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.SERIES, _bold=True),  path=plugin.url_for(series))
-        folder.add_item(label=_(_.MOVIES, _bold=True),  path=plugin.url_for(movies))
-        folder.add_item(label=_(_.KIDS, _bold=True),    path=plugin.url_for(kids))
-        folder.add_item(label=_(_.SEARCH, _bold=True),  path=plugin.url_for(search))
+        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(series))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
+        folder.add_item(label=_(_.KIDS, _bold=True), path=plugin.url_for(kids))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
-            folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
         folder.add_item(label=_.LOGOUT,  path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
@@ -57,18 +57,10 @@ def kids(**kwargs):
     return folder
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+@plugin.search()
+def search(query, page, **kwargs):
     rows = api.search(query)
-    folder.add_items(_parse_rows(rows))
-
-    return folder
+    return _parse_rows(rows), False
 
 @plugin.route()
 def seasons(series_id, **kwargs):
@@ -158,7 +150,6 @@ def _play_videos(videos):
         inputstream = inputstream.Widevine(license_url),
         path = url,
         headers = HEADERS,
-        use_proxy = True, # Needed for https://github.com/xbmc/inputstream.adaptive/pull/606
     )
 
     return item
@@ -170,10 +161,15 @@ def _parse_series(rows):
         videos = _get_videos(row.get('videos', []))
 
         item = plugin.Item(
-            label     = row['title'],
-            info      = {'sorttitle': row['title'], 'plot': row['description'], 'tvshowtitle': row['title']},
-            art       = _get_art(row.get('images', [])),
-            path      = plugin.url_for(seasons, series_id=row['id']),
+            label = row['title'],
+            info = {
+                'sorttitle': row['title'],
+                'plot': row['description'],
+                'tvshowtitle': row['title'],
+                'mediatype': 'tvshow',
+            },
+            art = _get_art(row.get('images', [])),
+            path = plugin.url_for(seasons, series_id=row['id']),
         )
 
         if videos['trailer']:
@@ -188,10 +184,15 @@ def _parse_seasons(rows, series_title, series_art):
 
     for row in rows:
         item = plugin.Item(
-            label     = _(_.SEASON_NUMBER, season_number=row['number']),
-            info      = {'plot': row['description'], 'tvshowtitle': series_title, 'season': row['number']},
-            art       = _get_art(row.get('images', []), series_art),
-            path      = plugin.url_for(episodes, season_id=row['id']),
+            label = _(_.SEASON_NUMBER, season_number=row['number']),
+            info = {
+                'plot': row['description'],
+                'tvshowtitle': series_title,
+                'season': row['number'],
+                'mediatype': 'season',
+            },
+            art = _get_art(row.get('images', []), series_art),
+            path = plugin.url_for(episodes, season_id=row['id']),
         )
 
         items.append(item)

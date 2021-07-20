@@ -85,6 +85,8 @@ class API(object):
                 'sort': 'alphabet',
                 'start': start,
                 'subscription_status': 'full',
+                'mode': 'paid',
+               # 'content_country': 'ZA',
             }
 
             params.update(_params)
@@ -182,7 +184,6 @@ class API(object):
          #   'content_country': 'ZA',
         }
 
-        ## Temp below use old api until Proxy quality player fixed (showmax blocks too quick calls)
         data = self._session.get('playback/play/{}'.format(video_id), params=params).json()
         if 'url' not in data:
             raise APIError(data.get('message'))
