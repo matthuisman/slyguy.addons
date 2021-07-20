@@ -24,7 +24,7 @@ ERROR_MAP = {
 class API(object):
     def new_session(self):
         self.logged_in = False
-        self._session  = Session(HEADERS, timeout=30)
+        self._session = Session(HEADERS, timeout=30)
         self._set_authentication(userdata.get('access_token'))
         self._set_languages()
 
@@ -43,7 +43,11 @@ class API(object):
         if not self.logged_in:
             return
 
-        data = jwt_data(userdata.get('access_token'))['context']
+        try:
+            data = jwt_data(userdata.get('access_token'))['context']
+        except Exception as e:
+            log.exception(e)
+            return
 
      #   self._maturity_rating = data['preferred_maturity_rating']['implied_maturity_rating']
      #   self._region = data['location']['country_code']
@@ -112,6 +116,9 @@ class API(object):
             raise
 
     def _check_errors(self, data, error=_.API_ERROR):
+        if not type(data) is dict:
+            return
+
         if data.get('errors'):
             error_msg = ERROR_MAP.get(data['errors'][0].get('code')) or data['errors'][0].get('description') or data['errors'][0].get('code')
             raise APIError(_(error, msg=error_msg))
@@ -119,6 +126,9 @@ class API(object):
         elif data.get('error'):
             error_msg = ERROR_MAP.get(data.get('error_code')) or data.get('error_description') or data.get('error_code')
             raise APIError(_(error, msg=error_msg))
+
+        elif data.get('status') == 400:
+            raise APIError(_(error, msg=data.get('message')))
 
     def _do_login(self, username, password):
         headers = {
@@ -168,57 +178,21 @@ class API(object):
 
         self._oauth_token(payload)
 
-    def profiles(self):
+    def _json_call(self, endpoint, variables=None):
         self._refresh_token()
+        params = {'variables': json.dumps(variables)} if variables else None
+        data = self._session.get(endpoint, params=params).json()
+        self._check_errors(data)
+        return data
 
+    def profiles(self):
+        self._refresh_token(force=True)
         endpoint = self.get_config()['services']['account']['client']['endpoints']['getUserProfiles']['href']
-        return self._session.get(endpoint).json()
-
-    def add_profile(self, name, kids=False, avatar=None):
-        payload = {
-            'attributes': {
-                'kidsModeEnabled': bool(kids),
-                'languagePreferences': {
-                    'appLanguage': self._app_language,
-                    'playbackLanguage': self._playback_language,
-                    'subtitleLanguage': self._subtitle_language,
-                },
-                'playbackSettings': {
-                    'autoplay': True,
-                },
-            },
-            'metadata': None,
-            'profileName': name,
-        }
-
-        if avatar:
-            payload['attributes']['avatar'] = {
-                'id': avatar,
-                'userSelected': False,
-            }
-
-        endpoint = self.get_config()['services']['account']['client']['endpoints']['createUserProfile']['href']
-        return self._session.post(endpoint, json=payload).json()
-
-    def delete_profile(self, profile):
-        endpoint = self.get_config()['services']['account']['client']['endpoints']['deleteUserProfile']['href'].format(profileId=profile['profileId'])
-        return self._session.delete(endpoint)
+        return self._json_call(endpoint)
 
     def active_profile(self):
-        self._refresh_token()
-
         endpoint = self.get_config()['services']['account']['client']['endpoints']['getActiveUserProfile']['href']
-        return self._session.get(endpoint).json()
-
-    def update_profile(self, profile):
-        self._refresh_token()
-
-        endpoint = self.get_config()['services']['account']['client']['endpoints']['updateUserProfile']['href'].format(profileId=profile['profileId'])
-        if self._session.patch(endpoint, json=profile).ok:
-            self._refresh_token(force=True)
-            return True
-        else:
-            return False
+        return self._json_call(endpoint)
 
     def set_profile(self, profile, pin=None):
         self._refresh_token()
@@ -244,8 +218,6 @@ class API(object):
         userdata.set('profile_language', profile['attributes']['languagePreferences']['appLanguage'])
 
     def search(self, query, page=1, page_size=PAGE_SIZE):
-        self._refresh_token()
-
         variables = {
             'preferredLanguage': [self._app_language],
             'index': 'disney_global',
@@ -256,11 +228,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['searchPersisted']['href'].format(queryId='core/disneysearch')
-
-        data = self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()
-        self._check_errors(data)
-
-        return data['data']['disneysearch']
+        return self._json_call(endpoint, variables)['data']['disneysearch']
 
     def avatar_by_id(self, ids):
         variables = {
@@ -269,7 +237,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['searchPersisted']['href'].format(queryId='core/AvatarByAvatarId')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['AvatarByAvatarId']
+        return self._json_call(endpoint, variables)['data']['AvatarByAvatarId']
 
     def video_bundle(self, family_id):
         variables = {
@@ -279,7 +247,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/DmcVideoBundle')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['DmcVideoBundle']
+        return self._json_call(endpoint, variables)['data']['DmcVideoBundle']
 
     def extras(self, family_id):
         variables = {
@@ -291,23 +259,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/DmcExtras')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['DmcExtras']
-
-    def continue_watching(self):
-        set_id = CONTINUE_WATCHING_SET_ID
-        set_type = CONTINUE_WATCHING_SET_TYPE
-        data = self.set_by_id(set_id, set_type, page_size=999)
-
-        continue_watching = {}
-        for row in data['items']:
-            if row['meta']['bookmarkData']:
-                play_from = row['meta']['bookmarkData']['playhead']
-            else:
-                play_from = 0
-
-            continue_watching[row['contentId']] = play_from
-
-        return continue_watching
+        return self._json_call(endpoint, variables)['data']['DmcExtras']
 
     def series_bundle(self, series_id, page=1, page_size=PAGE_SIZE):
         variables = {
@@ -319,7 +271,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/DmcSeriesBundle')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['DmcSeriesBundle']
+        return self._json_call(endpoint, variables)['data']['DmcSeriesBundle']
 
     def episodes(self, season_ids, page=1, page_size=PAGE_SIZE_EPISODES):
         variables = {
@@ -331,7 +283,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/DmcEpisodes')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['DmcEpisodes']
+        return self._json_call(endpoint, variables)['data']['DmcEpisodes']
 
     def collection_by_slug(self, slug, content_class):
         variables = {
@@ -343,7 +295,7 @@ class API(object):
 
         #endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='disney/CollectionBySlug')
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/CompleteCollectionBySlug')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['CompleteCollectionBySlug']
+        return self._json_call(endpoint, variables)['data']['CompleteCollectionBySlug']
 
     def set_by_id(self, set_id, set_type, page=1, page_size=PAGE_SIZE):
         variables = {
@@ -357,23 +309,25 @@ class API(object):
 
         #endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='disney/SetBySetId')
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/SetBySetId')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['SetBySetId']
+        return self._json_call(endpoint, variables)['data']['SetBySetId']
 
     def add_watchlist(self, content_id):
         variables = {
             'preferredLanguage': [self._app_language],
             'contentIds': content_id,
         }
+
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/AddToWatchlist')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['AddToWatchlist']
+        return self._json_call(endpoint, variables)['data']['AddToWatchlist']
 
     def delete_watchlist(self, content_id):
         variables = {
             'preferredLanguage': [self._app_language],
             'contentIds': content_id,
         }
+
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/DeleteFromWatchlist')
-        data = self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['DeleteFromWatchlist']
+        data = self._json_call(endpoint, variables)['data']['DeleteFromWatchlist']
         xbmc.sleep(500)
         return data
 
@@ -385,7 +339,7 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/UpNext')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['UpNext']
+        return self._json_call(endpoint, variables)['data']['UpNext']
 
     def videos(self, content_id):
         variables = {
@@ -395,11 +349,9 @@ class API(object):
         }
 
         endpoint = self.get_config()['services']['content']['client']['endpoints']['dmcVideos']['href'].format(queryId='core/DmcVideos')
-        return self._session.get(endpoint, params={'variables': json.dumps(variables)}).json()['data']['DmcVideos']
+        return self._json_call(endpoint, variables)['data']['DmcVideos']
 
     def update_resume(self, media_id, fguid, playback_time):
-        self._refresh_token()
-
         payload = [{
             "server": {
                 "fguid": fguid,
@@ -415,6 +367,7 @@ class API(object):
             },
         }]
 
+        self._refresh_token()
         endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['postEvent']['href']
         return self._session.post(endpoint, json=payload).status_code
 
@@ -445,6 +398,22 @@ class API(object):
         self._check_errors(playback_data)
 
         return playback_data
+
+    def continue_watching(self):
+        set_id = CONTINUE_WATCHING_SET_ID
+        set_type = CONTINUE_WATCHING_SET_TYPE
+        data = self.set_by_id(set_id, set_type, page_size=999)
+
+        continue_watching = {}
+        for row in data['items']:
+            if row['meta']['bookmarkData']:
+                play_from = row['meta']['bookmarkData']['playhead']
+            else:
+                play_from = 0
+
+            continue_watching[row['contentId']] = play_from
+
+        return continue_watching
 
     def logout(self):
         userdata.delete('access_token')

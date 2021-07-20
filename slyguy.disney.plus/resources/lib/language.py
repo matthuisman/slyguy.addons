@@ -7,7 +7,7 @@ class Language(BaseLanguage):
     MOVIES                   = 30004
     SERIES                   = 30005
     ORIGINALS                = 30006
-    SEARCH                   = 30007
+
     HUBS                     = 30008
     WV_SECURE                = 30009
     SUGGESTED                = 30010

@@ -26,9 +26,7 @@ msgctxt "#30006"
 msgid "Originals"
 msgstr ""
 
-msgctxt "#30007"
-msgid "Search"
-msgstr ""
+
 
 msgctxt "#30008"
 msgid "Hubs"
