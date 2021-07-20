@@ -303,31 +303,25 @@ def live_tv(**kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
+@plugin.search()
+def search(query, page, **kwargs):
+    items = []
 
     for row in api.search(query):
         if row['term_type'] == 'show':
-            folder.add_item(
+            items.append(plugin.Item(
                 label = row['title'],
                 info = {
                     'mediatype': 'tvshow',
                 },
                 art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
                 path = plugin.url_for(show, show_id=row['show_id']),
-            )
+            ))
 
         elif row['term_type'] == 'movie':
             data = row['videoList']['itemList'][0]
 
-            folder.add_item(
+            items.append(plugin.Item(
                 label = data['label'].strip() or data['title'].strip(),
                 info = {
                     'plot': data.get('shortDescription', data['description']),
@@ -339,9 +333,9 @@ def search(query=None, **kwargs):
                 art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
                 path = plugin.url_for(play, video_id=data['contentId']),
                 playable = True,
-            )
+            ))
 
-    return folder
+    return items, False
 
 @plugin.route()
 def login(**kwargs):
