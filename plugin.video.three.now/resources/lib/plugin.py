@@ -171,18 +171,9 @@ def play_channel(channel, **kwargs):
             )
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-    items = _parse_shows(api.search(query))
-    folder.add_items(items)
-
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    return _parse_shows(api.search(query)), False
 
 @plugin.route()
 def live(**kwargs):
