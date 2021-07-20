@@ -7,9 +7,9 @@ PRODUCT_ID  = 'c53b19ce-62c0-441e-ad29-ecba2dcdb199'
 PLATFORM_ID = '32faad53-5e7b-4cc0-9f33-000092e85950'
 DEVICE_TYPE = 'Web'
 
-DEFAULT_COUNTRY   = 'ZA'
-DEFAULT_PACKAGE   = 'PREMIUM'
-EPG_URLS          = {
+DEFAULT_COUNTRY = 'ZA'
+DEFAULT_PACKAGE = 'PREMIUM'
+EPG_URLS = {
     'ZA': 'https://i.mjh.nz/DStv/za.xml.gz',
 }
 

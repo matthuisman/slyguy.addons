@@ -27,17 +27,17 @@ def home(**kwargs):
     folder = plugin.Folder()
 
     if not plugin.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),   path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
-        folder.add_item(label=_(_.SERIES, _bold=True),  path=plugin.url_for(content, title=_.SERIES, tags='TV Shows'))
-        folder.add_item(label=_(_.MOVIES, _bold=True),  path=plugin.url_for(content, title=_.MOVIES, tags='Movies'))
-        folder.add_item(label=_(_.SPORT, _bold=True),   path=plugin.url_for(content, title=_.SPORT, tags='Sport'))
-        folder.add_item(label=_(_.KIDS, _bold=True),    path=plugin.url_for(content, title=_.KIDS, tags='Kids'))
-        folder.add_item(label=_(_.SEARCH, _bold=True),  path=plugin.url_for(search))
+        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(content, title=_.SERIES, tags='TV Shows'))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(content, title=_.MOVIES, tags='Movies'))
+        folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(content, title=_.SPORT, tags='Sport'))
+        folder.add_item(label=_(_.KIDS, _bold=True), path=plugin.url_for(content, title=_.KIDS, tags='Kids'))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
-            folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
         folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': userdata.get('avatar')}, info={'plot': userdata.get('profile_name')}, _kiosk=False, bookmark=False)
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
@@ -71,11 +71,11 @@ def live_tv(**kwargs):
         plot = plot.strip(u'\n')
 
         folder.add_item(
-            label     = _(_.CHANNEL, channel_number=channel['number'], channel_name=channel['name']),
-            info      = {'plot': plot or channel['description']},
-            art       = {'thumb': channel['channelLogoPaths'].get('XLARGE')},
-            path      = plugin.url_for(play_channel, id=channel['id'], _is_live=True),
-            playable  = True
+            label = _(_.CHANNEL, channel_number=channel['number'], channel_name=channel['name']),
+            info = {'plot': plot or channel['description']},
+            art = {'thumb': channel['channelLogoPaths'].get('XLARGE')},
+            path = plugin.url_for(play_channel, id=channel['id'], _is_live=True),
+            playable = True
         )
 
     return folder
@@ -105,7 +105,7 @@ def content(title, tags, sort='az', category=None, page=0, **kwargs):
 
                 folder.add_item(
                     label = row['name'],
-                    path  = plugin.url_for(content, title=title, tags=tags, sort=sort, category=category, page=page),
+                    path = plugin.url_for(content, title=title, tags=tags, sort=sort, category=category, page=page),
                 )
 
     if not folder.items:
@@ -115,7 +115,7 @@ def content(title, tags, sort='az', category=None, page=0, **kwargs):
         if data['total'] > ((data['pageSize'] * data['page']) + data['count']):
             folder.add_item(
                 label = _(_.NEXT_PAGE, page=page+2, _bold=True),
-                path  = plugin.url_for(content, title=title, tags=tags, sort=sort, category=category, page=page+1),
+                path = plugin.url_for(content, title=title, tags=tags, sort=sort, category=category, page=page+1),
             )
 
     return folder
@@ -153,9 +153,10 @@ def _process_program(program):
         label = program['title'],
         art   = {'thumb': _get_image(program['images']), 'fanart': _get_image(program['images'], 'fanart')},
         info  = {
-            'plot':  program['synopsis'],
+            'plot': program['synopsis'],
             'genre': program['genres'],
-            #'mediatype': 'tvshow',
+            'tvshowtitle': program['title'],
+            'mediatype': 'tvshow',
         },
         path  = plugin.url_for(list_seasons, id=program['id']),
     )
@@ -164,12 +165,12 @@ def _process_video(video):
     return plugin.Item(
         label = video['title'],
         info  = {
-            'plot':      video['synopsis'],
-            'year':      video['yearOfRelease'],
-            'duration':  video['durationInSeconds'],
-            'season':    video['seasonNumber'],
-            'episode':   video['seasonEpisode'],
-            'genre':     video['genres'],
+            'plot': video['synopsis'],
+            'year': video['yearOfRelease'],
+            'duration': video['durationInSeconds'],
+            'season': video['seasonNumber'],
+            'episode': video['seasonEpisode'],
+            'genre': video['genres'],
             'dateadded': video['airDate'],
             'tvshowtitle': video['displayTitle'],
             'mediatype': 'episode' if video['seasonEpisode'] else 'video', #movie
@@ -187,7 +188,12 @@ def list_seasons(id, **kwargs):
     for row in series['seasons']:
         folder.add_item(
             label = 'Season {}'.format(row['seasonNumber']),
-            info  = {'plot': row.get('synopsis', '')},
+            info  = {
+                'plot': row.get('synopsis', ''),
+                'tvshowtitle': series['title'],
+                'season': row['seasonNumber'],
+                'mediatype': 'season',
+            },
             art   = {'thumb': _get_image(series['images']), 'fanart': _get_image(series['images'], 'fanart')},
             path  = plugin.url_for(episodes, series=id, season=row['seasonNumber']),
         )
@@ -216,15 +222,9 @@ def episodes(series, season, **kwargs):
     return folder
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
+    items = []
     for row in api.search(query):
         item = plugin.Item(
             label = row['title'],
@@ -240,9 +240,9 @@ def search(**kwargs):
         else:
             continue
 
-        folder.add_items(item)
+        items.append(item)
 
-    return folder
+    return items, False
 
 @plugin.route()
 def login(**kwargs):
@@ -254,9 +254,8 @@ def login(**kwargs):
 
 def _device_link():
     monitor = xbmc.Monitor()
-  #  device_id, code = api.device_code()
     timeout = 600
-    
+
     with api.device_login() as login_progress:
         with gui.progress(_(_.DEVICE_LINK_STEPS, code=login_progress.code), heading=_.DEVICE_LINK) as progress:
             for i in range(timeout):
@@ -277,7 +276,6 @@ def select_profile(**kwargs):
 def _select_profile():
     options = []
     values  = []
-    can_delete = []
     default = -1
 
     for index, profile in enumerate(api.profiles()):
@@ -289,23 +287,11 @@ def _select_profile():
             userdata.set('avatar', profile['avatar']['uri'])
             userdata.set('profile', profile['alias'])
 
-        elif profile['id'] and profile['canDelete']:
-            can_delete.append(profile)
-
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
     if index < 0:
         return
 
-    selected = values[index]
-
-    if selected == '_delete':
-        pass
-        # _delete_profile(can_delete)
-    elif selected == '_add':
-        pass
-        # _add_profile(taken_names=[x['profileName'] for x in profiles], taken_avatars=[avatars[x] for x in avatars])
-    else:
-        _set_profile(selected)
+    _set_profile(values[index])
 
 def _set_profile(profile):
     userdata.set('profile', profile['id'])
@@ -332,8 +318,8 @@ def play_asset(stream_url, content_id, **kwargs):
 
     return plugin.Item(
         inputstream = inputstream.Widevine(license_url),
-        headers     = headers,
-        path        = url,
+        headers = headers,
+        path = url,
     )
 
 @plugin.route()
@@ -343,8 +329,8 @@ def play_video(id, **kwargs):
 
     return plugin.Item(
         inputstream = inputstream.Widevine(license_url),
-        headers     = headers,
-        path        = url,
+        headers = headers,
+        path = url,
     )
 
 @plugin.route()
@@ -354,8 +340,8 @@ def play_channel(id, **kwargs):
 
     return plugin.Item(
         inputstream = inputstream.Widevine(license_url, properties={'manifest_update_parameter': 'full'}),
-        headers     = headers,
-        path        = url,
+        headers = headers,
+        path = url,
     )
 
 @plugin.route()
@@ -396,15 +382,15 @@ def epg(output, **kwargs):
         def process_data(id, data):
             program_count = 0
             for event in data:
-                channel   = event['channelTag']
-                start     = arrow.get(event['startDateTime']).to('utc')
-                stop      = arrow.get(event['endDateTime']).to('utc')
-                title     = event.get('title')
-                subtitle  = event.get('episodeTitle')
-                series    = event.get('seasonNumber')
-                episode   = event.get('episodeNumber')
-                desc      = event.get('longSynopsis')
-                icon      = event.get('thumbnailImagePaths', {}).get('THUMB')
+                channel = event['channelTag']
+                start = arrow.get(event['startDateTime']).to('utc')
+                stop = arrow.get(event['endDateTime']).to('utc')
+                title = event.get('title')
+                subtitle = event.get('episodeTitle')
+                series = event.get('seasonNumber')
+                episode = event.get('episodeNumber')
+                desc = event.get('longSynopsis')
+                icon = event.get('thumbnailImagePaths', {}).get('THUMB')
 
                 icon = u'<icon src="{}"/>'.format(icon) if icon else ''
                 episode = u'<episode-num system="onscreen">S{}E{}</episode-num>'.format(series, episode) if series and episode else ''
