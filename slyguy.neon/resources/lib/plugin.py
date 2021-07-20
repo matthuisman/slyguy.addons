@@ -67,7 +67,6 @@ def _select_profile():
 
     options = []
     values  = []
-    can_delete = []
     default = -1
 
     for index, profile in enumerate(profiles):
@@ -77,28 +76,11 @@ def _select_profile():
         if profile['id'] == userdata.get('profile_id'):
             default = index
 
-        elif not profile['isDefault']:
-            can_delete.append(profile)
-
-    # options.append(plugin.Item(label=_(_.ADD_PROFILE, _bold=True)))
-    # values.append('_add')
-
-    # if can_delete:
-    #     options.append(plugin.Item(label=_(_.DELETE_PROFILE, _bold=True)))
-    #     values.append('_delete')
-
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
     if index < 0:
         return
 
-    selected = values[index]
-
-    # if selected == '_delete':
-    #     _delete_profile(can_delete)
-    # elif selected == '_add':
-    #     _add_profile(taken_names=[x['name'].lower() for x in profiles], taken_avatars=[x['iconImage']['url'] for x in profiles])
-    # else:
-    _set_profile(selected)
+    _set_profile(values[index])
 
 def _set_profile(profile, notify=True):
     api.set_profile(profile['id'])
@@ -179,7 +161,7 @@ def _parse_show(row):
         path  = plugin.url_for(show, path=row['contentItem']['path']),
         info  = {
             'plot': row['contentItem']['description'],
-        #     'mediatype': 'tvshow',
+            'mediatype': 'tvshow',
         },
         art = {
             'thumb': row['image'],
@@ -198,6 +180,7 @@ def show(path, **kwargs):
             path  = plugin.url_for(episodes, path=show['path'], season_id=season['id']),
             info = {
                 'plot': season['description'],
+                'mediatype': 'season',
             },
             art = {
                 'thumb': show['tile']['image'],
@@ -221,19 +204,10 @@ def episodes(path, season_id, **kwargs):
     return folder
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     rows = api.search(query)
-    folder.add_items(_parse_content(rows))
-
-    return folder
+    return _parse_content(rows), False
 
 def _parse_episodes(show, season):
     items = []
