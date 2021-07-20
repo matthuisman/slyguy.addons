@@ -20,14 +20,14 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
-    folder.add_item(label=_(_.FEATURED, _bold=True),    path=plugin.url_for(featured))
-    folder.add_item(label=_(_.SHOWS, _bold=True),  path=plugin.url_for(shows))
-    folder.add_item(label=_(_.CATEGORIES, _bold=True),  path=plugin.url_for(categories))
+    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+    folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
     if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -66,16 +66,8 @@ def featured(selected=None, **kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     rows = []
     for row in api.shows():
         if not row['tv_show'].strip():
@@ -84,10 +76,7 @@ def search(query=None, **kwargs):
         if query.lower() in row['tv_show'].lower():
             rows.append(row)
 
-    items = _parse_shows(rows)
-    folder.add_items(items)
-
-    return folder
+    return _parse_shows(rows), False
 
 @plugin.route()
 def categories(category=None, **kwargs):
