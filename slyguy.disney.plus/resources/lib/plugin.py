@@ -595,32 +595,11 @@ def extras(family_id, fanart=None, **kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, page=1, **kwargs):
-    page  = int(page)
-
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     data = api.search(query, page=page)
-
     hits = [x['hit'] for x in data['hits']] if data['resultsType'] == 'real' else []
-    items = _process_rows(hits)
-    folder.add_items(items)
-
-    if (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(search, query=query, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return _process_rows(hits), (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
 
 @plugin.route()
 @plugin.login_required()
