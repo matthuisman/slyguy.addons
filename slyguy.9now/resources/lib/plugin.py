@@ -16,14 +16,14 @@ api = API()
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.FEATURED, _bold=True),    path=plugin.url_for(featured))
-    folder.add_item(label=_(_.SHOWS, _bold=True),       path=plugin.url_for(shows))
-    folder.add_item(label=_(_.CATEGORIES, _bold=True),  path=plugin.url_for(categories))
-    folder.add_item(label=_(_.SEARCH, _bold=True),      path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True),     path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+    folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
+    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
     if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -233,28 +233,17 @@ def categories(category=None, **kwargs):
     return folder
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
-    rows = []
+@plugin.search()
+def search(query, page, **kwargs):
+    items = []
     for row in api.shows():
         if not row['name'].strip():
             continue
 
         if query.lower() in row['name'].lower():
-            rows.append(row)
+            items.append(_parse_show(row))
 
-    for row in rows:
-        folder.add_items(_parse_show(row))
-
-    return folder
+    return items, False
 
 @plugin.route()
 def live_events(**kwargs):
@@ -265,7 +254,7 @@ def live_events(**kwargs):
 
     for row in data['events']:
         start = arrow.get(row['startDate']).to('local')
-        end   = arrow.get(row['endDate']).to('local')
+        end = arrow.get(row['endDate']).to('local')
 
         plot = row['subtitle']
         if now > start and now < end:
@@ -276,9 +265,9 @@ def live_events(**kwargs):
 
         folder.add_item(
             label = label,
-            info  = {'plot': plot},
-            art   = {'thumb': row['image']['sizes']['w768'], 'fanart': row['image']['sizes']['w1920']},
-            path  =  plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=row['type'] == 'live-event'),
+            info = {'plot': plot},
+            art = {'thumb': row['image']['sizes']['w768'], 'fanart': row['image']['sizes']['w1920']},
+            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=row['type'] == 'live-event'),
             playable = True,
         )
 
@@ -296,7 +285,7 @@ def live_tv(**kwargs):
         listings = row.get('listings', [])
         for listing in listings:
             start = arrow.get(listing['startTime']).to('utc')
-            stop  = arrow.get(listing['endTime']).to('utc')
+            stop = arrow.get(listing['endTime']).to('utc')
 
             if (now > start and now < stop) or start > now:
                 if len(listings) > 1:
@@ -306,16 +295,16 @@ def live_tv(**kwargs):
 
         folder.add_item(
             label = row['name'],
-            info  = {'plot': plot},
-            art   = {'thumb': row['image']['sizes']['w768']},
-            path  = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=True),
+            info = {'plot': plot},
+            art = {'thumb': row['image']['sizes']['w768']},
+            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=True),
             playable = True,
         )
 
     if data.get('events'):
         folder.add_item(
             label = _(_.LIVE_EVENTS, _bold=True),
-            info  = {'plot': _(_.EVENT_COUNT, count=len(data['events']), _bold=True)},
+            info = {'plot': _(_.EVENT_COUNT, count=len(data['events']), _bold=True)},
             path = plugin.url_for(live_events),
             specialsort = 'bottom',
         )
@@ -324,20 +313,8 @@ def live_tv(**kwargs):
 
 @plugin.route()
 def play(reference, **kwargs):
-    original_reference = reference
-    if reference.endswith('-ssai'):
-        reference = reference[:-5]
-
-    try:
-        item = api.get_brightcove_src(reference)
-    except:
-        if original_reference.endswith('-ssai'):
-            item = api.get_brightcove_src(original_reference)
-        else:
-            raise
-
+    item = api.get_brightcove_src(reference)
     item.headers = HEADERS
-
     if ROUTE_LIVE_TAG in kwargs and item.inputstream:
         item.inputstream.live = True
 
@@ -366,7 +343,7 @@ def _parse_episode(row):
 
     return plugin.Item(
         label = row['name'],
-        art   = {'thumb': row['image']['sizes']['w768']},
+        art = {'thumb': row['image']['sizes']['w768']},
         info = {
             'plot': row['description'],
             'season': season,
