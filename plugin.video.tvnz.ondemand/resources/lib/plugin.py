@@ -264,46 +264,33 @@ def _get_image(data, params='?width=400'):
     return data['src'] + params if data else None
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
+    items = []
     for row in api.search(query):
         if row['type'] == 'show':
-            item = _process_show(row)
+            items.append(_process_show(row))
         elif row['type'] == 'category':
             slug = row['page']['href'].split('/')[-1]
             if slug == 'shows':
                 slug = 'all'
 
-            item = plugin.Item(
+            items.append(plugin.Item(
                 label = row['title'],
                 info = {'plot': row['searchDescription'] or row['synopsis']},
                 art = {'thumb': _get_image(row['tileImage'])},
                 path = plugin.url_for(category, slug=slug),
-            )
+            ))
         elif row['type'] == 'channel':
-            item = plugin.Item(
+            items.append(plugin.Item(
                 label = row['title'],
                 info = {'plot': row['searchDescription'] or row['synopsis']},
                 art = {'thumb': _get_image(row['tileImage'])},
                 path = plugin.url_for(play, channel=row['page']['href'].split('/')[-1], _is_live=True),
                 playable = True,
-            )
-        else:
-            continue
+            ))
 
-        folder.add_items(item)
-
-    if not folder.items:
-        return gui.ok(_.NO_RESULTS, heading=folder.title)
-
-    return folder
+    return items, False
 
 @plugin.route()
 def live_tv(**kwargs):
