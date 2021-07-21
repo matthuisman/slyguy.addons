@@ -306,7 +306,16 @@ def component(slug, id, label, expand_media=0, episodes=0, fanart=None, **kwargs
 def play_vod(slug, **kwargs):
     data = api.content(slug)
 
-    url = data['items'][1]['items'][0]['videoUrl']
+    url = None
+    for row in data.get('items', []):
+        for row2 in row.get('items', []):
+            if row2.get('videoUrl'):
+                url = row2['videoUrl']
+                break
+
+    if not url:
+        raise PluginError(_.NO_VIDEO)
+
     parsed = urlparse(url)
     params = dict(parse_qsl(parsed.query))
 

@@ -18,5 +18,6 @@ class Language(BaseLanguage):
     FLATTEN_SEASONS   = 30015
     SUGGESTED         = 30016
     OLYMPICS          = 30017
+    NO_VIDEO          = 30018
 
 _ = Language()

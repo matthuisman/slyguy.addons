@@ -69,6 +69,10 @@ msgctxt "#30017"
 msgid "Olympics"
 msgstr ""
 
+msgctxt "#30018"
+msgid "No video found for this content"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
