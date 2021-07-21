@@ -26,7 +26,7 @@ def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, slug='home'))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(content, slug=LIVE_TV_SLUG, label=_.LIVE_TV, expand_media=1))
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
     folder.add_item(label=_(_.OLYMPICS, _bold=True), path=plugin.url_for(content, slug='olympics'))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(content, slug='movies'))
@@ -201,6 +201,16 @@ def shows(**kwargs):
     return folder
 
 @plugin.route()
+def live_tv(**kwargs):
+    folder = plugin.Folder(_.LIVE_TV)
+
+    rows = _get_live_channels()
+    items = _process_rows(rows, LIVE_TV_SLUG)
+    folder.add_items(items)
+
+    return folder
+
+@plugin.route()
 def content(slug, label=None, expand_media=0, **kwargs):
     data = api.content(slug)
 
@@ -329,59 +339,53 @@ def _play(account, reference, live=False):
 
     return item
 
+def _get_live_channels():
+    data = api.content(LIVE_TV_SLUG)
+
+    for section in data['items']:
+        if section['type'] == 'channelShelf' and section['cName'] == 'Live':
+            return section.get('mediaItems', [])
+
+    return []
+
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    data = api.content(LIVE_TV_SLUG)
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
-        for section in data['items']:
-            if section['type'] != 'channelShelf':
-                continue
-
-            for row in section['mediaItems']:
-                f.write(u'\n#EXTINF:-1 tvg-chno="{chno}" tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                    chno=row['channelId'], id=row['channelId'], name=row['name'], logo=IMAGE_URL.format(url=row['channelLogo']['url'], width=IMAGE_WIDTH),
-                        url=plugin.url_for(play_channel, slug=_get_url(row['contentLink']['url']), _is_live=True),
-                ))
+        for channel in _get_live_channels():
+            f.write(u'\n#EXTINF:-1 tvg-chno="{chno}" tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
+                chno=channel['channelId'], id=channel['channelId'], name=channel['name'], logo=IMAGE_URL.format(url=channel['channelLogo']['url'], width=IMAGE_WIDTH),
+                    url=plugin.url_for(play_channel, slug=_get_url(channel['contentLink']['url']), _is_live=True),
+            ))
 
 @plugin.route()
 @plugin.merge()
 def epg(output, **kwargs):
-    data = api.content(LIVE_TV_SLUG)
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
-        for section in data['items']:
-            if section['type'] != 'channelShelf':
-                continue
+        for channel in _get_live_channels():
+            f.write(u'<channel id="{id}"></channel>'.format(id=channel['channelId']))
+            for epg in channel['schedules']['items']:
+                start = arrow.get(epg['startTime'])
+                stop  = arrow.get(epg['endTime'])
 
-            for channel in section['mediaItems']:
-                f.write(u'<channel id="{id}"></channel>'.format(id=channel['channelId']))
+                icon = u'<icon src="{}"/>'.format(escape(IMAGE_URL.format(url=epg['mediaImage']['url'], width=IMAGE_WIDTH))) if epg['mediaImage'].get('url') else ''
+                desc = u'<desc>{}</desc>'.format(escape(epg['synopsis'])) if epg['synopsis'] else ''
+                genre = u'<category lang="en">{}</category>'.format(escape(epg['genre'])) if epg['genre'] else ''
 
-            for channel in section['mediaItems']:
-                for epg in channel['schedules']['items']:
-                    start = arrow.get(epg['startTime'])
-                    stop  = arrow.get(epg['endTime'])
+                subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle']).strip()) if epg['subTitle'] else ''
+                if not subtitle:
+                    subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle2']).strip()) if epg['subTitle2'] else ''
 
-                    icon = u'<icon src="{}"/>'.format(escape(IMAGE_URL.format(url=epg['mediaImage']['url'], width=IMAGE_WIDTH))) if epg['mediaImage'].get('url') else ''
-                    desc = u'<desc>{}</desc>'.format(escape(epg['synopsis'])) if epg['synopsis'] else ''
-                    genre = u'<category lang="en">{}</category>'.format(escape(epg['genre'])) if epg['genre'] else ''
-
-                    subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle']).strip()) if epg['subTitle'] else ''
-                    if not subtitle:
-                        subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle2']).strip()) if epg['subTitle2'] else ''
-
-                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{desc}{icon}{genre}</programme>'.format(
-                        id=channel['channelId'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg['title']), 
-                        subtitle=subtitle, desc=desc, icon=icon, genre=genre,
-                    ))
+                f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{desc}{icon}{genre}</programme>'.format(
+                    id=channel['channelId'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg['title']), 
+                    subtitle=subtitle, desc=desc, icon=icon, genre=genre,
+                ))
 
         f.write(u'</tv>')
-
 
 @plugin.route()
 def login(**kwargs):
