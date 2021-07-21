@@ -65,6 +65,10 @@ msgctxt "#30016"
 msgid "Suggested"
 msgstr ""
 
+msgctxt "#30017"
+msgid "Olympics"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

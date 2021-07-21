@@ -27,6 +27,7 @@ def home(**kwargs):
 
     folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, slug='home'))
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(content, slug=LIVE_TV_SLUG, label=_.LIVE_TV, expand_media=1))
+    folder.add_item(label=_(_.OLYMPICS, _bold=True), path=plugin.url_for(content, slug='olympics'))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(content, slug='movies'))
     folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(content, slug='sport'))
@@ -171,7 +172,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
                     if count == 0:
                         fanart = IMAGE_URL.format(url=row['channelLogo']['url'], width=1000)
                         image = IMAGE_URL.format(url=epg['mediaImage']['url'], width=IMAGE_WIDTH)
-                    plot += _(u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['title']), _bold=count==0)
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['title'])
                     count += 1
 
             item = plugin.Item(

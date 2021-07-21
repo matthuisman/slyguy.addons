@@ -17,5 +17,6 @@ class Language(BaseLanguage):
     HIDE_SUGGESTED    = 30014
     FLATTEN_SEASONS   = 30015
     SUGGESTED         = 30016
+    OLYMPICS          = 30017
 
 _ = Language()
