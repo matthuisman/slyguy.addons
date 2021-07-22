@@ -3,7 +3,6 @@ import codecs
 import arrow
 from kodi_six import xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.constants import ROUTE_LIVE_TAG
 from slyguy.util import pthms_to_seconds
 
 from .api import API
@@ -97,21 +96,10 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
-def search(query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     results = api.search(query)
-    items = process_rows(results)
-    folder.add_items(items)
-
-    return folder
+    return process_rows(results), False
 
 @plugin.route()
 def collection(id, filters=None, page=1, after=None, **kwargs):
@@ -212,7 +200,7 @@ def process_rows(rows):
                     'plot': plot.strip('\n'),
                 },
                 playable = True,
-                path = plugin.url_for(play, asset_id=row['id'], _is_live=True),
+                path = plugin.url_for(play_linear, asset_id=row['id'], _is_live=True),
             ))
 
     return items
@@ -280,9 +268,16 @@ def live_tv(**kwargs):
     return folder
 
 @plugin.route()
-@plugin.login_required()
+def play_linear(asset_id, **kwargs):
+    return _play(asset_id, is_linear=True, is_live=True)
+
+@plugin.route()
 def play(asset_id, **kwargs):
-    url, license = api.play(asset_id)
+    return _play(asset_id, is_linear=False, is_live=False)
+
+@plugin.login_required()
+def _play(asset_id, is_linear=False, is_live=False):
+    url, license = api.play(asset_id, is_linear=is_linear)
 
     item = plugin.Item(
         path        = url,
@@ -292,7 +287,7 @@ def play(asset_id, **kwargs):
         ),
     )
 
-    if kwargs.get(ROUTE_LIVE_TAG):
+    if is_live:
         item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     return item
@@ -306,4 +301,4 @@ def playlist(output, **kwargs):
         for row in api.channels():
             f.write(u'#EXTINF:-1 tvg-id="sky.{id}" tvg-chno="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
                         id=row['number'], channel=row['number'], name=row['title'], logo=row['tileImage']['uri'],
-                            path=plugin.url_for(play, asset_id=row['id'], _is_live=True)))
+                            path=plugin.url_for(play_linear, asset_id=row['id'], _is_live=True)))

@@ -136,9 +136,7 @@ class API(object):
     def vod_categories(self):
         return self._query_request(queries.VOD_CATEGORIES, variables={'excludeViewingContexts': ['DOWNLOAD',]})['data']['section']['home']['categories']
 
-    def play(self, asset_id):
-        is_linear = asset_id.startswith('skylarkChannel')
-
+    def play(self, asset_id, is_linear=False):
         variables = {
             'deviceId': '',
             'assetId': asset_id,
