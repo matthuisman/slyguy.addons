@@ -43,11 +43,11 @@ class API(object):
         if not self.logged_in:
             return
 
-        try:
-            data = jwt_data(userdata.get('access_token'))['context']
-        except Exception as e:
-            log.exception(e)
+        token = userdata.get('access_token')
+        if '..' in token: #JWE Token
             return
+
+        data = jwt_data(token)['context']
 
      #   self._maturity_rating = data['preferred_maturity_rating']['implied_maturity_rating']
      #   self._region = data['location']['country_code']
@@ -72,7 +72,11 @@ class API(object):
         if not access_token:
             return
 
-        self._session.headers.update({'Authorization': 'Bearer {}'.format(access_token)})
+        ## JWT requires Bearer
+        if '..' not in access_token:
+            access_token = 'Bearer {}'.format(access_token)
+
+        self._session.headers.update({'Authorization': access_token})
         self._session.headers.update({'x-bamsdk-transaction-id': self._transaction_id()})
         self.logged_in = True
 
