@@ -87,7 +87,7 @@ class API(object):
         payload = {
             'refresh_token': userdata.get('refresh_token'),
             'grant_type': 'refresh_token',
-            'platform': 'browser',
+            'platform': 'android',
         }
 
         self._oauth_token(payload)
