@@ -22,7 +22,7 @@ class NotPairedError(APIError):
 class API(object):
     def new_session(self):
         self.logged_in = False
-        self._session  = Session(HEADERS, timeout=30)
+        self._session = Session(HEADERS, timeout=30)
         self._set_authentication(userdata.get('access_token'))
 
     def _set_authentication(self, access_token):
@@ -237,6 +237,8 @@ class API(object):
 
     def _process(self, data, slug):
         main = data[slug]
+        if len(data) == 1 and 'message' in main:
+            raise APIError(_(_.API_ERROR, msg=main['message']))
 
         def process(element):
             element['items'] = []

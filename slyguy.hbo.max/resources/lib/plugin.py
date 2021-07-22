@@ -189,12 +189,12 @@ def series(slug, season=None, **kwargs):
         for row in data['seasons']:
             folder.add_item(
                 label = row['titles']['full'],
-                info  = {
+                info = {
                     'plot': row['summaries']['short'],
-                    'mediatype' : 'season'
+                    'mediatype': 'season',
                 },
-                art   = {'thumb': _image(data['images'].get('tileburnedin'))},
-                path  = plugin.url_for(series, slug=slug, season=row['id']),
+                art = {'thumb': _image(data['images'].get('tileburnedin'))},
+                path = plugin.url_for(series, slug=slug, season=row['id']),
             )
     else:
         folder = plugin.Folder(data['titles']['full'], fanart=_image(data['images'].get('tile'), size='1920x1080'),
@@ -202,15 +202,15 @@ def series(slug, season=None, **kwargs):
 
         for row in data['episodes']:
             folder.add_item(
-                label    = row['titles']['full'],
-                art      = {'thumb': _image(row['images'].get('tileburnedin'))},
-                info     = {
+                label = row['titles']['full'],
+                art = {'thumb': _image(row['images'].get('tileburnedin'))},
+                info = {
                     'plot': row['summaries']['short'],
                     'duration': row['duration'],
                     'tvshowtitle': row['seriesTitles']['full'],
                     'season': row.get('seasonNumber', 1),
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
-                    'mediatype': 'episode'
+                    'mediatype': 'episode',
                 },
                 path     = _get_play_path(row['id']),
                 playable = True,
