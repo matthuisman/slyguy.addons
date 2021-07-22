@@ -29,7 +29,7 @@ def home(**kwargs):
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
-        folder.add_item(label=_.LOGOUT,  path=plugin.url_for(logout), _kiosk=False, bookmark=False)
+        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -64,9 +64,9 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 def seasons(series_id, **kwargs):
-    data   = api.seasons(series_id)
-    art    = _get_art(data['images'])
-    rows   = data['seasons']
+    data = api.seasons(series_id)
+    art = _get_art(data['images'])
+    rows = data['seasons']
 
     folder = plugin.Folder(data['title'])
     folder.add_items(_parse_seasons(rows, data['title'], art))
@@ -75,9 +75,9 @@ def seasons(series_id, **kwargs):
 
 @plugin.route()
 def episodes(season_id, **kwargs):
-    data   = api.episodes(season_id)
-    art    = _get_art(data['images'])
-    rows   = data['episodes']
+    data = api.episodes(season_id)
+    art = _get_art(data['images'])
+    rows = data['episodes']
 
     folder = plugin.Folder(data['tv_series']['title'], sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED])
     folder.add_items(_parse_episodes(rows, data['tv_series']['title'], data['number'], art))
@@ -119,7 +119,7 @@ def play_trailer(asset_id, **kwargs):
 def play(asset_id, **kwargs):
     row = api.asset(asset_id)
     videos = _get_videos(row)
-    return _play_videos(videos['main'])
+    return _play_videos(videos.get('main'))
 
 def _play_videos(videos):
     if not videos:
@@ -206,21 +206,24 @@ def _parse_episodes(rows, series_title, season, season_art):
         videos = _get_videos(row.get('videos', []))
 
         item = plugin.Item(
-            label     = row['title'] or _(_.EPISODE_NUMBER, episode_number=row['number']),
-            info      = {'plot': row['description'], 'tvshowtitle': series_title, 'season': season, 'episode': row['number'], 'mediatype': 'episode'},
-            art       = _get_art(row.get('images', []), season_art),
-            is_folder = False,
+            label = row['title'] or _(_.EPISODE_NUMBER, episode_number=row['number']),
+            info = {
+                'plot': row.get('description'),
+                'tvshowtitle': series_title,
+                'season': season,
+                'episode': row['number'],
+                'mediatype': 'episode',
+            },
+            art = _get_art(row.get('images', []), season_art),
+            path = plugin.url_for(play, asset_id=row['id']),
+            playable = True,
         )
 
         if videos['main']:
             item.info.update({
-                'duration':  int(videos['main'][0]['duration']),
-                'mediatype': 'episode',
+                'duration': int(videos['main'][0]['duration']),
             })
-
-            item.video    = {'height': videos['main'][0]['height'], 'width': videos['main'][0]['width'], 'codec': 'h264'}
-            item.path     = plugin.url_for(play, asset_id=row['id'])
-            item.playable = True
+            item.video = {'height': videos['main'][0]['height'], 'width': videos['main'][0]['width'], 'codec': 'h264'}
 
         items.append(item)
 
@@ -233,21 +236,21 @@ def _parse_movies(rows):
         videos = _get_videos(row.get('videos', []))
 
         item = plugin.Item(
-            label     = row['title'],
-            info      = {'plot': row['description']},
-            art       = _get_art(row.get('images', [])),
-            is_folder = False,
+            label = row['title'],
+            info = {
+                'plot': row.get('description'),
+                'mediatype': 'movie',
+            },
+            art = _get_art(row.get('images', [])),
+            path = plugin.url_for(play, asset_id=row['id']),
+            playable = True,
         )
 
         if videos['main']:
             item.info.update({
-                'duration':  int(videos['main'][0]['duration']),
-                'mediatype': 'movie',
+                'duration': int(videos['main'][0]['duration']),
             })
-
-            item.video    = {'height': videos['main'][0]['height'], 'width': videos['main'][0]['width'], 'codec': 'h264'}
-            item.path     = plugin.url_for(play, asset_id=row['id'])
-            item.playable = True
+            item.video = {'height': videos['main'][0]['height'], 'width': videos['main'][0]['width'], 'codec': 'h264'}
 
         if videos['trailer']:
             item.info['trailer'] = plugin.url_for(play_trailer, asset_id=row['id'])
