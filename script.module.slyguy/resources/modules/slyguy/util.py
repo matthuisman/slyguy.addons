@@ -37,48 +37,6 @@ def fix_url(url):
     parse = parse._replace(path=re.sub('/{2,}','/',parse.path))
     return urlunparse(parse)
 
-def get_dns_rewrites():
-    rewrites = _load_rewrites(ADDON_PROFILE)
-
-    if COMMON_ADDON.getAddonInfo('id') != ADDON_ID:
-        rewrites.extend(_load_rewrites(COMMON_ADDON.getAddonInfo('profile')))
-
-    if rewrites:
-        log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
-
-    return rewrites
-
-def _load_rewrites(directory):
-    rewrites = []
-
-    file_path = os.path.join(xbmc.translatePath(directory), 'dns_rewrites.txt')
-    if not os.path.exists(file_path):
-        return rewrites
-
-    try:
-        with open(file_path, 'r') as f:
-            while True:
-                entry = f.readline()
-                if not entry: # end of file
-                    break
-
-                try:
-                    ip, pattern = entry.split(None, 1)
-                except:
-                    continue
-
-                pattern = pattern.strip()
-                ip = ip.strip()
-                if not pattern or not ip:
-                    continue
-
-                rewrites.append((pattern, ip))
-    except Exception as e:
-        log.debug('DNS Rewrites Failed: {}'.format(file_path))
-        log.exception(e)
-
-    return rewrites
-
 def url_sub(url):
     file_path = os.path.join(ADDON_PROFILE, 'url_subs.txt')
     if not os.path.exists(file_path):

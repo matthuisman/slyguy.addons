@@ -6,14 +6,14 @@ from contextlib import contextmanager
 
 from six.moves.urllib_parse import quote, urlparse
 from kodi_six import xbmcgui, xbmc
-from slyguy.util import set_kodi_string, hash_6, get_dns_rewrites
 
+from . import settings
 from .constants import *
 from .exceptions import GUIError
 from .router import add_url_args, url_for
 from .language import _
-from . import settings
-from .util import url_sub, fix_url
+from .dns import get_dns_rewrites
+from .util import url_sub, fix_url, set_kodi_string, hash_6
 
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME

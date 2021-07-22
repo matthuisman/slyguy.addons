@@ -5,10 +5,10 @@ from copy import deepcopy
 
 from six.moves import cPickle
 
+from . import signals, router
 from .log import log
 from .util import hash_6, set_kodi_string, get_kodi_string
 from .constants import ADDON_ID, CACHE_EXPIRY, ROUTE_CLEAR_CACHE, ADDON_VERSION
-from . import signals, gui, router
 from .settings import common_settings as settings
 
 cache_key = 'cache.'+ADDON_ID+ADDON_VERSION
@@ -140,5 +140,3 @@ def remove_expired():
 @router.route(ROUTE_CLEAR_CACHE)
 def clear_cache(key, **kwargs):
     delete_count = delete(key)
-    msg = _(_.PLUGIN_CACHE_REMOVED, delete_count=delete_count)
-    gui.notification(msg)
