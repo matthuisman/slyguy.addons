@@ -93,7 +93,7 @@ def start():
             try: _check_updates()
             except Exception as e: log.exception(e)
 
-            if monitor.waitForAbort(5):
+            if monitor.waitForAbort(60):
                 break
     except KeyboardInterrupt:
         pass
