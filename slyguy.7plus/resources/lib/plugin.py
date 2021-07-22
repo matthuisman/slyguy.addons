@@ -170,8 +170,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
 
                 if (now > start and now < stop) or start > now:
                     if count == 0:
-                        fanart = IMAGE_URL.format(url=row['channelLogo']['url'], width=1000)
-                        image = IMAGE_URL.format(url=epg['mediaImage']['url'], width=IMAGE_WIDTH)
+                        fanart = IMAGE_URL.format(url=epg['mediaImage']['url'], width=1000)
                     plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['title'])
                     count += 1
 
