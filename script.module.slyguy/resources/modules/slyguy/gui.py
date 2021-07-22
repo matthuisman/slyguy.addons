@@ -6,7 +6,8 @@ from contextlib import contextmanager
 
 from six.moves.urllib_parse import quote, urlparse
 from kodi_six import xbmcgui, xbmc
-from slyguy.util import set_kodi_string, hash_6, get_dns_rewrites
+from slyguy.util import set_kodi_string, hash_6
+from slyguy.dns import get_dns_rewrites
 
 from .constants import *
 from .exceptions import GUIError

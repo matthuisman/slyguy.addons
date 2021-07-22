@@ -8,7 +8,7 @@ from six import BytesIO
 from kodi_six import xbmc
 
 from . import userdata, settings
-from .util import get_dns_rewrites
+from .dns import get_dns_rewrites
 from .log import log
 from .language import _
 from .exceptions import SessionError
