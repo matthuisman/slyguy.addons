@@ -211,12 +211,22 @@ class API(object):
     def content(self, slug, tab=None):
         self._refresh_token()
 
+        headwaiter = ''
+        for key in sorted(self._client_config()['payloadValues']):
+            headwaiter += '{}:{},'.format(key, self._client_config()['payloadValues'][key])
+
+        headers = {
+            'x-hbo-headwaiter': headwaiter.rstrip(','),
+        }
+
         params = {
             'device-code': DEVICE_MODEL,
             'product-code': 'hboMax',
-            'api-version': 'v9',
-            'country-code': 'us',
+            'api-version': 'v9.0',
+            'brand': 'HBO MAX',
+            'country-code': 'US',
             'profile-type': 'default',
+           # 'territory': 'MEXICO',
             'signed-in': True,
         }
 
@@ -226,7 +236,7 @@ class API(object):
                 'age-category': self._age_category(),
             })
 
-        data = self._session.get(self.url('comet', '/express-content/{}'.format(slug)), params=params).json()
+        data = self._session.get(self.url('comet', '/express-content/{}'.format(slug)), params=params, headers=headers).json()
         self._check_errors(data)
 
         _data = {}
