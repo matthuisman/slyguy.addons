@@ -1,5 +1,5 @@
 HEADERS = {
-    'user-agent': '7plus_android_61181',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36',
     'X-USE-AUTHENTICATION': 'UseTokenAuthentication',
 }
 
@@ -19,11 +19,3 @@ MARKET_ID_URL = 'https://market-cdn.swm.digital/v1/market/ip/'
 LIVE_TV_SLUG = 'live-tv'
 SHOWS_SLUG   = 'shows-a-z'
 IMAGE_WIDTH  = 400
-
-DEFAULT_PARAMS = {
-    'platform-id': 'Web',
-    'market-id': '-1',
-    'platform-version': '1.0.66159',
-    'api-version': '4.3.0.0',
- #   'signedUp': 'True'
-}
