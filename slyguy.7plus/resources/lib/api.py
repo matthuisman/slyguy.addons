@@ -16,6 +16,16 @@ class API(object):
     def new_session(self):
         self.logged_in = False
         self._session = Session(headers=HEADERS)
+        self._set_authentication()
+
+    def _set_authentication(self):
+        access_token = userdata.get('access_token')
+        if not access_token:
+            self._session.headers.update({'authorization': 'Bearer {}'.format(DEFAULT_TOKEN)})
+            return
+
+        self._session.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
+        self.logged_in = True
 
     @mem_cache.cached(60*5)
     def _market_id(self):
@@ -93,15 +103,6 @@ class API(object):
             raise APIError(data[0]['error_code'])
 
         return process_brightcove(data['media'])
-
-    # def _set_authentication(self):
-    #     access_token = userdata.get('access_token')
-    #     if not access_token:
-    #         self._session.headers.update({'authorization': 'Bearer {}'.format(DEFAULT_TOKEN)})
-    #         return
-
-    #     self._session.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
-    #     self.logged_in = True
 
     # def _oauth_token(self, payload):
     #     data = self._session.post('https://auth2.swm.digital/connect/token', data=payload, headers={'x-swm-apikey': SWM_API_KEY}).json()
