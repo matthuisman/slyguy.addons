@@ -215,7 +215,7 @@ def content(slug, label=None, expand_media=0, **kwargs):
 
     if data['pageMetaData']['pageEventName'] == 'vodPage':
         return show(slug, data)
-    
+
     folder = plugin.Folder(label or data['title'])
     items = _process_rows(data['items'], slug, int(expand_media))
     folder.add_items(items)
@@ -344,6 +344,7 @@ def _play(account, reference, live=False):
 
     if live and item.inputstream:
         item.inputstream.live = True
+        item.inputstream.force = True
 
     return item
 
@@ -389,7 +390,7 @@ def epg(output, **kwargs):
                     subtitle = u'<subtitle>{}</subtitle>'.format(escape(epg['subTitle2']).strip()) if epg['subTitle2'] else ''
 
                 f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{desc}{icon}{genre}</programme>'.format(
-                    id=channel['channelId'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg['title']), 
+                    id=channel['channelId'], start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg['title']),
                     subtitle=subtitle, desc=desc, icon=icon, genre=genre,
                 ))
 
