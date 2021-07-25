@@ -83,16 +83,16 @@ class API(object):
         params = {
             'appId': '7plus',
             'deviceType': 'web',
-            'ppId': '',
-            #'deviceId': '',
-            'pc': 3350,
-            'advertid': 'null',
             'platformType': 'web',
+            'ppId': '',
+            'deviceId': '63d5f1ba-4e6c-4f50-9b5f-d624cf907f55',
+            'pc': 1000,
+            'advertid': 'null',
             'accountId': account,
             'referenceId': reference,
             'deliveryId': 'csai',
             'tvid': 'null',
-            #'ozid': '',
+            'ozid': '7bd7ba65-f070-4164-9266-8ce94d25acb3',
         }
 
         if live:

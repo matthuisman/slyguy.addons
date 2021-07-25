@@ -340,7 +340,6 @@ def play(account, reference, **kwargs):
 
 def _play(account, reference, live=False):
     item = api.play(account, reference, live)
-    item.headers = HEADERS
 
     if live and item.inputstream:
         item.inputstream.live = True
