@@ -332,6 +332,10 @@ def play_channel(slug, **kwargs):
     item.label = data['posterImage']['altTag']
     item.art = {'thumb': IMAGE_URL.format(url=data['posterImage']['url'], width=IMAGE_WIDTH)}
 
+    ## Dont use Inputstream for Iwonder
+    if slug == 'RLIN1':
+        item.inputstream = None
+
     return item
 
 @plugin.route()
@@ -340,6 +344,7 @@ def play(account, reference, **kwargs):
 
 def _play(account, reference, live=False):
     item = api.play(account, reference, live)
+    item.headers = HEADERS
 
     if live and item.inputstream:
         item.inputstream.live = True

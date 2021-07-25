@@ -16,16 +16,6 @@ class API(object):
     def new_session(self):
         self.logged_in = False
         self._session = Session(headers=HEADERS)
-        self._set_authentication()
-
-    def _set_authentication(self):
-        access_token = userdata.get('access_token')
-        if not access_token:
-            self._session.headers.update({'authorization': 'Bearer {}'.format(DEFAULT_TOKEN)})
-            return
-
-        self._session.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
-        self.logged_in = True
 
     @mem_cache.cached(60*5)
     def _market_id(self):
@@ -33,7 +23,7 @@ class API(object):
             return self._session.get(MARKET_ID_URL, params={'apikey': 'web'}).json()['_id']
         except:
             log.debug('Failed to get market id')
-            return '18'
+            return '4' #Sydney
 
     def search(self, query):
         params = {
@@ -51,7 +41,6 @@ class API(object):
             'market-id': self._market_id(),
             'platform-version': '1.0.67393',
             'api-version': '4.3',
-            'signedUp': 'True',
         }
 
         return self._session.get('https://component-cdn.swm.digital/content/{slug}'.format(slug=slug), params=params).json()
@@ -62,7 +51,6 @@ class API(object):
             'market-id': self._market_id(),
             'platform-version': '1.0.67393',
             'api-version': '4.3.0.0',
-            'signedUp': 'True',
             'component-id': component_id,
         }
 
@@ -98,11 +86,25 @@ class API(object):
         if live:
             params['videoType'] = 'live'
 
-        data = self._session.get('https://videoservice.swm.digital/playback', params=params).json()
+        headers = {
+            'X-USE-AUTHENTICATION': 'UseTokenAuthentication',
+            'authorization': 'Bearer {}'.format(DEFAULT_TOKEN),
+        }
+
+        data = self._session.get('https://videoservice.swm.digital/playback', params=params, headers=headers).json()
         if 'media' not in data:
             raise APIError(data[0]['error_code'])
 
         return process_brightcove(data['media'])
+
+    # def _set_authentication(self):
+    #     access_token = userdata.get('access_token')
+    #     if not access_token:
+    #         self._session.headers.update({'authorization': 'Bearer {}'.format(DEFAULT_TOKEN)})
+    #         return
+
+    #     self._session.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
+    #     self.logged_in = True
 
     # def _oauth_token(self, payload):
     #     data = self._session.post('https://auth2.swm.digital/connect/token', data=payload, headers={'x-swm-apikey': SWM_API_KEY}).json()
