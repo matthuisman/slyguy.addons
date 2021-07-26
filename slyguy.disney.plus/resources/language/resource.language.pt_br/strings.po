@@ -29,10 +29,6 @@ msgctxt "#30006"
 msgid "Originals"
 msgstr "Originais"
 
-msgctxt "#30007"
-msgid "Search"
-msgstr "Busca"
-
 msgctxt "#30008"
 msgid "Hubs"
 msgstr "Hubs"

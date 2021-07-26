@@ -7,7 +7,7 @@ class Language(BaseLanguage):
     MOVIES                   = 30004
     SERIES                   = 30005
     ORIGINALS                = 30006
-
+    INFORMATION              = 30007
     HUBS                     = 30008
     WV_SECURE                = 30009
     SUGGESTED                = 30010
@@ -36,6 +36,7 @@ class Language(BaseLanguage):
     NOT_ENTITLED             = 30043
     BAD_CREDENTIALS          = 30044
     COMING_SOON              = 30045
+    BAD_PIN                  = 30046
 
     PLAY_FROM_TIME           = 30048
     AVAILABLE                = 30049

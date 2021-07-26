@@ -27,11 +27,6 @@ msgctxt "#30006"
 msgid "Originals"
 msgstr "Originali"
 
-msgctxt "#30007"
-msgid "Search"
-msgstr "Cerca"
-
-
 
 msgctxt "#30009"
 msgid "Widevine L1 Secure Device"

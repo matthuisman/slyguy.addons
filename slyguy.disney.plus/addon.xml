@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.7.4">
+<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.7.5">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -17,7 +17,7 @@ Abbonamento richiesto.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Try support new JWE auth tokens</news>
+    <news>Migrate to latest Disney API</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

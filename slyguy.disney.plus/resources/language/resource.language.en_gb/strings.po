@@ -26,7 +26,9 @@ msgctxt "#30006"
 msgid "Originals"
 msgstr ""
 
-
+msgctxt "#30007"
+msgid "Information"
+msgstr ""
 
 msgctxt "#30008"
 msgid "Hubs"
@@ -143,6 +145,9 @@ msgctxt "#30045"
 msgid "{label} [B](Coming Soon)[/B]"
 msgstr ""
 
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr ""
 
 
 msgctxt "#30048"
