@@ -10,7 +10,7 @@ from six.moves.urllib.parse import unquote_plus
 
 from slyguy import settings, database, gui, router
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, safe_copy
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, _safe_copy
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
@@ -210,7 +210,7 @@ class Merger(object):
         elif not xbmcvfs.exists(path):
             raise Error(_(_.LOCAL_PATH_MISSING, path=path))
         else:
-            safe_copy(path, file_path)
+            _safe_copy(path, file_path)
 
         if archive_type == Source.ARCHIVE_AUTO:
             archive_type = Source.auto_archive_type(path)
@@ -476,7 +476,7 @@ class Merger(object):
 
             log.debug('Wrote {} Channels'.format(count))
             Playlist.after_merge()
-            safe_copy(working_path, playlist_path)
+            _safe_copy(working_path, playlist_path)
         finally:
             database.close()
             if progress: progress.close()
@@ -569,7 +569,7 @@ class Merger(object):
             remove_file(working_path)
             shutil.move(epg_path_tmp, working_path)
 
-            safe_copy(working_path, epg_path)
+            _safe_copy(working_path, epg_path)
         finally:
             database.close()
             if progress: progress.close()
