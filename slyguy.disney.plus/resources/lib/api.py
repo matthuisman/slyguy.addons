@@ -296,18 +296,19 @@ class API(object):
         scenario = config['services']['media']['extras']['restrictedPlaybackScenario']
 
         if settings.getBool('wv_secure', False):
-            scenario = config['services']['media']['extras']['playbackScenarioDefault']
+            #scenario = config['services']['media']['extras']['playbackScenarioDefault']
+            scenario = 'tv-drm-ctr'
 
-            # if settings.getBool('h265', False):
-            #     scenario += '-h265'
+            if settings.getBool('h265', False):
+                scenario += '-h265'
 
-            #     if settings.getBool('dolby_vision', False):
-            #         scenario += '-dovi'
-            #     elif settings.getBool('hdr10', False):
-            #         scenario += '-hdr10'
+                if settings.getBool('dolby_vision', False):
+                    scenario += '-dovi'
+                elif settings.getBool('hdr10', False):
+                    scenario += '-hdr10'
 
-            #     if settings.getBool('dolby_atmos', False):
-            #         scenario += '-atmos'
+                if settings.getBool('dolby_atmos', False):
+                    scenario += '-atmos'
 
         headers = {'accept': 'application/vnd.media-service+json; version=5', 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
