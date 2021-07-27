@@ -58,60 +58,60 @@ def _process_rows(rows, slug):
 
         if content_type in ('FEATURE', 'EXTRA'):
             items.append(plugin.Item(
-                label    = row['titles']['full'],
-                art      = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                info     = {
+                label = row['titles']['full'],
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                info = {
                     'duration': row['duration'],
                     'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
                 },
-                context  = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
+                context = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
                 playable = True,
-                path     = _get_play_path(row['viewable']),
+                path = _get_play_path(row['viewable']),
             ))
 
         elif content_type == 'SERIES':
             items.append(plugin.Item(
-                label   = row['titles']['full'],
-                art     = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                label = row['titles']['full'],
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
                 context = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
-                info    = {'mediatype': 'tvshow'},
-                path    = plugin.url_for(series, slug=row['viewable']),
+                info = {'mediatype': 'tvshow'},
+                path = plugin.url_for(series, slug=row['viewable']),
             ))
 
         elif viewable.startswith('urn:hbo:franchise'):
             items.append(plugin.Item(
                 label = row['titles']['full'],
-                art   = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                path  = plugin.url_for(series, slug='urn:hbo:series:'+row['images']['tile'].split('/')[4]),
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                path = plugin.url_for(series, slug='urn:hbo:series:'+row['images']['tile'].split('/')[4]),
             ))
 
         elif content_type in ('SERIES_EPISODE', 'MINISERIES_EPISODE'):
             items.append(plugin.Item(
-                label    = row['titles']['full'],
-                art      = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                info     = {
+                label = row['titles']['full'],
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                info = {
                     'duration': row['duration'],
                     'tvshowtitle': row['seriesTitles']['full'],
                     'season': row.get('seasonNumber', 1),
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
                     'mediatype': 'episode',
                 },
-                context  = ((_.GO_TO_SERIES, 'Container.Update({})'.format(plugin.url_for(series, slug=row['series']))),),
+                context = ((_.GO_TO_SERIES, 'Container.Update({})'.format(plugin.url_for(series, slug=row['series']))),),
                 playable = True,
-                path     = _get_play_path(row['viewable']),
+                path = _get_play_path(row['viewable']),
             ))
 
         elif row['id'].startswith('urn:hbo:themed-tray') and row['items']:
             items.append(plugin.Item(
                 label = row['summary']['title'],
-                info  = {'plot': row['summary']['description']},
-                path  = plugin.url_for(page, slug=slug, label=row['summary']['title'], tab=row['id']),
+                info = {'plot': row['summary']['description']},
+                path = plugin.url_for(page, slug=slug, label=row['summary']['title'], tab=row['id']),
             ))
 
         elif row['id'].startswith('urn:hbo:tray') and row['items']:
             items.append(plugin.Item(
                 label = row['header']['label'],
-                path  = plugin.url_for(page, slug=slug, label=row['header']['label'], tab=row['id']),
+                path = plugin.url_for(page, slug=slug, label=row['header']['label'], tab=row['id']),
             ))
 
         # elif row['id'].startswith('urn:hbo:highlight'):
@@ -123,7 +123,7 @@ def _process_rows(rows, slug):
                 if tab['items']:
                     items.append(plugin.Item(
                         label = tab['label'],
-                        path  = plugin.url_for(page, slug=slug, label=tab['label'], tab=tab['id']),
+                        path = plugin.url_for(page, slug=slug, label=tab['label'], tab=tab['id']),
                     ))
 
         elif row['id'].startswith('urn:hbo:grid'):
@@ -136,15 +136,13 @@ def information(slug, **kwargs):
     content = api.content(slug)
 
     if ':series' in slug:
-        try:
-            year = content['seasons'][0]['episodes'][0]['releaseYear']
-        except:
-            year = None
+        try: year = content['seasons'][0]['episodes'][0]['releaseYear']
+        except: year = None
 
         item = plugin.Item(
             label = content['titles']['full'],
-            art   = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
-            info  = {
+            art = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
+            info = {
                 'plot': content['summaries']['full'],
                 'year': year,
                 'tvshowtitle': content['titles']['full'],
@@ -212,7 +210,7 @@ def series(slug, season=None, **kwargs):
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
                     'mediatype': 'episode',
                 },
-                path     = _get_play_path(row['id']),
+                path = _get_play_path(row['id']),
                 playable = True,
             )
 

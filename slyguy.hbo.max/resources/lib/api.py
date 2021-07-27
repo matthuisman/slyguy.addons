@@ -190,7 +190,12 @@ class API(object):
     def profiles(self):
         self._refresh_token()
         payload = [{'id': 'urn:hbo:profiles:mine'},]
-        return self._session.post(self.url('comet', '/content'), json=payload).json()[0]['body']['profiles']
+
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter(),
+        }
+
+        return self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()[0]['body']['profiles']
 
     def _age_category(self):
         month, year = userdata.get('profile', {}).get('birth', [0,0])
@@ -208,35 +213,30 @@ class API(object):
 
         return group
 
-    def content(self, slug, tab=None):
-        self._refresh_token()
+    @mem_cache.cached(60*30)
+    def _flighted_features(self):
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter(),
+        }
 
+        return self._session.get(self.url('comet', '/flighted-features'), headers=headers).json()
+
+    def _headwaiter(self):
         headwaiter = ''
         for key in sorted(self._client_config()['payloadValues']):
             headwaiter += '{}:{},'.format(key, self._client_config()['payloadValues'][key])
 
+        return headwaiter.rstrip(',')
+
+    def content(self, slug, tab=None):
+        self._refresh_token()
+
         headers = {
-            'x-hbo-headwaiter': headwaiter.rstrip(','),
+            'x-hbo-headwaiter': self._headwaiter(),
         }
 
-        params = {
-            'device-code': DEVICE_MODEL,
-            'product-code': 'hboMax',
-            'api-version': 'v9.0',
-            'brand': 'HBO MAX',
-            'country-code': 'US',
-            'profile-type': 'default',
-           # 'territory': 'MEXICO',
-            'signed-in': True,
-        }
-
-        if userdata.get('profile',{}).get('child', 0):
-            params.update({
-                'profile-type': 'child',
-                'age-category': self._age_category(),
-            })
-
-        data = self._session.get(self.url('comet', '/express-content/{}'.format(slug)), params=params, headers=headers).json()
+        params = self._flighted_features()['express-content']['config']['expressContentParams']
+        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, params)), headers=headers).json()
         self._check_errors(data)
 
         _data = {}
@@ -284,7 +284,11 @@ class API(object):
             'id': 'urn:hbo:flexisearch:{}'.format(query),
         }]
 
-        data = self._session.post(self.url('comet', '/content'), json=payload).json()
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter(),
+        }
+
+        data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
         self._check_errors(data)
 
         keys = {}
@@ -321,7 +325,11 @@ class API(object):
             }
         }]
 
-        data = self._session.post(self.url('comet', '/content'), json=payload).json()[0]['body']
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter(),
+        }
+
+        data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()[0]['body']
 
         for row in data.get('manifests', []):
             if row['type'] == 'urn:video:main':
