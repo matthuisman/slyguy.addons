@@ -451,14 +451,15 @@ default_fanart = ADDON_FANART
 
 #Plugin.Item()
 class Item(gui.Item):
-    def __init__(self, cache_key=None, play_next=None, callback=None, geolock=None, bookmark=True, quality=None, *args, **kwargs):
+    def __init__(self, cache_key=None, play_next=None, callback=None, play_skips=None, geolock=None, bookmark=True, quality=None, *args, **kwargs):
         super(Item, self).__init__(self, *args, **kwargs)
         self.cache_key = cache_key
         self.play_next = dict(play_next or {})
-        self.callback  = dict(callback or {})
-        self.geolock   = geolock
-        self.bookmark  = bookmark
-        self.quality   = quality
+        self.callback = dict(callback or {})
+        self.play_skips = play_skips or []
+        self.geolock = geolock
+        self.bookmark = bookmark
+        self.quality = quality
 
     def get_li(self, *args, **kwargs):
         # if settings.getBool('use_cache', True) and self.cache_key:
@@ -506,6 +507,10 @@ class Item(gui.Item):
                 data['next_file'] = router.add_url_args(data['next_file'], _play=1)
 
             set_kodi_string('_slyguy_play_next', json.dumps(data))
+
+        if self.play_skips:
+            data = {'playing_file': self.path, 'skips': self.play_skips}
+            set_kodi_string('_slyguy_play_skips', json.dumps(data))
 
         if self.callback:
             data = {'type': 'interval', 'playing_file': self.path, 'interval': 0, 'callback': None}
