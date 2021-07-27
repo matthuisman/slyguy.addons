@@ -248,7 +248,7 @@ class API(object):
             endpoint = 'getCuratedSet'
         else:
             endpoint = 'getSet'
-            
+
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints'][endpoint]['href'], setType=set_type, setId=set_id, pageSize=page_size, page=page)
         return self._json_call(endpoint)['data'][set_type]
 
@@ -298,16 +298,16 @@ class API(object):
         if settings.getBool('wv_secure', False):
             scenario = config['services']['media']['extras']['playbackScenarioDefault']
 
-            if settings.getBool('h265', False):
-                scenario += '-h265'
+            # if settings.getBool('h265', False):
+            #     scenario += '-h265'
 
-                if settings.getBool('dolby_vision', False):
-                    scenario += '-dovi'
-                elif settings.getBool('hdr10', False):
-                    scenario += '-hdr10'
+            #     if settings.getBool('dolby_vision', False):
+            #         scenario += '-dovi'
+            #     elif settings.getBool('hdr10', False):
+            #         scenario += '-hdr10'
 
-                if settings.getBool('dolby_atmos', False):
-                    scenario += '-atmos'
+            #     if settings.getBool('dolby_atmos', False):
+            #         scenario += '-atmos'
 
         headers = {'accept': 'application/vnd.media-service+json; version=5', 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
