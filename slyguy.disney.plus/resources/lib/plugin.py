@@ -335,7 +335,7 @@ def _parse_video(row):
         playable = True,
     )
 
-    if _get_milestone(row.get('milestones'), 'intro_end'):
+    if _get_milestone(row.get('milestone'), 'intro_end'):
         if settings.getBool('skip_intros', False):
             item.context.append((_.INCLUDE_INTRO, 'PlayMedia({},noresume)'.format(_get_play_path(row['contentId'], skip_intro=0))))
         else:
@@ -536,19 +536,26 @@ def play(content_id=None, family_id=None, skip_intro=None, **kwargs):
         proxy_data = {'default_language': original_language, 'original_language': original_language},
     )
 
+    milestones = video.get('milestone', [])
+    item.play_next = {}
+    item.play_skips = []
+
     if kwargs[ROUTE_RESUME_TAG] and settings.getBool('disney_sync', False):
         continue_watching = _continue_watching()
         item.resume_from = continue_watching.get(video['contentId'], 0)
         item.force_resume = True
 
-    elif (int(skip_intro) if skip_intro is not None else settings.getBool('skip_intros', False)):
-        # TO DO: Intro doesnt always start at start - there may be recap
-        item.resume_from = _get_milestone(video.get('milestones'), 'intro_end', default=0) / 1000
+    elif milestones and (int(skip_intro) if skip_intro is not None else settings.getBool('skip_intros', False)):
+        intro_start = _get_milestone(milestones, 'intro_start')
+        intro_end = _get_milestone(milestones, 'intro_end')
 
-    item.play_next = {}
+        if intro_start <= 10 and intro_end > intro_start:
+            item.resume_from = intro_end
+        elif intro_start > 0 and intro_end > intro_start:
+            item.play_skips.append({'from': intro_start, 'to': intro_end})
 
-    if settings.getBool('skip_credits', False):
-        next_start = _get_milestone(video.get('milestones'), 'up_next', default=0) / 1000
+    if milestones and settings.getBool('skip_credits', False):
+        next_start = _get_milestone(milestones, 'up_next')
         item.play_next['time'] = next_start
 
     if video['programType'] == 'episode' and settings.getBool('play_next_episode', True):
@@ -583,13 +590,13 @@ def play(content_id=None, family_id=None, skip_intro=None, **kwargs):
 def callback(media_id, fguid, _time, **kwargs):
     api.update_resume(media_id, fguid, int(_time))
 
-def _get_milestone(milestones, key, default=None):
+def _get_milestone(milestones, name, default=0):
     if not milestones:
         return default
 
-    for milestone in milestones:
-        if milestone['milestoneType'] == key:
-            return milestone['milestoneTime'][0]['startMillis']
+    for key in milestones:
+        if key == name:
+            return int(milestones[key][0]['milestoneTime'][0]['startMillis'] / 1000)
 
     return default
 
