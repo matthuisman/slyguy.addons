@@ -4,7 +4,7 @@ from xml.sax.saxutils import escape
 
 import arrow
 from kodi_six import xbmcplugin
-from six.moves.urllib_parse import urlparse, parse_qsl
+from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
@@ -57,6 +57,9 @@ def _get_url(url):
 def search(query, page, **kwargs):
     return _process_rows(api.search(query)), False
 
+def _image(url, width=IMAGE_WIDTH):
+    return IMAGE_URL.format(url=quote_plus(url.encode('utf8')), width=width)
+
 def _process_rows(rows, slug='', expand_media=False, season_name=''):
     items = []
     now = arrow.now()
@@ -85,7 +88,12 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
                 info['tvshowtitle'] = row['infoPanelData']['seriesLogo']['name']
 
             def _get_duration(row):
-                patterns = ['([0-9]+)h ([0-9]+)m', '([0-9]+)m']
+                patterns = [
+                    ['([0-9]+)h ([0-9]+)m ([0-9]+)s', lambda match: int(match.group(1))*3600 + int(match.group(2))*60 + int(match.group(3))],
+                    ['([0-9]+)h ([0-9]+)m', lambda match: int(match.group(1))*3600 + int(match.group(2))*60],
+                    ['([0-9]+)m$', lambda match: int(match.group(1))*60],
+                    ['([0-9]+)s$', lambda match: int(match.group(1))],
+                ]
 
                 strings = [row['cardData']['subtitle']]
                 if 'infoPanelData' in row:
@@ -93,12 +101,9 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
 
                 for string in strings:
                     for pattern in patterns:
-                        match = re.search(pattern, string)
+                        match = re.search(pattern[0], string)
                         if match:
-                            if len(match.groups()) == 2:
-                                return (int(match.group(1))*60 + int(match.group(2)))*60
-                            elif len(match.groups()) == 1:
-                                return int(match.group(1))*60
+                            return pattern[1](match)
 
                 return 0
 
@@ -125,7 +130,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
             item = plugin.Item(
                 label = title,
                 info = info,
-                art  = {'thumb': IMAGE_URL.format(url=row['cardData']['image']['url'], width=IMAGE_WIDTH)},
+                art  = {'thumb': _image(row['cardData']['image']['url'])},
                 playable = True,
             )
 
@@ -147,21 +152,21 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
             item = plugin.Item(
                 label = row.get('title') or row['image']['altTag'] or row.get('cName'),
                 info = {'plot': row.get('lozengeText')},
-                art = {'thumb': IMAGE_URL.format(url=row['image']['url'], width=IMAGE_WIDTH)},
+                art = {'thumb': _image(row['image']['url'])},
             )
 
             if '/live/' in row['contentLink']['url'] or LIVE_TV_SLUG in row['contentLink']['url']:
                 item.path = plugin.url_for(play_channel, slug=_get_url(row['contentLink']['url']), _is_live=True)
                 item.playable = True
                 if 'channelLogo' in row:
-                    item.art['fanart'] = IMAGE_URL.format(url=row['channelLogo']['url'], width=1000)
+                    item.art['fanart'] = _image(row['channelLogo']['url'], width=1000)
             else:
                 item.path = plugin.url_for(content, slug=_get_url(row['contentLink']['url']))
 
         if row['type'] == 'ChannelItem':
             plot = u''
             count = 0
-            image = IMAGE_URL.format(url=row['channelLogo']['url'], width=IMAGE_WIDTH)
+            image = _image(row['channelLogo']['url'])
             fanart = None
 
             for epg in row['schedules']['items']:
@@ -170,7 +175,7 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
 
                 if (now > start and now < stop) or start > now:
                     if count == 0:
-                        fanart = IMAGE_URL.format(url=epg['mediaImage']['url'], width=1000)
+                        fanart = _image(epg['mediaImage']['url'], width=1000)
                     plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['title'])
                     count += 1
 
@@ -225,8 +230,8 @@ def content(slug, label=None, expand_media=0, **kwargs):
 def show(slug, data):
     show_name = data['pageMetaData']['pageTitle']
     plot = data['pageMetaData']['description']
-    thumb = IMAGE_URL.format(url=data['items'][0]['thumbnail']['url'], width=IMAGE_WIDTH)
-    fanart = IMAGE_URL.format(url=data['items'][0]['primaryBackgroundImage']['url'], width=1000)
+    thumb = _image(data['items'][0]['thumbnail']['url'])
+    fanart = _image(data['items'][0]['primaryBackgroundImage']['url'], width=1000)
 
     folder = plugin.Folder(data['title'], fanart=fanart)
 
@@ -330,7 +335,7 @@ def play_channel(slug, **kwargs):
 
     item = _play(params['accountId'], params['referenceId'], live=True)
     item.label = data['posterImage']['altTag']
-    item.art = {'thumb': IMAGE_URL.format(url=data['posterImage']['url'], width=IMAGE_WIDTH)}
+    item.art = {'thumb': _image(data['posterImage']['url'])}
 
     ## Dont use Inputstream for Iwonder
     if slug == 'RLIN1':
@@ -369,7 +374,7 @@ def playlist(output, **kwargs):
 
         for channel in _get_live_channels():
             f.write(u'\n#EXTINF:-1 tvg-chno="{chno}" tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                chno=channel['channelId'], id=channel['channelId'], name=channel['name'], logo=IMAGE_URL.format(url=channel['channelLogo']['url'], width=IMAGE_WIDTH),
+                chno=channel['channelId'], id=channel['channelId'], name=channel['name'], logo=_image(channel['channelLogo']['url']),
                     url=plugin.url_for(play_channel, slug=_get_url(channel['contentLink']['url']), _is_live=True),
             ))
 
@@ -385,7 +390,7 @@ def epg(output, **kwargs):
                 start = arrow.get(epg['startTime'])
                 stop  = arrow.get(epg['endTime'])
 
-                icon = u'<icon src="{}"/>'.format(escape(IMAGE_URL.format(url=epg['mediaImage']['url'], width=IMAGE_WIDTH))) if epg['mediaImage'].get('url') else ''
+                icon = u'<icon src="{}"/>'.format(escape(_image(epg['mediaImage']['url']))) if epg['mediaImage'].get('url') else ''
                 desc = u'<desc>{}</desc>'.format(escape(epg['synopsis'])) if epg['synopsis'] else ''
                 genre = u'<category lang="en">{}</category>'.format(escape(epg['genre'])) if epg['genre'] else ''
 
