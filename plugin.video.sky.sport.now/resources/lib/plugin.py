@@ -42,10 +42,10 @@ def live(**kwargs):
 
     for row in api.channels():
         folder.add_item(
-            label    = row['name'],
-            art      = {'thumb': THUMB_URL.format('channels/{id}_landscape.png'.format(id=row['id']))},
+            label = row['name'],
+            art = {'thumb': THUMB_URL.format('channels/{id}_landscape.png'.format(id=row['id']))},
             playable = True,
-            path     = plugin.url_for(play,  media_id=row['id'], media_type=MEDIA_CHANNEL, _is_live=True),
+            path = plugin.url_for(play,  media_id=row['id'], media_type=MEDIA_CHANNEL, _is_live=True),
         )
 
     return folder
@@ -67,9 +67,9 @@ def replay(**kwargs):
 
             item = plugin.Item(
                 label = u'{}: {}'.format(row['start'].to('local').humanize(), row['title']),
-                info  = {'plot': row['desc'], 'duration': row['duration']},
-                art   = {'thumb': icon},
-                path  = plugin.url_for(play, media_id=row['channel'], media_type=MEDIA_CHANNEL, start=row['start'].timestamp, duration=row['duration']),
+                info = {'plot': row['desc'], 'duration': row['duration']},
+                art = {'thumb': icon},
+                path = plugin.url_for(play, media_id=row['channel'], media_type=MEDIA_CHANNEL, start=row['start'].timestamp, duration=row['duration']),
                 playable = True,
             )
 
@@ -99,10 +99,10 @@ def highlights(page=1, **kwargs):
 
         folder.add_item(
             label = row['name'],
-            info  = {'plot': row.get('description'), 'duration': duration},
-            art   = {'thumb': THUMB_URL.format(row.get('image', ''))},
+            info = {'plot': row.get('description'), 'duration': duration},
+            art = {'thumb': THUMB_URL.format(row.get('image', ''))},
             playable = True,
-            path     = plugin.url_for(play, media_id=row['id'], media_type=MEDIA_VIDEO),
+            path = plugin.url_for(play, media_id=row['id'], media_type=MEDIA_VIDEO),
         )
 
     if page < total_pages:
@@ -172,5 +172,8 @@ def playlist(output, **kwargs):
         for row in api.channels():
             thumb = THUMB_URL.format('channels/{id}_landscape.png'.format(id=row['id']))
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                id=row['id'], logo=thumb, name=row['name'], path=plugin.url_for(play, media_id=row['id'], media_type=MEDIA_CHANNEL, _is_live=True)))
+            catchup = plugin.url_for(play, media_id=row['id'], media_type=MEDIA_CHANNEL, start='{utc}', duration='{duration}')
+            catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
+
+            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}" catchup="default" catchup-days="1" catchup-source="{catchup}",{name}\n{path}\n'.format(
+                id=row['id'], logo=thumb, name=row['name'], path=plugin.url_for(play, media_id=row['id'], media_type=MEDIA_CHANNEL, _is_live=True), catchup=catchup))
