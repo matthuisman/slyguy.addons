@@ -252,7 +252,7 @@ def same_file(path_a, path_b):
 
     return (stat_a.st_dev == stat_b.st_dev) and (stat_a.st_ino == stat_b.st_ino)
 
-def safe_copy(src, dst, del_src=False):
+def _safe_copy(src, dst, del_src=False):
     src = xbmc.translatePath(src)
     dst = xbmc.translatePath(dst)
 
