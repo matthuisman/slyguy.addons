@@ -37,7 +37,7 @@ class Language(BaseLanguage):
     BAD_CREDENTIALS          = 30044
     COMING_SOON              = 30045
     BAD_PIN                  = 30046
-
+    DISNEY_WATCHLIST         = 30047
     PLAY_FROM_TIME           = 30048
     AVAILABLE                = 30049
     AVAILABLE_FORMAT         = 30050

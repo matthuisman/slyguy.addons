@@ -28,8 +28,10 @@ def index(**kwargs):
         folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(collection, slug='originals', content_class='originals'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
-        if settings.getBool('disney_sync', False):
+        if settings.getBool('disney_watchlist', False):
             folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(collection, slug='watchlist', content_class='watchlist'))
+
+        if settings.getBool('disney_sync', False):
             folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(sets, set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE))
 
         if settings.getBool('bookmarks', True):
@@ -250,10 +252,11 @@ def _process_rows(rows, content_class=None):
         if not item:
             continue
 
-        if content_class == 'WatchlistSet':
-            item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, content_id=row['contentId']))))
-        elif settings.getBool('disney_sync', False) and (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
-            item.context.insert(0, (_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, content_id=row['contentId'], title=item.label, icon=item.art.get('thumb')))))
+        if settings.getBool('disney_watchlist', False):
+            if content_class == 'WatchlistSet':
+                item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, content_id=row['contentId']))))
+            elif (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
+                item.context.insert(0, (_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, content_id=row['contentId'], title=item.label, icon=item.art.get('thumb')))))
 
         items.append(item)
 

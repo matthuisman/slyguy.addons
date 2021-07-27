@@ -27,7 +27,7 @@ msgid "Originals"
 msgstr ""
 
 msgctxt "#30007"
-msgid "Information"
+msgid "Full Details"
 msgstr ""
 
 msgctxt "#30008"
@@ -149,6 +149,9 @@ msgctxt "#30046"
 msgid "Incorrect Pin"
 msgstr ""
 
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr ""
 
 msgctxt "#30048"
 msgid "From {time:0>8}"
