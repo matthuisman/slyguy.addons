@@ -63,22 +63,6 @@ def login(**kwargs):
     gui.refresh()
 
 @plugin.route()
-def hubs(**kwargs):
-    folder = plugin.Folder(_.HUBS)
-
-    data = api.collection_by_slug('home', 'home')
-    thumb = _image(data.get('images', []), 'thumb')
-
-    for row in data['containers']:
-        _style = row.get('style')
-        _set = row.get('set')
-        if _set and _style == 'brandSix':
-            items = _process_rows(_set.get('items', []), 'brand')
-            folder.add_items(items)
-
-    return folder
-
-@plugin.route()
 def select_profile(**kwargs):
     if userdata.get('kid_lockdown', False):
         return
@@ -161,7 +145,7 @@ def collection(slug, content_class, label=None, **kwargs):
         if not set_id:
             return None
 
-        if slug == 'home' and _style == 'brandSix':
+        if slug == 'home' and _style == 'brand':
             continue
 
         if _style in ('hero', 'WatchlistSet'):
