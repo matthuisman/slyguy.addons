@@ -311,8 +311,8 @@ def play_vod(slug, **kwargs):
     data = api.content(slug)
 
     url = None
-    for row in data.get('items', []):
-        for row2 in row.get('items', []):
+    for row in data.get('items') or []:
+        for row2 in row.get('items') or []:
             if row2.get('videoUrl'):
                 url = row2['videoUrl']
                 break
