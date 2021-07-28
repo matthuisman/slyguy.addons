@@ -29,7 +29,7 @@ from .constants import *
 
 #ADDON_DEV = True
 
-REMOVE_IN_HEADERS = ['upgrade', 'host']
+REMOVE_IN_HEADERS = ['upgrade', 'host', 'accept-encoding']
 REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
 
 DEFAULT_PORT = 52103
@@ -90,8 +90,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         for header in self.headers:
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
-
-        self._headers['accept-encoding'] = 'gzip, deflate, br'
 
         length = int(self._headers.get('content-length', 0))
         self._post_data = self.rfile.read(length) if length else None
