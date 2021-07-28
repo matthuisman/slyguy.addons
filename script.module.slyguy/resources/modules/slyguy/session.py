@@ -59,12 +59,13 @@ class Session(RawSession):
     def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None):
         super(Session, self).__init__()
 
-        self._headers     = headers or {}
+        self._headers = headers or {}
         self._cookies_key = cookies_key
-        self._base_url    = base_url
-        self._timeout     = settings.getInt('http_timeout', 30) if timeout is None else timeout
-        self._attempts    = settings.getInt('http_retries', 2) if attempts is None else attempts
-        self._verify      = settings.getBool('verify_ssl', True) if verify is None else verify
+        self._base_url = base_url
+        self._timeout = settings.getInt('http_timeout', 30) if timeout is None else timeout
+        self._attempts = settings.getInt('http_retries', 2) if attempts is None else attempts
+        self._verify = settings.getBool('verify_ssl', True) if verify is None else verify
+        self.before_request = None
         self.after_request = None
 
         self.set_dns_rewrites(get_dns_rewrites() if dns_rewrites is None else dns_rewrites)
@@ -100,6 +101,9 @@ class Session(RawSession):
             if i > 1 and retry_delay:
                 xbmc.sleep(retry_delay)
 
+            if self.before_request:
+                self.before_request()
+
             try:
                 log('{}{} {} {}'.format(attempt, method, url, kwargs if method != 'POST' else ""))
             except:
@@ -118,7 +122,6 @@ class Session(RawSession):
                 raise SessionError(error_msg or _.NO_RESPONSE_ERROR)
 
             if retry_not_ok and not resp.ok:
-                print("NOT OK!!")
                 continue
             else:
                 break
