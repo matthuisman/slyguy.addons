@@ -574,6 +574,9 @@ class Folder(object):
             li = item.get_li()
             xbmcplugin.addDirectoryItem(handle, item.path, li, item.is_folder)
 
+        if settings.getBool('video_folder_content', True):
+            self.content = 'videos'
+
         if self.content: xbmcplugin.setContent(handle, self.content)
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)
 
