@@ -129,8 +129,9 @@ def _switch_profile(profile):
 @plugin.route()
 def collection(slug, content_class, label=None, **kwargs):
     data = api.collection_by_slug(slug, content_class)
-    folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_image(data.get('image', []), 'fanart'))
+    folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'))
 
+    content = 'files'
     for row in data['containers']:
         _type = row.get('type')
         _set = row.get('set')
@@ -149,11 +150,13 @@ def collection(slug, content_class, label=None, **kwargs):
             continue
 
         if _style in ('hero', 'WatchlistSet'):
+            content = 'movies'
             items = _process_rows(_set.get('items', []), content_class=_style)
             folder.add_items(items)
             continue
 
         elif _style == 'BecauseYouSet':
+            content = 'movies'
             data = api.set_by_id(set_id, _style, page_size=0)
             if not data['meta']['hits']:
                 continue
@@ -166,7 +169,7 @@ def collection(slug, content_class, label=None, **kwargs):
             label = title,
             path = plugin.url_for(sets, set_id=set_id, set_type=ref_type),
         )
-
+    folder.content = content
     return folder
 
 @plugin.route()
@@ -174,7 +177,7 @@ def sets(set_id, set_type, page=1, **kwargs):
     page = int(page)
     data = api.set_by_id(set_id, set_type, page=page)
 
-    folder = plugin.Folder(_get_text(data['text'], 'title', 'set'))
+    folder = plugin.Folder(_get_text(data['text'], 'title', 'set'), content='movies')
 
     items = _process_rows(data.get('items', []), data['type'])
     folder.add_items(items)
@@ -393,7 +396,7 @@ def series(series_id, **kwargs):
     data = api.series_bundle(series_id)
 
     title = _get_text(data['series']['text'], 'title', 'series')
-    folder = plugin.Folder(title, fanart=_image(data['series']['image'], 'fanart'))
+    folder = plugin.Folder(title, content='movies')
 
     for row in data['seasons']['seasons']:
         item = _parse_season(row, data['series'])
@@ -402,14 +405,12 @@ def series(series_id, **kwargs):
     if data['extras']['videos']:
         folder.add_item(
             label = (_.EXTRAS),
-            art   = {'thumb': _image(data['series']['image'], 'thumb')},
-            path  = plugin.url_for(extras, series_id=series_id, fanart=_image(data['series']['image'], 'fanart')),
+            path  = plugin.url_for(extras, series_id=series_id),
         )
 
     if data['related']['items']:
         folder.add_item(
             label = _.SUGGESTED,
-            art   = {'thumb': _image(data['series']['image'], 'thumb')},
             path  = plugin.url_for(suggested, series_id=series_id),
         )
 
@@ -420,7 +421,7 @@ def season(season_id, title, page=1, **kwargs):
     page = int(page)
     data = api.episodes(season_id, page=page)
 
-    folder = plugin.Folder(title)
+    folder = plugin.Folder(title, content='episodes')
 
     items = _process_rows(data['videos'], content_class='episode')
     folder.add_items(items)
@@ -441,7 +442,7 @@ def suggested(family_id=None, series_id=None, **kwargs):
     elif series_id:
         data = api.series_bundle(series_id)
 
-    folder = plugin.Folder(_.SUGGESTED)
+    folder = plugin.Folder(_.SUGGESTED, content='movies')
 
     items = _process_rows(data['related']['items'])
     folder.add_items(items)
@@ -451,12 +452,10 @@ def suggested(family_id=None, series_id=None, **kwargs):
 def extras(family_id=None, series_id=None, **kwargs):
     if family_id:
         data = api.video_bundle(family_id)
-        fanart = _image(data['video']['image'], 'fanart')
     elif series_id:
         data = api.series_bundle(series_id)
-        fanart = _image(data['series']['image'], 'fanart')
 
-    folder = plugin.Folder(_.EXTRAS, fanart=fanart)
+    folder = plugin.Folder(_.EXTRAS, content='movies')
     items = _process_rows(data['extras']['videos'])
     folder.add_items(items)
     return folder
