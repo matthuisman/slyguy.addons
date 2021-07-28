@@ -263,7 +263,7 @@ def _parse_collection(row):
     return plugin.Item(
         label = _get_text(row['text'], 'title', 'collection'),
         info  = {'plot': _get_text(row['text'], 'description', 'collection')},
-        art   = {'thumb': _image(row['image'], 'fanart')},
+        art   = _get_art(row['image']),
         path  = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass']),
     )
 
@@ -284,7 +284,7 @@ def _get_play_path(content_id, skip_intro=None):
 def _parse_series(row):
     return plugin.Item(
         label = _get_text(row['text'], 'title', 'series'),
-        art = {'thumb': _image(row['image'], 'thumb'), 'fanart': _image(row['image'], 'fanart')},
+        art = _get_art(row['image']),
         info = {
             'plot': _get_text(row['text'], 'description', 'series'),
             'year': row['releases'][0]['releaseYear'],
@@ -305,7 +305,7 @@ def _parse_season(row, series):
             'season': row['seasonSequenceNumber'],
             'mediatype': 'season',
         },
-        art   = {'thumb': _image(row.get('image') or series['image'], 'thumb')},
+        art   = _get_art(row.get('image') or series['image']),
         path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
     )
 
@@ -320,7 +320,7 @@ def _parse_video(row):
             'mediatype': 'movie',
         },
         context = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, family_id=row['family']['encodedFamilyId']))),),
-        art  = {'thumb': _image(row['image'], 'thumb'), 'fanart': _image(row['image'], 'fanart')},
+        art  = _get_art(row['image']),
         path = _get_play_path(row['contentId']),
         playable = True,
     )
@@ -344,32 +344,48 @@ def _parse_video(row):
 
     return item
 
-def _image(data, _type='thumb', ratio='1.78'):
-    _types = {
-        'thumb': ('thumbnail', 'tile'),
-        'fanart': ('background', 'background_details', 'hero_collection'),
-    }
+def _get_art(data):
+    images = {}
+    # don't ask for jpeg thumb; might be transparent png instead
+    thumbsize = '/scale?width=400&aspectRatio=1.78'
+    bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
+    fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
+    fanart_count = 0
+    for name, art_type in data.items():
+        lr = br = pr = '' # chosen ratios
+        for r in art_type:
+            if r == '1.78':
+                lr = r
+            elif r.startswith('3') and (not br or float(r) > float(br)):
+                br = r # longest banner ratio
+            elif r.startswith('0') and (not lr or float(lr)-0.67 > float(r)-0.67):
+                pr = r # poster ratio closest to 2:3
 
-    selected = _types[_type]
-    images = []
+        if name in ('tile', 'thumbnail'):
+            if lr:
+                images['thumb'] = _first_image_url(art_type[lr]) + thumbsize
+            if pr:
+                images['poster'] = _first_image_url(art_type[pr]) + thumbsize
+        elif name == 'hero_tile':
+            if br:
+                images['banner'] = _first_image_url(art_type[br]) + bannersize
+        elif name in ('hero_collection', 'background_details'):
+            if lr:
+                k = f'fanart{fanart_count}' if fanart_count else 'fanart'
+                images[k] = _first_image_url(art_type[lr]) + fullsize
+                fanart_count += 1
+            if pr:
+                images['keyart'] = _first_image_url(art_type[pr]) + bannersize
+        elif name in ('title_treatment', 'logo'):
+            lr = '2.00' if '2.00' in art_type else lr
+            if lr:
+                images['clearlogo'] = _first_image_url(art_type[lr]) + thumbsize
+    return images
 
-    for index, row in enumerate(selected):
-        if row not in data or ratio not in data[row]:
-            continue
-
-        for row2 in data[row][ratio]:
-            for row3 in data[row][ratio][row2]:
-                images.append([index, data[row][ratio][row2][row3]])
-
-    if not images:
-        return None
-
-    chosen = sorted(images, key=lambda x: (x[0], -x[1]['masterWidth']))[0][1]
-
-    if _type == 'fanart':
-        return chosen['url'] + '/scale?width=1440&aspectRatio=1.78&format=jpeg'
-    else:
-        return chosen['url'] + '/scale?width=400&aspectRatio=1.78&format=jpeg'
+def _first_image_url(d):
+    for r1 in d:
+        for r2 in d[r1]:
+            return d[r1][r2]['url']
 
 def _get_text(texts, field, source):
     _types = ['medium', 'brief', 'full']
