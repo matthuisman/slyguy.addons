@@ -26,18 +26,19 @@ class Player(xbmc.Player):
             cur_time  = time.time()
             play_time = self.getTime()
 
-            play_skips = []
-            for row in self._play_skips:
-                if play_time >= row['from']:
-                    self.seekTime(row['to'])
-                else:
-                    play_skips.append(row)
-
-            self._play_skips = play_skips
+            if self._play_skips:
+                play_skips = []
+                for row in self._play_skips:
+                    if play_time >= row['from']:
+                        self.seekTime(row['to'])
+                    else:
+                        play_skips.append(row)
+                self._play_skips = play_skips
 
             if self._up_next and play_time >= self._up_next['time']:
                 play_time = self.getTotalTime()
                 self.seekTime(play_time)
+                self._up_next = None
                 last_callback = None
 
             if self._callback and self._callback['type'] == 'interval' and (not last_callback or cur_time >= last_callback + self._callback['interval']):
