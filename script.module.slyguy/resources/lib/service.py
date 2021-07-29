@@ -4,9 +4,9 @@ from time import time
 from slyguy import settings
 from slyguy.session import Session
 from slyguy.log import log
+from slyguy.monitor import monitor
 
 from .proxy import Proxy
-from .monitor import monitor
 from .player import Player
 from .util import check_updates
 from .constants import *
