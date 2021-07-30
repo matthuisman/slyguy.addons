@@ -360,11 +360,19 @@ def _play(account, reference, live=False):
 def _get_live_channels():
     data = api.content(LIVE_TV_SLUG)
 
-    for section in data['items']:
-        if section['type'] == 'channelShelf' and section['cName'] == 'Live':
-            return section.get('mediaItems', [])
+    added = []
+    channels = []
 
-    return []
+    for section in data['items']:
+        if section.get('childType') != 'channelItem':
+            continue
+
+        for row in section.get('mediaItems', []):
+            if row.get('type') == 'ChannelItem' and row['channelId'] not in added:
+                channels.append(row)
+                added.append(row['channelId'])
+
+    return sorted(channels, key=lambda x: int(x['channelId']))
 
 @plugin.route()
 @plugin.merge()
