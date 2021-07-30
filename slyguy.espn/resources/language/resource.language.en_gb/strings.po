@@ -1,0 +1,75 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Live Now"
+msgstr ""
+
+msgctxt "#30001"
+msgid "1. Go to: [B]https://www.espn.com/activate[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+
+msgctxt "#30002"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr ""
+
+msgctxt "#30003"
+msgid "This content is not available in your current location"
+msgstr ""
+
+msgctxt "#30004"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "ESPN Account Login"
+msgstr ""
+
+msgctxt "#30006"
+msgid "ESPN Account Logout"
+msgstr ""
+
+msgctxt "#30007"
+msgid "TV Provider Login"
+msgstr ""
+
+msgctxt "#30008"
+msgid "TV Provider Logout"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Account"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Could not find source for this content"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
