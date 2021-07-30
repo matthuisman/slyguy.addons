@@ -59,19 +59,21 @@ def account(**kwargs):
     options = []
     funcs = []
 
-    if not api.espn.logged_in:
-        options.append(_(_.ESPN_LOGIN, _bold=True))
-        funcs.append(_espn_login)
-    else:
-        options.append(_.ESPN_LOGOUT)
-        funcs.append(_espn_logout)
-
     if not api.provider.logged_in:
         options.append(_(_.PROVIDER_LOGIN, _bold=True))
         funcs.append(_provider_login)
-    else:
+
+    if not api.espn.logged_in:
+        options.append(_(_.ESPN_LOGIN, _bold=True))
+        funcs.append(_espn_login)
+
+    if api.provider.logged_in:
         options.append(_.PROVIDER_LOOUT)
         funcs.append(_provider_logout)
+
+    if api.espn.logged_in:
+        options.append(_.ESPN_LOGOUT)
+        funcs.append(_espn_logout)
 
     index = gui.select(options=options, heading=_.ACCOUNT)
     if index < 0:

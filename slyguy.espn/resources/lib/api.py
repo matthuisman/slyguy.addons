@@ -8,6 +8,7 @@ from . import queries
 from .espn import ESPN
 from .provider import Provider
 from .util import check_errors
+from .language import _
 
 HEADERS = {
     'User-Agent': 'ESPN/4.7.1 Dalvik/2.1.0 (Linux; U; Android 8.1.0; MI 5 Build/OPM7.181005.003)',
@@ -69,7 +70,7 @@ class API(object):
 
         if source['authorizationType'] == 'SHIELD':
             if not self._provider.logged_in:
-                raise APIError(__.NOT_ENTITLED)
+                raise APIError(_.NOT_ENTITLED)
 
             provider_data = self._provider.token(data['data']['airing']['adobeRSS'])
 
