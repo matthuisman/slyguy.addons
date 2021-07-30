@@ -351,10 +351,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             mpd.removeAttribute('publishTime')
             log.debug('Dash Fix: publishTime removed')
 
-        ## Remove mediaPresentationDuration PR: https://github.com/xbmc/inputstream.adaptive/pull/761
-        if 'mediaPresentationDuration' in mpd_attribs:
+        ## Remove mediaPresentationDuration from live PR: https://github.com/xbmc/inputstream.adaptive/pull/762
+        if 'timeShiftBufferDepth' in mpd_attribs and 'mediaPresentationDuration' in mpd_attribs:
             mpd.removeAttribute('mediaPresentationDuration')
-            log.debug('Dash Fix: mediaPresentationDuration removed')
+            log.debug('Dash Fix: mediaPresentationDuration removed from live')
 
         ## Fix mpd overalseconds bug issue: https://github.com/xbmc/inputstream.adaptive/issues/731
         if mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs:
