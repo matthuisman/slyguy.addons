@@ -12,5 +12,6 @@ class Language(BaseLanguage):
     PROVIDER_LOOUT     = 30008
     ACCOUNT            = 30009
     NO_SOURCE          = 30010
+    SELECT_BROADCAST   = 30011
 
 _ = Language()

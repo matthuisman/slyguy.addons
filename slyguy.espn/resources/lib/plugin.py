@@ -3,6 +3,7 @@ from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.constants import ROUTE_LIVE_TAG
+from slyguy.exceptions import PluginError
 
 from .constants import *
 from .language import _
@@ -39,17 +40,21 @@ def live(**kwargs):
 
     data = api.bucket(LIVE_BUCKET_ID)
     for row in data['buckets'][0]['contents']:
-        stream = row['streams'][0]
-        network = stream['source']['name']
+        sources = u'/'.join([x['source']['name'] for x in row['streams']])
+
+        if row.get('isEvent'):
+            path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
+        else:
+            path = plugin.url_for(play, content_id=row['id'], _is_live=True)
 
         folder.add_item(
-            label = u'[{}] {}'.format(network, row['name']),
+            label = u'{name} [{sources}] '.format(name=row['name'], sources=sources),
             info = {
                 'plot': row['subtitle'],
             },
             art = {'thumb': row['imageHref']},
             playable = True,
-            path = plugin.url_for(play, content_id=row['id'], _is_live=True),
+            path = path,
         )
 
     return folder
@@ -124,8 +129,15 @@ def _provider_logout(**kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(content_id, **kwargs):
+def play(content_id=None, event_id=None, **kwargs):
     is_live = ROUTE_LIVE_TAG in kwargs
+
+    if event_id:
+        data = api.event(event_id)
+        content_id = _select_stream(data)
+        if not content_id:
+            return
+
     playback_data = api.play(content_id)
 
     return plugin.Item(
@@ -133,3 +145,23 @@ def play(content_id, **kwargs):
         inputstream = inputstream.HLS(live=is_live),
         headers = playback_data.get('headers'),
     )
+
+def _select_stream(data):
+    options = []
+    values = []
+
+    for row in data['streams']:
+        options.append(row['source']['name'])
+        values.append(row['id'])
+
+    if not values:
+        raise PluginError(_.NO_SOURCE)
+
+    elif len(values) == 1:
+        return values[0]
+
+    index = gui.select(options=options, heading=_.SELECT_BROADCAST)
+    if index < 0:
+        return
+
+    return values[index]

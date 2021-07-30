@@ -48,6 +48,13 @@ class API(object):
 
         return self._session.get('/bucket', params=params).json()['page']
 
+    def event(self, event_id):
+        params = {
+            'eventId': event_id,
+        }
+
+        return self._session.get('/event', params=params).json()['page']['contents']
+
     def play(self, content_id):
         variables = {
             'countryCode': 'US',
