@@ -351,15 +351,20 @@ class RequestHandler(BaseHTTPRequestHandler):
             mpd.removeAttribute('publishTime')
             log.debug('Dash Fix: publishTime removed')
 
-        ## Fix mpd overalseconds bug
-        if mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs and 'mediaPresentationDuration' not in mpd_attribs:
+        ## Remove mediaPresentationDuration PR: https://github.com/xbmc/inputstream.adaptive/pull/761
+        if 'mediaPresentationDuration' in mpd_attribs:
+            mpd.removeAttribute('mediaPresentationDuration')
+            log.debug('Dash Fix: mediaPresentationDuration removed')
+
+        ## Fix mpd overalseconds bug issue: https://github.com/xbmc/inputstream.adaptive/issues/731
+        if mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs:
             if 'availabilityStartTime' in mpd_attribs:
                 buffer_seconds = (arrow.now() - arrow.get(mpd.getAttribute('availabilityStartTime'))).total_seconds()
-                mpd.setAttribute('timeShiftBufferDepth', 'PT{}S'.format(buffer_seconds))
-                log.debug('Dash Fix: {}S timeShiftBufferDepth added'.format(buffer_seconds))
             else:
-                mpd.setAttribute('mediaPresentationDuration', 'PT60S')
-                log.debug('Dash Fix: 60S mediaPresentationDuration added')
+                buffer_seconds = 60
+
+            mpd.setAttribute('timeShiftBufferDepth', 'PT{}S'.format(buffer_seconds))
+            log.debug('Dash Fix: {}S timeShiftBufferDepth added'.format(buffer_seconds))
 
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
