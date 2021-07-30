@@ -91,10 +91,6 @@ msgctxt "#30022"
 msgid "Play Next Recommended Movie"
 msgstr ""
 
-msgctxt "#30023"
-msgid "Play without Intro"
-msgstr ""
-
 msgctxt "#30024"
 msgid "Skip Intros"
 msgstr ""
@@ -123,9 +119,6 @@ msgctxt "#30030"
 msgid "Enter your Profile PIN"
 msgstr ""
 
-msgctxt "#30041"
-msgid "Play with Intro"
-msgstr ""
 
 msgctxt "#30042"
 msgid "Continue Watching"

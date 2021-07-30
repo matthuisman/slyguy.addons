@@ -7,7 +7,7 @@ class Language(BaseLanguage):
     MOVIES                   = 30004
     SERIES                   = 30005
     ORIGINALS                = 30006
-    INFORMATION              = 30007
+    FULL_DETAILS             = 30007
     HUBS                     = 30008
     WV_SECURE                = 30009
     SUGGESTED                = 30010
@@ -23,7 +23,7 @@ class Language(BaseLanguage):
     SKIP_CREDITS             = 30020
     PLAY_NEXT_EPISODE        = 30021
     PLAY_NEXT_MOVIE          = 30022
-    SKIP_INTRO               = 30023
+
     SKIP_INTROS              = 30024
     PLAY_FROM_START          = 30025
     WATCHLIST                = 30026
@@ -31,7 +31,7 @@ class Language(BaseLanguage):
     DELETE_WATCHLIST         = 30028
     ADDED_WATCHLIST          = 30029
     ENTER_PIN                = 30030
-    INCLUDE_INTRO            = 30041
+
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
     BAD_CREDENTIALS          = 30044
