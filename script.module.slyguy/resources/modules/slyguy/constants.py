@@ -11,7 +11,7 @@ ADDON_PATH     = xbmc.translatePath(ADDON.getAddonInfo('path'))
 ADDON_PROFILE  = xbmc.translatePath(ADDON.getAddonInfo('profile'))
 ADDON_ICON     = ADDON.getAddonInfo('icon')
 ADDON_FANART   = ADDON.getAddonInfo('fanart')
-ADDON_DEV      = bool(int(os.environ.get('ADDON_DEV', '0')))
+ADDON_DEV      = bool(int(os.environ.get('SLYGUY_DEV', '0')))
 #################
 
 COMMON_ADDON_ID = 'script.module.slyguy'
