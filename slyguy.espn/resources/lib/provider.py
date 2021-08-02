@@ -13,7 +13,7 @@ from .util import check_errors
 
 CONFIG_URL = 'https://secure.espncdn.com/connected-devices/app-configurations/watchespn-androidtv-3.23.config.json'
 HEADERS = {
-    'User-Agent': 'ESPN/4.7.1 Dalvik/2.1.0 (Linux; U; Android 8.1.0; MI 5 Build/OPM7.181005.003)',
+    'User-Agent': 'ESPN/4.7.1 Dalvik/2.1.0 (Linux; U; Android 8.1.0;)',
 }
 
 class Provider(object):

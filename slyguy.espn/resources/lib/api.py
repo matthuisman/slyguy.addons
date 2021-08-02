@@ -1,6 +1,7 @@
 import json
 import base64
 
+import arrow
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
@@ -54,6 +55,25 @@ class API(object):
         }
 
         return self._session.get('/event', params=params).json()['page']['contents']
+
+    # def schedule(self, day, _type, limit=500):
+    #     variables = {
+    #         'countryCode': 'US',
+    #         'deviceType': 'SETTOP',
+    #         'tz': 'UTC',
+    #         'type': _type, #LIVE, UPCOMING, #REPLAY
+    #         'packages': None,
+    #         'limit': limit,
+    #         'day': day.to('utc').format('YYYY-MM-DD'),
+    #     }
+
+    #     params = {
+    #         'apiKey': WATCH_KEY,
+    #         'query': queries.EPG,
+    #         'variables': json.dumps(variables),
+    #     }
+
+    #     return self._session.get(WATCH_URL, params=params).json()['data']['airings']
 
     def play(self, content_id):
         variables = {

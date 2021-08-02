@@ -11,7 +11,7 @@ from .bam import Bam
 
 API_URL = 'https://registerdisney.go.com/jgc/v8/client/ESPN-OTT.GC.ANDTV-PROD{}'
 HEADERS = {
-    'User-Agent': 'ESPN/4.7.1 Dalvik/2.1.0 (Linux; U; Android 8.1.0; MI 5 Build/OPM7.181005.003)',
+    'User-Agent': 'ESPN/4.7.1 Dalvik/2.1.0 (Linux; U; Android 8.1.0;)',
     'always-ok-response': 'true',
 }
 
