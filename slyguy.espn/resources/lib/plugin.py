@@ -1,7 +1,4 @@
-import codecs
-
 import arrow
-
 from slyguy import plugin, gui, signals, inputstream, settings
 from slyguy.log import log
 from slyguy.exceptions import PluginError
@@ -44,16 +41,19 @@ def live(**kwargs):
 
     data = api.bucket(LIVE_BUCKET_ID)
     for row in data['buckets'][0]['contents']:
-        streams = [x for x in row['streams'] if x.get('status') == 'live']
-        sources = u'/'.join([x['source']['name'] for x in streams])
+        sources = u'/'.join([x['source']['name'] for x in row['streams']])
 
-        if len(streams) > 1:
+        if len(row['streams']) > 1:
             path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
         else:
             path = plugin.url_for(play, content_id=row['id'], _is_live=True)
 
+        label = u'{name} [{sources}] '.format(name=row['name'], sources=sources)
+        if row['status'] != 'live':
+            label = u'{} [{}]'.format(label, arrow.get(row['utc']).to('local').format('h:mm A'))
+
         folder.add_item(
-            label = u'{name} [{sources}] '.format(name=row['name'], sources=sources),
+            label = label,
             info = {
                 'plot': row['subtitle'],
             },
@@ -173,46 +173,3 @@ def _select_stream(data):
         return
 
     return values[index]
-
-# def _schedule():
-#     now = arrow.now()
-
-#     data = api.schedule(now, 'LIVE')
-#     data.extend(api.schedule(now, 'UPCOMING'))
-#     # for i in range(6):
-#     #     day = now.shift(days=i+1)
-#     #     data.extend(api.schedule(day, 'UPCOMING'))
-
-#     channels = {}
-#     for row in data:
-#         if row['network'].get('type') == 'linear':
-#             network_name = row['network']['name']
-#             if network_name not in channels:
-#                 channels[network_name] = []
-
-#             row = {
-#                 'id': row['id'],
-#                 'start': arrow.get(row['startDateTime']),
-#             }
-#             channels[network_name].append(row)
-
-#     for key in channels:
-#         channels[key] = sorted(channels[key], key=lambda x: x['start'])
-
-#     return channels
-
-# @plugin.route()
-# @plugin.merge()
-# def playlist(output, **kwargs):
-#     channels = _schedule()
-
-#     with codecs.open(output, 'w', encoding='utf8') as f:
-#         f.write(u'#EXTM3U\n')
-
-#     for key in channels():
-#         f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" catchup="vod",{name}\n{path}\n'.format(id=key, name=key, path='plugin://'))
-
-# @plugin.route()
-# @plugin.merge()
-# def epg(output, **kwargs):
-#     channels = _schedule()

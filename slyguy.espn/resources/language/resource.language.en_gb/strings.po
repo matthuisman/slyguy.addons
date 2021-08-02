@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 
 msgctxt "#30000"
-msgid "Live Now"
+msgid "Live"
 msgstr ""
 
 msgctxt "#30001"
