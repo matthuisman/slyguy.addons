@@ -1,5 +1,0 @@
-{
-    "version":  3,
-    "playlist": "plugin://$ID/?_=playlist&output=$FILE",
-    "epg":      "plugin://$ID/?_=epg&output=$FILE"
-}
