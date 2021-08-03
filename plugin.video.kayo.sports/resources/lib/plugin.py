@@ -481,13 +481,14 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     prefer_format = SUPPORTED_FORMATS[0]
 
     if prefer_cdn == CDN_AUTO:
-        try:
-            data = api.use_cdn(is_live)
-            prefer_cdn = data['useCDN']
-            prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
-        except Exception as e:
-            log.debug('Failed to get preferred cdn')
-            prefer_cdn = AVAILABLE_CDNS[0]
+        prefer_cdn = AVAILABLE_CDNS[0]
+        # try:
+        #     data = api.use_cdn(is_live)
+        #     prefer_cdn = data['useCDN']
+        #     prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
+        # except Exception as e:
+        #     log.debug('Failed to get preferred cdn')
+        #     prefer_cdn = AVAILABLE_CDNS[0]
 
     providers = [prefer_cdn]
     providers.extend([s['provider'] for s in streams])
@@ -502,7 +503,6 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     item = plugin.Item(
         path = stream['manifest']['uri'],
-        art = False,
         headers = HEADERS,
     )
 
