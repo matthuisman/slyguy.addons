@@ -136,7 +136,7 @@ class API(object):
         return self._session.get('{host}/production/sport-menu/lists/default.json'.format(host=self._config()['endPoints']['resourcesAPI'])).json()
 
     def use_cdn(self, live=False):
-        return self._session.get('{host}/web/usecdn/unknown/{media}'.format(host=self._config()['endPoints']['cdnSelectionServiceAPI'], media='LIVE' if live else 'VOD'), headers=self._auth_header).json()
+        return self._session.get('{host}/usecdn/mobile/{media}'.format(host=self._config()['endPoints']['cdnSelectionServiceAPI'], media='LIVE' if live else 'VOD'), headers=self._auth_header).json()
 
     #landing has heros and panels
     def landing(self, name, sport=None):
@@ -194,7 +194,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'fields': 'alternativeStreams,assetType,markers,metadata.isStreaming',
+            'fields': 'alternativeStreams,assetType,markers,metadata.isStreaming,metadata.drmContentIdAvc',
         }
 
         data = self._session.post('{host}/api/v1/asset/{asset_id}/play'.format(host=self._config()['endPoints']['vimondPlayAPI'], asset_id=asset_id), params=params, json={}, headers=self._auth_header).json()

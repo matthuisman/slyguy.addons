@@ -478,17 +478,24 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         raise PluginError(_.NO_STREAM)
 
     prefer_cdn = settings.getEnum('prefer_cdn', AVAILABLE_CDNS)
+    prefer_format = SUPPORTED_FORMATS[0]
+
     if prefer_cdn == CDN_AUTO:
         try:
-            prefer_cdn = api.use_cdn(is_live)['useCDN']
+            data = api.use_cdn(is_live)
+            prefer_cdn = data['useCDN']
+            prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
         except Exception as e:
             log.debug('Failed to get preferred cdn')
-            prefer_cdn = None
+            prefer_cdn = AVAILABLE_CDNS[0]
 
     providers = [prefer_cdn]
     providers.extend([s['provider'] for s in streams])
 
-    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), SUPPORTED_FORMATS.index(k['mediaFormat'])))
+    formats = [prefer_format]
+    formats.extend(SUPPORTED_FORMATS)
+
+    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), formats.index(k['mediaFormat'])))
     stream = streams[0]
 
     log.debug('Stream CDN: {provider} | Stream Format: {mediaFormat}'.format(**stream))
@@ -512,13 +519,14 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     if stream['mediaFormat'] == FORMAT_DASH:
         item.inputstream = inputstream.MPD()
 
-    elif stream['mediaFormat'] == FORMAT_HLS_TS:
-        force = (is_live and play_type == PLAY_FROM_LIVE and asset['assetType'] != 'live-linear')
+    elif stream['mediaFormat'] in (FORMAT_HLS_TS, FORMAT_HLS_TS_SSAI):
+        force = stream['mediaFormat'] == FORMAT_HLS_TS_SSAI or (is_live and play_type == PLAY_FROM_LIVE and asset['assetType'] != 'live-linear')
         item.inputstream = inputstream.HLS(force=force, live=is_live)
         if force and not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
-    elif stream['mediaFormat'] == FORMAT_HLS_FMP4:
+    elif stream['mediaFormat'] in (FORMAT_HLS_FMP4, FORMAT_HLS_FMP4_SSAI):
+        ## No audio on ffmpeg or IA
         item.inputstream = inputstream.HLS(force=True, live=is_live)
         if not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
