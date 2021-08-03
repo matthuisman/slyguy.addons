@@ -473,10 +473,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 elem.setAttribute('mimeType', subtitle[0])
                 elem.setAttribute('lang', subtitle[1])
                 elem.setAttribute('id', 'caption_{}'.format(idx))
-                #elem.setAttribute('forced', 'true')
                 #elem.setAttribute('original', 'true')
                 #elem.setAttribute('default', 'true')
                 #elem.setAttribute('impaired', 'true')
+
+                if subtitle[3] == 'forced':
+                    elem.setAttribute('forced', 'true')
 
                 elem2 = root.createElement('Representation')
                 elem2.setAttribute('id', 'caption_rep_{}'.format(idx))
@@ -600,6 +602,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         lines = []
 
         for line in m3u8.splitlines():
+            if line.startswith('#EXT-X-PROGRAM-DATE-TIME'):
+                continue
+
             if not line.startswith('#') and '/beacon?' in line.lower():
                 parse = urlparse(line)
                 params = dict(parse_qsl(parse.query))

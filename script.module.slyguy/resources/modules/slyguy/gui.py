@@ -350,7 +350,7 @@ class Item(object):
         else:
             self.inputstream = None
 
-        def make_sub(url, language='unk', mimetype=''):
+        def make_sub(url, language='unk', mimetype='', forced=False):
             if not url.lower().startswith('http') and not url.lower().startswith('plugin://'):
                 return url
 
@@ -361,7 +361,7 @@ class Item(object):
                     url = url_for(ROUTE_WEBVTT, url=url)
                     mimetype = 'text/vtt'
 
-                proxy_data['subtitles'].append([mimetype, language, url])
+                proxy_data['subtitles'].append([mimetype, language, url, 'forced' if forced else None])
                 return None
 
             ## only srt or webvtt (text/) supported
@@ -369,7 +369,7 @@ class Item(object):
                 url = url_for(ROUTE_WEBVTT, url=url)
                 mimetype = 'text/vtt'
 
-            proxy_url = '{}.srt'.format(language)
+            proxy_url = '{}{}.srt'.format(language, '.forced' if forced else '')
             proxy_data['path_subs'][proxy_url] = url
 
             return u'{}{}'.format(proxy_path, proxy_url)
@@ -416,7 +416,10 @@ class Item(object):
             if self.subtitles:
                 subs = []
                 for sub in self.subtitles:
-                    sub = make_sub(*sub)
+                    if type(sub) == list:
+                        sub = make_sub(*sub)
+                    else:
+                        sub = make_sub(**sub)
                     if sub:
                         subs.append(sub)
 
