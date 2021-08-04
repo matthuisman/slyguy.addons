@@ -166,6 +166,7 @@ class BaseLanguage(object):
     NEW_SEARCH                  = 32126
     REMOVE_SEARCH               = 32127
     NEWS_HEADING                = 32128
+    VIDEO_FOLDER_CONTENT        = 32129
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)

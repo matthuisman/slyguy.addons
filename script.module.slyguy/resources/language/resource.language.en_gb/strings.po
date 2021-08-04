@@ -572,3 +572,7 @@ msgstr ""
 msgctxt "#32128"
 msgid "SlyGuy News"
 msgstr ""
+
+msgctxt "#32129"
+msgid "Video view for all content"
+msgstr ""
