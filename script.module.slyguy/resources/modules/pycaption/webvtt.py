@@ -224,13 +224,16 @@ class WebVTTWriter(BaseWriter):
         self.global_layout = caption_set.get_layout_info(lang)
 
         captions = caption_set.get_captions(lang)
-
         for i, caption in enumerate(captions):
             merge = i > 0 and captions[i-1].start == caption.start and captions[i-1].end == caption.end
             if not merge:
                 output += '\n'
+            else:
+                #we merging with last subtitle so remove previous newline
+                output = output.rstrip()
+                output += ' '
 
-            output += self._write_caption(caption_set, caption, merge=i > 0 and captions[i-1].start == caption.start and captions[i-1].end == caption.end)
+            output += self._write_caption(caption_set, caption, merge=merge)
 
         return output
 
