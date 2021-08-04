@@ -17,7 +17,7 @@ from .merger import Merger
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
-    if not iptv_is_setup():
+    if not _setup(check_only=True):
         folder.add_item(
             label = _(_.SETUP_IPTV_SIMPLE, _bold=True),
             path  = plugin.url_for(setup),
@@ -536,83 +536,70 @@ def add_channel(playlist_id, radio, **kwargs):
 
     gui.refresh()
 
-def iptv_is_setup():
-    addon = get_addon(IPTV_SIMPLE_ID, required=False, install=False)
-    if not addon:
-        return False
-
-    output_dir    = settings.get('output_dir', '').strip() or ADDON_PROFILE
-    playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-    epg_path      = os.path.join(output_dir, EPG_FILE_NAME)
-
-    return addon.getSetting('m3uPathType') == '0' and addon.getSetting('epgPathType') == '0' \
-            and addon.getSetting('m3uPath') == playlist_path and addon.getSetting('epgPath') == epg_path
-
 @plugin.route()
 def setup(**kwargs):
     if _setup():
         gui.refresh()
 
-def _setup():
-    addon = get_addon(IPTV_SIMPLE_ID, required=True, install=True)
+def _setup(check_only=False, reinstall=True, run_merge=True):
+    addon = get_addon(IPTV_SIMPLE_ID, required=not check_only, install=not check_only)
+    if not addon:
+        return False
 
-    with gui.progress(_.SETTING_UP_IPTV) as progress:
-        kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
+    output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
+    playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
+    epg_path = os.path.join(output_dir, EPG_FILE_NAME)
 
-        output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
-        playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-        epg_path = os.path.join(output_dir, EPG_FILE_NAME)
+    is_setup = addon.getSetting('m3uPathType') == '0' and addon.getSetting('epgPathType') == '0' \
+                and addon.getSetting('m3uPath') == playlist_path and addon.getSetting('epgPath') == epg_path
 
-        ## IMPORT ANY CURRENT URL SOURCES ##
-        cur_epg_url  = addon.getSetting('epgUrl')
-        cur_epg_type = addon.getSetting('epgPathType')
-        if cur_epg_url:
-            epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
-            try: epg.save()
-            except: pass
+    if check_only:
+        return is_setup
 
-        cur_m3u_url  = addon.getSetting('m3uUrl')
-        cur_m3u_type = addon.getSetting('m3uPathType')
-        start_chno = int(addon.getSetting('startNum') or 1)
-        #user_agent = addon.getSetting('userAgent')
-        if cur_m3u_url:
-            playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
-            if start_chno != 1:
-                playlist.use_start_chno = True
-                playlist.start_chno = start_chno
+    elif is_setup and not reinstall:
+        if run_merge:
+            set_kodi_string('_iptv_merge_force_run', '1')
 
-            try: playlist.save()
-            except: pass
-        ################################
+        return True
 
-        addon.setSetting('epgPath', epg_path)
-        addon.setSetting('m3uPath', playlist_path)
-        addon.setSetting('epgUrl', '')
-        addon.setSetting('m3uUrl', '')
-        addon.setSetting('m3uPathType', '0')
-        addon.setSetting('epgPathType', '0')
+    ## IMPORT ANY CURRENT URL SOURCES ##
+    cur_epg_url  = addon.getSetting('epgUrl')
+    cur_epg_type = addon.getSetting('epgPathType')
+    if cur_epg_url:
+        epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
+        try: epg.save()
+        except: pass
 
-        monitor = xbmc.Monitor()
+    cur_m3u_url  = addon.getSetting('m3uUrl')
+    cur_m3u_type = addon.getSetting('m3uPathType')
+    start_chno = int(addon.getSetting('startNum') or 1)
+    #user_agent = addon.getSetting('userAgent')
+    if cur_m3u_url:
+        playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
+        if start_chno != 1:
+            playlist.use_start_chno = True
+            playlist.start_chno = start_chno
 
-        progress.update(30)
+        try: playlist.save()
+        except: pass
+    ################################
 
-        monitor.waitForAbort(2)
-        kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': True})
+    addon.setSetting('epgPath', epg_path)
+    addon.setSetting('m3uPath', playlist_path)
+    addon.setSetting('epgUrl', '')
+    addon.setSetting('m3uUrl', '')
+    addon.setSetting('m3uPathType', '0')
+    addon.setSetting('epgPathType', '0')
 
-        progress.update(60)
+    set_kodi_setting('epg.futuredaystodisplay', 7)
+    #  set_kodi_setting('epg.ignoredbforclient', True)
+    set_kodi_setting('pvrmanager.syncchannelgroups', True)
+    set_kodi_setting('pvrmanager.preselectplayingchannel', True)
+    set_kodi_setting('pvrmanager.backendchannelorder', True)
+    set_kodi_setting('pvrmanager.usebackendchannelnumbers', True)
 
-        monitor.waitForAbort(2)
-
-        progress.update(100)
-
-        set_kodi_setting('epg.futuredaystodisplay', 7)
-      #  set_kodi_setting('epg.ignoredbforclient', True)
-        set_kodi_setting('pvrmanager.syncchannelgroups', True)
-        set_kodi_setting('pvrmanager.preselectplayingchannel', True)
-        set_kodi_setting('pvrmanager.backendchannelorder', True)
-        set_kodi_setting('pvrmanager.usebackendchannelnumbers', True)
-
-    set_kodi_string('_iptv_merge_force_run', '1')
+    if run_merge:
+        set_kodi_string('_iptv_merge_force_run', '1')
 
     gui.ok(_.SETUP_IPTV_COMPLETE)
 
@@ -646,9 +633,6 @@ def run_merge(type='all', refresh=1, forced=0, **kwargs):
 
 @plugin.route()
 def setup_addon(addon_id, **kwargs):
-    if not iptv_is_setup() and not _setup():
-        return
-
     addon, data = merge_info(addon_id)
 
     if METHOD_PLAYLIST in data:
@@ -667,4 +651,4 @@ def setup_addon(addon_id, **kwargs):
         path = data['configure'].replace('$ID', addon_id)
         run_plugin(path, wait=True)
 
-    set_kodi_string('_iptv_merge_force_run', '1')
+    _setup(reinstall=False, run_merge=True)

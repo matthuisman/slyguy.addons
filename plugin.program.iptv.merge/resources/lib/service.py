@@ -4,7 +4,7 @@ from kodi_six import xbmc, xbmcvfs, xbmcaddon
 from six.moves.urllib.parse import unquote_plus
 
 from slyguy import router, settings, userdata, gui
-from slyguy.constants import ADDON_DEV, KODI_VERSION
+from slyguy.constants import KODI_VERSION
 from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc, kodi_db
 from slyguy.log import log
 
@@ -24,7 +24,7 @@ def start():
     while not monitor.waitForAbort(1):
         http.start() if settings.getBool('http_api', False) else http.stop()
 
-        forced = ADDON_DEV or get_kodi_string('_iptv_merge_force_run') or 0
+        forced = get_kodi_string('_iptv_merge_force_run') or 0
 
         if forced or boot_merge or (settings.getBool('auto_merge', True) and time.time() - userdata.get('last_run', 0) > settings.getInt('reload_time_hours', 12) * 3600):
             set_kodi_string('_iptv_merge_force_run', '1')
@@ -63,7 +63,5 @@ def start():
                 progress.close()
 
         boot_merge = False
-        if ADDON_DEV:
-            break
 
     http.stop()
