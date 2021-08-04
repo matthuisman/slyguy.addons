@@ -6,7 +6,7 @@ msgid "Device Link"
 msgstr ""
 
 msgctxt "#30002"
-msgid "1. Go to [B]hbomax.com/tvsignin[/B]\n"
+msgid "1. Go to [B]https://hbomax.com/tvsignin[/B]\n"
 "2. Enter code: [B]{code}[/B]"
 msgstr ""
 

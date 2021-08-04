@@ -7,10 +7,10 @@ msgstr "Device Link"
 
 msgctxt "#30002"
 msgid ""
-"1. Go to [B]hbomax.com/tvsignin[/B]\n"
+"1. Go to [B]https://hbomax.com/tvsignin[/B]\n"
 "2. Enter code: [B]{code}[/B]"
 msgstr ""
-"1. Acesse [B]hbomax.com/tvsignin[/B]\n"
+"1. Acesse [B]https://hbomax.com/tvsignin[/B]\n"
 "2. Digite o código: [B]{code}[/B]"
 
 msgctxt "#30003"
