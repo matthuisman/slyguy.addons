@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.8.1">
+<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.8.2">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -17,7 +17,7 @@ Abbonamento richiesto.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Spanish translation thanks to @Zevenpipo</news>
+    <news>Eye candy thanks to @andygoblins</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

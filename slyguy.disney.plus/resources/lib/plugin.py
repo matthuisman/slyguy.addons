@@ -67,8 +67,6 @@ def hubs(**kwargs):
     folder = plugin.Folder(_.HUBS)
 
     data = api.collection_by_slug('home', 'home')
-    thumb = _image(data.get('images', []), 'thumb')
-
     for row in data['containers']:
         _style = row.get('style')
         _set = row.get('set')
@@ -145,7 +143,7 @@ def _switch_profile(profile):
 @plugin.route()
 def collection(slug, content_class, label=None, **kwargs):
     data = api.collection_by_slug(slug, content_class)
-    folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_image(data.get('image', []), 'fanart'))
+    folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_get_art(data.get('image', []).get('fanart')))
 
     for row in data['containers']:
         _type = row.get('type')
@@ -276,7 +274,7 @@ def _parse_collection(row):
     return plugin.Item(
         label = _get_text(row['text'], 'title', 'collection'),
         info  = {'plot': _get_text(row['text'], 'description', 'collection')},
-        art   = {'thumb': _image(row['image'], 'fanart')},
+        art   = _get_art(row['image']),
         path  = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass']),
     )
 
@@ -297,7 +295,7 @@ def _get_play_path(content_id):
 def _parse_series(row):
     return plugin.Item(
         label = _get_text(row['text'], 'title', 'series'),
-        art = {'thumb': _image(row['image'], 'thumb'), 'fanart': _image(row['image'], 'fanart')},
+        art = _get_art(row['image']),
         info = {
             'plot': _get_text(row['text'], 'description', 'series'),
             'year': row['releases'][0]['releaseYear'],
@@ -318,7 +316,7 @@ def _parse_season(row, series):
             'season': row['seasonSequenceNumber'],
             'mediatype': 'season',
         },
-        art   = {'thumb': _image(row.get('image') or series['image'], 'thumb')},
+        art   = _get_art(row.get('image') or series['image']),
         path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
     )
 
@@ -332,7 +330,7 @@ def _parse_video(row):
             'aired': row['releases'][0]['releaseDate'] or row['releases'][0]['releaseYear'],
             'mediatype': 'movie',
         },
-        art  = {'thumb': _image(row['image'], 'thumb'), 'fanart': _image(row['image'], 'fanart')},
+        art  = _get_art(row['image']),
         path = _get_play_path(row['contentId']),
         playable = True,
     )
@@ -351,32 +349,55 @@ def _parse_video(row):
 
     return item
 
-def _image(data, _type='thumb', ratio='1.78'):
-    _types = {
-        'thumb': ('thumbnail', 'tile'),
-        'fanart': ('background', 'background_details', 'hero_collection'),
-    }
+def _get_art(images):
+    def _first_image_url(d):
+        for r1 in d:
+            for r2 in d[r1]:
+                return d[r1][r2]['url']
 
-    selected = _types[_type]
-    images = []
+    art = {}
+    # don't ask for jpeg thumb; might be transparent png instead
+    thumbsize = '/scale?width=400&aspectRatio=1.78'
+    bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
+    fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
 
-    for index, row in enumerate(selected):
-        if row not in data or ratio not in data[row]:
-            continue
+    fanart_count = 0
+    for name in images or []:
+        art_type = images[name]
 
-        for row2 in data[row][ratio]:
-            for row3 in data[row][ratio][row2]:
-                images.append([index, data[row][ratio][row2][row3]])
+        lr = br = pr = '' # chosen ratios
+        for r in art_type:
+            if r == '1.78':
+                lr = r
+            elif r.startswith('3') and (not br or float(r) > float(br)):
+                br = r # longest banner ratio
+            elif r.startswith('0') and (not lr or float(lr)-0.67 > float(r)-0.67):
+                pr = r # poster ratio closest to 2:3
 
-    if not images:
-        return None
+        if name in ('tile', 'thumbnail'):
+            if lr:
+                art['thumb'] = _first_image_url(art_type[lr]) + thumbsize
+            if pr:
+                art['poster'] = _first_image_url(art_type[pr]) + thumbsize
 
-    chosen = sorted(images, key=lambda x: (x[0], -x[1]['masterWidth']))[0][1]
+        elif name == 'hero_tile':
+            if br:
+                art['banner'] = _first_image_url(art_type[br]) + bannersize
 
-    if _type == 'fanart':
-        return chosen['url'] + '/scale?width=1440&aspectRatio=1.78&format=jpeg'
-    else:
-        return chosen['url'] + '/scale?width=400&aspectRatio=1.78&format=jpeg'
+        elif name in ('hero_collection', 'background_details', 'background'):
+            if lr:
+                k = 'fanart{}'.format(fanart_count) if fanart_count else 'fanart'
+                art[k] = _first_image_url(art_type[lr]) + fullsize
+                fanart_count += 1
+            if pr:
+                art['keyart'] = _first_image_url(art_type[pr]) + bannersize
+
+        elif name in ('title_treatment', 'logo'):
+            lr = '2.00' if '2.00' in art_type else lr
+            if lr:
+                art['clearlogo'] = _first_image_url(art_type[lr]) + thumbsize
+
+    return art
 
 def _get_text(texts, field, source):
     _types = ['medium', 'brief', 'full']
@@ -401,9 +422,9 @@ def _get_text(texts, field, source):
 @plugin.route()
 def series(series_id, **kwargs):
     data = api.series_bundle(series_id)
-
+    art = _get_art(data['series']['image'])
     title = _get_text(data['series']['text'], 'title', 'series')
-    folder = plugin.Folder(title, fanart=_image(data['series']['image'], 'fanart'))
+    folder = plugin.Folder(title, fanart=art.get('fanart'))
 
     for row in data['seasons']['seasons']:
         item = _parse_season(row, data['series'])
@@ -412,15 +433,17 @@ def series(series_id, **kwargs):
     if data['extras']['videos']:
         folder.add_item(
             label = (_.EXTRAS),
-            art   = {'thumb': _image(data['series']['image'], 'thumb')},
-            path  = plugin.url_for(extras, series_id=series_id, fanart=_image(data['series']['image'], 'fanart')),
+            art   = art,
+            path  = plugin.url_for(extras, series_id=series_id, fanart=art.get('fanart')),
+            specialsort = 'bottom',
         )
 
     if data['related']['items']:
         folder.add_item(
             label = _.SUGGESTED,
-            art   = {'thumb': _image(data['series']['image'], 'thumb')},
+            art   = art,
             path  = plugin.url_for(suggested, series_id=series_id),
+            specialsort = 'bottom',
         )
 
     return folder
@@ -461,10 +484,10 @@ def suggested(family_id=None, series_id=None, **kwargs):
 def extras(family_id=None, series_id=None, **kwargs):
     if family_id:
         data = api.video_bundle(family_id)
-        fanart = _image(data['video']['image'], 'fanart')
+        fanart = _get_art(data['video']['image']).get('fanart')
     elif series_id:
         data = api.series_bundle(series_id)
-        fanart = _image(data['series']['image'], 'fanart')
+        fanart = _get_art(data['series']['image']).get('fanart')
 
     folder = plugin.Folder(_.EXTRAS, fanart=fanart)
     items = _process_rows(data['extras']['videos'])
