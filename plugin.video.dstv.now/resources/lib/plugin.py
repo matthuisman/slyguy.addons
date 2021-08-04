@@ -3,7 +3,7 @@ import threading
 from xml.sax.saxutils import escape
 
 import arrow
-from kodi_six import xbmcplugin, xbmc
+from kodi_six import xbmc
 from six.moves import queue
 
 from slyguy import plugin, gui, userdata, inputstream, signals, settings
@@ -81,14 +81,11 @@ def live_tv(**kwargs):
     return folder
 
 @plugin.route()
-def content(title, tags, sort='az', category=None, page=0, **kwargs):
+def content(title, tags, sort='az', category=None, page=1, **kwargs):
     folder = plugin.Folder(title)
 
     page = int(page)
     data = api.content(tags, sort, category=category, page=page, pagesize=24)
-
-    if page > 0:
-        folder.title += ' ({})'.format(page+1)
 
     if category is None:
         category = ''
@@ -114,8 +111,9 @@ def content(title, tags, sort='az', category=None, page=0, **kwargs):
 
         if data['total'] > ((data['pageSize'] * data['page']) + data['count']):
             folder.add_item(
-                label = _(_.NEXT_PAGE, page=page+2, _bold=True),
+                label = _(_.NEXT_PAGE, page=page+1),
                 path = plugin.url_for(content, title=title, tags=tags, sort=sort, category=category, page=page+1),
+                specialsort = 'bottom',
             )
 
     return folder
@@ -153,8 +151,8 @@ def _process_program(program):
         label = program['title'],
         art   = {'thumb': _get_image(program['images']), 'fanart': _get_image(program['images'], 'fanart')},
         info  = {
-            'plot': program['synopsis'],
-            'genre': program['genres'],
+            'plot': program.get('synopsis'),
+            'genre': program.get('genres'),
             'tvshowtitle': program['title'],
             'mediatype': 'tvshow',
         },
@@ -162,18 +160,25 @@ def _process_program(program):
     )
 
 def _process_video(video):
+    if video.get('type') == 'Movie':
+        media_type = 'movie'
+    elif video.get('type') == 'Episode':
+        media_type = 'episode'
+    else:
+        media_type = 'video'
+
     return plugin.Item(
         label = video['title'],
         info  = {
-            'plot': video['synopsis'],
-            'year': video['yearOfRelease'],
-            'duration': video['durationInSeconds'],
-            'season': video['seasonNumber'],
-            'episode': video['seasonEpisode'],
-            'genre': video['genres'],
-            'dateadded': video['airDate'],
-            'tvshowtitle': video['displayTitle'],
-            'mediatype': 'episode' if video['seasonEpisode'] else 'video', #movie
+            'plot': video.get('synopsis'),
+            'year': video.get('yearOfRelease'),
+            'duration': video.get('durationInSeconds'),
+            'season': video.get('seasonNumber'),
+            'episode': video.get('seasonEpisode'),
+            'genre': video.get('genres'),
+            'dateadded': video.get('airDate'),
+            'tvshowtitle': video.get('displayTitle'),
+            'mediatype': media_type,
         },
         art   = {'thumb': _get_image(video['images']), 'fanart': _get_image(video['images'], 'fanart')},
         path  = plugin.url_for(play_asset, stream_url=video['videoAssets'][0]['url'], content_id=video['videoAssets'][0]['manItemId']),
@@ -183,15 +188,20 @@ def _process_video(video):
 @plugin.route()
 def list_seasons(id, **kwargs):
     series = api.series(id)
+
+    # Flatten
+    if len(series['seasons']) == 1 and settings.getBool('flatten_single_season', True):
+        return _episodes(series, int(series['seasons'][0]['seasonNumber']))
+
     folder = plugin.Folder(series['title'])
 
     for row in series['seasons']:
         folder.add_item(
             label = 'Season {}'.format(row['seasonNumber']),
             info  = {
-                'plot': row.get('synopsis', ''),
+                'plot': row.get('synopsis'),
                 'tvshowtitle': series['title'],
-                'season': row['seasonNumber'],
+                'season': row.get('seasonNumber'),
                 'mediatype': 'season',
             },
             art   = {'thumb': _get_image(series['images']), 'fanart': _get_image(series['images'], 'fanart')},
@@ -203,14 +213,18 @@ def list_seasons(id, **kwargs):
 @plugin.route()
 def episodes(series, season, **kwargs):
     series = api.series(series)
-    folder = plugin.Folder(series['title'], fanart= _get_image(series['images'], 'fanart'), sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED])
+    return _episodes(series, int(season))
+
+def _episodes(series, season):
+    folder = plugin.Folder(series['title'], fanart= _get_image(series['images'], 'fanart'))
 
     for row in series['seasons']:
         if int(row['seasonNumber']) != int(season):
             continue
 
+        has_eps = len([x for x in row['videos'] if x['seasonEpisode']])
         for video in row['videos']:
-            if not video['seasonEpisode']:
+            if has_eps and not video['seasonEpisode']:
                 log.debug('Skipping info video item: {}'.format(video['title']))
                 continue
 

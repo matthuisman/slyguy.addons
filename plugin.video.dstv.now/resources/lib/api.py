@@ -108,11 +108,11 @@ class API(object):
         else:
             raise APIError(_(_.REQUEST_ERROR, url=url.split(';')[0], code=r.status_code))
 
-    def content(self, tags, sort, category='', page=0, pagesize=24):
+    def content(self, tags, sort, category='', page=1, pagesize=24):
         category = 'filter={};'.format(category) if category else ''
 
-        data = self._request_json('now-content/v7/catalogueByPackageAndCountry;productId={product};platformId={platform};tags={tags};subscriptionPackage={package};country={country};{category}sort={sort};page={page};pageSize={pagesize}'.format(
-            product=PRODUCT_ID, platform=PLATFORM_ID, tags=tags, country=userdata.get('country', DEFAULT_COUNTRY), package=userdata.get('package', DEFAULT_PACKAGE), sort=sort, category=category, page=page, pagesize=pagesize,
+        data = self._request_json('now-content/v6/catalogueByPackageAndCountry;videoAssetsFilter=HasStream;productId={product};platformId={platform};tags={tags};subscriptionPackage={package};country={country};{category}sort={sort};page={page};pageSize={pagesize}'.format(
+            product=PRODUCT_ID, platform=PLATFORM_ID, tags=tags, country=userdata.get('country', DEFAULT_COUNTRY), package=userdata.get('package', DEFAULT_PACKAGE), sort=sort, category=category, page=page-1, pagesize=pagesize,
         ))
 
         return data

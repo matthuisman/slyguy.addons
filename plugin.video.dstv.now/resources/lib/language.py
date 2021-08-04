@@ -15,7 +15,6 @@ class Language(BaseLanguage):
     API_ERROR           = 30011
     REFRESH_TOKEN_ERROR = 30012
     CHANNEL_NOT_FOUND   = 30013
-
-    NEXT_PAGE           = 30017
+    FLATTEN_SEASONS     = 30014
 
 _ = Language()

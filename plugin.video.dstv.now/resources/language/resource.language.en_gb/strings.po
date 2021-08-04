@@ -64,8 +64,8 @@ msgctxt "#30013"
 msgid "Could not find that channel ({id})"
 msgstr ""
 
-msgctxt "#30017"
-msgid "Next Page ({page})"
+msgctxt "#30014"
+msgid "Flatten Single Seasons"
 msgstr ""
 
 ## COMMON SETTINGS ##
