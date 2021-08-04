@@ -254,12 +254,15 @@ class API(object):
             element['items'] = []
             element['tabs'] = []
             element['edits'] = []
+            element['previews'] = []
             element['seasons'] = []
+            element['extras'] = []
+            element['similars'] = []
             element['episodes'] = []
             element['target'] = None
 
             for key in element.get('references', {}):
-                if key in ('items', 'tabs', 'edits', 'seasons', 'episodes'):
+                if key in ('items', 'tabs', 'edits', 'seasons', 'previews', 'extras', 'similars', 'episodes'):
                     for id in element['references'][key]:
                         if id == '$dataBinding':
                             continue

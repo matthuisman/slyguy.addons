@@ -119,6 +119,14 @@ msgid "HBO Max has detected your out of region\n"
 "Check your IP is in correct region"
 msgstr ""
 
+msgctxt "#30029"
+msgid "Full Details"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Extras"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

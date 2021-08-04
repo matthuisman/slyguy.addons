@@ -64,7 +64,10 @@ def _process_rows(rows, slug):
                     'duration': row['duration'],
                     'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
                 },
-                context = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
+                context = (
+                    (_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=row['viewable']))),
+                    (_.EXTRAS, 'Container.Update({})'.format(plugin.url_for(extras, slug=row['viewable']))),
+                ),
                 playable = True,
                 path = _get_play_path(row['viewable']),
             ))
@@ -73,7 +76,7 @@ def _process_rows(rows, slug):
             items.append(plugin.Item(
                 label = row['titles']['full'],
                 art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                context = ((_.INFORMATION, 'RunPlugin({})'.format(plugin.url_for(information, slug=row['viewable']))),),
+                context = ((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=row['viewable']))),),
                 info = {'mediatype': 'tvshow'},
                 path = plugin.url_for(series, slug=row['viewable']),
             ))
@@ -132,7 +135,30 @@ def _process_rows(rows, slug):
     return items
 
 @plugin.route()
-def information(slug, **kwargs):
+def extras(slug, **kwargs):
+    content = api.content(slug)
+    folder = plugin.Folder(_.EXTRAS, fanart=_image(content['images'].get('tile'), size='1920x1080'))
+
+    for row in content['extras']:
+        if row['extraType'] != 'code':
+            continue
+
+        folder.add_item(
+            label = row['titles']['full'],
+            art = {'thumb': _image(row['images'].get('tileburnedin')),},
+            info = {
+                'plot': row['summaries']['short'],
+                'duration': row['duration'],
+                'mediatype': 'video',
+            },
+            playable = True,
+            path = _get_play_path(row['id']),
+        )
+
+    return folder
+
+@plugin.route()
+def full_details(slug, **kwargs):
     content = api.content(slug)
 
     if ':series' in slug:
@@ -337,8 +363,11 @@ def _get_play_path(slug):
 
     kwargs = {
         'slug': slug,
-        'profile_id': userdata.get('profile', {}).get('id', ''),
     }
+
+    profile_id = userdata.get('profile', {}).get('id', '')
+    if profile_id:
+        kwargs['profile_id'] = profile_id
 
     if settings.getBool('hbo_sync', False):
         kwargs['sync'] = 1
@@ -474,7 +503,7 @@ def play(slug, **kwargs):
 
     if not settings.getBool('ignore_subs', False):
         for row in data.get('textTracks', []):
-            item.subtitles.append([row['url'], row['language']])
+            item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
 
     return item
 

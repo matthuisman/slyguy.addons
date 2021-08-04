@@ -14,7 +14,6 @@ class Language(BaseLanguage):
     SKIP_INTROS       = 30011
     PLAY_NEXT_MOVIE   = 30012
     SKIP_CREDITS      = 30013
-    INFORMATION       = 19033
     H265              = 30014
     ENABLE_4K         = 30015
     DOLBY_VISION      = 30016
@@ -30,5 +29,7 @@ class Language(BaseLanguage):
     TRENDING_NOW      = 30026
     BLOCKED_IP        = 30027
     GEO_LOCKED        = 30028
+    FULL_DETAILS      = 30029
+    EXTRAS            = 30030
 
 _ = Language()
