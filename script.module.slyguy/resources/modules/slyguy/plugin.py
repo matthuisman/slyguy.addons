@@ -524,7 +524,7 @@ class Item(gui.Item):
 
 #Plugin.Folder()
 class Folder(object):
-    def __init__(self, title=None, items=None, content='videos', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='dialog', show_news=True):
+    def __init__(self, title=None, items=None, content='AUTO', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='dialog', show_news=True):
         self.title = title
         self.items = items or []
         self.content = content
@@ -544,6 +544,8 @@ class Folder(object):
         ep_sort = True
         last_show_name = ''
 
+        item_types = {}
+
         if not items and self.no_items_label:
             label = _(self.no_items_label, _label=True)
 
@@ -556,6 +558,7 @@ class Folder(object):
                     is_folder = False,
                 ))
 
+        count = 0.0
         for item in items:
             if self.thumb and not item.art.get('thumb'):
                 item.art['thumb'] = self.thumb
@@ -571,11 +574,32 @@ class Folder(object):
             if not last_show_name:
                 last_show_name = show_name
 
+            if not item.specialsort:
+                media_type = item.info.get('mediatype')
+                if media_type not in item_types:
+                    item_types[media_type] = 0
+                item_types[media_type] += 1
+                count += 1
+
             li = item.get_li()
             xbmcplugin.addDirectoryItem(handle, item.path, li, item.is_folder)
 
-        if settings.getBool('video_folder_content', True):
+        if self.content == 'AUTO':
             self.content = 'videos'
+
+            if not settings.getBool('video_folder_content', True) and item_types:
+                type_map = {
+                    'movie': 'movies',
+                    'tvshow': 'tvshows',
+                    'season': 'tvshows',
+                    'episode': 'episodes',
+                }
+
+                top_type = sorted(item_types, key=lambda k: item_types[k], reverse=True)[0]
+                percent = (item_types[top_type] / count) * 100
+                content_type = type_map.get(top_type)
+                if percent > 70 and content_type:
+                    self.content = content_type
 
         if self.content: xbmcplugin.setContent(handle, self.content)
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)
