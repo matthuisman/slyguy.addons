@@ -401,6 +401,7 @@ def mpd_request(_data, _data_path, **kwargs):
     enable_4k   = settings.getBool('4k_enabled', True)
     enable_ac3  = settings.getBool('ac3_enabled', False)
     enable_ec3  = settings.getBool('ec3_enabled', False)
+    enable_atmos = settings.getBool('atmos_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
 
     for elem in root.getElementsByTagName('Representation'):
@@ -421,8 +422,15 @@ def mpd_request(_data, _data_path, **kwargs):
         elif not enable_ac3 and codecs == 'ac-3':
             parent.removeChild(elem)
 
-        elif not enable_ec3 and codecs == 'ec-3':
-            parent.removeChild(elem)
+        elif codecs == 'ec-3' and (not enable_ec3 or not enable_atmos):
+            is_atmos = False
+            for supelem in elem.getElementsByTagName('SupplementalProperty'):
+                if supelem.getAttribute('value') == 'JOC':
+                    is_atmos = True
+                    break
+
+            if (not enable_atmos and is_atmos) or (not enable_ec3 and not is_atmos):
+                parent.removeChild(elem)
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
         if not adap_set.getElementsByTagName('Representation') or \

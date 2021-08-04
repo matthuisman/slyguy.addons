@@ -31,5 +31,6 @@ class Language(BaseLanguage):
     GEO_LOCKED        = 30028
     FULL_DETAILS      = 30029
     EXTRAS            = 30030
+    ATMOS_ENABLED     = 30031
 
 _ = Language()
