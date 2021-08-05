@@ -118,6 +118,10 @@ msgctxt "#30028"
 msgid "Ignore Subtitles"
 msgstr ""
 
+msgctxt "#30029"
+msgid "Auto"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

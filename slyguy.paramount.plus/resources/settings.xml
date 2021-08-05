@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30009" id="region_index" type="enum" default="0" lvalues="30010|30026"/>
+        <setting label="30009" id="region_index" type="enum" default="2" lvalues="30010|30026|30029"/>
         <setting label="30003" id="region_ip" type="ipaddress" default="0.0.0.0" visible="eq(-1,0)"/>
         <setting label="30008" type="text" id="device_id" default="{mac_address}"/>
         <setting label="30025" type="bool" id="ac3_enabled" default="true"/>
