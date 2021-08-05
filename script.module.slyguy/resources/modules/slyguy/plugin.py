@@ -158,6 +158,7 @@ def search():
                     queries.remove(query)
 
                 queries.insert(0, query)
+                queries = queries[:MAX_SEARCH_HISTORY]
                 userdata.set('queries', queries)
                 gui.refresh()
 

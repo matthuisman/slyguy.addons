@@ -308,7 +308,7 @@ class CaptionSet(object):
         return list(self._captions.keys())
 
     def get_captions(self, lang):
-        return self._captions.get(lang, [])
+        return [x for x in self._captions.get(lang, []) if x]
 
     def add_style(self, selector, rules):
         """

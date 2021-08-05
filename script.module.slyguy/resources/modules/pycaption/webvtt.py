@@ -224,10 +224,6 @@ class WebVTTWriter(BaseWriter):
         self.global_layout = caption_set.get_layout_info(lang)
 
         captions = caption_set.get_captions(lang)
-
-        # remove None captions
-        captions = [x for x in captions if x]
-
         for i, caption in enumerate(captions):
             merge = i > 0 and captions[i-1].start == caption.start and captions[i-1].end == caption.end
             if not merge:
