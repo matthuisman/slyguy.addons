@@ -21,6 +21,10 @@ msgid "{count} updates available\n"
 "Sometimes a reboot may be required after updates"
 msgstr ""
 
+msgctxt "#30004"
+msgid "{name} [Atmos]"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

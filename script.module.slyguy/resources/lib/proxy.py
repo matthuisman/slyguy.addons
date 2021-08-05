@@ -22,8 +22,9 @@ from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_strin
 from slyguy.plugin import failed_playback
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
-from slyguy.language import _
 from slyguy.router import add_url_args
+
+from .language import _
 
 REMOVE_IN_HEADERS = ['upgrade', 'host', 'accept-encoding']
 REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
@@ -400,11 +401,45 @@ class RequestHandler(BaseHTTPRequestHandler):
                     bandwidth = 0
                     if 'bandwidth' in attribs:
                         bandwidth = int(attribs['bandwidth'])
-                        if bandwidth > highest_bandwidth:
-                            highest_bandwidth = bandwidth
 
                     if 'maxPlayoutRate' in attribs:
                         is_trick = True
+
+                    if 'audio' in attribs.get('mimeType', ''):
+                        is_atmos = False
+                        atmos_channels = None
+                        for supelem in stream.getElementsByTagName('SupplementalProperty'):
+                            if supelem.getAttribute('value') == 'JOC':
+                                is_atmos = True
+                            if 'EC3_ExtensionComplexityIndex' in (supelem.getAttribute('schemeIdUri') or ''):
+                                atmos_channels = supelem.getAttribute('value')
+
+                        if is_atmos:
+                            adap_set.removeChild(stream)
+                            new_set = adap_set.cloneNode(deep=True)
+
+                            new_set.setAttribute('id', '{}-atmos'.format(attribs.get('id','')))
+                            new_set.setAttribute('lang', _(_.ATMOS, name=attribs.get('lang','')))
+
+                            for elem in new_set.getElementsByTagName("Representation"):
+                                new_set.removeChild(elem)
+                            new_set.appendChild(stream)
+
+                            if atmos_channels:
+                                for elem in stream.getElementsByTagName("AudioChannelConfiguration"):
+                                    stream.removeChild(elem)
+
+                                elem = root.createElement('AudioChannelConfiguration')
+                                elem.setAttribute('schemeIdUri', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
+                                elem.setAttribute('value', atmos_channels)
+                                stream.appendChild(elem)
+
+                            audio_sets.append([bandwidth, new_set, adap_parent])
+                            log.debug('Dash Fix: Atmos representation moved to own adaption set')
+                            continue
+
+                    if bandwidth > highest_bandwidth:
+                        highest_bandwidth = bandwidth
 
                     if 'video' in attribs.get('mimeType', '') and not is_trick:
                         is_video = True
@@ -670,6 +705,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             if not audio_description and attribs.get('TYPE') == 'AUDIO' and attribs.get('CHARACTERISTICS','').lower() == 'public.accessibility.describes-video':
                 m3u8 = m3u8.replace(line, '')
                 continue
+
+            if attribs.get('TYPE') == 'AUDIO' and 'JOC' in attribs.get('CHANNELS', ''):
+                attribs['NAME'] = _(_.ATMOS, name=attribs['NAME'])
+                attribs['CHANNELS'] = attribs['CHANNELS'].split('/')[0]
 
             groups[attribs['GROUP-ID']].append([attribs, line])
             if attribs.get('DEFAULT') == 'YES' and attribs['GROUP-ID'] not in default_groups:

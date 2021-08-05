@@ -5,5 +5,6 @@ class Language(BaseLanguage):
     NO_UPDATES        = 30001
     UPDATES_INSTALLED = 30002
     UPDATES_AVAILABLE = 30003
+    ATMOS             = 30004
 
 _ = Language()
