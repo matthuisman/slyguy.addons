@@ -404,37 +404,50 @@ def mpd_request(_data, _data_path, **kwargs):
     enable_atmos = settings.getBool('atmos_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
 
-    for elem in root.getElementsByTagName('Representation'):
-        parent = elem.parentNode
-        codecs = elem.getAttribute('codecs').lower()
-        height = int(elem.getAttribute('height') or 0)
-        width = int(elem.getAttribute('width') or 0)
+    for adap_set in root.getElementsByTagName('AdaptationSet'):
+        atmos = None
+        ec3 = None
 
-        if not dolby_vison and codecs.startswith('dvh1'):
-            parent.removeChild(elem)
+        if not enable_accessibility and adap_set.getElementsByTagName('Accessibility'):
+            adap_set.parentNode.removeChild(adap_set)
+            continue
 
-        elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
-            parent.removeChild(elem)
+        for elem in adap_set.getElementsByTagName('Representation'):
+            parent = elem.parentNode
+            codecs = elem.getAttribute('codecs').lower()
+            height = int(elem.getAttribute('height') or 0)
+            width = int(elem.getAttribute('width') or 0)
 
-        elif not enable_4k and (height > 1080 or width > 1920):
-            parent.removeChild(elem)
-
-        elif not enable_ac3 and codecs == 'ac-3':
-            parent.removeChild(elem)
-
-        elif codecs == 'ec-3' and (not enable_ec3 or not enable_atmos):
-            is_atmos = False
-            for supelem in elem.getElementsByTagName('SupplementalProperty'):
-                if supelem.getAttribute('value') == 'JOC':
-                    is_atmos = True
-                    break
-
-            if (not enable_atmos and is_atmos) or (not enable_ec3 and not is_atmos):
+            if not dolby_vison and codecs.startswith('dvh1'):
                 parent.removeChild(elem)
 
-    for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not adap_set.getElementsByTagName('Representation') or \
-            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')):
+            elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
+                parent.removeChild(elem)
+
+            elif not enable_4k and (height > 1080 or width > 1920):
+                parent.removeChild(elem)
+
+            elif not enable_ac3 and codecs == 'ac-3':
+                parent.removeChild(elem)
+
+            elif codecs == 'ec-3':
+                for supelem in elem.getElementsByTagName('SupplementalProperty'):
+                    if supelem.getAttribute('value') == 'JOC':
+                        atmos = elem
+                        break
+
+                if not atmos:
+                    ec3 = elem
+
+        # force atmos by removing ec3 if enabled
+        if ec3 and (not enable_ec3 or (atmos and enable_atmos)):
+            ec3.parentNode.removeChild(ec3)
+
+        if atmos and (not enable_atmos or not enable_ec3):
+            atmos.parentNode.removeChild(atmos)
+
+        # remove set if no representations left
+        if not adap_set.getElementsByTagName('Representation'):
             adap_set.parentNode.removeChild(adap_set)
 
     ## do below to convert all to cenc0 to work on firestick
