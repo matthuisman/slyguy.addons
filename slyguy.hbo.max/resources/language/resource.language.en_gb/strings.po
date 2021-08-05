@@ -131,6 +131,14 @@ msgctxt "#30031"
 msgid "Dolby Atmos"
 msgstr ""
 
+msgctxt "#30032"
+msgid "HBO Max Watchlist"
+msgstr ""
+
+msgctxt "#30033"
+msgid "HBO Max Sync"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

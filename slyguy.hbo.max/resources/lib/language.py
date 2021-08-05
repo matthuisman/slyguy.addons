@@ -32,5 +32,7 @@ class Language(BaseLanguage):
     FULL_DETAILS      = 30029
     EXTRAS            = 30030
     ATMOS_ENABLED     = 30031
+    SYNC_WATCHLIST    = 30032
+    SYNC_PLAYBACK     = 30033
 
 _ = Language()

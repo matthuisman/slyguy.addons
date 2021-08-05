@@ -62,6 +62,9 @@ class API(object):
         elif name == 'comet':
             return 'https://comet{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
+        elif name == 'markers': #need to confirm with latin
+            return 'https://markers{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
+
         elif name == 'artist':
             return 'https://artist.{cdnDomain}.hbo.com'.format(**config['routeKeys']) + path
 
@@ -188,14 +191,35 @@ class API(object):
                 raise APIError(_(error, msg=error_msg))
 
     def profiles(self):
-        self._refresh_token()
-        payload = [{'id': 'urn:hbo:profiles:mine'},]
+        return self.content([{'id': 'urn:hbo:profiles:mine'}])['urn:hbo:profiles:mine']['profiles']
 
-        headers = {
-            'x-hbo-headwaiter': self._headwaiter(),
+    # def continue_watching(self):
+    #     return self.content([{'id': 'urn:hbo:continue-watching:mine'}])['urn:hbo:continue-watching:mine']
+
+    # def watchlist(self):
+    #     data = self.content([{'id': 'urn:hbo:query:mylist'}])['urn:hbo:query:mylist']
+
+    # def add_watchlist(self, slug):
+    #     self._refresh_token()
+    #     return self._session.put('/watchlist/{}'.format(slug)).ok #slug may need be urlencoded
+
+    # def delete_watchlist(self, slug):
+    #     self._refresh_token()
+    #     return self._session.delete('/watchlist/{}'.format(slug)).ok
+
+    def update_marker(self, session_id, video_session, cut_id, runtime, playback_time):
+        self._refresh_token()
+
+        payload = {
+            'appSessionId': session_id, #random?
+            'videoSessionId': video_session, #random?
+            'creationTime': int(time()*1000),
+            'cutId': cut_id, #video_id
+            'position': playback_time,
+            'runtime': runtime, #required?
         }
 
-        return self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()[0]['body']['profiles']
+        print(self._session.post(self.url('markers', '/markers'), json=payload).json())
 
     def _age_category(self):
         month, year = userdata.get('profile', {}).get('birth', [0,0])
@@ -228,7 +252,7 @@ class API(object):
 
         return headwaiter.rstrip(',')
 
-    def content(self, slug, tab=None):
+    def express_content(self, slug, tab=None):
         self._refresh_token()
 
         headers = {
@@ -244,6 +268,22 @@ class API(object):
             _data[row['id']] = row['body']
 
         return self._process(_data, tab or slug)
+
+    def content(self, payload):
+        self._refresh_token()
+
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter(),
+        }
+
+        data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
+        self._check_errors(data)
+
+        _data = {}
+        for row in data:
+            _data[row['id']] = row['body']
+
+        return _data
 
     def _process(self, data, slug):
         main = data[slug]
@@ -281,35 +321,19 @@ class API(object):
         return main
 
     def search(self, query):
-        self._refresh_token()
+        key = 'urn:hbo:flexisearch:{}'.format(query)
+        data = self.content([{'id': key}])
 
-        payload = [{
-            'id': 'urn:hbo:flexisearch:{}'.format(query),
-        }]
+        for key in data:
+            if key.startswith('urn:hbo:grid:search') and key.endswith('-all'):
+                return self._process(data, key)
 
-        headers = {
-            'x-hbo-headwaiter': self._headwaiter(),
-        }
-
-        data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
-        self._check_errors(data)
-
-        keys = {}
-        key = None
-        for row in data:
-            keys[row['id']] = row['body']
-            if row['id'].startswith('urn:hbo:grid:search') and row['id'].endswith('-all'):
-                key = row['id']
-
-        if not key:
-            return None
-
-        return self._process(keys, key)
+        return None
 
     def play(self, slug):
         self._refresh_token()
 
-        content_data = self.content(slug)
+        content_data = self.express_content(slug)
         if not content_data['edits']:
             raise APIError(_.NO_VIDEO_FOUND)
 
@@ -328,12 +352,7 @@ class API(object):
             }
         }]
 
-        headers = {
-            'x-hbo-headwaiter': self._headwaiter(),
-        }
-
-        data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()[0]['body']
-
+        data = self.content(payload).get(selected['video'], {})
         for row in data.get('manifests', []):
             if row['type'] == 'urn:video:main':
                 return row, content_data

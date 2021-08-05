@@ -33,8 +33,15 @@ def index(**kwargs):
         folder.add_item(label=_(_.LAST_CHANCE, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:last-chance', label=_.LAST_CHANCE))
         folder.add_item(label=_(_.COMING_SOON, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:coming-soon', label=_.COMING_SOON))
         folder.add_item(label=_(_.TRENDING_NOW, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:trending', label=_.TRENDING_NOW))
-
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+
+        if settings.getBool('sync_watchlist', False):
+            pass
+            #folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(collection, slug='watchlist', content_class='watchlist'))
+
+        if settings.getBool('sync_playback', False):
+            pass
+            #folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(sets, set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -136,7 +143,7 @@ def _process_rows(rows, slug):
 
 @plugin.route()
 def extras(slug, **kwargs):
-    content = api.content(slug)
+    content = api.express_content(slug)
     folder = plugin.Folder(_.EXTRAS, fanart=_image(content['images'].get('tile'), size='1920x1080'))
 
     for row in content['extras']:
@@ -159,19 +166,19 @@ def extras(slug, **kwargs):
 
 @plugin.route()
 def full_details(slug, **kwargs):
-    content = api.content(slug)
+    data = api.express_content(slug)
 
     if ':series' in slug:
-        try: year = content['seasons'][0]['episodes'][0]['releaseYear']
+        try: year = data['seasons'][0]['episodes'][0]['releaseYear']
         except: year = None
 
         item = plugin.Item(
-            label = content['titles']['full'],
-            art = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
+            label = data['titles']['full'],
+            art = {'thumb': _image(data['images'].get('tileburnedin')), 'fanart':_image(data['images'].get('tile'), size='1920x1080')},
             info = {
-                'plot': content['summaries']['full'],
+                'plot': data['summaries']['full'],
                 'year': year,
-                'tvshowtitle': content['titles']['full'],
+                'tvshowtitle': data['titles']['full'],
                 'mediatype': 'tvshow',
             },
             #path = plugin.url_for(series, slug=slug), #kodi stalls when trying to browse from this dialog
@@ -179,12 +186,12 @@ def full_details(slug, **kwargs):
 
     elif ':feature' in slug:
         item = plugin.Item(
-            label = content['titles']['full'],
-            art   = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
+            label = data['titles']['full'],
+            art   = {'thumb': _image(data['images'].get('tileburnedin')), 'fanart':_image(data['images'].get('tile'), size='1920x1080')},
             info  = {
-                'plot': content['summaries']['full'],
-                'duration': content['duration'],
-                'year': content['releaseYear'],
+                'plot': data['summaries']['full'],
+                'duration': data['duration'],
+                'year': data['releaseYear'],
                 'mediatype': 'movie',
             },
             #path = _get_play_path(slug), #kodi stalls when trying to play from this dialog
@@ -197,7 +204,7 @@ def full_details(slug, **kwargs):
 def page(slug, label, tab=None, **kwargs):
     folder = plugin.Folder(label)
 
-    data = api.content(slug, tab=tab)
+    data = api.express_content(slug, tab=tab)
     items = _process_rows(data['items'], slug)
     folder.add_items(items)
 
@@ -205,7 +212,7 @@ def page(slug, label, tab=None, **kwargs):
 
 @plugin.route()
 def series(slug, season=None, **kwargs):
-    data = api.content(slug, tab=season)
+    data = api.express_content(slug, tab=season)
 
     if len(data['seasons']) > 1:
         folder = plugin.Folder(data['titles']['full'], fanart=_image(data['images'].get('tile'), size='1920x1080'))
@@ -369,7 +376,7 @@ def _get_play_path(slug):
     if profile_id:
         kwargs['profile_id'] = profile_id
 
-    if settings.getBool('hbo_sync', False):
+    if settings.getBool('sync_playback', False):
         kwargs['sync'] = 1
 
     return plugin.url_for(play, **kwargs)
@@ -405,9 +412,6 @@ def mpd_request(_data, _data_path, **kwargs):
     enable_accessibility = settings.getBool('accessibility_enabled', False)
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
-        atmos = None
-        ec3 = None
-
         if not enable_accessibility and adap_set.getElementsByTagName('Accessibility'):
             adap_set.parentNode.removeChild(adap_set)
             continue
@@ -430,21 +434,15 @@ def mpd_request(_data, _data_path, **kwargs):
             elif not enable_ac3 and codecs == 'ac-3':
                 parent.removeChild(elem)
 
-            elif codecs == 'ec-3':
+            elif codecs == 'ec-3' and (not enable_ec3 or not enable_atmos):
+                is_atmos = False
                 for supelem in elem.getElementsByTagName('SupplementalProperty'):
                     if supelem.getAttribute('value') == 'JOC':
-                        atmos = elem
+                        is_atmos = True
                         break
 
-                if not atmos:
-                    ec3 = elem
-
-        # force atmos by removing ec3 if enabled
-        if ec3 and (not enable_ec3 or (atmos and enable_atmos)):
-            ec3.parentNode.removeChild(ec3)
-
-        if atmos and (not enable_atmos or not enable_ec3):
-            atmos.parentNode.removeChild(atmos)
+                if not enable_ec3 or (not enable_atmos and is_atmos):
+                    parent.removeChild(elem)
 
         # remove set if no representations left
         if not adap_set.getElementsByTagName('Representation'):
@@ -525,6 +523,15 @@ def play(slug, **kwargs):
     if not settings.getBool('ignore_subs', False):
         for row in data.get('textTracks', []):
             item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
+
+    if settings.getBool('sync_playback', False):
+        pass
+        # telemetry = playback_data['tracking']['telemetry']
+        # item.callback = {
+        #     'type':'interval',
+        #     'interval': 30,
+        #     'callback': plugin.url_for(callback, media_id=telemetry['mediaId'], fguid=telemetry['fguid']),
+        # }
 
     return item
 
