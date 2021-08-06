@@ -513,6 +513,10 @@ def play(slug, **kwargs):
         path = data['url'],
         inputstream = inputstream.MPD(),
         headers = headers,
+        proxy_data = {
+            'default_language': data['defaultAudioSelection']['language'],
+            'original_language': data['originalAudioLanguage'],
+        },
     )
 
     if 'drm' in data:

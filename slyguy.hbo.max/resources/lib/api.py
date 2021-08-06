@@ -368,25 +368,32 @@ class API(object):
         self._refresh_token()
 
         content_data = self.express_content(slug)
-        if not content_data['edits']:
+
+        options = []
+        for edit in content_data.get('edits', []):
+            options.append([edit['originalAudioLanguage'], edit['video']])
+
+        if not options:
             raise APIError(_.NO_VIDEO_FOUND)
 
-        selected = content_data['edits'][0]
-        for edit in content_data['edits']:
-            for row in edit.get('textTracks', []):
-                if row.get('language') == 'en-US':
-                    selected = edit
-                    break
+        selected = options[0]
+        ## select dialog for language?
+        for option in options:
+            if 'en' in option[0]:
+                selected = option
+                break
 
         payload = [{
-            'id': selected['video'],
+            'id': selected[1],
             'headers' : {
                 'x-hbo-preferred-blends': 'DASH_WDV,HSS_PR',
                 'x-hbo-video-mlp': True,
             }
         }]
 
-        data = self.content(payload).get(selected['video'], {})
+        data = self.content(payload).get(selected[1])
+        self._check_errors(data)
+
         for row in data.get('manifests', []):
             if row['type'] == 'urn:video:main':
                 return row, content_data
