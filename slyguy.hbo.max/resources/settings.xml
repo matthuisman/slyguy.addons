@@ -7,8 +7,8 @@
         <setting label="30010" type="bool" id="play_next_episode" default="true"/>
         <setting label="30012" type="bool" id="play_next_movie" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
-        <!-- <setting label="30032" type="bool" id="sync_watchlist" default="true"/>
-        <setting label="30033" type="bool" id="sync_playback" default="false"/> -->
+        <setting label="30032" type="bool" id="sync_watchlist" default="true"/>
+        <!-- <setting label="30033" type="bool" id="sync_playback" default="false"/> -->
         <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
         <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
         <setting label="30031" type="bool" id="atmos_enabled" default="false" enable="eq(-1,true)"/>

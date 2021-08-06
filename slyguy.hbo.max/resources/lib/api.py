@@ -183,7 +183,11 @@ class API(object):
         if not data:
             raise APIError(_.BLOCKED_IP)
 
-        if 'code' in data:
+        if 'statusCode' in data and data['statusCode'] >= 400:
+            error_msg = data.get('message')
+            raise APIError(_(error, msg=error_msg))
+
+        elif 'code' in data:
             if data['code'] == 'not_paired':
                 raise NotPairedError()
             else:
@@ -196,16 +200,43 @@ class API(object):
     # def continue_watching(self):
     #     return self.content([{'id': 'urn:hbo:continue-watching:mine'}])['urn:hbo:continue-watching:mine']
 
-    # def watchlist(self):
-    #     data = self.content([{'id': 'urn:hbo:query:mylist'}])['urn:hbo:query:mylist']
+    def watchlist(self):
+        data = self.content([{'id': 'urn:hbo:query:mylist'}])
+        data = self._process(data, 'urn:hbo:query:mylist')
 
-    # def add_watchlist(self, slug):
-    #     self._refresh_token()
-    #     return self._session.put('/watchlist/{}'.format(slug)).ok #slug may need be urlencoded
+        payload = []
+        items = {}
+        order = []
+        for row in reversed(data['items']):
+            order.append(row['id'])
+            if not row.get('contentType'):
+                payload.append({'id': row['id']})
+            else:
+                items[row['id']] = row
 
-    # def delete_watchlist(self, slug):
-    #     self._refresh_token()
-    #     return self._session.delete('/watchlist/{}'.format(slug)).ok
+        def chunks(lst, n):
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
+
+        for chunk in chunks(payload, 32):
+            data = self.content(chunk)
+            for key in data:
+                items[key] = self._process(data, key)
+
+        ordered = []
+        for id in order:
+            if id in items:
+                ordered.append(items[id])
+
+        return ordered
+
+    def add_watchlist(self, slug):
+        self._refresh_token()
+        return self._session.put(self.url('comet', '/watchlist/{}'.format(slug))).ok
+
+    def delete_watchlist(self, slug):
+        self._refresh_token()
+        return self._session.delete(self.url('comet', '/watchlist/{}'.format(slug))).ok
 
     def update_marker(self, session_id, video_session, cut_id, runtime, playback_time):
         self._refresh_token()
@@ -278,6 +309,9 @@ class API(object):
 
         data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
         self._check_errors(data)
+
+        if isinstance(data, dict):
+            return data
 
         _data = {}
         for row in data:

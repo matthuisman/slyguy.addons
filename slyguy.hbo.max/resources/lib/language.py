@@ -34,5 +34,10 @@ class Language(BaseLanguage):
     ATMOS_ENABLED     = 30031
     SYNC_WATCHLIST    = 30032
     SYNC_PLAYBACK     = 30033
+    WATCHLIST         = 30034
+    CONTINUE_WATCHING = 30035
+    ADDED_WATCHLIST   = 30036
+    ADD_WATCHLIST     = 30037
+    REMOVE_WATCHLIST  = 30038
 
 _ = Language()

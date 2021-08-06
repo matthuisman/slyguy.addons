@@ -36,12 +36,10 @@ def index(**kwargs):
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('sync_watchlist', False):
-            pass
-            #folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(collection, slug='watchlist', content_class='watchlist'))
+            folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(watchlist))
 
-        if settings.getBool('sync_playback', False):
-            pass
-            #folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(sets, set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE))
+        # if settings.getBool('sync_playback', False):
+        #     folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -58,13 +56,19 @@ def index(**kwargs):
 
 def _process_rows(rows, slug):
     items = []
+    sync_watchlist = settings.getBool('sync_watchlist', False)
 
     for row in rows:
         viewable = row.get('viewable') or ''
         content_type = row.get('contentType')
+        item = None
+
+        if viewable.startswith('urn:hbo:franchise'):
+            content_type = 'SERIES'
+            viewable = 'urn:hbo:series:'+row['images']['tile'].split('/')[4]
 
         if content_type in ('FEATURE', 'EXTRA'):
-            items.append(plugin.Item(
+            item = plugin.Item(
                 label = row['titles']['full'],
                 art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
                 info = {
@@ -72,31 +76,24 @@ def _process_rows(rows, slug):
                     'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
                 },
                 context = (
-                    (_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=row['viewable']))),
-                    (_.EXTRAS, 'Container.Update({})'.format(plugin.url_for(extras, slug=row['viewable']))),
+                    (_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=viewable))),
+                    (_.EXTRAS, 'Container.Update({})'.format(plugin.url_for(extras, slug=viewable))),
                 ),
                 playable = True,
-                path = _get_play_path(row['viewable']),
-            ))
+                path = _get_play_path(viewable),
+            )
 
         elif content_type == 'SERIES':
-            items.append(plugin.Item(
+            item = plugin.Item(
                 label = row['titles']['full'],
                 art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                context = ((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=row['viewable']))),),
+                context = ((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=viewable))),),
                 info = {'mediatype': 'tvshow'},
-                path = plugin.url_for(series, slug=row['viewable']),
-            ))
-
-        elif viewable.startswith('urn:hbo:franchise'):
-            items.append(plugin.Item(
-                label = row['titles']['full'],
-                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
-                path = plugin.url_for(series, slug='urn:hbo:series:'+row['images']['tile'].split('/')[4]),
-            ))
+                path = plugin.url_for(series, slug=viewable),
+            )
 
         elif content_type in ('SERIES_EPISODE', 'MINISERIES_EPISODE'):
-            items.append(plugin.Item(
+            item = plugin.Item(
                 label = row['titles']['full'],
                 art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
                 info = {
@@ -108,21 +105,21 @@ def _process_rows(rows, slug):
                 },
                 context = ((_.GO_TO_SERIES, 'Container.Update({})'.format(plugin.url_for(series, slug=row['series']))),),
                 playable = True,
-                path = _get_play_path(row['viewable']),
-            ))
+                path = _get_play_path(viewable),
+            )
 
         elif row['id'].startswith('urn:hbo:themed-tray') and row['items']:
-            items.append(plugin.Item(
+            item = plugin.Item(
                 label = row['summary']['title'],
                 info = {'plot': row['summary']['description']},
                 path = plugin.url_for(page, slug=slug, label=row['summary']['title'], tab=row['id']),
-            ))
+            )
 
         elif row['id'].startswith('urn:hbo:tray') and row['items']:
-            items.append(plugin.Item(
+            item = plugin.Item(
                 label = row['header']['label'],
                 path = plugin.url_for(page, slug=slug, label=row['header']['label'], tab=row['id']),
-            ))
+            )
 
         # elif row['id'].startswith('urn:hbo:highlight'):
         #     print(row)
@@ -139,7 +136,42 @@ def _process_rows(rows, slug):
         elif row['id'].startswith('urn:hbo:grid'):
             items.extend(_process_rows(row['items'], slug))
 
+        if item:
+            if row.get('viewable'):
+                if slug == 'watchlist':
+                    item.context.insert(0, ((_.REMOVE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(remove_watchlist, slug=row['viewable'])))))
+                elif sync_watchlist:
+                    item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['viewable'], title=item.label, icon=item.art.get('thumb'))))))
+
+            items.append(item)
+
     return items
+
+@plugin.route()
+def watchlist(**kwargs):
+    folder = plugin.Folder(_.WATCHLIST)
+
+    rows = api.watchlist()
+    items = _process_rows(rows, 'watchlist')
+    folder.add_items(items)
+
+    return folder
+
+@plugin.route()
+def add_watchlist(slug, title=None, icon=None, **kwargs):
+    gui.notification(_.ADDED_WATCHLIST, heading=title, icon=icon)
+    api.add_watchlist(slug)
+
+@plugin.route()
+def remove_watchlist(slug, **kwargs):
+    api.delete_watchlist(slug)
+    gui.refresh()
+
+# @plugin.route()
+# def continue_watching(**kwargs):
+#     folder = plugin.Folder(_.CONTINUE_WATCHING)
+#     data = api.continue_watching()
+#     return folder
 
 @plugin.route()
 def extras(slug, **kwargs):
@@ -213,6 +245,7 @@ def page(slug, label, tab=None, **kwargs):
 @plugin.route()
 def series(slug, season=None, **kwargs):
     data = api.express_content(slug, tab=season)
+    sync_watchlist = settings.getBool('sync_watchlist', False)
 
     if len(data['seasons']) > 1:
         folder = plugin.Folder(data['titles']['full'], fanart=_image(data['images'].get('tile'), size='1920x1080'))
@@ -232,7 +265,7 @@ def series(slug, season=None, **kwargs):
             sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED])
 
         for row in data['episodes']:
-            folder.add_item(
+            item = plugin.Item(
                 label = row['titles']['full'],
                 art = {'thumb': _image(row['images'].get('tileburnedin'))},
                 info = {
@@ -246,6 +279,10 @@ def series(slug, season=None, **kwargs):
                 path = _get_play_path(row['id']),
                 playable = True,
             )
+            if sync_watchlist:
+                item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['id'], title=item.label, icon=item.art.get('thumb'))))))
+
+            folder.add_items(item)
 
     return folder
 
