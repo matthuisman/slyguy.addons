@@ -371,6 +371,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         adap_parent = None
 
         default_language = self._session.get('default_language', '')
+        original_language = self._session.get('original_language', '')
 
         for period_index, period in enumerate(root.getElementsByTagName('Period')):
             rep_index = 0
@@ -395,9 +396,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                     for key in stream.attributes.keys():
                         attribs[key] = stream.getAttribute(key)
 
-                    if default_language and 'audio' in attribs.get('mimeType', '') and attribs.get('lang').lower() == default_language.lower() and adap_set not in lang_adap_sets:
-                        lang_adap_sets.append(adap_set)
-
                     bandwidth = 0
                     if 'bandwidth' in attribs:
                         bandwidth = int(attribs['bandwidth'])
@@ -406,6 +404,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                         is_trick = True
 
                     if 'audio' in attribs.get('mimeType', ''):
+                        if default_language and attribs.get('lang').lower().split('-')[0] == default_language.lower().split('-')[0]:
+                            adap_set.setAttribute('default', 'true')
+
+                        if original_language and attribs.get('lang').lower().split('-')[0] == original_language.lower().split('-')[0]:
+                            adap_set.setAttribute('original', 'true')
+
                         is_atmos = False
                         atmos_channels = None
                         for supelem in stream.getElementsByTagName('SupplementalProperty'):
@@ -435,6 +439,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 stream.appendChild(elem)
 
                             audio_sets.append([bandwidth, new_set, adap_parent])
+                            if adap_set in lang_adap_sets:
+                                lang_adap_sets.append(new_set)
                             log.debug('Dash Fix: Atmos representation moved to own adaption set')
                             continue
 
@@ -484,21 +490,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         for elem in audio_sets:
             elem[2].appendChild(elem[1])
-
-
-        ## Set default languae
-        if lang_adap_sets:
-            for elem in root.getElementsByTagName('Role'):
-                if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011':
-                    elem.parentNode.removeChild(elem)
-
-            for adap_set in lang_adap_sets:
-                elem = root.createElement('Role')
-                elem.setAttribute('schemeIdUri', 'urn:mpeg:dash:role:2011')
-                elem.setAttribute('value', 'main')
-                adap_set.appendChild(elem)
-                log.debug('default language set to: {}'.format(default_language))
-        #############
 
         ## Insert subtitles
         if adap_parent:
