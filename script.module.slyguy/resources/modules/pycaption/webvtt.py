@@ -299,6 +299,8 @@ class WebVTTWriter(BaseWriter):
             cue_settings = self._cue_settings_from(layout)
             if not merge:
                 output += timespan + cue_settings + '\n'
+            elif cue_text.startswith('-'):
+                output += '\n'
             output += cue_style_tags[0] + cue_text + cue_style_tags[1] + '\n'
 
         return output
