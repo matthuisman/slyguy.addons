@@ -183,16 +183,17 @@ class API(object):
         if not data:
             raise APIError(_.BLOCKED_IP)
 
-        if 'statusCode' in data and data['statusCode'] >= 400:
-            error_msg = data.get('message')
-            raise APIError(_(error, msg=error_msg))
-
-        elif 'code' in data:
+        if 'code' in data:
             if data['code'] == 'not_paired':
                 raise NotPairedError()
             else:
                 error_msg = data.get('message') or data.get('code')
                 raise APIError(_(error, msg=error_msg))
+
+        # has to be after code
+        elif 'statusCode' in data and data['statusCode'] >= 400:
+            error_msg = data.get('message')
+            raise APIError(_(error, msg=error_msg))
 
     def profiles(self):
         return self.content([{'id': 'urn:hbo:profiles:mine'}])['urn:hbo:profiles:mine']['profiles']
