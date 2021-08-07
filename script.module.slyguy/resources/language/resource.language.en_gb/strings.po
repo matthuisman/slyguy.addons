@@ -25,6 +25,14 @@ msgctxt "#30004"
 msgid "{name} [Atmos]"
 msgstr ""
 
+msgctxt "#30005"
+msgid "Proxy Enabled (Required for some addons and features)"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Persist Cache"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

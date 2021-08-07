@@ -307,7 +307,7 @@ class Item(object):
         def get_url(url):
             _url = url.lower()
 
-            if _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy and not _url.startswith(proxy_path)):
+            if _url.startswith('plugin://') or (_url.startswith('http') and self.use_proxy and not _url.startswith(proxy_path)) and settings.common_settings.getBool('proxy_enabled', True):
                 url = u'{}{}'.format(proxy_path, url)
 
             return url
