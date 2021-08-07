@@ -131,22 +131,6 @@ class API(object):
 
         return data['items']
 
-    def epg(self, tag, start_date, end_date=None, attempts=3):
-        end_date = end_date or start_date.shift(hours=24)
-
-        for i in range(attempts):
-            try:
-                data = self._request_json('epg/v7/getEpgSchedulesByTag;channelTags={tag};startDate={start};endDate={end}'.format(
-                    tag=tag, start=start_date.format('YYYY-MM-DDT00:00:00ZZ'), end=end_date.format('YYYY-MM-DDT00:00:00ZZ')
-                ), attempts=1)
-            except:
-                continue
-
-            if len(data.get('items', 0)) > 0:
-                break
-
-        return data['items']
-
     def series(self, id):
         data = self._request_json('now-content/v6/getCatalogue;productId={product};platformId={platform};programId={id}'.format(
             product = PRODUCT_ID, platform = PLATFORM_ID, id = id
@@ -282,7 +266,7 @@ class DeviceLogin(object):
     @property
     def device_id(self):
         return self._device_id
-    
+
     @property
     def code(self):
         return self._code

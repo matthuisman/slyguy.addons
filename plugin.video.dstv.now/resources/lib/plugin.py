@@ -1,19 +1,13 @@
 import codecs
-import threading
-from xml.sax.saxutils import escape
 
 import arrow
-from kodi_six import xbmc
-from six.moves import queue
-
 from slyguy import plugin, gui, userdata, inputstream, signals, settings
 from slyguy.session import Session
 from slyguy.log import log
-from slyguy.util import gzip_extract
+from slyguy.monitor import monitor
 
 from .api import API
 from .language import _
-from .constants import DEFAULT_COUNTRY, EPG_URLS
 
 api = API()
 
@@ -267,9 +261,7 @@ def login(**kwargs):
     gui.refresh()
 
 def _device_link():
-    monitor = xbmc.Monitor()
     timeout = 600
-
     with api.device_login() as login_progress:
         with gui.progress(_(_.DEVICE_LINK_STEPS, code=login_progress.code), heading=_.DEVICE_LINK) as progress:
             for i in range(timeout):
@@ -373,117 +365,3 @@ def playlist(output, **kwargs):
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" tvg-name="{name}" group-title="{group}" tvg-logo="{logo}",{name}\n{path}\n'.format(
                         id=row['id'], channel=row['number'], name=row['name'], logo=row['channelLogoPaths'].get('XLARGE', ''),
                             group=genres, path=plugin.url_for(play_channel, id=row['id'], _is_live=True)))
-
-@plugin.route()
-@plugin.merge()
-def epg(output, **kwargs):
-    country = userdata.get('country', DEFAULT_COUNTRY)
-    epg_url = EPG_URLS.get(country)
-
-    if epg_url:
-        try:
-            Session().chunked_dl(epg_url, output)
-            if epg_url.endswith('.gz'):
-                gzip_extract(output)
-            return True
-        except Exception as e:
-            log.exception(e)
-            log.debug('Failed to get remote epg: {}. Fall back to scraping'.format(epg_url))
-
-    with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
-
-        def process_data(id, data):
-            program_count = 0
-            for event in data:
-                channel = event['channelTag']
-                start = arrow.get(event['startDateTime']).to('utc')
-                stop = arrow.get(event['endDateTime']).to('utc')
-                title = event.get('title')
-                subtitle = event.get('episodeTitle')
-                series = event.get('seasonNumber')
-                episode = event.get('episodeNumber')
-                desc = event.get('longSynopsis')
-                icon = event.get('thumbnailImagePaths', {}).get('THUMB')
-
-                icon = u'<icon src="{}"/>'.format(icon) if icon else ''
-                episode = u'<episode-num system="onscreen">S{}E{}</episode-num>'.format(series, episode) if series and episode else ''
-                subtitle = u'<sub-title>{}</sub-title>'.format(escape(subtitle)) if subtitle else ''
-
-                f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}<desc>{desc}</desc></programme>'.format(
-                    id=channel, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(title), subtitle=subtitle, episode=episode, icon=icon, desc=escape(desc)))
-
-        ids = []
-        no_events = []
-        for row in api.channels():
-            f.write(u'<channel id="{id}"></channel>'.format(id=row['id']))
-            ids.append(row['id'])
-
-            if not row.get('events'):
-                no_events.append(row['id'])
-
-        log.debug('{} Channels'.format(len(ids)))
-        log.debug('No Events: {}'.format(no_events))
-
-        start = arrow.now('Africa/Johannesburg')
-        EPG_DAYS = settings.getInt('epg_days', 3)
-        WORKERS  = 3
-
-        queue_data   = queue.Queue()
-        queue_failed = queue.Queue()
-        queue_tasks  = queue.Queue()
-        queue_errors = queue.Queue()
-
-        for id in ids:
-            queue_tasks.put(id)
-
-        def xml_worker():
-            while True:
-                id, data = queue_data.get()
-                try:
-                    process_data(id, data)
-                except Exception as e:
-                    queue_errors.put(e)
-                finally:
-                    queue_data.task_done()
-
-        def worker():
-            while True:
-                id = queue_tasks.get()
-                try:
-                    data = api.epg(id, start.shift(days=-1), start.shift(days=EPG_DAYS+1), attempts=1)
-                    if not data:
-                        raise Exception()
-
-                    queue_data.put([id, data])
-                except Exception as e:
-                    queue_failed.put(id)
-                finally:
-                    queue_tasks.task_done()
-
-        for i in range(WORKERS):
-            thread = threading.Thread(target=worker)
-            thread.daemon = True
-            thread.start()
-
-        thread = threading.Thread(target=xml_worker)
-        thread.daemon = True
-        thread.start()
-
-        queue_tasks.join()
-        queue_data.join()
-
-        if not queue_errors.empty():
-            raise Exception('Error processing data')
-
-        while not queue_failed.empty():
-            id = queue_failed.get_nowait()
-            data = api.epg(id, start.shift(days=-1), start.shift(days=EPG_DAYS+1), attempts=1 if id in no_events else 10)
-            if data:
-                process_data(id, data)
-            elif id in no_events:
-                log.debug('Skipped {}: Expected 0 events'.format(id))
-            else:
-                raise Exception('Failed {}'.format(id))
-
-        f.write(u'</tv>')
