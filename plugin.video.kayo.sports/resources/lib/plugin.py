@@ -76,10 +76,12 @@ def _live_channels():
         if row['contentType'] != 'video':
             continue
 
-        row['data']['chno'] = int(chnos.get(row['data']['asset']['id'], 99999))
+        row['data']['chno'] = chnos.get(row['data']['asset']['id'], None)
+        if row['data']['chno']:
+            row['data']['chno'] = int(row['data']['chno'])
         channels.append(row['data'])
 
-    return sorted(channels, key=lambda x: x['chno'])
+    return sorted(channels, key=lambda x: (x is None, x['chno']))
 
 @plugin.route()
 def live(**kwargs):
