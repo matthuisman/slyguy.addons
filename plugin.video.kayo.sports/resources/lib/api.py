@@ -150,6 +150,12 @@ class API(object):
 
         return self._session.get('{host}/content/types/landing/names/{name}'.format(host=self._config()['endPoints']['contentAPI'], name=name), params=params, headers=self._auth_header).json()
 
+    def channel_numbers(self):
+        try:
+            return self._session.get(CHNO_URL).json()
+        except:
+            return {}
+
     #panel has shows and episodes
     def panel(self, id, sport=None):
         params = {

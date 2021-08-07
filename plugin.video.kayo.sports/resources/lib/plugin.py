@@ -32,7 +32,7 @@ def home(**kwargs):
         folder.add_item(label=_(_.FEATURED, _bold=True),  path=plugin.url_for(featured))
         folder.add_item(label=_(_.SHOWS, _bold=True),  path=plugin.url_for(shows))
         folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(sports))
-        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(panel, id=CHANNELS_PANEL))
+        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -58,10 +58,48 @@ def login(**kwargs):
     _select_profile()
     gui.refresh()
 
+def _live_channels():
+    panel_id = None
+    for row in api.landing('sports'):
+        if row['title'].lower() == 'live channels':
+            panel_id = row['id']
+            break
+
+    if not panel_id:
+        raise PluginError(_.LIVE_PANEL_ID_MISSING)
+
+    channels = []
+    data = api.panel(panel_id)
+    chnos = api.channel_numbers()
+
+    for row in data.get('contents', []):
+        if row['contentType'] != 'video':
+            continue
+
+        row['data']['chno'] = int(chnos.get(row['data']['asset']['id'], 99999))
+        channels.append(row['data'])
+
+    return sorted(channels, key=lambda x: x['chno'])
+
+@plugin.route()
+def live(**kwargs):
+    folder = plugin.Folder(_.LIVE_CHANNELS)
+    show_chnos = settings.getBool('show_chnos', True)
+
+    for row in _live_channels():
+        item = _parse_video(row)
+
+        if row['chno'] and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=row['chno'], label=item.label)
+
+        folder.add_items(item)
+
+    return folder
+
 def _device_link():
-    start     = time.time()
-    data      = api.device_code()
-    monitor   = xbmc.Monitor()
+    start = time.time()
+    data = api.device_code()
+    monitor = xbmc.Monitor()
 
     with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_LINK) as progress:
         while (time.time() - start) < data['expires_in']:
@@ -80,13 +118,11 @@ def _email_password():
         return
 
     userdata.set('username', username)
-
     password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
     if not password:
         return
 
     api.login(username=username, password=password)
-    
     return True
 
 @plugin.route()
@@ -111,7 +147,7 @@ def featured(**kwargs):
 def shows(**kwargs):
     folder = plugin.Folder(_.SHOWS)
     folder.add_items(_landing('shows'))
-    return folder 
+    return folder
 
 @plugin.route()
 @plugin.search()
@@ -198,7 +234,6 @@ def _select_profile():
 
     options = []
     values  = []
-    can_delete = []
     default = -1
 
     avatars = {}
@@ -207,7 +242,7 @@ def _select_profile():
 
     for index, profile in enumerate(profiles):
         profile['avatar'] = avatars.get(profile['avatar_id'])
-        
+
         values.append(profile)
         options.append(plugin.Item(label=profile['name'], art={'thumb': profile['avatar']}))
 
@@ -215,28 +250,11 @@ def _select_profile():
             default = index
             _set_profile(profile, notify=False)
 
-        elif not profile['root_flag']:
-            can_delete.append(profile)
-
-    options.append(plugin.Item(label=_(_.ADD_PROFILE, _bold=True)))
-    values.append('_add')
-
-    if can_delete:
-        options.append(plugin.Item(label=_(_.DELETE_PROFILE, _bold=True)))
-        values.append('_delete')
-
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
     if index < 0:
         return
 
-    selected = values[index]
-
-    if selected == '_delete':
-        _delete_profile(can_delete)
-    elif selected == '_add':
-        _add_profile(taken_names=[x['name'].lower() for x in profiles], avatars=avatars, taken_avatars=[x['avatar_id'] for x in profiles])
-    else:
-        _set_profile(selected)
+    _set_profile(values[index])
 
 def _set_profile(profile, notify=True):
     userdata.set('avatar', profile['avatar'])
@@ -246,69 +264,13 @@ def _set_profile(profile, notify=True):
     if notify:
         gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['avatar'])
 
-def _delete_profile(profiles):
-    options = []
-    for index, profile in enumerate(profiles):
-        options.append(plugin.Item(label=profile['name'], art={'thumb': profile['avatar']}))
-
-    index = gui.select(_.SELECT_DELETE_PROFILE, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    selected = profiles[index]
-    if gui.yes_no(_.DELETE_PROFILE_INFO, heading=_(_.DELTE_PROFILE_HEADER, name=selected['name'])) and api.delete_profile(selected).ok:
-        gui.notification(_.PROFILE_DELETED, heading=selected['name'], icon=selected['avatar'])
-
-def _add_profile(taken_names, avatars, taken_avatars):
-    ## PROFILE AVATAR ##
-    options = [plugin.Item(label=_(_.RANDOM_AVATAR, _bold=True)),]
-    values  = ['_random',]
-    unused  = []
-
-    for avatar_id in avatars:
-        values.append(avatar_id)
-
-        if avatar_id in taken_avatars:
-            label = _.AVATAR_USED
-        else:
-            label = _.AVATAR_NOT_USED
-            unused.append(avatar_id)
-  
-        options.append(plugin.Item(label=label, art={'thumb': avatars[avatar_id]}))
-
-    index = gui.select(_.SELECT_AVATAR, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    avatar_id = values[index]
-    if avatar_id == '_random':
-        avatar_id = random.choice(unused or avatars.keys())
-
-    ## PROFILE NAME ##
-    name = ''
-    while True:
-        name = gui.input(_.PROFILE_NAME, default=name).strip()
-        if not name:
-            return
-
-        elif name.lower() in taken_names:
-            gui.notification(_(_.PROFILE_NAME_TAKEN, name=name))
-            
-        else:
-            break
-
-    ## ADD PROFILE ##
-    profile = api.add_profile(name, avatar_id)
-    profile['avatar'] = avatars[avatar_id]
-    if 'message' in profile:
-        raise PluginError(profile['message'])
-
-    _set_profile(profile)
-
 def _landing(name, sport=None):
     items = []
 
     for row in api.landing(name, sport=sport):
+        if row['title'].lower() == 'live channels':
+            continue
+
         if row['panelType'] == 'hero-carousel' and row.get('contents') and settings.getBool('show_hero_contents', True):
             items.extend(_parse_contents(row['contents']))
 
@@ -400,11 +362,11 @@ def _makeHumanised(now, start=None):
         return _makeDate(now, start)
 
 def _parse_video(row):
-    asset   = row['asset']
+    asset = row['asset']
     display = row['contentDisplay']
-    
-    now      = arrow.now()
-    start    = arrow.get(asset['transmissionTime'])
+
+    now = arrow.now()
+    start = arrow.get(asset['transmissionTime'])
     precheck = start
 
     if 'preCheckTime' in asset:
@@ -415,7 +377,7 @@ def _parse_video(row):
     title = display.get('heroTitle') or display['title'] or asset['title']
     if 'heroHeader' in display:
         title += ' [' + display['heroHeader'].replace('${DATE_HUMANISED}', _makeHumanised(now, start).upper()).replace('${TIME}', _makeTime(start)) + ']'
-    
+
     item = plugin.Item(
         label = title,
         art  = {
@@ -431,8 +393,8 @@ def _parse_video(row):
         is_folder = False,
     )
 
-    is_live    = False
-    play_type  = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+    is_live = False
+    play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
     start_from = ((start - precheck).seconds)
 
     if start_from < 1:
@@ -467,7 +429,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     asset = api.stream(id)
 
     start_from = int(start_from)
-    play_type  = int(play_type)
+    play_type = int(play_type)
     is_live = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
 
     streams = [asset['recommendedStream']]
@@ -544,23 +506,12 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    data  = api.panel(CHANNELS_PANEL)
-    
-    try: chnos = Session().get(CHNO_URL).json()
-    except: chnos = {}
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U\n')
 
-        for row in data.get('contents', []):
-            asset = row['data']['asset']
-
-            if row['contentType'] != 'video':
-                continue
-
-            chid = asset['id']
-            chno = chnos.get(chid) or ''
+        for row in _live_channels():
+            asset = row['asset']
 
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                id=chid, channel=chno, logo=_get_image(asset, 'video', 'thumb'), 
-                    name=asset['title'], path=plugin.url_for(play, id=chid, play_type=PLAY_FROM_START, _is_live=True)))
+                id=asset['id'], channel=row['chno'] or '', logo=_get_image(asset, 'video', 'thumb'),
+                    name=asset['title'], path=plugin.url_for(play, id=asset['id'], play_type=PLAY_FROM_START, _is_live=True)))

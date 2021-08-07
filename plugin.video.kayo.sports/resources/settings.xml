@@ -2,8 +2,9 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30014" id="show_hero_contents" type="bool" default="true"/>
+        <setting label="30006" id="show_chnos" type="bool" default="true"/>
     </category>
-    
+
     <category label="$ADDON[script.module.slyguy 32035]">
         <setting label="30048" id="prefer_cdn" type="enum" default="2" lvalues="30049|30050|30052"/>
         <setting label="$ADDON[script.module.slyguy 32063]" id="live_play_type" type="enum" default="0" lvalues="32066|32065|32064"/>

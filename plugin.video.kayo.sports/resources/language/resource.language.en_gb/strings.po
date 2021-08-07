@@ -24,7 +24,7 @@ msgid "Select Profile"
 msgstr ""
 
 msgctxt "#30006"
-msgid "Add Profile"
+msgid "Show Live Channel Numbers"
 msgstr ""
 
 msgctxt "#30007"
@@ -39,8 +39,16 @@ msgctxt "#30009"
 msgid "Unable to find suitable stream for this asset"
 msgstr ""
 
+msgctxt "#30010"
+msgid "{chno} | {label}"
+msgstr ""
+
 msgctxt "#30011"
 msgid "{title} [LIVE]"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Failed to find live channels pannel id"
 msgstr ""
 
 msgctxt "#30013"
@@ -51,14 +59,10 @@ msgctxt "#30014"
 msgid "Show Hero Contents"
 msgstr ""
 
-
-
 msgctxt "#30025"
 msgid "Inputstream HLS is required to watch this content\n"
 "Check Inputstream Adaptive is installed and enabled"
 msgstr ""
-
-
 
 msgctxt "#30027"
 msgid "Featured"
@@ -72,52 +76,8 @@ msgctxt "#30029"
 msgid "Live Channels"
 msgstr ""
 
-msgctxt "#30030"
-msgid "Delete Profile"
-msgstr ""
-
 msgctxt "#30031"
 msgid "Profile Activated"
-msgstr ""
-
-msgctxt "#30032"
-msgid "Random Pick"
-msgstr ""
-
-msgctxt "#30033"
-msgid "Select Avatar"
-msgstr ""
-
-msgctxt "#30034"
-msgid "Used"
-msgstr ""
-
-msgctxt "#30035"
-msgid "Not Used"
-msgstr ""
-
-msgctxt "#30036"
-msgid "Profile Name"
-msgstr ""
-
-msgctxt "#30037"
-msgid "{name} is already being used"
-msgstr ""
-
-msgctxt "#30038"
-msgid "Select profile to delete"
-msgstr ""
-
-msgctxt "#30039"
-msgid "Delete {name}'s profile?"
-msgstr ""
-
-msgctxt "#30040"
-msgid "Profile history, watchlist, and activity will be deleted. There is no way to undo this."
-msgstr ""
-
-msgctxt "#30041"
-msgid "Profile Deleted"
 msgstr ""
 
 msgctxt "#30042"

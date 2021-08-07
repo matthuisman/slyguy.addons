@@ -8,7 +8,6 @@ IMG_URL = 'https://vmndims.kayosports.com.au/api/v2/img/{}'
 LICENSE_URL = 'https://drm.streamotion.com.au/licenseServer/widevine/v1/streamotion/license'
 CHNO_URL = 'https://i.mjh.nz/Kayo/chnos.json'
 CLIENT_ID = 'a0n14xap7jreEXPfLo9F6JLpRp3Xeh2l'
-CHANNELS_PANEL = 'A35eyiq8Mm'
 
 FORMAT_HLS_TS = 'hls-ts'
 FORMAT_HLS_TS_SSAI = 'ssai-hls-ts'
