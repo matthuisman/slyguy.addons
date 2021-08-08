@@ -27,11 +27,6 @@ msgctxt "#30006"
 msgid "Originals"
 msgstr "Originali"
 
-
-msgctxt "#30009"
-msgid "Widevine L1 Secure Device"
-msgstr "Widevine L1 Dispositivo sicuro"
-
 msgctxt "#30010"
 msgid "Suggested"
 msgstr "Consigliato"

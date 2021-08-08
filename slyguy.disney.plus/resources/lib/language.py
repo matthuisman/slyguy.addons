@@ -9,7 +9,7 @@ class Language(BaseLanguage):
     ORIGINALS                = 30006
     FULL_DETAILS             = 30007
     HUBS                     = 30008
-    WV_SECURE                = 30009
+
     SUGGESTED                = 30010
     FEATURED                 = 30011
     SEASON                   = 30012

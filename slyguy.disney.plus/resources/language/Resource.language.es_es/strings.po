@@ -35,10 +35,6 @@ msgctxt "#30008"
 msgid "Hubs"
 msgstr "Central"
 
-msgctxt "#30009"
-msgid "Widevine L1 Secure Device"
-msgstr "Widevine L1 Secure Device"
-
 msgctxt "#30010"
 msgid "Suggested"
 msgstr "Sugeridos para TI"

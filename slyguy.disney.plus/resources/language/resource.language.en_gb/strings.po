@@ -34,10 +34,6 @@ msgctxt "#30008"
 msgid "Hubs"
 msgstr ""
 
-msgctxt "#30009"
-msgid "Widevine L1 Secure Device"
-msgstr ""
-
 msgctxt "#30010"
 msgid "Suggested"
 msgstr ""
