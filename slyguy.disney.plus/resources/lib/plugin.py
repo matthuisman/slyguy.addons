@@ -19,7 +19,7 @@ def index(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(collection, slug='home', content_class='home', label=_.FEATURED))
         folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(sets, set_id=HUBS_SET_ID, set_type=HUBS_SET_TYPE))
@@ -591,9 +591,6 @@ def play(content_id=None, family_id=None, **kwargs):
             if row['type'] == 'DmcVideo' and row['programType'] != 'episode':
                 item.play_next['next_file'] = _get_play_path(row['contentId'])
                 break
-
-    if settings.getBool('wv_secure', False):
-        item.inputstream.properties['license_flags'] = 'force_secure_decoder'
 
     if settings.getBool('disney_sync', False):
         telemetry = playback_data['tracking']['telemetry']
