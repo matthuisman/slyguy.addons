@@ -28,7 +28,7 @@ class Language(BaseLanguage):
     DEVICE_LINK           = 30043
     EMAIL_PASSWORD        = 30044
     DEVICE_LINK_STEPS     = 30045
-    WV_SECURE             = 30046
+
     REFRESH_TOKEN_ERROR   = 30047
     PREFER_CDN            = 30048
     CDN_AKAMAI            = 30049

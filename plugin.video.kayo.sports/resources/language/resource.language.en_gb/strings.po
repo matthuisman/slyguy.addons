@@ -97,10 +97,6 @@ msgid "1. Go to: [B]{url}[/B]\n"
 "2. Enter code: [B]{code}[/B]"
 msgstr ""
 
-msgctxt "#30046"
-msgid "Widevine L1 Secure Device"
-msgstr ""
-
 msgctxt "#30047"
 msgid "Failed to refresh token.\n"
 "[B]Try logout and then login again[/B]\n"
