@@ -4,7 +4,8 @@ from xml.dom.minidom import parseString
 from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.session import Session
-from slyguy.util import cenc_init, is_wv_secure
+from slyguy.util import cenc_init
+from slyguy.drm import is_wv_secure
 from slyguy.constants import ADDON_PROFILE
 
 from .api import API
@@ -440,10 +441,10 @@ def mpd_request(_data, _data_path, **kwargs):
                 parent.removeChild(adap_set)
 
     dolby_vison = settings.getBool('dolby_vision', False)
-    h265        = settings.getBool('h265', False)
-    enable_4k   = settings.getBool('4k_enabled', True)
-    enable_ac3  = settings.getBool('ac3_enabled', False)
-    enable_ec3  = settings.getBool('ec3_enabled', False)
+    h265 = settings.getBool('h265', False)
+    enable_4k = settings.getBool('4k_enabled', True)
+    enable_ac3 = settings.getBool('ac3_enabled', False)
+    enable_ec3 = settings.getBool('ec3_enabled', False)
     enable_atmos = settings.getBool('atmos_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
 
