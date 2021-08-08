@@ -567,16 +567,15 @@ class Folder(object):
             if self.fanart and not item.art.get('fanart'):
                 item.art['fanart'] = self.fanart
 
-            episode = item.info.get('episode')
+            media_type = item.info.get('mediatype')
             show_name = item.info.get('tvshowtitle')
-            if not episode or not show_name or (last_show_name and show_name != last_show_name):
+            if media_type != 'episode' or not show_name or (last_show_name and show_name != last_show_name):
                 ep_sort = False
 
             if not last_show_name:
                 last_show_name = show_name
 
             if not item.specialsort:
-                media_type = item.info.get('mediatype')
                 if media_type not in item_types:
                     item_types[media_type] = 0
                 item_types[media_type] += 1
