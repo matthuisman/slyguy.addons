@@ -277,48 +277,31 @@ class API(object):
     def play(self, video_id):
         self._refresh_token()
 
-        def get_data(device):
-            video_data = self._session.get('/v2.0/{}/video/cid/{}.json'.format(device, video_id), params=self._params()).json()['itemList'][0]
+        video_data = self._session.get('/v2.0/androidphone/video/cid/{}.json'.format(video_id), params=self._params()).json()['itemList'][0]
+        if 'pid' not in video_data:
+            raise APIError('Check your subscription is valid')
 
-            if 'pid' not in video_data:
-                raise APIError('Check your subscription is valid')
+        params = {
+            #'formats': 'mpeg-dash',
+            'Tracking': 'true',
+            'format': 'SMIL',
+            #'sig': '0060cbe3920bcb86969e8c733a9cdcdb203d6e57beae30781c706f63',
+        }
 
-            params = {
-                #'formats': 'mpeg-dash',
-                'Tracking': 'true',
-                'format': 'SMIL',
-                #'sig': '0060cbe3920bcb86969e8c733a9cdcdb203d6e57beae30781c706f63',
-            }
+        resp = self._session.get(LINK_PLATFORM_URL.format(account=video_data['cmsAccountId'], pid=video_data['pid']), params=params)
 
-            resp = self._session.get(LINK_PLATFORM_URL.format(account=video_data['cmsAccountId'], pid=video_data['pid']), params=params)
+        root = ET.fromstring(resp.text)
+        strip_namespaces(root)
 
-            root = ET.fromstring(resp.text)
-            strip_namespaces(root)
+        if root.find("./body/seq/ref/param[@name='exception']") != None:
+            error_msg = root.find("./body/seq/ref").attrib.get('abstract')
+            raise APIError(_(error_msg))
 
-            if root.find("./body/seq/ref/param[@name='exception']") != None:
-                error_msg = root.find("./body/seq/ref").attrib.get('abstract')
-                raise APIError(_(error_msg))
-
-            ref = root.find(".//video")
-            return ref.attrib['src'], video_data
-
-        device = 'androidtv'
-        url, video_data = get_data(device)
-        if 'cenc_fmp4_dash' in url and not settings.getBool('wv_secure', False):
-            try:
-                split = url.split('/')
-                year = int(split[4])
-                month = int(split[5])
-            except:
-                year = 2021
-                month = 6
-
-            if year >= 2021 and month >= 6:
-                device = 'androidphone'
-                url, video_data = get_data(device)
+        ref = root.find(".//video")
+        url = ref.attrib['src']
 
         params = {'contentId': video_id}
-        data = self._session.get('/v3.0/{}/irdeto-control/session-token.json'.format(device), params=self._params(params)).json()
+        data = self._session.get('/v3.0/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
 
         return url, data['url'], data['ls_session'], video_data
 

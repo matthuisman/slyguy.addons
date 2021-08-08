@@ -321,11 +321,16 @@ def search(query, page, **kwargs):
         elif row['term_type'] == 'movie':
             data = row['videoList']['itemList'][0]
 
+            try:
+                aired = str(arrow.get(data['_airDate'], 'MM/DD/YY HH:mm', tzinfo='US/Eastern'))
+            except:
+                aired = None
+
             items.append(plugin.Item(
                 label = data['label'].strip() or data['title'].strip(),
                 info = {
                     'plot': data.get('shortDescription', data['description']),
-                    'aired': str(arrow.get(data['airDate'])),
+                    'aired': aired,
                     'duration': data['duration'],
                     'mediatype': 'movie',
                     'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
