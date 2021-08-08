@@ -4,6 +4,7 @@ from slyguy import settings, userdata
 from slyguy.log import log
 from slyguy.session import Session
 from slyguy.exceptions import Error
+from slyguy.drm import is_wv_secure
 
 from .constants import *
 from .language import _
@@ -46,6 +47,12 @@ class API(object):
         self._set_authentication()
         return True, token_data
 
+    def channel_numbers(self):
+        try:
+            return self._session.get(CHNO_URL).json()
+        except:
+            return {}
+
     def refresh_token(self):
         self._refresh_token()
 
@@ -59,7 +66,7 @@ class API(object):
             'client_id': CLIENT_ID,
             'refresh_token': userdata.get('refresh_token'),
             'grant_type': 'refresh_token',
-            'scope': 'openid offline_access drm:{} email'.format('high' if settings.getBool('wv_secure', False) else 'low'),
+            'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
         }
 
         self._oauth_token(payload)
@@ -68,7 +75,7 @@ class API(object):
         payload = {
             'client_id': CLIENT_ID,
             'audience' : 'streamotion.com.au',
-            'scope': 'openid offline_access drm:{} email'.format('high' if settings.getBool('wv_secure', False) else 'low'),
+            'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
         }
 
         return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload).json()
@@ -77,7 +84,7 @@ class API(object):
         payload = {
             'client_id': CLIENT_ID,
             'device_code' : device_code,
-            'scope': 'openid offline_access drm:{}'.format('high' if settings.getBool('wv_secure', False) else 'low'),
+            'scope': 'openid offline_access drm:{}'.format('high' if is_wv_secure() else 'low'),
             'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
         }
 
@@ -97,7 +104,7 @@ class API(object):
             'username': username,
             'password': password,
             'audience': 'streamotion.com.au',
-            'scope': 'openid offline_access drm:{} email'.format('high' if settings.getBool('wv_secure', False) else 'low'),
+            'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
             'grant_type': 'http://auth0.com/oauth/grant-type/password-realm',
             'realm': 'prod-martian-database',
         }

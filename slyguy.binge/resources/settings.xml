@@ -2,15 +2,14 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30031" id="show_hero_contents" type="bool" default="false"/>
+        <setting label="30000" id="show_chnos" type="bool" default="true"/>
+        <setting label="30024" type="bool" id="hevc" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
         <setting label="$ADDON[script.module.slyguy 32063]" id="live_play_type" type="enum" default="0" lvalues="32066|32065|32064"/>
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
-
-        <setting label="30024" type="bool" id="hevc" default="false"/>
-        <setting label="30029" type="bool" id="wv_secure" visible="system.platform.android" default="false" />
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
@@ -23,6 +22,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32129]" id="video_folder_content" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>

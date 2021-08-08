@@ -4,10 +4,11 @@ import time
 import re
 
 import arrow
-from kodi_six import xbmc, xbmcplugin
+from kodi_six import xbmc
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
+from slyguy.monitor import monitor
 from slyguy.session import Session
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_SUFFIX, ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
@@ -28,13 +29,13 @@ def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(landing, slug='home', title=_.FEATURED))
         folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(landing, slug='shows', title=_.SHOWS))
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(landing, slug='movies', title=_.MOVIES))
        # folder.add_item(label=_(_.BINGE_LISTS, _bold=True), path=plugin.url_for(landing, slug='watchlist', title=_.BINGE_LISTS))
-        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(panel, panel_id=CHANNELS_PANEL, title=_.LIVE_CHANNELS))
+        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -55,9 +56,7 @@ def landing(slug, title, **kwargs):
 
 def _landing(slug, params=None):
     items = []
-
     to_add = []
-
     def expand(row):
         if not row['personalised'] and row.get('contents'):
             items.extend(_parse_contents(row.get('contents', [])))
@@ -66,6 +65,9 @@ def _landing(slug, params=None):
             items.extend(_parse_contents(data.get('contents', [])))
 
     for row in api.landing(slug, params)['panels']:
+        if slug=='shows' and row['title'].lower() == 'channels':
+            continue
+
         if row['panelType'] == 'hero-carousel' and settings.getBool('show_hero_contents', True):
             expand(row)
 
@@ -82,6 +84,47 @@ def _landing(slug, params=None):
             ))
 
     return items
+
+def _live_channels():
+    panel_id = None
+    for row in api.landing('shows')['panels']:
+        if row['title'].lower() == 'channels':
+            panel_id = row['id']
+            break
+
+    if not panel_id:
+        raise PluginError(_.LIVE_PANEL_ID_MISSING)
+
+    channels = []
+    data = api.panel(panel_id=panel_id)
+    chnos = api.channel_numbers()
+
+    for row in data.get('contents', []):
+        if row['data']['type'] != 'live-linear':
+            continue
+
+        row['data']['chno'] = chnos.get(row['data']['playback']['info']['assetId'], None)
+        if row['data']['chno']:
+            row['data']['chno'] = int(row['data']['chno'])
+        channels.append(row['data'])
+
+    return sorted(channels, key=lambda x: (x is None, x['chno']))
+
+@plugin.route()
+def live(**kwargs):
+    folder = plugin.Folder(_.LIVE_CHANNELS)
+    show_chnos = settings.getBool('show_chnos', True)
+
+    for row in _live_channels():
+        asset = _get_asset(row)
+        item = _parse_video(asset)
+
+        if row['chno'] and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=row['chno'], label=item.label)
+
+        folder.add_items(item)
+
+    return folder
 
 @plugin.route()
 def genre(slug, title, genre, subgenre=None, **kwargs):
@@ -109,9 +152,7 @@ def search(query, page, **kwargs):
 @plugin.route()
 def show(show_id, title, **kwargs):
     folder = plugin.Folder(title)
-
     data = api.landing('show', {'show': show_id})
-
     seasons = []
     episodes = []
     heros = []
@@ -121,7 +162,7 @@ def show(show_id, title, **kwargs):
                 item = plugin.Item(
                     label = row['data']['clickthrough']['title'],
                     art  = {
-                        'thumb' : data['meta']['socialImage'].replace('${WIDTH}', str(768)),
+                        'thumb': data['meta']['socialImage'].replace('${WIDTH}', str(768)),
                         'fanart': row['data']['contentDisplay']['images']['hero'].replace('${WIDTH}', str(1920)),
                     },
                     info = {
@@ -146,7 +187,6 @@ def show(show_id, title, **kwargs):
     if seasons:
         folder.add_items([x[1] for x in sorted(seasons, key=lambda x: x[0])])
     elif episodes:
-        folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
         folder.add_items(episodes)
     else:
         folder.add_items(heros)
@@ -156,23 +196,21 @@ def show(show_id, title, **kwargs):
 @plugin.route()
 def season(show_id, season_id, title, **kwargs):
     data = api.landing('show', {'show': show_id, 'season': season_id})
-
-    folder = plugin.Folder(title, sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED])
-
+    folder = plugin.Folder(title)
     for row in data['panels']:
         if row['panelType'] == 'synopsis-carousel-tabbed':
             items = _parse_contents(row.get('contents', []))
-            folder.add_items(items)
+            for item in items:
+                if item.info.get('episode'):
+                    folder.add_items(item)
 
     return folder
 
 @plugin.route()
 def panel(panel_id=None, link=None, title=None, **kwargs):
     data = api.panel(panel_id=panel_id, link=link)
-
     folder = plugin.Folder(title or data['title'])
     folder.add_items(_parse_contents(data.get('contents', [])))
-
     return folder
 
 def _makeTime(start=None):
@@ -287,7 +325,7 @@ def _parse_collection(asset):
     return plugin.Item(
         label = asset['title'],
         art  = {
-            'thumb' : asset['thumb'],
+            'thumb': asset['thumb'],
             'fanart': asset['fanart'],
         },
         info = {
@@ -305,7 +343,7 @@ def _parse_show(asset):
     return plugin.Item(
         label = asset['title'],
         art  = {
-            'thumb' : asset['thumb'],
+            'thumb': asset['thumb'],
             'fanart': asset['fanart'],
         },
         info = {
@@ -317,9 +355,8 @@ def _parse_show(asset):
     )
 
 def _parse_video(asset):
-    alerts   = userdata.get('alerts', [])
-    now      = arrow.now()
-    start    = arrow.get(asset['transmissionTime'])
+    now = arrow.now()
+    start = arrow.get(asset['transmissionTime'])
     precheck = start
 
     if asset['preCheckTime']:
@@ -329,8 +366,8 @@ def _parse_video(asset):
 
     item = plugin.Item(
         label = asset['title'],
-        art  = {
-            'thumb' : asset['thumb'],
+        art = {
+            'thumb': asset['thumb'],
             'fanart': asset['fanart'],
         },
         info = {
@@ -341,14 +378,14 @@ def _parse_video(asset):
             'tvshowtitle': asset.get('showtitle'),
             'duration': asset.get('duration'),
             'year': asset.get('year'),
-            'mediatype': 'episode' if asset.get('episode') else 'movie',
+            'mediatype': 'episode' if asset.get('showtitle') else 'movie',
         },
         playable = True,
         is_folder = False,
     )
 
-    is_live    = False
-    play_type  = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+    is_live = False
+    play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
     start_from = ((start - precheck).seconds)
 
     if start_from < 0:
@@ -356,14 +393,6 @@ def _parse_video(asset):
 
     if now < start:
         is_live = True
-        toggle_alert = plugin.url_for(alert, asset=asset['asset_id'], title=asset['title'])
-
-        if asset['asset_id'] not in userdata.get('alerts', []):
-            item.info['playcount'] = 0
-            item.context.append((_.SET_REMINDER, "RunPlugin({})".format(toggle_alert)))
-        else:
-            item.info['playcount'] = 1
-            item.context.append((_.REMOVE_REMINDER, "RunPlugin({})".format(toggle_alert)))
 
     elif asset['type'] == 'live-linear':
         is_live = True
@@ -400,10 +429,8 @@ def login(**kwargs):
     gui.refresh()
 
 def _device_link():
-    start     = time.time()
-    data      = api.device_code()
-    monitor   = xbmc.Monitor()
-
+    start = time.time()
+    data = api.device_code()
     with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_LINK) as progress:
         while (time.time() - start) < data['expires_in']:
             for i in range(data['interval']):
@@ -427,7 +454,6 @@ def _email_password():
         return
 
     api.login(username=username, password=password)
-
     return True
 
 @plugin.route()
@@ -449,13 +475,10 @@ def select_profile(**kwargs):
     gui.refresh()
 
 def _select_profile():
-    profiles = api.profiles()
-
     options = []
     values  = []
     default = -1
-
-    for index, profile in enumerate(profiles):
+    for index, profile in enumerate(api.profiles()):
         values.append(profile)
         options.append(plugin.Item(label=profile['name'], art={'thumb': _get_avatar(profile['avatar_id'])}))
 
@@ -496,11 +519,11 @@ def license_request(_data, _data_path, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
-    asset      = api.stream(id)
+    asset = api.stream(id)
 
     start_from = int(start_from)
-    play_type  = int(play_type)
-    is_live    = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
+    play_type = int(play_type)
+    is_live = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
 
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
@@ -512,15 +535,14 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     providers = SUPPORTED_PROVIDERS[:]
     providers.extend([s['provider'] for s in streams])
 
-    streams  = sorted(streams, key=lambda k: (providers.index(k['provider']), SUPPORTED_FORMATS.index(k['mediaFormat'])))
-    stream   = streams[0]
+    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), SUPPORTED_FORMATS.index(k['mediaFormat'])))
+    stream = streams[0]
 
     log.debug('Stream CDN: {provider} | Stream Format: {mediaFormat}'.format(**stream))
 
     item = plugin.Item(
-        path     = stream['manifest']['uri'],
-        art      = False,
-        headers  = HEADERS,
+        path = stream['manifest']['uri'],
+        headers = HEADERS,
     )
 
     if is_live and (play_type == PLAY_FROM_LIVE or (play_type == PLAY_FROM_ASK and gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
@@ -553,21 +575,10 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    data  = api.panel(panel_id=CHANNELS_PANEL)
-
-    try: chnos = Session().get(CHNO_URL).json()
-    except: chnos = {}
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U\n')
 
-        for row in data.get('contents', []):
-            if row['data']['type'] != 'live-linear':
-                continue
-
-            chid = row['data']['playback']['info']['assetId']
-            chno = chnos.get(chid) or ''
-
+        for row in _live_channels():
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                id=chid, channel=chno, logo=row['data']['contentDisplay']['images']['tile'].replace('${WIDTH}', str(768)),
-                    name=row['data']['playback']['info']['title'], path=plugin.url_for(play, id=chid, play_type=PLAY_FROM_START, _is_live=True)))
+                id=row['playback']['info']['assetId'], channel=row['chno'] or '', logo=row['contentDisplay']['images']['tile'].replace('${WIDTH}', str(768)),
+                    name=row['playback']['info']['title'], path=plugin.url_for(play, id=row['playback']['info']['assetId'], play_type=PLAY_FROM_START, _is_live=True)))

@@ -1,6 +1,10 @@
 msgid ""
 msgstr ""
 
+msgctxt "#30000"
+msgid "Show Live Channel Numbers"
+msgstr ""
+
 msgctxt "#30001"
 msgid "Email Address"
 msgstr ""
@@ -14,8 +18,16 @@ msgid "Failed to login.\n"
 "Server Message: {msg}"
 msgstr ""
 
+msgctxt "#30004"
+msgid "Failed to find live channels pannel id"
+msgstr ""
+
 msgctxt "#30005"
 msgid "Select Profile"
+msgstr ""
+
+msgctxt "#30006"
+msgid "{chno} | {label}"
 msgstr ""
 
 msgctxt "#30007"
@@ -66,10 +78,6 @@ msgstr ""
 msgctxt "#30028"
 msgid "1. Go to: [B]{url}[/B]\n"
 "2. Enter code: [B]{code}[/B]"
-msgstr ""
-
-msgctxt "#30029"
-msgid "Widevine L1 Secure Device"
 msgstr ""
 
 msgctxt "#30030"
