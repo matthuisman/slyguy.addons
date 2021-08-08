@@ -5,8 +5,9 @@ from time import time
 from slyguy import userdata, settings, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import get_kodi_setting, jwt_data, is_wv_secure
+from slyguy.util import get_kodi_setting, jwt_data
 from slyguy.log import log
+from slyguy.drm import is_wv_secure
 
 from kodi_six import xbmc
 
