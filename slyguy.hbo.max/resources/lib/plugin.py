@@ -4,7 +4,7 @@ from xml.dom.minidom import parseString
 from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.session import Session
-from slyguy.util import cenc_init
+from slyguy.util import cenc_init, is_wv_secure
 from slyguy.constants import ADDON_PROFILE
 
 from .api import API
@@ -430,8 +430,7 @@ def mpd_request(_data, _data_path, **kwargs):
 
     root = parseString(data.encode('utf8'))
 
-    wv_secure = settings.getBool('wv_secure')
-    if not wv_secure:
+    if not is_wv_secure():
         for adap_set in root.getElementsByTagName('AdaptationSet'):
             height = int(adap_set.getAttribute('maxHeight') or 0)
             width = int(adap_set.getAttribute('maxWidth') or 0)
@@ -518,8 +517,6 @@ def play(slug, **kwargs):
     if 'drm' in data:
         item.inputstream = inputstream.Widevine(license_key = data['drm']['licenseUrl'])
         item.proxy_data['manifest_middleware'] = plugin.url_for(mpd_request)
-        if settings.getBool('wv_secure'):
-            item.inputstream.properties['license_flags'] = 'force_secure_decoder'
 
     item.play_next = {}
     if ':episode' in slug:

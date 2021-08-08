@@ -15,9 +15,8 @@
         <setting label="30017" type="bool" id="accessibility_enabled" default="false"/>
         <setting label="30014" type="bool" id="h265" default="false"/>
         <setting label="30008" type="bool" id="ignore_subs" default="false"/>
-        <setting label="30009" type="bool" id="wv_secure" default="false" visible="system.platform.android"/>
-        <setting label="30015" type="bool" id="4k_enabled" default="true" visible="eq(-1,true)"/>
-        <setting label="30016" type="bool" id="dolby_vision" default="false" visible="eq(-2,true)"/>
+        <setting label="30015" type="bool" id="4k_enabled" default="true" visible="String.IsEqual(Window(10000).Property(wv_secure),true)"/>
+        <setting label="30016" type="bool" id="dolby_vision" default="false" visible="String.IsEqual(Window(10000).Property(wv_secure),true)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

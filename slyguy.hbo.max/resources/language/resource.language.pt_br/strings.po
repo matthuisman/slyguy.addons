@@ -41,10 +41,6 @@ msgctxt "#30007"
 msgid "Dolby Digital Plus (EC-3)"
 msgstr "Dolby Digital Plus (EC-3)"
 
-msgctxt "#30009"
-msgid "Widevine L1 Secure Device"
-msgstr "Widevine L1 Secure Device"
-
 msgctxt "#30010"
 msgid "Play Next Episode"
 msgstr "Tocar próximo episódio"

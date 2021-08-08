@@ -36,10 +36,6 @@ msgctxt "#30008"
 msgid "Ignore Subtitles"
 msgstr ""
 
-msgctxt "#30009"
-msgid "Widevine L1 Secure Device"
-msgstr ""
-
 msgctxt "#30010"
 msgid "Play Next Episode"
 msgstr ""
