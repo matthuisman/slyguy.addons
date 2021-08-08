@@ -5,6 +5,7 @@ from slyguy import settings
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
+from slyguy.util import set_drm_level
 
 from .proxy import Proxy
 from .player import Player
@@ -31,6 +32,7 @@ def _check_news():
 def start():
     log.debug('Shared Service: Started')
 
+    set_drm_level()
     player = Player()
     proxy = Proxy()
 

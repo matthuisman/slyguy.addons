@@ -13,7 +13,7 @@ from .exceptions import GUIError
 from .router import add_url_args, url_for
 from .language import _
 from .dns import get_dns_rewrites
-from .util import url_sub, fix_url, set_kodi_string, hash_6
+from .util import url_sub, fix_url, set_kodi_string, hash_6, is_wv_secure
 
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
@@ -326,6 +326,9 @@ class Item(object):
 
             if headers:
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
+
+            if is_wv_secure():
+                li.setProperty('{}.license_flags'.format(self.inputstream.addon_id), 'force_secure_decoder')
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
