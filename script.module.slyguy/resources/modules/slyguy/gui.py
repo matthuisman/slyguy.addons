@@ -13,7 +13,8 @@ from .exceptions import GUIError
 from .router import add_url_args, url_for
 from .language import _
 from .dns import get_dns_rewrites
-from .util import url_sub, fix_url, set_kodi_string, hash_6, is_wv_secure
+from .util import url_sub, fix_url, set_kodi_string, hash_6
+from .drm import is_wv_secure
 
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME

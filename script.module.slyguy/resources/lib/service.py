@@ -5,7 +5,7 @@ from slyguy import settings
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
-from slyguy.util import set_drm_level
+from slyguy.drm import set_drm_level
 
 from .proxy import Proxy
 from .player import Player

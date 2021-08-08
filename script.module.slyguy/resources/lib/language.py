@@ -8,5 +8,9 @@ class Language(BaseLanguage):
     ATMOS             = 30004
     PROXY_ENABLED     = 30005
     PERSIST_CACHE     = 30006
+    WV_LEVEL          = 30007
+    WV_LEVEL_AUTO     = 30008
+    WV_LEVEL_L1       = 30009
+    WV_LEVEL_L3       = 30010
 
 _ = Language()

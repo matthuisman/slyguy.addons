@@ -24,26 +24,6 @@ from .log import log
 from .exceptions import Error
 from .constants import *
 
-def is_wv_secure():
-    return get_kodi_string('wv_secure') == 'true'
-
-def set_drm_level():
-    level = None
-    if KODI_VERSION > 17:
-        try:
-            import xbmcdrm
-            crypto = xbmcdrm.CryptoSession('edef8ba9-79d6-4ace-a3c8-27dcd51d21ed', 'AES/CBC/NoPadding', 'HmacSHA256')
-            level = crypto.GetPropertyString('securityLevel')
-        except Exception as e:
-            log.debug('Failed to obtain widevine level')
-            log.exception(e)
-
-    if not level:
-        level = 'L3'
-
-    log.debug('Widevine Level: {}'.format(level))
-    set_kodi_string('wv_secure', 'true' if level == 'L1' else 'false')
-
 def run_plugin(path, wait=False):
     if wait:
         dirs, files = xbmcvfs.listdir(path)

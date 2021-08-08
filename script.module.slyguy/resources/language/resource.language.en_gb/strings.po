@@ -33,6 +33,22 @@ msgctxt "#30006"
 msgid "Persist Cache"
 msgstr ""
 
+msgctxt "#30007"
+msgid "Widevine Level (Restart Kodi after changing)"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Auto"
+msgstr ""
+
+msgctxt "#30009"
+msgid "L1 (Secure)"
+msgstr ""
+
+msgctxt "#30010"
+msgid "L3"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"
