@@ -19,38 +19,8 @@ from .drm import is_wv_secure
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
 
-def notification(message, heading=None, icon=None, time=3000, sound=False):
-    heading = _make_heading(heading)
-    icon    = ADDON_ICON if not icon else icon
-
-    xbmcgui.Dialog().notification(heading, message, icon, time, sound)
-
 def refresh():
     xbmc.executebuiltin('Container.Refresh')
-
-def select(heading=None, options=None, autoclose=None, multi=False, **kwargs):
-    heading = _make_heading(heading)
-    options = options or []
-
-    if KODI_VERSION < 18:
-        kwargs.pop('preselect', None) # preselect breaks cancel in 17
-        if KODI_VERSION < 17:
-            kwargs.pop('useDetails', None) # useDetails added in 17
-
-    if autoclose:
-        kwargs['autoclose'] = autoclose
-
-    _options = []
-    for option in options:
-        if issubclass(type(option), Item):
-            option = option.label if KODI_VERSION < 17 else option.get_li()
-
-        _options.append(option)
-
-    if multi:
-        return xbmcgui.Dialog().multiselect(heading, _options, **kwargs)
-    else:
-        return xbmcgui.Dialog().select(heading, _options, **kwargs)
 
 def redirect(location):
     xbmc.executebuiltin('Container.Update({},replace)'.format(location))
@@ -135,6 +105,36 @@ def progress(message='', heading=None, percent=0, background=False):
     finally:
         dialog.close()
 
+def notification(message, heading=None, icon=None, time=3000, sound=False):
+    heading = _make_heading(heading)
+    icon    = ADDON_ICON if not icon else icon
+
+    xbmcgui.Dialog().notification(heading, message, icon, time, sound)
+
+def select(heading=None, options=None, autoclose=None, multi=False, **kwargs):
+    heading = _make_heading(heading)
+    options = options or []
+
+    if KODI_VERSION < 18:
+        kwargs.pop('preselect', None) # preselect breaks cancel in 17
+        if KODI_VERSION < 17:
+            kwargs.pop('useDetails', None) # useDetails added in 17
+
+    if autoclose:
+        kwargs['autoclose'] = autoclose
+
+    _options = []
+    for option in options:
+        if issubclass(type(option), Item):
+            option = option.label if KODI_VERSION < 17 else option.get_li()
+
+        _options.append(option)
+
+    if multi:
+        return xbmcgui.Dialog().multiselect(heading, _options, **kwargs)
+    else:
+        return xbmcgui.Dialog().select(heading, _options, **kwargs)
+
 def input(message, default='', hide_input=False, **kwargs):
     if hide_input:
         kwargs['option'] = xbmcgui.ALPHANUM_HIDE_INPUT
@@ -157,7 +157,6 @@ def ok(message, heading=None):
 
 def text(message, heading=None, **kwargs):
     heading = _make_heading(heading)
-
     return xbmcgui.Dialog().textviewer(heading, message)
 
 def yes_no(message, heading=None, autoclose=None, **kwargs):
@@ -171,6 +170,13 @@ def yes_no(message, heading=None, autoclose=None, **kwargs):
 def info(item):
     dialog = xbmcgui.Dialog()
     dialog.info(item.get_li())
+
+def context_menu(options):
+    if KODI_VERSION < 17:
+        return select(options=options)
+
+    dialog = xbmcgui.Dialog()
+    return dialog.contextmenu(options)
 
 class Item(object):
     def __init__(self, id=None, label='', path=None, playable=False, info=None, context=None,

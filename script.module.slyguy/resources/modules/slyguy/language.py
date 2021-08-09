@@ -3,22 +3,32 @@ from kodi_six import xbmc
 from .log import log
 from .constants import ADDON, COMMON_ADDON
 
-def format_string(string, _bold=False, _label=False, _color=None, _strip=False, **kwargs):
-    if kwargs:
-        string = string.format(**kwargs)
+def format_string(string, *args, **kwargs):
+    style = {}
 
-    if _strip:
+    if kwargs:
+        for key in list(kwargs.keys()):
+            if key.startswith('_'):
+                style[key.lstrip('_')] = kwargs.pop(key)
+
+    if args or kwargs:
+        string = string.format(*args, **kwargs)
+
+    if not style:
+        return string
+
+    if style.get('strip'):
         string = string.strip()
 
-    if _label:
-        _bold = True
+    if style.get('label'):
+        style['bold'] = True
         string = u'~ {} ~'.format(string)
 
-    if _bold:
+    if style.get('bold'):
         string = u'[B]{}[/B]'.format(string)
 
-    if _color:
-        string = u'[COLOR {}]{}[/COLOR]'.format(_color, string)
+    if 'color' in style:
+        string = u'[COLOR {}]{}[/COLOR]'.format(style['color'], string)
 
     return string
 
@@ -167,6 +177,9 @@ class BaseLanguage(object):
     REMOVE_SEARCH               = 32127
     NEWS_HEADING                = 32128
     VIDEO_FOLDER_CONTENT        = 32129
+    PLAY_FROM_LIVE_CONTEXT      = 32130
+    RESUME_FROM                 = 12022
+    PLAY_FROM_BEGINNING         = 12021
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
@@ -175,10 +188,10 @@ class BaseLanguage(object):
 
         return addon_string(attr)
 
-    def __call__(self, string, **kwargs):
+    def __call__(self, string, *args, **kwargs):
         if isinstance(string, int):
             string = addon_string(string)
 
-        return format_string(string, **kwargs)
+        return format_string(string, *args, **kwargs)
 
 _ = BaseLanguage()

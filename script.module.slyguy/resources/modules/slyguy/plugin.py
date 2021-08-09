@@ -450,6 +450,31 @@ def _autoplay(folder, pattern):
 default_thumb  = ADDON_ICON
 default_fanart = ADDON_FANART
 
+def resume_from(seconds):
+    if not seconds or seconds < 0:
+        return 0
+
+    minutes = seconds // 60
+    hours = minutes // 60
+    label = _(_.RESUME_FROM, '{:02d}:{:02d}:{:02d}'.format(hours, minutes % 60, seconds % 60))
+
+    index = gui.context_menu([label, _.PLAY_FROM_BEGINNING])
+    if index == -1:
+        return -1
+    elif index == 0:
+        return seconds
+    else:
+        return 0
+
+def live_or_start(seconds=1):
+    index = gui.context_menu([_.PLAY_FROM_LIVE_CONTEXT, _.PLAY_FROM_BEGINNING])
+    if index == -1:
+        return -1
+    elif index == 0:
+        return 0
+    else:
+        return seconds
+
 #Plugin.Item()
 class Item(gui.Item):
     def __init__(self, cache_key=None, play_next=None, callback=None, play_skips=None, geolock=None, bookmark=True, quality=None, *args, **kwargs):

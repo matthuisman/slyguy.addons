@@ -319,7 +319,7 @@ msgid "Playback Quality"
 msgstr ""
 
 msgctxt "#32062"
-msgid "Inputstream HLS required to watch streams From Live.\n"
+msgid "Inputstream HLS required to watch streams from live.\n"
 "Check HLS is enabled in settings and Inputstream Adaptive is installed"
 msgstr ""
 
@@ -603,4 +603,8 @@ msgstr ""
 
 msgctxt "#32129"
 msgid "Video view for all content"
+msgstr ""
+
+msgctxt "#32130"
+msgid "Play from live"
 msgstr ""
