@@ -202,24 +202,11 @@ def sets(set_id, set_type, page=1, **kwargs):
 
     return folder
 
-def _continue_watching():
-    data = api.continue_watching()
-
-    continue_watching = {}
-    for row in data['items']:
-        if row['meta']['bookmarkData']:
-            play_from = row['meta']['bookmarkData']['playhead']
-        else:
-            play_from = 0
-
-        continue_watching[row['family']['encodedFamilyId']] = play_from
-
-    return continue_watching
-
 def _process_rows(rows, content_class=None):
-    items = []
-    continue_watching = _continue_watching() if (settings.getBool('disney_sync', False) and content_class != CONTINUE_WATCHING_SET_TYPE) else {}
+    sync_enabled = settings.getBool('disney_sync', True)
+    watchlist_enabled = settings.getBool('disney_watchlist', True)
 
+    items = []
     for row in rows:
         item = None
         content_type = row.get('type')
@@ -235,12 +222,6 @@ def _process_rows(rows, content_class=None):
             else:
                 item = _parse_video(row)
 
-            if item.playable and settings.getBool('disney_sync', False):
-                try:
-                    item.resume_from = row['meta']['bookmarkData']['playhead']
-                except:
-                    item.resume_from = continue_watching.get(row['family']['encodedFamilyId'], 0)
-
         elif content_type == 'DmcSeries':
             item = _parse_series(row)
 
@@ -250,7 +231,10 @@ def _process_rows(rows, content_class=None):
         if not item:
             continue
 
-        if settings.getBool('disney_watchlist', False):
+        if sync_enabled:
+            item.resume_from = 0
+
+        if watchlist_enabled:
             if content_class == 'WatchlistSet':
                 item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, content_id=row['contentId']))))
             elif (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
@@ -560,10 +544,10 @@ def play(content_id=None, family_id=None, **kwargs):
     item.play_next = {}
     item.play_skips = []
 
-    if kwargs[ROUTE_RESUME_TAG] and settings.getBool('disney_sync', False):
-        continue_watching = _continue_watching()
-        item.resume_from = continue_watching.get(video['contentId'], 0)
-        item.force_resume = True
+    if settings.getBool('disney_sync', False) and playback_data['playhead']['status'] == 'PlayheadFound':
+        item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
+        if item.resume_from == -1:
+            return
 
     elif milestones and settings.getBool('skip_intros', False):
         intro_start = _get_milestone(milestones, 'intro_start')
