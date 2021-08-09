@@ -289,7 +289,7 @@ class Item(object):
         if self.context:
             li.addContextMenuItems(self.context)
 
-        if self.resume_from:
+        if self.resume_from is not None:
             self.properties['ResumeTime'] = self.resume_from
             self.properties['TotalTime'] = 1
 
