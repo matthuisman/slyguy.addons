@@ -397,8 +397,8 @@ def _parse_video(row):
 
     is_live = False
     play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
-    start_from = ((start - precheck).seconds)
 
+    start_from = ((start - precheck).seconds)
     if start_from < 1:
         start_from = 1
 
@@ -428,12 +428,19 @@ def _parse_video(row):
 @plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
-    asset = api.stream(id)
-
     start_from = int(start_from)
     play_type = int(play_type)
     is_live = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
 
+    if is_live:
+        if play_type == PLAY_FROM_LIVE:
+            start_from = 0
+        elif play_type == PLAY_FROM_ASK:
+            start_from = plugin.live_or_start(start_from)
+            if start_from == -1:
+                return
+
+    asset = api.stream(id)
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
     streams = [s for s in streams if s['mediaFormat'] in SUPPORTED_FORMATS]
@@ -471,10 +478,6 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     )
 
     item.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
-
-    if is_live and (play_type == PLAY_FROM_LIVE or (play_type == PLAY_FROM_ASK and gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
-        play_type = PLAY_FROM_LIVE
-        start_from = 0
 
     ## Cloudfront streams start from correct position
     if stream['provider'] == CDN_CLOUDFRONT and start_from:
