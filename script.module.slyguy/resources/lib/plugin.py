@@ -10,8 +10,8 @@ def home(**kwargs):
 
 @plugin.route()
 def update_addons(**kwargs):
-    num_updates = check_updates(force=True)
-    if not num_updates:
+    updates = check_updates(force=True)
+    if not updates:
         return gui.ok(_.NO_UPDATES)
 
     try:
@@ -19,7 +19,14 @@ def update_addons(**kwargs):
     except:
         auto_updates = False
 
+    text = u''
+    for update in updates:
+        text += u'{} {} > {}\n'.format(update[0].getAddonInfo('name'), update[1], update[2])
+    text = text.rstrip()
+
     if auto_updates:
-        gui.ok(_(_.UPDATES_INSTALLED, count=num_updates))
+        text = _(_.UPDATES_INSTALLED, count=len(updates), updates=text)
     else:
-        gui.ok(_(_.UPDATES_AVAILABLE, count=num_updates))
+        text = _(_.UPDATES_AVAILABLE, count=len(updates), updates=text)
+
+    gui.text(text)

@@ -37,11 +37,11 @@ def check_updates(force=False):
         new_version = slyguy_addons[addon_id]['version']
 
         if LooseVersion(cur_version) < LooseVersion(new_version):
-            updates.append([addon_id, cur_version, new_version])
+            updates.append([addon, cur_version, new_version])
 
     if not force and not updates:
         return 0
 
     log.debug('Updating repos due to {} addon updates'.format(len(updates)))
     xbmc.executebuiltin('UpdateAddonRepos')
-    return len(updates)
+    return updates
