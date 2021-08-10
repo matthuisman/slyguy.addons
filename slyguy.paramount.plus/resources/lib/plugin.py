@@ -4,10 +4,10 @@ from xml.sax.saxutils import escape
 from xml.dom.minidom import parseString
 
 import arrow
-from kodi_six import xbmc
-
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
+from slyguy.monitor import monitor
+from slyguy.drm import is_wv_secure
 
 from .api import API
 from .language import _
@@ -78,7 +78,7 @@ def featured(slug=None, **kwargs):
                         'plot': row['about'],
                         'mediatype': 'tvshow',
                     },
-                    art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                    art = _show_art(row['showAssets']),
                     path = plugin.url_for(show, show_id=row['showId']),
                 )
 
@@ -95,7 +95,7 @@ def featured(slug=None, **kwargs):
                         'mediatype': 'movie',
                         'trailer': plugin.url_for(play, video_id=row['trailerContentId']) if row.get('trailerContentId') else None,
                     },
-                    art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
+                    art = _movie_art(data['thumbnailSet']),
                     path = plugin.url_for(play, video_id=data['contentId']),
                     playable = True,
                 )
@@ -154,7 +154,7 @@ def movies(genre=None, title=None, page=1, **kwargs):
                 'mediatype': 'movie',
                 'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
             },
-            art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
+            art = _movie_art(data['thumbnailSet']),
             path = plugin.url_for(play, video_id=data['contentId']),
             playable = True,
         )
@@ -204,7 +204,7 @@ def _process_shows(rows):
                 'mediatype': 'tvshow',
                 'plot': plot,
             },
-            art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+            art = _show_art(row['showAssets']),
             path = plugin.url_for(show, show_id=row['showId']),
         )
 
@@ -215,8 +215,9 @@ def _process_shows(rows):
 @plugin.route()
 def show(show_id, **kwargs):
     show = api.show(show_id)
+    art = _show_art(show['showAssets'])
 
-    folder = plugin.Folder(show['show']['results'][0]['title'], thumb=config.image(show['showAssets']['filepath_show_browse_poster']), fanart=config.image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
+    folder = plugin.Folder(show['show']['results'][0]['title'], thumb=art.get('thumb'), fanart=art.get('fanart'))
 
     plot = show['show']['results'][0]['about'] + '\n\n'
 
@@ -249,8 +250,9 @@ def show(show_id, **kwargs):
 @plugin.route()
 def season(show_id, season, **kwargs):
     show = api.show(show_id)
+    art = _show_art(show['showAssets'])
 
-    folder = plugin.Folder(show['show']['results'][0]['title'], fanart=config.image(show['showAssets']['filepath_brand_hero'], 'w1920-q80'))
+    folder = plugin.Folder(show['show']['results'][0]['title'], fanart=art.get('fanart'))
 
     for row in api.episodes(show_id, season):
         folder.add_item(
@@ -302,6 +304,34 @@ def live_tv(**kwargs):
 
     return folder
 
+def _show_art(assets):
+    art = {}
+
+    if 'filepath_show_browse_poster' in assets:
+        art['thumb'] = config.image(assets['filepath_show_browse_poster'])
+
+    if 'filepath_brand_hero' in assets:
+        art['fanart'] = config.image(assets['filepath_brand_hero'], 'w1920-q80')
+
+    return art
+
+def _get_thumb(thumbs, _type='PosterArt', dimensions='w400'):
+    if not thumbs:
+        return None
+
+    for row in thumbs:
+        if row['assetType'] == _type:
+            return config.thumbnail(row['url'], dimensions)
+
+    return None
+
+def _movie_art(thumbs):
+    art = {
+        'thumb': _get_thumb(thumbs, 'PosterArt'),
+        'fanart': _get_thumb(thumbs, 'Thumbnail', 'w1920-q80'),
+    }
+    return art
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
@@ -314,17 +344,15 @@ def search(query, page, **kwargs):
                 info = {
                     'mediatype': 'tvshow',
                 },
-                art = {'thumb': config.image(row['showAssets']['filepath_show_browse_poster']), 'fanart': config.image(row['showAssets']['filepath_brand_hero'], 'w1920-q80')},
+                art = _show_art(row['showAssets']),
                 path = plugin.url_for(show, show_id=row['show_id']),
             ))
 
         elif row['term_type'] == 'movie':
             data = row['videoList']['itemList'][0]
 
-            try:
-                aired = str(arrow.get(data['_airDate'], 'MM/DD/YY HH:mm', tzinfo='US/Eastern'))
-            except:
-                aired = None
+            try: aired = str(arrow.get(data['_airDate'], 'MM/DD/YY'))
+            except: aired = None
 
             items.append(plugin.Item(
                 label = data['label'].strip() or data['title'].strip(),
@@ -335,7 +363,7 @@ def search(query, page, **kwargs):
                     'mediatype': 'movie',
                     'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
                 },
-                art = {'thumb': _get_thumb(data['thumbnailSet']), 'fanart': _get_thumb(data['thumbnailSet'], 'Thumbnail')},
+                art = _movie_art(data['thumbnailSet']),
                 path = plugin.url_for(play, video_id=data['contentId']),
                 playable = True,
             ))
@@ -373,7 +401,6 @@ def _email_password():
 def _device_link():
     start = time.time()
     data = api.device_code()
-    monitor = xbmc.Monitor()
 
     poll_time = int(data['retryInterval']/1000)
     max_time = int(data['retryDuration']/1000)
@@ -419,15 +446,6 @@ def _select_profile():
     api.set_profile(values[index])
     gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=config.image(userdata.get('profile_img')))
 
-def _get_thumb(thumbs, _type='PosterArt'):
-    if not thumbs:
-        return None
-
-    for row in thumbs:
-        if row['assetType'] == _type:
-            return config.thumbnail(row['url'])
-
-    return None
 
 def _parse_item(row):
     if row['mediaType'] == 'Standalone':
@@ -446,7 +464,7 @@ def _parse_item(row):
                 'duration': row['duration'],
                 'mediatype': 'movie' if row['mediaType'] == 'Movie' else 'video',
             },
-            art = {'thumb': _get_thumb(row['thumbnailSet'], 'Thumbnail') if row['mediaType'] == 'Trailer' else  _get_thumb(row['thumbnailSet'])},
+            art = _movie_art(row['thumbnailSet']) if row['mediaType'] == 'Movie' else {'thumb': _get_thumb(row['thumbnailSet'], 'Thumbnail')},
         )
 
     return plugin.Item()

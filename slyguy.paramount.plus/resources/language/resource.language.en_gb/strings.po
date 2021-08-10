@@ -110,10 +110,6 @@ msgctxt "#30026"
 msgid "International"
 msgstr ""
 
-msgctxt "#30027"
-msgid "Widevine L1 Secure Device"
-msgstr ""
-
 msgctxt "#30028"
 msgid "Ignore Subtitles"
 msgstr ""
