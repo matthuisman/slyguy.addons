@@ -3,7 +3,7 @@ import codecs
 import arrow
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_LIVE_TAG, ROUTE_LIVE_SUFFIX
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
 from .api import API
 from .language import _
