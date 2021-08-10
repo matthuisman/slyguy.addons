@@ -4,7 +4,7 @@ import string
 import arrow
 from kodi_six import xbmcplugin
 from slyguy import plugin, gui, settings, userdata, inputstream
-from slyguy.constants import ROUTE_LIVE_TAG, ROUTE_LIVE_SUFFIX
+from slyguy.constants import ROUTE_LIVE_TAG
 from slyguy.util import pthms_to_seconds
 
 from .api import API
@@ -315,7 +315,7 @@ def play(livestream=None, brightcoveId=None, channel=None, **kwargs):
     elif livestream:
         item = plugin.Item(path=livestream, art=False, inputstream=inputstream.HLS(live=True))
         
-        if kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START):
+        if ROUTE_LIVE_TAG in kwargs and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START):
             item.resume_from = 1
             item.inputstream = inputstream.HLS(force=True, live=True)
             if not item.inputstream.check():
