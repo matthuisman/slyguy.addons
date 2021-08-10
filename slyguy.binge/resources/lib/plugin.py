@@ -4,14 +4,12 @@ import time
 import re
 
 import arrow
-from kodi_six import xbmc
-
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.session import Session
 from slyguy.exceptions import PluginError
-from slyguy.constants import ROUTE_LIVE_SUFFIX, ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
+from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
 from .api import API
 from .language import _
@@ -523,7 +521,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     start_from = int(start_from)
     play_type = int(play_type)
-    is_live = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
+    is_live = ROUTE_LIVE_TAG in kwargs
 
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
