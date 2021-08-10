@@ -198,8 +198,9 @@ class API(object):
     def profiles(self):
         return self.content([{'id': 'urn:hbo:profiles:mine'}])['urn:hbo:profiles:mine']['profiles']
 
-    # def continue_watching(self):
-    #     return self.content([{'id': 'urn:hbo:continue-watching:mine'}])['urn:hbo:continue-watching:mine']
+    def continue_watching(self):
+        data = self.content([{'id': 'urn:hbo:continue-watching:mine'}])
+        return self._process(data, 'urn:hbo:continue-watching:mine')
 
     def watchlist(self):
         data = self.content([{'id': 'urn:hbo:query:mylist'}])
@@ -239,19 +240,35 @@ class API(object):
         self._refresh_token()
         return self._session.delete(self.url('comet', '/watchlist/{}'.format(slug))).ok
 
-    def update_marker(self, session_id, video_session, cut_id, runtime, playback_time):
+    def markers(self, markers):
+        self._refresh_token()
+
+        params = {
+            'limit': len(markers),
+        }
+
+        try:
+            return self._session.get(self.url('markers', '/markers/{}'.format(','.join(markers))), params=params, json={}).json()
+        except:
+            return None
+
+    def update_marker(self, url, cut_id, runtime, playback_time):
         self._refresh_token()
 
         payload = {
-            'appSessionId': session_id, #random?
-            'videoSessionId': video_session, #random?
+            #'appSessionId': session_id,
+            #'videoSessionId': video_session,
             'creationTime': int(time()*1000),
-            'cutId': cut_id, #video_id
+            'cutId': cut_id,
             'position': playback_time,
-            'runtime': runtime, #required?
+            'runtime': runtime,
         }
 
-        print(self._session.post(self.url('markers', '/markers'), json=payload).json())
+        resp = self._session.post(url, json=payload)
+        if not resp.ok:
+            return False
+        else:
+            return resp.json().get('status') == 'Accepted'
 
     def _age_category(self):
         month, year = userdata.get('profile', {}).get('birth', [0,0])
@@ -369,35 +386,30 @@ class API(object):
         self._refresh_token()
 
         content_data = self.express_content(slug)
-
-        options = []
-        for edit in content_data.get('edits', []):
-            options.append([edit['originalAudioLanguage'], edit['video']])
-
-        if not options:
+        edits = content_data.get('edits', [])
+        if not edits:
             raise APIError(_.NO_VIDEO_FOUND)
 
-        selected = options[0]
         ## select dialog for language?
-        for option in options:
-            if 'en' in option[0]:
-                selected = option
-                break
+        edit = edits[0]
+        for row in edits:
+            if 'en' in row['originalAudioLanguage']:
+                edit = row
 
         payload = [{
-            'id': selected[1],
+            'id': edit['video'],
             'headers' : {
                 'x-hbo-preferred-blends': 'DASH_WDV,HSS_PR',
                 'x-hbo-video-mlp': True,
             }
         }]
 
-        data = self.content(payload).get(selected[1])
+        data = self.content(payload).get(edit['video'])
         self._check_errors(data)
 
         for row in data.get('manifests', []):
             if row['type'] == 'urn:video:main':
-                return row, content_data
+                return row, content_data, edit
 
         raise APIError(_.NO_VIDEO_FOUND)
 

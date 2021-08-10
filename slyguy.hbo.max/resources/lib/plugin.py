@@ -39,8 +39,8 @@ def index(**kwargs):
         if settings.getBool('sync_watchlist', False):
             folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(watchlist))
 
-        # if settings.getBool('sync_playback', False):
-        #     folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
+        if settings.getBool('sync_playback', False):
+            folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -137,14 +137,16 @@ def _process_rows(rows, slug):
         elif row['id'].startswith('urn:hbo:grid'):
             items.extend(_process_rows(row['items'], slug))
 
-        if item:
-            if row.get('viewable'):
-                if slug == 'watchlist':
-                    item.context.insert(0, ((_.REMOVE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(remove_watchlist, slug=row['viewable'])))))
-                elif sync_watchlist:
-                    item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['viewable'], title=item.label, icon=item.art.get('thumb'))))))
+        if not item:
+            continue
 
-            items.append(item)
+        if row.get('viewable'):
+            if slug == 'watchlist':
+                item.context.insert(0, ((_.REMOVE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(remove_watchlist, slug=row['viewable'])))))
+            elif sync_watchlist:
+                item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['viewable'], title=item.label, icon=item.art.get('thumb'))))))
+
+        items.append(item)
 
     return items
 
@@ -168,11 +170,13 @@ def remove_watchlist(slug, **kwargs):
     api.delete_watchlist(slug)
     gui.refresh()
 
-# @plugin.route()
-# def continue_watching(**kwargs):
-#     folder = plugin.Folder(_.CONTINUE_WATCHING)
-#     data = api.continue_watching()
-#     return folder
+@plugin.route()
+def continue_watching(**kwargs):
+    folder = plugin.Folder(_.CONTINUE_WATCHING)
+    data = api.continue_watching()
+    items = _process_rows(data['items'], 'continue_watching')
+    folder.add_items(items)
+    return folder
 
 @plugin.route()
 def extras(slug, **kwargs):
@@ -415,7 +419,7 @@ def _get_play_path(slug):
         kwargs['profile_id'] = profile_id
 
     if settings.getBool('sync_playback', False):
-        kwargs['sync'] = 1
+        kwargs['_noresume'] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -498,8 +502,13 @@ def mpd_request(_data, _data_path, **kwargs):
     return _data_path
 
 @plugin.route()
+@plugin.no_error_gui()
+def callback(url, cut_id, runtime, _time, **kwargs):
+    api.update_marker(url, cut_id, int(runtime), int(_time))
+
+@plugin.route()
 def play(slug, **kwargs):
-    data, content = api.play(slug)
+    data, content, edit = api.play(slug)
 
     headers = {
         'Authorization': 'Bearer {}'.format(userdata.get('access_token')),
@@ -519,12 +528,22 @@ def play(slug, **kwargs):
         item.inputstream = inputstream.Widevine(license_key = data['drm']['licenseUrl'])
         item.proxy_data['manifest_middleware'] = plugin.url_for(mpd_request)
 
+    if settings.getBool('sync_playback', False):
+        marker = api.markers([edit['playbackMarkerId'],])
+        if marker and marker['position'] < edit.get('creditsStartTime', edit['duration']-10):
+            item.resume_from = plugin.resume_from(marker['position'])
+            if item.resume_from == -1:
+                return
+
     item.play_next = {}
+    if settings.getBool('skip_credits', True) and 'creditsStartTime' in edit:
+        item.play_next['time'] = edit['creditsStartTime']
+
     if ':episode' in slug:
         item.update(
             label = content['titles']['full'],
-            art   = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':  _image(content['images'].get('tile'), size='1920x1080')},
-            info  = {
+            art = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':  _image(content['images'].get('tile'), size='1920x1080')},
+            info = {
                 'plot': content['summaries']['short'],
                 'duration': content['duration'],
                 'tvshowtitle': content['seriesTitles']['full'],
@@ -540,10 +559,10 @@ def play(slug, **kwargs):
     elif ':feature' in slug:
         item.update(
             label = content['titles']['full'],
-            art   = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
-            info  = {
+            art = {'thumb': _image(content['images'].get('tileburnedin')), 'fanart':_image(content['images'].get('tile'), size='1920x1080')},
+            info = {
                 'plot': content['summaries']['short'],
-                'duration': content['duration'],
+                'duration': edit['duration'],
                 'year': content['releaseYear'],
                 'mediatype': 'movie',
             },
@@ -560,13 +579,11 @@ def play(slug, **kwargs):
             item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
 
     if settings.getBool('sync_playback', False):
-        pass
-        # telemetry = playback_data['tracking']['telemetry']
-        # item.callback = {
-        #     'type':'interval',
-        #     'interval': 30,
-        #     'callback': plugin.url_for(callback, media_id=telemetry['mediaId'], fguid=telemetry['fguid']),
-        # }
+        item.callback = {
+            'type':'interval',
+            'interval': 30,
+            'callback': plugin.url_for(callback, url=api.url('markers', '/markers'), cut_id=edit['playbackMarkerId'], runtime=edit['duration']),
+        }
 
     return item
 
