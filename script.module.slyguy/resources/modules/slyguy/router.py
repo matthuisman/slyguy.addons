@@ -52,7 +52,7 @@ def parse_url(url):
     if len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
         params[ROUTE_RESUME_TAG] = True
 
-    if params.pop(ROUTE_LIVE_TAG, None) != None:
+    if params.pop(ROUTE_LIVE_TAG, None) != None and params.pop(ROUTE_LIVE_TAG_LEGACY, None) != None:
         params[ROUTE_LIVE_TAG] = True
 
     function = _routes.get(_url)
