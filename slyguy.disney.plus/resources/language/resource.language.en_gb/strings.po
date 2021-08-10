@@ -60,7 +60,7 @@ msgid "Dolby Vision / 4K"
 msgstr ""
 
 msgctxt "#30016"
-msgid "Sync with Disney+"
+msgid "Disney+ Sync Playback"
 msgstr ""
 
 msgctxt "#30017"
