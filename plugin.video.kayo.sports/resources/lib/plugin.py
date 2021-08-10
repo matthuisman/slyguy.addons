@@ -9,7 +9,7 @@ from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.session import Session
 from slyguy.exceptions import PluginError
-from slyguy.constants import ROUTE_LIVE_SUFFIX, ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG
 
 from .api import API, APIError
 from .language import _
@@ -430,7 +430,7 @@ def _parse_video(row):
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     start_from = int(start_from)
     play_type = int(play_type)
-    is_live = kwargs.get(ROUTE_LIVE_TAG) == ROUTE_LIVE_SUFFIX
+    is_live = ROUTE_LIVE_TAG in kwargs
 
     if is_live:
         if play_type == PLAY_FROM_LIVE:
@@ -503,7 +503,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
             license_key = LICENSE_URL,
         )
 
-    if start_from and not kwargs[ROUTE_RESUME_TAG]:
+    if start_from and not ROUTE_RESUME_TAG in kwargs:
         item.resume_from = start_from
 
     return item
