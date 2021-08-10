@@ -52,7 +52,7 @@ def parse_url(url):
     if len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
         params[ROUTE_RESUME_TAG] = True
 
-    if params.pop(ROUTE_LIVE_TAG, None) != None and params.pop(ROUTE_LIVE_TAG_LEGACY, None) != None:
+    if params.pop(ROUTE_LIVE_TAG, None) != None or params.pop(ROUTE_LIVE_TAG_LEGACY, None) != None:
         params[ROUTE_LIVE_TAG] = True
 
     function = _routes.get(_url)
@@ -104,7 +104,7 @@ def redirect(url):
 
     function, params = parse_url(url)
     function(**params)
-    
+
     raise Exit()
 
 # router.dispatch('?_=_settings')
@@ -112,7 +112,7 @@ def dispatch(url):
     with signals.throwable():
         signals.emit(signals.BEFORE_DISPATCH)
         function, params = parse_url(url)
-        
+
         try:
             function(**params)
         except TypeError as e:
