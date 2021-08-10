@@ -295,9 +295,13 @@ class Item(object):
         if self.context:
             li.addContextMenuItems(self.context)
 
-        if self.resume_from is not None:
+        # Fake resume - show icon but dont show resume context #
+        if self.resume_from == -1:
+            self.properties['ResumeTime'] = 1
+            self.properties['TotalTime'] = 0
+        elif self.resume_from is not None:
             self.properties['ResumeTime'] = self.resume_from
-            self.properties['TotalTime'] = 1
+            self.properties['TotalTime'] = self.resume_from
 
         if not self.force_resume and len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
             self.properties.pop('ResumeTime', None)

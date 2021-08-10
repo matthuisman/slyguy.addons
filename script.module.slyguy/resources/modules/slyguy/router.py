@@ -34,8 +34,6 @@ def add_url_args(url, **kwargs):
     if not _url:
         return url
 
-    params['_is_live'] = params.pop(ROUTE_LIVE_TAG, None)
-
     return build_url(_url, _addon_id=parsed.netloc , **params)
 
 # @router.parse_url('?_=_settings')
@@ -45,13 +43,17 @@ def parse_url(url):
         for key in params:
             params[key] = params[key]
 
-        _url     = params.pop(ROUTE_TAG, '')
+        _url = params.pop(ROUTE_TAG, '')
     else:
         params = {}
         _url = url
 
     params[ROUTE_URL_TAG] = url
-    params[ROUTE_RESUME_TAG] = len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true'
+    if len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
+        params[ROUTE_RESUME_TAG] = True
+
+    if params.pop(ROUTE_LIVE_TAG, None) != None:
+        params[ROUTE_LIVE_TAG] = True
 
     function = _routes.get(_url)
 
@@ -77,7 +79,9 @@ def url_for(func_or_url, **kwargs):
 
 def build_url(_url, _addon_id=ADDON_ID, **kwargs):
     kwargs[ROUTE_TAG] = _url
-    is_live = kwargs.pop('_is_live', kwargs.pop('_noresume', False))
+
+    is_live = kwargs.pop(ROUTE_LIVE_TAG, False)
+    no_resume = is_live or kwargs.pop(NO_RESUME_TAG, False)
 
     params = []
     for k in sorted(kwargs):
@@ -88,9 +92,9 @@ def build_url(_url, _addon_id=ADDON_ID, **kwargs):
         except: params.append((k, kwargs[k]))
 
     if is_live:
-        params.append((ROUTE_LIVE_TAG, ROUTE_LIVE_SUFFIX))
+        params.append((ROUTE_LIVE_TAG, '1'))
 
-    return 'plugin://{0}/?{1}'.format(_addon_id, urlencode(params))
+    return 'plugin://{0}/?{1}{2}'.format(_addon_id, urlencode(params), NO_RESUME_SUFFIX if no_resume else '')
 
 def redirect(url):
     log.debug('Redirect -> {}'.format(url))
