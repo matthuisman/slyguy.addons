@@ -28,10 +28,10 @@ def index(**kwargs):
         folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(collection, slug='originals', content_class='originals'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
-        if settings.getBool('disney_watchlist', False):
+        if settings.getBool('sync_watchlist', False):
             folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(collection, slug='watchlist', content_class='watchlist'))
 
-        if settings.getBool('disney_sync', False):
+        if settings.getBool('sync_playback', False):
             folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(sets, set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE))
 
         if settings.getBool('bookmarks', True):
@@ -202,9 +202,10 @@ def sets(set_id, set_type, page=1, **kwargs):
 
     return folder
 
+
 def _process_rows(rows, content_class=None):
-    sync_enabled = settings.getBool('disney_sync', True)
-    watchlist_enabled = settings.getBool('disney_watchlist', True)
+    sync_enabled = settings.getBool('sync_playback', True)
+    watchlist_enabled = settings.getBool('sync_watchlist', True)
 
     items = []
     for row in rows:
@@ -230,9 +231,6 @@ def _process_rows(rows, content_class=None):
 
         if not item:
             continue
-
-        if sync_enabled:
-            item.resume_from = 0
 
         if watchlist_enabled:
             if content_class == 'WatchlistSet':
@@ -271,8 +269,8 @@ def _get_play_path(content_id):
     if profile_id:
         kwargs['profile_id'] = profile_id
 
-    if settings.getBool('disney_sync', False):
-        kwargs['sync'] = 1
+    if settings.getBool('sync_playback', False):
+        kwargs['_noresume'] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -544,7 +542,7 @@ def play(content_id=None, family_id=None, **kwargs):
     item.play_next = {}
     item.play_skips = []
 
-    if settings.getBool('disney_sync', False) and playback_data['playhead']['status'] == 'PlayheadFound':
+    if settings.getBool('sync_playback', False) and playback_data['playhead']['status'] == 'PlayheadFound':
         item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
         if item.resume_from == -1:
             return
@@ -576,7 +574,7 @@ def play(content_id=None, family_id=None, **kwargs):
                 item.play_next['next_file'] = _get_play_path(row['contentId'])
                 break
 
-    if settings.getBool('disney_sync', False):
+    if settings.getBool('sync_playback', False):
         telemetry = playback_data['tracking']['telemetry']
         item.callback = {
             'type':'interval',
