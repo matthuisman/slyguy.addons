@@ -1,5 +1,4 @@
 import json
-import time
 
 from kodi_six import xbmc
 from threading import Thread
@@ -17,13 +16,17 @@ class Player(xbmc.Player):
     #     super(Player, self).__init__(*args, **kwargs)
 
     def playback(self, playing_file):
-        last_callback = None
-        cur_time = time.time()
         play_time = 0
+        last_play_time = 0
+        last_callback = None
 
         while not monitor.waitForAbort(1) and self.isPlaying() and self.getPlayingFile() == playing_file:
-            cur_time  = time.time()
-            play_time = self.getTime()
+            play_time = int(self.getTime())
+
+            if self._up_next and play_time >= self._up_next['time']:
+                play_time = int(self.getTotalTime())+1
+                self.seekTime(play_time)
+                break
 
             if self._play_skips:
                 play_skips = []
@@ -34,19 +37,20 @@ class Player(xbmc.Player):
                         play_skips.append(row)
                 self._play_skips = play_skips
 
-            if self._up_next and play_time >= self._up_next['time']:
-                play_time = self.getTotalTime()
-                self.seekTime(play_time)
-                self._up_next = None
-                last_callback = None
+            if last_callback is not None:
+                if play_time > last_callback:
+                    diff = play_time - last_callback
+                else:
+                    diff = last_callback - play_time
 
-            if self._callback and self._callback['type'] == 'interval' and (not last_callback or cur_time >= last_callback + self._callback['interval']):
-                callback = add_url_args(self._callback['callback'], _time=int(play_time))
+            if self._callback and self._callback['type'] == 'interval' and last_callback != play_time and (last_callback is None or diff >= self._callback['interval']):
+                callback = add_url_args(self._callback['callback'], _time=play_time)
                 xbmc.executebuiltin('RunPlugin({})'.format(callback))
-                last_callback = cur_time
+                last_callback = play_time
 
-        if self._callback:
-            callback = add_url_args(self._callback['callback'], _time=int(play_time))
+        if self._callback and last_callback != play_time:
+            # Stop playback callback
+            callback = add_url_args(self._callback['callback'], _time=play_time)
             xbmc.executebuiltin('RunPlugin({})'.format(callback))
 
     def onAVStarted(self):
