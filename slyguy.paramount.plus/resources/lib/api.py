@@ -1,17 +1,13 @@
-import os
 import uuid
-from base64 import b64encode
 from time import time
 import xml.etree.ElementTree as ET
 
-import pyaes
 from slyguy import userdata, mem_cache, settings
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import strip_namespaces, hash_6, get_system_arch
 from slyguy.log import log
 
-from .constants import *
 from .language import _
 
 class APIError(Error):
@@ -21,8 +17,9 @@ class API(object):
     def new_session(self, config):
         self.logged_in = False
         self._config = config
-        self._session = Session(base_url=self._config.api_url, headers=HEADERS)
-        self._set_authentication()
+        if self._config.loaded:
+            self._session = Session(base_url=self._config.api_url, headers=self._config.headers)
+            self._set_authentication()
 
     def _set_authentication(self):
         auth_cookies = userdata.get('auth_cookies')
@@ -59,18 +56,17 @@ class API(object):
         userdata.set('device_id', device_id)
         return device_id
 
-    def device_code(self):
-        payload = {'deviceId': self._device_id()}
-        return self._session.post('/v2.0/androidtv/ott/auth/code.json', params=self._params(), data=payload).json()
-
     def _refresh_token(self, force=False):
         if not force and userdata.get('expires', 0) > time() or not self.logged_in:
             return
 
         log.debug('Refreshing token')
         self._set_profile(userdata.get('profile_id'))
+        self._config.refresh()
 
     def login(self, username, password):
+        self.logout()
+
         payload = {
             'j_password': password,
             'j_username': username,
@@ -84,6 +80,11 @@ class API(object):
 
         self._save_auth(resp.cookies)
         self._set_profile_data(self.user()['activeProfile'])
+
+    def device_code(self):
+        self.logout()
+        payload = {'deviceId': self._device_id()}
+        return self._session.post('/v2.0/androidtv/ott/auth/code.json', params=self._params(), data=payload).json()
 
     def device_login(self, code, device_token):
         payload = {
@@ -136,45 +137,11 @@ class API(object):
         userdata.set('profile_img', profile['profilePicPath'])
 
     def _params(self, params=None):
-        _params = {'locale': 'en-us', 'at': self._config.tv_token}
+        _params = {'at': self._config.at_token}
         #_params = {'locale': 'en-us', 'at': self._at_token(secret), 'LOCATEMEIN': 'us'}
         if params:
             _params.update(params)
         return _params
-
-    # def _at_token(self, secret):
-    #     payload = '{}|{}'.format(int(time())*1000, self._config.tv_secret)
-
-    #     try:
-    #         #python3
-    #         key = bytes.fromhex(self._config.aes_key)
-    #     except AttributeError:
-    #         #python2
-    #         key = str(bytearray.fromhex(self._config.aes_key))
-
-    #     iv = os.urandom(16)
-    #     encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
-
-    #     ciphertext = encrypter.feed(payload)
-    #     ciphertext += encrypter.feed()
-    #     ciphertext = b'\x00\x10' + iv + ciphertext
-
-    #     return b64encode(ciphertext).decode('utf8')
-
-    # def app_config(self):
-    #     selected_region = None
-
-    #     for region in REGIONS:
-    #         params = {'locale': 'en-us', 'at': region['tv_token']}
-    #         resp = self._session.get('{}/apps-api/v2.0/androidtv/app/status.json'.format(region['base_url']), params=params)
-    #         if resp.ok:
-    #             data = resp.json()
-    #             if data['appVersion']['availableInRegion']:
-    #                 selected_region = [region, data]
-    #                 break
-
-    #     if not selected_region:
-    #         raise Exception('Unable to find a region for your location')
 
     @mem_cache.cached(60*10)
     def carousel(self, url, params=None):
@@ -288,7 +255,8 @@ class API(object):
             #'sig': '0060cbe3920bcb86969e8c733a9cdcdb203d6e57beae30781c706f63',
         }
 
-        resp = self._session.get(LINK_PLATFORM_URL.format(account=video_data['cmsAccountId'], pid=video_data['pid']), params=params)
+        url = self._config.get_link_platform_url(video_data['cmsAccountId'], video_data['pid'])
+        resp = self._session.get(url, params=params)
 
         root = ET.fromstring(resp.text)
         strip_namespaces(root)
@@ -373,5 +341,6 @@ class API(object):
         userdata.delete('profile_id')
         userdata.delete('auth_cookies')
         userdata.delete('device_id')
+        userdata.delete('expires')
         mem_cache.empty()
         self.new_session(self._config)

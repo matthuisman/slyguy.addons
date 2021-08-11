@@ -39,11 +39,7 @@ msgid "Device ID"
 msgstr ""
 
 msgctxt "#30009"
-msgid "Region"
-msgstr ""
-
-msgctxt "#30010"
-msgid "USA"
+msgid "Paramount+ is not available in your region"
 msgstr ""
 
 msgctxt "#30011"
@@ -106,16 +102,8 @@ msgctxt "#30025"
 msgid "Dolby Digital (AC-3)"
 msgstr ""
 
-msgctxt "#30026"
-msgid "International"
-msgstr ""
-
 msgctxt "#30028"
 msgid "Ignore Subtitles"
-msgstr ""
-
-msgctxt "#30029"
-msgid "Auto"
 msgstr ""
 
 ## COMMON SETTINGS ##

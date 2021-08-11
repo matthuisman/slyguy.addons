@@ -7,18 +7,17 @@ import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
-from slyguy.drm import is_wv_secure
 
-from .api import API
 from .language import _
-from .constants import *
+from .api import API
+from .config import Config
 
 api = API()
 config = Config()
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
-    config.load()
+    config.init()
     api.new_session(config)
     plugin.logged_in = api.logged_in
 
@@ -29,28 +28,118 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
-        if config.has_featured:
+        if config.has_featured():
             folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
 
         folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
 
-        if config.has_live_tv:
+        if config.has_movies():
+            folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
+
+        if config.has_live_tv():
             folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
-        # folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
-        # folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
+        if config.has_brands():
+            folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
+
+        if config.has_news():
+            folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
+
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
-        folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': config.image(userdata.get('profile_img'))}, info={'plot': userdata.get('profile_name')}, _kiosk=False, bookmark=False)
+        if config.has_profiles():
+            folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': config.image(userdata.get('profile_img'))}, info={'plot': userdata.get('profile_name')}, _kiosk=False, bookmark=False)
+
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
+
+@plugin.route()
+def login(**kwargs):
+    if not config.init(fresh=True):
+        raise PluginError(_.OUT_OF_REGION)
+
+    if config.has_device_link() and gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
+        result = _device_link()
+    else:
+        result = _email_password()
+
+    if not result:
+        return
+
+    config.save()
+    if config.has_profiles():
+        _select_profile()
+
+    gui.refresh()
+
+def _email_password():
+    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    if not username:
+        return
+
+    userdata.set('username', username)
+
+    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+    if not password:
+        return
+
+    api.login(username, password)
+
+    return True
+
+def _device_link():
+    start = time.time()
+    data = api.device_code()
+
+    poll_time = int(data['retryInterval']/1000)
+    max_time = int(data['retryDuration']/1000)
+    device_token = data['deviceToken']
+    code = data['activationCode']
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=config.device_link_url, code=code), heading=_.DEVICE_LINK) as progress:
+        while (time.time() - start) < max_time:
+            for i in range(poll_time):
+                if progress.iscanceled() or monitor.waitForAbort(1):
+                    return
+
+                progress.update(int(((time.time() - start) / max_time) * 100))
+
+            result = api.device_login(code, device_token)
+            if result:
+                return True
+
+            elif result == -1:
+                return False
+
+@plugin.route()
+def select_profile(**kwargs):
+    _select_profile()
+    gui.refresh()
+
+def _select_profile():
+    profiles = api.user()['accountProfiles']
+
+    values = []
+    options = []
+    default = -1
+    for index, profile in enumerate(profiles):
+        values.append(profile['id'])
+        options.append(plugin.Item(label=profile['name'], art={'thumb': config.image(profile['profilePicPath'])}))
+        if profile['id'] == userdata.get('profile_id'):
+            default = index
+
+    index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
+    if index < 0:
+        return
+
+    api.set_profile(values[index])
+    gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=config.image(userdata.get('profile_img')))
 
 @plugin.route()
 def featured(slug=None, **kwargs):
@@ -370,83 +459,6 @@ def search(query, page, **kwargs):
 
     return items, False
 
-@plugin.route()
-def login(**kwargs):
-    if config.has_device_link and gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
-        result = _device_link()
-    else:
-        result = _email_password()
-
-    if not result:
-        return
-
-    _select_profile()
-    gui.refresh()
-
-def _email_password():
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
-    if not username:
-        return
-
-    userdata.set('username', username)
-
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
-
-    api.login(username=username, password=password)
-
-    return True
-
-def _device_link():
-    start = time.time()
-    data = api.device_code()
-
-    poll_time = int(data['retryInterval']/1000)
-    max_time = int(data['retryDuration']/1000)
-    device_token = data['deviceToken']
-    code = data['activationCode']
-
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=config.device_link_url, code=code), heading=_.DEVICE_LINK) as progress:
-        while (time.time() - start) < max_time:
-            for i in range(poll_time):
-                if progress.iscanceled() or monitor.waitForAbort(1):
-                    return
-
-                progress.update(int(((time.time() - start) / max_time) * 100))
-
-            result = api.device_login(code, device_token)
-            if result:
-                return True
-
-            elif result == -1:
-                return False
-
-@plugin.route()
-def select_profile(**kwargs):
-    _select_profile()
-    gui.refresh()
-
-def _select_profile():
-    profiles = api.user()['accountProfiles']
-
-    values = []
-    options = []
-    default = -1
-    for index, profile in enumerate(profiles):
-        values.append(profile['id'])
-        options.append(plugin.Item(label=profile['name'], art={'thumb': config.image(profile['profilePicPath'])}))
-        if profile['id'] == userdata.get('profile_id'):
-            default = index
-
-    index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
-    if index < 0:
-        return
-
-    api.set_profile(values[index])
-    gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=config.image(userdata.get('profile_img')))
-
-
 def _parse_item(row):
     if row['mediaType'] == 'Standalone':
         row['mediaType'] = 'Movie'
@@ -484,23 +496,23 @@ def mpd_request(_data, _data_path, **kwargs):
 
     for elem in root.getElementsByTagName('Representation'):
         parent = elem.parentNode
-        codecs = elem.getAttribute('codecs').lower()
+        _codecs = elem.getAttribute('codecs').lower()
         height = int(elem.getAttribute('height') or 0)
         width = int(elem.getAttribute('width') or 0)
 
-        if not dolby_vison and (codecs.startswith('dvhe') or codecs.startswith('dvh1')):
+        if not dolby_vison and (_codecs.startswith('dvhe') or _codecs.startswith('dvh1')):
             parent.removeChild(elem)
 
-        elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
+        elif not h265 and (_codecs.startswith('hvc') or _codecs.startswith('hev')):
             parent.removeChild(elem)
 
         elif not enable_4k and (height > 1080 or width > 1920):
             parent.removeChild(elem)
 
-        elif not enable_ac3 and codecs == 'ac-3':
+        elif not enable_ac3 and _codecs == 'ac-3':
             parent.removeChild(elem)
 
-        elif not enable_ec3 and codecs == 'ec-3':
+        elif not enable_ec3 and _codecs == 'ec-3':
             parent.removeChild(elem)
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
@@ -568,6 +580,7 @@ def logout(**kwargs):
         return
 
     api.logout()
+    config.clear()
     gui.refresh()
 
 @plugin.route()

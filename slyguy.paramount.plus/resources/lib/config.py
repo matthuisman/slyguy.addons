@@ -1,0 +1,189 @@
+from slyguy import userdata
+from slyguy.session import Session
+from slyguy.log import log
+
+REGION_US = 'US'
+REGION_INTL = 'INTL'
+LINK_PLATFORM_URL = 'https://link.theplatform.com/s/{account}/{pid}'
+
+CONFIG = {
+    REGION_US: {
+        'base_url': 'https://www.paramountplus.com',
+        'at_token': 'ABCqWNNSwhIqINWIIAG+DFzcFUvF8/vcN6cNyXFFfNzWAIvXuoVgX+fK4naOC7V8MLI=',
+        'device_link': True,
+        'episodes_section': 'DEFAULT_APPS_FULL_EPISODES',
+    },
+    REGION_INTL: {
+        'base_url': 'https://www.intl.paramountplus.com',
+        'at_token': 'ABAS/G30Pp6tJuNOlZ1OEE6Rf5goS0KjICkGkBVIapVuxemiiASyWVfW4v7SUeAkogc=',
+        'device_link': False,
+        'episodes_section': 'INTL_SHOW_LANDING',
+    }
+}
+
+REGIONS = [REGION_US, REGION_INTL]
+
+class Config(object):
+    def __init__(self):
+        self._config = {}
+
+    def init(self, fresh=False):
+        if not fresh:
+            self._config = userdata.get('config') or {}
+            return self._config
+
+        self.clear()
+        for region in REGIONS:
+            config = self.load_config(region)
+            if config:
+                self._config = config
+                break
+
+        return self._config
+
+    @property
+    def headers(self):
+        return {
+            'user-agent': 'okhttp/3.14.2',
+        }
+
+    def clear(self):
+        self._config = {}
+        self.save()
+
+    def refresh(self):
+        log.debug('Refreshing config')
+        config = self.load_config(self.region)
+        if not config:
+            log.debug('Failed to refresh config. using existing config')
+        else:
+            self._config = config
+            self.save()
+
+    @property
+    def at_token(self):
+        return CONFIG[self.region]['at_token']
+
+    @property
+    def loaded(self):
+        return self._config.get('region') != None
+
+    @property
+    def region(self):
+        return self._config['region']
+
+    @property
+    def country_code(self):
+        return self._config['country']
+
+    @property
+    def episodes_section(self):
+        return CONFIG[self.region]['episodes_section']
+
+    @property
+    def api_url(self):
+        return CONFIG[self.region]['base_url'] + '/apps-api{}'
+
+    @property
+    def ip_url(self):
+        return CONFIG[self.region]['base_url'] + '/apps/user/ip.json'
+
+    @property
+    def device_link_url(self):
+        return CONFIG[self.region]['base_url'] + '/androidtv'
+
+    def has_mvpd(self):
+        return self._config['mvpd']
+
+    def get_link_platform_url(self, account, pid):
+        return LINK_PLATFORM_URL.format(account=account, pid=pid)
+
+    def has_device_link(self):
+        return CONFIG[self.region]['device_link']
+
+    def has_profiles(self):
+        return self._config['profiles']
+
+    def has_featured(self):
+        #todo
+        return self.region == REGION_US
+
+    def has_movies(self):
+        return self._config['movies']
+
+    def has_live_tv(self):
+        #todo
+        return self.region == REGION_US and self._config['live_tv']
+
+    def has_news(self):
+        #todo
+        return False
+
+    def has_brands(self):
+        #return self._config['brands']
+        return False
+
+    def image(self, image_name, dimensions='w400'):
+        return '{base_url}/thumbnails/photos/{dimensions}/{file}'.format(base_url=CONFIG[self.region]['base_url'], dimensions=dimensions, file=image_name[6:]) if image_name else None
+
+    def thumbnail(self, image_url, dimensions='w400'):
+        return image_url.replace('https://thumbnails.cbsig.net/', 'https://thumbnails.cbsig.net/_x/{}/'.format(dimensions))
+
+    def save(self):
+        userdata.set('config', self._config)
+
+    def load_config(self, region):
+        resp = Session().get(CONFIG[region]['base_url']+'/apps-api/v2.0/androidtv/app/status.json', params={'at': CONFIG[region]['at_token']}, headers=self.headers)
+        if not resp.ok:
+            return None
+
+        data = resp.json()
+        app_version = data['appVersion']
+        app_config = data['appConfig']
+
+        if not app_version.get('availableInRegion'):
+            return None
+
+        config = {
+            'region': region,
+            'country': app_version['clientRegion'],
+            'mvpd': app_version['clientRegion'] in app_config.get('mvpd_enabled_countries', []),
+            'live_tv': app_config.get('livetv_disabled') != 'false',
+            'feed_id': app_config.get('live_tv_national_feed_content_id'),
+            'gdpr': app_config.get('gdpr_enabled_connectedtv') == 'true',
+            'regional': app_config.get('regional_product_enabled') == 'true',
+            'movies': app_config.get('movies_enabled') == 'true',
+            'movies_trending': app_config.get('movies_trending_enabled') == 'true',
+            'movie_genres': app_config.get('movies_genres_enabled') == 'true',
+            'movie_update': app_config.get('movie_page_update_enabled') == 'true',
+            'fathom': app_config.get('fathom_enabled') == 'true',
+            'brands': app_config.get('brands_enabled') == 'true',
+            'lcp': app_config.get('lcp_enabled') == 'true',
+            'freewheel': app_config.get('freewheel_enabled') == 'true',
+            'syncback': app_config.get('syncbak_enabled') == 'true',
+            'sports_hq': app_config.get('sports_hq_enabled') == 'true',
+            'profiles': app_config.get('user_profiles') == 'true',
+            'pplus': app_config.get('pplus_enabled') == 'true',
+            'showpage_flag': app_config.get('showpage_feature_flag'),
+        }
+
+        return config
+
+    # def _at_token(self):
+    #     payload = '{}|{}'.format(int(time())*1000, CONFIG[self.region]['aes_secret'])
+
+    #     try:
+    #         #python3
+    #         key = bytes.fromhex(CONFIG[self.region]['aes_key'])
+    #     except AttributeError:
+    #         #python2
+    #         key = str(bytearray.fromhex(CONFIG[self.region]['aes_key']))
+
+    #     iv = os.urandom(16)
+    #     encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
+
+    #     ciphertext = encrypter.feed(payload)
+    #     ciphertext += encrypter.feed()
+    #     ciphertext = b'\x00\x10' + iv + ciphertext
+
+    #     return b64encode(ciphertext).decode('utf8')

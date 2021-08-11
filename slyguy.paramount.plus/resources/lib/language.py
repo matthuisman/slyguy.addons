@@ -10,8 +10,7 @@ class Language(BaseLanguage):
     ASK_USERNAME         = 30006
     ASK_PASSWORD         = 30007
     DEVICE_ID            = 30008
-    REGION               = 30009
-    REGION_USA           = 30010
+    OUT_OF_REGION        = 30009
     SHOWS                = 30011
     EPISODE_COUNT        = 30012
     CLIPS_COUNT          = 30013
@@ -27,7 +26,6 @@ class Language(BaseLanguage):
     ACCESSIBILITY        = 30023
     EC3_ENABLED          = 30024
     AC3_ENABLED          = 30025
-    INTERNATIONAL        = 30026
 
     IGNORE_SUBS          = 30028
 
