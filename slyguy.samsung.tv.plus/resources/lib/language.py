@@ -14,5 +14,7 @@ class Language(BaseLanguage):
     ADD_MY_CHANNEL   = 30009
     DEL_MY_CHANNEL   = 30010
     MY_CHANNEL_ADDED = 30011
+    SHOW_GROUPS      = 30012
+    SHOW_COUNTRIES   = 30013
 
 _ = Language()

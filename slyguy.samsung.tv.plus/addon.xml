@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.samsung.tv.plus" name="Samsung TV Plus" provider-name="SlyGuy" version="0.1.2">
+<addon id="slyguy.samsung.tv.plus" name="Samsung TV Plus" provider-name="SlyGuy" version="0.1.3">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Add My Channels</news>
+    <news>Add settings to hide counties and groups</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

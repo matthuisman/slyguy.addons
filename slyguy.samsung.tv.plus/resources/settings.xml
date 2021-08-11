@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30004" id="show_epg" type="bool" default="true"/>
+        <setting label="30013" id="show_countries" type="bool" default="true"/>
+        <setting label="30012" id="show_groups" type="bool" default="true"/>
         <setting label="30001" id="show_chno" type="bool" default="true"/>
+        <setting label="30004" id="show_epg" type="bool" default="true"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

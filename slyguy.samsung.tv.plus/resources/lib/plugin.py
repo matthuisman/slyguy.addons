@@ -54,20 +54,19 @@ def _data():
 def _app_data():
     data = _data()
 
+    favourites = userdata.get('favourites') or []
     my_channels = {'logo': None, 'name': _.MY_CHANNELS, 'channels': {}, 'sort': 0}
     all_channels = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 1}
     for key in data['regions']:
         data['regions'][key]['sort'] = 2
-        all_channels['channels'].update(data['regions'][key]['channels'])
+        for id in data['regions'][key]['channels']:
+            all_channels['channels'][id] = data['regions'][key]['channels'][id]
+            data['regions'][key]['channels'][id]['region'] = data['regions'][key]['name']
+            if id in favourites:
+                my_channels['channels'][id] = data['regions'][key]['channels'][id]
 
     data['regions'][ALL] = all_channels
     data['regions'][MY_CHANNELS] = my_channels
-
-    for id in userdata.get('favourites') or []:
-        channel = data['regions'][ALL]['channels'].get(id)
-        if channel:
-            my_channels['channels'][id] = channel
-
     return data
 
 def _process_channels(channels, group=ALL, region=ALL):
@@ -83,14 +82,13 @@ def _process_channels(channels, group=ALL, region=ALL):
 
     for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
         channel = channels[id]
-
         if group != ALL and channel['group'] != group:
             continue
 
+        plot = u'[B]{} - {}[/B]\n'.format(channel['region'], channel['group'])
         if not epg_count:
-            plot = channel['description']
+            plot += channel['description']
         else:
-            plot = u''
             count = 0
             for index, row in enumerate(channel.get('programs', [])):
                 start = arrow.get(row[0])
@@ -118,6 +116,12 @@ def _process_channels(channels, group=ALL, region=ALL):
 @plugin.route()
 def live_tv(code=None, group=None, **kwargs):
     data = _app_data()
+
+    if not settings.getBool('show_countries', True) and code != MY_CHANNELS:
+        code = ALL
+
+    if not settings.getBool('show_groups', True):
+        group = ALL
 
     if not code:
         folder = plugin.Folder(_.LIVE_TV)
@@ -184,6 +188,7 @@ def live_tv(code=None, group=None, **kwargs):
 @plugin.search()
 def search(query, page, **kwargs):
     data = _app_data()
+
     results = {}
     for id in data['regions'][ALL]['channels']:
         channel = data['regions'][ALL]['channels'][id]
@@ -231,6 +236,7 @@ def playlist(output, **kwargs):
 
                 added.append(id)
                 channel = channels[id]
+
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{group}",{name}\n{url}'.format(
                     id=id, chno=channel['chno'], name=channel['name'], logo=channel['logo'], group=channel['group'], url=plugin.url_for(play, id=id, _is_live=True),
                 ))
