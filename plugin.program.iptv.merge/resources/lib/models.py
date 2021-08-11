@@ -314,10 +314,11 @@ class Source(database.Model):
         )
 
 def merge_info(addon_id, merging=False):
-    addon      = get_addon(addon_id, required=True, install=False)
+    addon = get_addon(addon_id, required=True, install=False)
     addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
     merge_path = os.path.join(addon_path, MERGE_SETTING_FILE)
 
+    data = {}
     if os.path.exists(merge_path):
         try:
             with codecs.open(merge_path, 'r', encoding='utf8') as f:
@@ -335,11 +336,12 @@ def merge_info(addon_id, merging=False):
             'epg': addon.getSetting('iptv.epg_uri'),
         }
 
-    else:
-        data = INTEGRATIONS.get(addon_id) or {}
-        if merging and not data:
-            raise Error('No integration found for this source')
+    elif addon_id.lower() in INTEGRATIONS:
+        data = INTEGRATIONS[addon_id.lower()]
         data['type'] = TYPE_INTEGRATION
+
+    elif merging:
+        raise Error('No integration found for this source')
 
     min_version = data.get('min_version')
     max_version = data.get('max_version')

@@ -1,9 +1,9 @@
 PLAYLIST_FILE_NAME  = 'playlist.m3u8'
-EPG_FILE_NAME       = 'epg.xml'
-IPTV_SIMPLE_ID      = 'pvr.iptvsimple'
-METHOD_PLAYLIST     = 'playlist'
-METHOD_EPG          = 'epg'
-MERGE_SETTING_FILE  = '.iptv_merge'
+EPG_FILE_NAME = 'epg.xml'
+IPTV_SIMPLE_ID = 'pvr.iptvsimple'
+METHOD_PLAYLIST = 'playlist'
+METHOD_EPG = 'epg'
+MERGE_SETTING_FILE = '.iptv_merge'
 
 TYPE_IPTV_MERGE = 1
 TYPE_IPTV_MANAGER = 2
@@ -27,14 +27,6 @@ INTEGRATIONS = {
             'Run_Updates': 'true',
             'Update_Channels': 'true',
             'Update_Guide': 'true',
-        },
-    },
-    'service.iptv.manager': {
-        'min_version': '0.2.1',
-        'playlist': 'special://profile/addon_data/$ID/playlist.m3u8',
-        'epg': 'special://profile/addon_data/$ID/epg.xml',
-        'settings': {
-            'iptv_simple_restart': 'false',
         },
     },
     'plugin.video.pseudotv.live': {
