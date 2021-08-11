@@ -4,6 +4,7 @@ import arrow
 from slyguy import plugin, inputstream, mem_cache, settings, userdata, gui
 from slyguy.session import Session
 from slyguy.util import gzip_extract
+from slyguy.exceptions import PluginError
 
 from .language import _
 from .constants import *
@@ -13,13 +14,38 @@ def home(**kwargs):
     folder = plugin.Folder()
 
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.MY_CHANNELS, _bold=True), path=plugin.url_for(live_tv, code=MY_CHANNELS))
+    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
     if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
+
+@plugin.route()
+def add_favourite(id, **kwargs):
+    data = _app_data()
+    channel = data['regions'][ALL]['channels'].get(id)
+    if not channel:
+        return
+
+    favourites = userdata.get('favourites') or []
+    if id not in favourites:
+        favourites.append(id)
+
+    userdata.set('favourites', favourites)
+    gui.notification(_.MY_CHANNEL_ADDED, heading=channel['name'], icon=channel['logo'])
+
+@plugin.route()
+def del_favourite(id, **kwargs):
+    favourites = userdata.get('favourites') or []
+    if id in favourites:
+        favourites.remove(id)
+
+    userdata.set('favourites', favourites)
+    gui.refresh()
 
 @mem_cache.cached(60*15)
 def _data():
@@ -28,16 +54,23 @@ def _data():
 def _app_data():
     data = _data()
 
-    region = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 0}
+    my_channels = {'logo': None, 'name': _.MY_CHANNELS, 'channels': {}, 'sort': 0}
+    all_channels = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 1}
     for key in data['regions']:
-        data['regions'][key]['sort'] = 1
-        region['channels'].update(data['regions'][key]['channels'])
+        data['regions'][key]['sort'] = 2
+        all_channels['channels'].update(data['regions'][key]['channels'])
 
-    data['regions'][ALL] = region
+    data['regions'][ALL] = all_channels
+    data['regions'][MY_CHANNELS] = my_channels
+
+    for id in userdata.get('favourites') or []:
+        channel = data['regions'][ALL]['channels'].get(id)
+        if channel:
+            my_channels['channels'][id] = channel
 
     return data
 
-def _process_channels(channels, group=ALL):
+def _process_channels(channels, group=ALL, region=ALL):
     items = []
 
     show_chno = settings.getBool('show_chno', True)
@@ -76,6 +109,7 @@ def _process_channels(channels, group=ALL):
             art = {'thumb': channel['logo']},
             playable = True,
             path = plugin.url_for(play, id=id, _is_live=True),
+            context = ((_.DEL_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(del_favourite, id=id))),) if region == MY_CHANNELS else ((_.ADD_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(add_favourite, id=id))),),
         )
         items.append(item)
 
@@ -87,7 +121,7 @@ def live_tv(code=None, group=None, **kwargs):
 
     if not code:
         folder = plugin.Folder(_.LIVE_TV)
-
+        data['regions'].pop(MY_CHANNELS)
         for code in sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name'])):
             region = data['regions'][code]
             ch_count = len(region['channels'])
@@ -122,11 +156,12 @@ def live_tv(code=None, group=None, **kwargs):
 
         folder = plugin.Folder(region['name'])
 
-        folder.add_item(
-            label = _(u'{name} ({count})'.format(name=_.ALL, count=all_count)),
-            art = {'thumb': region.get('logo')},
-            path = plugin.url_for(live_tv, code=code, group=ALL),
-        )
+        if all_count:
+            folder.add_item(
+                label = _(u'{name} ({count})'.format(name=_.ALL, count=all_count)),
+                art = {'thumb': region.get('logo')},
+                path = plugin.url_for(live_tv, code=code, group=ALL),
+            )
 
         for group in sorted(groups):
             folder.add_item(
@@ -138,43 +173,25 @@ def live_tv(code=None, group=None, **kwargs):
                 path = plugin.url_for(live_tv, code=code, group=group)
             )
 
-        folder.add_item(
-            label = _.SEARCH,
-            art = {'thumb': region.get('logo')},
-            path = plugin.url_for(search, code=code),
-        )
-
         return folder
 
-    folder = plugin.Folder(region['name'] if group == ALL else group)
-    items = _process_channels(channels, group=group)
+    folder = plugin.Folder(region['name'] if group == ALL else group, no_items_method='list')
+    items = _process_channels(channels, group=group, region=code)
     folder.add_items(items)
     return folder
 
 @plugin.route()
-def search(code, query=None, **kwargs):
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-
+@plugin.search()
+def search(query, page, **kwargs):
     data = _app_data()
-
     results = {}
-    for id in data['regions'][code]['channels']:
-        channel = data['regions'][code]['channels'][id]
+    for id in data['regions'][ALL]['channels']:
+        channel = data['regions'][ALL]['channels'][id]
         search_t = '{} {} {}'.format(channel['name'], channel['chno'], channel['group'])
         if query.lower() in search_t.lower():
             results[id] = channel
 
-    items = _process_channels(results)
-    folder.add_items(items)
-
-    return folder
+    return _process_channels(results), False
 
 @plugin.route()
 def play(id, **kwargs):
@@ -194,32 +211,33 @@ def play(id, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = _app_data()
-    data['regions'].pop(ALL, None)
-
     regions = userdata.get('merge_regions', [])
     regions = [x for x in regions if x in data['regions']]
 
     if not regions:
-        raise Exception(_.NO_REGIONS)
+        raise PluginError(_.NO_REGIONS)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
+        added = []
         for code in regions:
             region = data['regions'][code]
             channels = region['channels']
 
             for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
+                if id in added:
+                    continue
+
+                added.append(id)
                 channel = channels[id]
-                f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{region};{group}",{name}\n{url}'.format(
-                    id=id, chno=channel['chno'], name=channel['name'], logo=channel['logo'], region=region['name'], group=channel['group'], url=plugin.url_for(play, id=id, _is_live=True),
+                f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{group}",{name}\n{url}'.format(
+                    id=id, chno=channel['chno'], name=channel['name'], logo=channel['logo'], group=channel['group'], url=plugin.url_for(play, id=id, _is_live=True),
                 ))
 
 @plugin.route()
 def configure_merge(**kwargs):
     data = _app_data()
-    data['regions'].pop(ALL, None)
-
     user_regions = userdata.get('merge_regions', [])
     avail_regions = sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name']))
 
