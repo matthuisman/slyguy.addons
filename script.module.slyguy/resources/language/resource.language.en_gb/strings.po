@@ -51,6 +51,26 @@ msgctxt "#30010"
 msgid "L3"
 msgstr ""
 
+msgctxt "#30011"
+msgid "HDCP Level (Restart Kodi after changing)"
+msgstr ""
+
+msgctxt "#30012"
+msgid "None"
+msgstr ""
+
+msgctxt "#30013"
+msgid "1.0"
+msgstr ""
+
+msgctxt "#30014"
+msgid "2.2"
+msgstr ""
+
+msgctxt "#30015"
+msgid "3.0"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

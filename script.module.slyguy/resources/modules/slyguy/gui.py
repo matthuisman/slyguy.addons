@@ -20,6 +20,7 @@ def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
 
 def refresh():
+    set_kodi_string('slyguy_refresh', '1')
     xbmc.executebuiltin('Container.Refresh')
 
 def redirect(location):

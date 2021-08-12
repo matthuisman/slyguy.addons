@@ -9,8 +9,13 @@ class Language(BaseLanguage):
     PROXY_ENABLED     = 30005
     PERSIST_CACHE     = 30006
     WV_LEVEL          = 30007
-    WV_LEVEL_AUTO     = 30008
+    AUTO              = 30008
     WV_LEVEL_L1       = 30009
     WV_LEVEL_L3       = 30010
+    HDCP_LEVEL        = 30011
+    HDCP_NONE         = 30012
+    HDCP_1            = 30013
+    HDCP_2_2          = 30014
+    HDCP_3_0          = 30015
 
 _ = Language()
