@@ -13,4 +13,5 @@ except Exception as e:
     xbmc.log('Failed to import Slyguy common service', xbmc.LOGFATAL)
     traceback.print_exc()
     if xbmcgui.Dialog().ok('SlyGuy Error', 'Error starting Slyguy common service\nThis major bug is usually fixed very quickly\n[B]Click OK to check for updates[/B]'):
+        xbmc.executebuiltin('UpdateAddonRepos')
         xbmc.executebuiltin('RunPlugin(plugin://{}/?_=update_addons)'.format(xbmcaddon.Addon().getAddonInfo('id')))
