@@ -9,9 +9,8 @@ try:
     service.start()
 except Exception as e:
     import traceback
-    import xbmc, xbmcgui
+    import xbmc, xbmcgui, xbmcaddon
     xbmc.log('Failed to import Slyguy common service', xbmc.LOGFATAL)
     traceback.print_exc()
-    xbmc.log('Updating add-ons', xbmc.LOGDEBUG)
-    xbmc.executebuiltin('UpdateAddonRepos')
-    xbmcgui.Dialog().ok('SlyGuy Error', 'Error starting Slyguy common service.\nPlease restart kodi and try again.')
+    if xbmcgui.Dialog().ok('SlyGuy Error', 'Error starting Slyguy common service\nThis major bug is usually fixed very quickly\n[B]Click OK to check for updates[/B]'):
+        xbmc.executebuiltin('RunPlugin(plugin://{}/?_=update_addons)'.format(xbmcaddon.Addon().getAddonInfo('id')))
