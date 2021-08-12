@@ -32,7 +32,12 @@ def _check_news():
 def start():
     log.debug('Shared Service: Started')
 
-    set_drm_level()
+    try:
+        set_drm_level()
+    except Exception as e:
+        log.error('Failed to set DRM level')
+        log.exception(e)
+
     player = Player()
     proxy = Proxy()
 

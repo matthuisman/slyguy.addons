@@ -63,7 +63,7 @@ def set_drm_level():
                     hdcp_level = crypto.GetPropertyString('hdcpLevel')
                     if hdcp_level:
                         hdcp_level = re.findall('\\d+\\.\\d+', hdcp_level)
-                        hdcp_level = int(float(hdcp[0])*10) if hdcp_level else None
+                        hdcp_level = int(float(hdcp_level[0])*10) if hdcp_level else None
 
             except Exception as e:
                 log.debug('Failed to obtain crypto config')
