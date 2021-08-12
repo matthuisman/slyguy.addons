@@ -3,6 +3,8 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30031" type="bool" id="kid_lockdown" default="false"/>
         <setting label="30038" type="bool" id="hide_sport" default="false"/>
+        <setting label="30008" type="bool" id="enable_h265" default="false"/>
+        <setting label="30013" type="bool" id="enable_4k" default="true" visible="String.IsEqual(Window(10000).Property(wv_secure),true)+String.IsEqual(Window(10000).Property(hdcp_level),2.2)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -16,6 +18,8 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32129]" id="video_folder_content" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>

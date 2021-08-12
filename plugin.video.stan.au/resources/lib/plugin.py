@@ -1,16 +1,15 @@
-import random
+import time
 
 import arrow
-from kodi_six import xbmcplugin
-
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.log import log
+from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
 from .api import API
 from .language import _
-from .constants import HEADERS
+from .constants import *
 
 api = API()
 
@@ -53,6 +52,19 @@ def index(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
+    if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
+        result = _device_link()
+    else:
+        result = _email_password()
+
+    if not result:
+        return
+
+    _select_profile()
+    gui.refresh()
+
+@plugin.route()
+def _email_password(**kwargs):
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
     if not username:
         return
@@ -64,8 +76,22 @@ def login(**kwargs):
         return
 
     api.login(username=username, password=password)
-    _select_profile()
-    gui.refresh()
+    return True
+
+def _device_link():
+    start = time.time()
+    code, url = api.device_code()
+    timeout = 600
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=ACTIVATE_URL, code=code), heading=_.DEVICE_LINK) as progress:
+        for i in range(timeout):
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
+
+            progress.update(int((i / float(timeout)) * 100))
+
+            if i % 6 == 0 and api.device_login(url):
+                return True
 
 @plugin.route()
 def my_list(**kwargs):
@@ -77,13 +103,13 @@ def my_list(**kwargs):
         if row['programType'] == 'series':
             folder.add_item(
                 label = row['title'],
-                art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 path = plugin.url_for(series, series_id=row['programId']),
             )
         elif row['programType'] == 'movie':
             folder.add_item(
                 label = row['title'],
-                art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 path = plugin.url_for(play, program_id=row['programId']),
                 playable = True,
             )
@@ -104,7 +130,7 @@ def continue_watching(**kwargs):
             folder.add_item(
                 label = row['title'],
                 resume_from = row['position'],
-                art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 path = plugin.url_for(play, program_id=row['programId']),
                 playable = True,
             )
@@ -112,7 +138,7 @@ def continue_watching(**kwargs):
             folder.add_item(
                 label = row['title'],
                 resume_from = row['position'],
-                art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 info = {'tvshowtitle': row['seriesTitle'], 'mediatype': 'episode', 'season': row['tvSeasonNumber'], 'episode': row['tvSeasonEpisodeNumber']},
                 context = ((_(_.GOTO_SERIES, series=row['seriesTitle']), 'Container.Update({})'.format(plugin.url_for(series, series_id=row['seriesId']))),),
                 path = plugin.url_for(play, program_id=row['programId']),
@@ -134,10 +160,8 @@ def _select_profile():
     profiles = api.profiles()
 
     options = []
-    values  = []
-    can_delete = []
+    values = []
     default = -1
-
     for index, profile in enumerate(profiles):
         values.append(profile)
         options.append(plugin.Item(label=profile['name'], art={'thumb': profile['iconImage']['url']}))
@@ -145,94 +169,11 @@ def _select_profile():
         if profile['id'] == userdata.get('profile_id'):
             default = index
 
-        elif not profile['isPrimary']:
-            can_delete.append(profile)
-
-    options.append(plugin.Item(label=_(_.ADD_PROFILE, _bold=True)))
-    values.append('_add')
-
-    if can_delete:
-        options.append(plugin.Item(label=_(_.DELETE_PROFILE, _bold=True)))
-        values.append('_delete')
-
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
     if index < 0:
         return
 
-    selected = values[index]
-
-    if selected == '_delete':
-        _delete_profile(can_delete)
-    elif selected == '_add':
-        _add_profile(taken_names=[x['name'].lower() for x in profiles], taken_avatars=[x['iconImage']['url'] for x in profiles])
-    else:
-        _set_profile(selected)
-
-def _delete_profile(profiles):
-    options = []
-    for index, profile in enumerate(profiles):
-        options.append(plugin.Item(label=profile['name'], art={'thumb': profile['iconImage']['url']}))
-
-    index = gui.select(_.SELECT_DELETE_PROFILE, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    selected = profiles[index]
-    if gui.yes_no(_.DELETE_PROFILE_INFO, heading=_(_.DELTE_PROFILE_HEADER, name=selected['name'])) and api.delete_profile(selected['id']):
-        gui.notification(_.PROFILE_DELETED, heading=selected['name'], icon=selected['iconImage']['url'])
-
-def _add_profile(taken_names, taken_avatars):
-    ## PROFILE AVATAR ##
-    options = [plugin.Item(label=_(_.RANDOM_AVATAR, _bold=True)),]
-    values  = [['_random',None],]
-    avatars = []
-    unused  = []
-
-    for icon_set in api.profile_icons():
-        for row in icon_set['icons']:
-            icon_info = [icon_set['iconSet'], row['iconIndex']]
-
-            values.append(icon_info)
-            avatars.append(icon_info)
-
-            if row['iconImage'] in taken_avatars:
-                label = _(_.AVATAR_USED, label=icon_set['label'])
-            else:
-                label = icon_set['label']
-                unused.append(icon_info)
-
-            options.append(plugin.Item(label=label, art={'thumb': row['iconImage']}))
-
-    index = gui.select(_.SELECT_AVATAR, options=options, useDetails=True)
-    if index < 0:
-        return
-
-    avatar = values[index]
-    if avatar[0] == '_random':
-        avatar = random.choice(unused or avatars)
-
-    ## PROFLE KIDS ##
-    kids = gui.yes_no(_.KIDS_PROFILE_INFO, heading=_.KIDS_PROFILE)
-
-    ## PROFILE NAME ##
-    name = ''
-    while True:
-        name = gui.input(_.PROFILE_NAME, default=name).strip()
-        if not name:
-            return
-
-        elif name.lower() in taken_names:
-            gui.notification(_(_.PROFILE_NAME_TAKEN, name=name))
-
-        else:
-            break
-
-    ## ADD PROFILE ##
-    profile = api.add_profile(name, icon_set=avatar[0], icon_index=avatar[1], kids=kids)
-    if 'message' in profile:
-        raise PluginError(profile['message'])
-
-    _set_profile(profile)
+    _set_profile(values[index])
 
 def _set_profile(profile, notify=True):
     api.set_profile(profile['id'])
@@ -253,14 +194,14 @@ def nav(key, title, **kwargs):
 
     folder.add_item(
         label = _.FEATURED,
-        path  = plugin.url_for(featured, key=key, title=title),
+        path = plugin.url_for(featured, key=key, title=title),
     )
 
     for row in rows:
         folder.add_item(
             label = row['title'],
-            #art   = {'thumb': row['image']},
-            path  = plugin.url_for(parse, url=row['url'], title=row['title']),
+            #art = {'thumb': row['image']},
+            path = plugin.url_for(parse, url=row['url'], title=row['title']),
         )
 
     return folder
@@ -275,8 +216,8 @@ def parse(url, title=None, **kwargs):
             if row['type'] != 'hero' and not row.get('hideTitle', False):
                 folder.add_item(
                     label = row['title'],
-                    #art   = {'thumb': row['thumbnail']},
-                    path  = plugin.url_for(parse, url=row['url'], title=row['title']),
+                    #art = {'thumb': row['thumbnail']},
+                    path = plugin.url_for(parse, url=row['url'], title=row['title']),
                 )
 
         return folder
@@ -299,38 +240,17 @@ def featured(key, title, **kwargs):
         if row['type'] in ('posters', 'landscapes') and not row.get('hideTitle', False):
             folder.add_item(
                 label = row['title'],
-                #art   = {'thumb': row.get('thumbnail')},
-                path  = plugin.url_for(parse, url=row['url'], title=row['title']),
+                #art = {'thumb': row.get('thumbnail')},
+                path = plugin.url_for(parse, url=row['url'], title=row['title']),
             )
 
     return folder
 
 @plugin.route()
-def search(query=None, page=1, **kwargs):
-    page  = int(page)
-    limit = 50
-
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query, page=page))
-
-    data = api.search(query, page=page, limit=limit)
-
-    items = _process_entries(data['entries'])
-    folder.add_items(items)
-
-    if len(data['entries']) == limit:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, next=page+1, _bold=True),
-            path  = plugin.url_for(search, query=query, page=page+1),
-        )
-
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    data = api.search(query, page=page, limit=50)
+    return _process_entries(data['entries']), False
 
 def _art(images, type='thumb'):
     if type == 'fanart':
@@ -356,32 +276,34 @@ def _process_entries(entries):
         if row.get('type') in ('posters', 'landscapes') and not row.get('hideTitle', False):
             items.append(plugin.Item(
                 label = row['title'],
-                #art   = {'thumb': row.get('thumbnail')},
-                path  = plugin.url_for(parse, url=row['url'], title=row['title']),
+                #art = {'thumb': row.get('thumbnail')},
+                path = plugin.url_for(parse, url=row['url'], title=row['title']),
             ))
         elif row.get('programType') == 'series':
             items.append(plugin.Item(
                 label = row['title'],
-                art   = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
-                info  = {
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                info = {
                     'plot': row['description'],
                     'year': row['releaseYear'],
+                    'tvshowtitle': row['title'],
+                    'mediatype': 'tvshow',
                 },
                 path = plugin.url_for(series, series_id=row['id']),
             ))
 
         elif row.get('programType') == 'movie':
             item = plugin.Item(
-                label    = row['title'],
-                info     = {
+                label = row['title'],
+                info = {
                     'plot': row['description'],
                     'year': row['releaseYear'],
                     'duration': row['runtime'],
                     'mediatype': 'movie',
                 },
-                art      = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 playable = True,
-                path     = _get_play_path(program_id=row['id']),
+                path = _get_play_path(program_id=row['id']),
             )
 
             if row.get('liveStartDate'):
@@ -436,8 +358,12 @@ def series(series_id, **kwargs):
 
         folder.add_item(
             label = row['title'],
-            art   = {'thumb': _art(data['images'])},
-            path  = plugin.url_for(episodes, url=row['url'], show_title=data['title'], fanart=fanart),
+            info = {
+                'tvshowtitle': data['title'],
+                'mediatype': 'season',
+            },
+            art = {'thumb': _art(data['images'])},
+            path = plugin.url_for(episodes, url=row['url'], show_title=data['title'], fanart=fanart),
         )
 
     return folder
@@ -456,9 +382,6 @@ def episodes(url, show_title, fanart, **kwargs):
     extras = data.get('bonusFeature', False)
 
     folder = plugin.Folder(show_title, fanart=fanart)
-    if not extras:
-        folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
-
     for row in data['entries']:
         if row['programType'] == 'episode':
             if not row['images']:
@@ -466,8 +389,8 @@ def episodes(url, show_title, fanart, **kwargs):
                 except: pass
 
             folder.add_item(
-                label    = row['title'],
-                info     = {
+                label = row['title'],
+                info = {
                     'plot': row['description'],
                     'year': row['releaseYear'],
                     'duration': row['runtime'],
@@ -476,36 +399,42 @@ def episodes(url, show_title, fanart, **kwargs):
                     'mediatype': 'episode',
                     'tvshowtitle': show_title,
                 },
-                art      = {'thumb': _art(row['images'], type='episode')},
+                art = {'thumb': _art(row['images'], type='episode')},
                 playable = True,
-                path     = _get_play_path(program_id=row['id']),
+                path = _get_play_path(program_id=row['id']),
             )
 
     return folder
 
 @plugin.route()
-def play(program_id, play_type=None, **kwargs):
-    return _play(program_id, play_type, is_live=ROUTE_LIVE_TAG in kwargs)
+def play(program_id, play_type=PLAY_FROM_LIVE, **kwargs):
+    play_type = int(play_type)
+    is_live = ROUTE_LIVE_TAG in kwargs
 
-def _play(program_id, play_type=None, is_live=False):
-    play_type  = int(play_type) if play_type else None
+    if is_live:
+        if play_type == PLAY_FROM_START:
+            item.resume_from = 1
+        elif play_type == PLAY_FROM_ASK:
+            item.resume_from = plugin.live_or_start()
+            if item.resume_from == -1:
+                return
+
     program_data, play_data = api.play(program_id)
 
-    headers = HEADERS.copy()
-    headers['dt-custom-data'] = play_data['drm']['customData']
+    headers = {
+        'dt-custom-data': play_data['drm']['customData'],
+    }
+    headers.update(HEADERS)
 
     item = plugin.Item(
-        path    = play_data['videoUrl'],
+        path = play_data['videoUrl'],
         headers = headers,
         inputstream = inputstream.Widevine(
-            license_key  = play_data['drm']['licenseServerUrl'],
+            license_key = play_data['drm']['licenseServerUrl'],
             license_data = play_data['drm']['init_data'],
-            response     = 'JBlicense',
+            response = 'JBlicense',
         ),
     )
-
-    if is_live and (play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
-        item.resume_from = 1
 
     for row in play_data.get('captions', []):
         item.subtitles.append([row['url'], row['language']])

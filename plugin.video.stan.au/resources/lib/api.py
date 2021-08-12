@@ -1,17 +1,15 @@
 import time
-import hmac
-import hashlib
-import base64
 import json
 
-from six.moves.urllib_parse import quote_plus
+from six.moves.urllib_parse import quote_plus, urlencode
 from kodi_six import xbmc
 
 from slyguy import userdata, settings
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
-from slyguy.util import cenc_init, jwt_data
+from slyguy.util import cenc_init
+from slyguy.drm import hdcp_level, is_wv_secure
 
 from .constants import *
 from .language import _
@@ -67,51 +65,85 @@ class API(object):
 
         return self._session.get(url, params=params).json()
 
+    def _check_token(self, force=False):
+        if not force and userdata.get('expires') > time.time():
+            return
+
+        payload = {
+            'jwToken': userdata.get('token'),
+        }
+        self._oauth(payload)
+
+    def set_profile(self, profile_id):
+        self._check_token()
+
+        payload = {
+            'jwToken': userdata.get('token'),
+            'profileId': profile_id,
+        }
+        self._oauth(payload)
+
     def login(self, username, password):
         self.logout()
 
         payload = {
             'email': username,
             'password': password,
-            'rnd': str(int(time.time())),
-            'stanName': 'Stan-Android',
-            'type': 'mobile',
-            'os': 'Android',
-            'stanVersion': STAN_VERSION,
-         #   'clientId': '',
-           # 'model': '',
-          #  'sdk': '',
-           # 'manufacturer': '',
         }
+        self._oauth(payload)
 
-        payload['sign'] = self._get_sign(payload)
+    def device_code(self):
+        self.logout()
+        params = {'generate': 'true'}
+        data = self._session.post('/login/v1/activation-codes/', params=params).json()
+        return data['code'], data['url']
 
-        self._login('/login/v1/sessions/mobile/account', payload)
+    def device_login(self, url):
+        resp = self._session.get(url)
+        if resp.status_code != 200:
+            return False
 
-    def _check_token(self, force=False):
-        if not force and userdata.get('expires') > time.time():
-            return
-
-        params = {
-            'type': 'mobile',
-            'os': 'Android',
-            'stanVersion': STAN_VERSION,
-        }
-
+        data = resp.json()
         payload = {
-            'jwToken': userdata.get('token'),
+            'jwToken': data['jwToken'],
+        }
+        self._oauth(payload)
+        return True
+
+    def _device_data(self):
+        enable_h265 = settings.getBool('enable_h265', False)
+        enable_4k = settings.getBool('enable_4k', True) if (is_wv_secure() and hdcp_level() == '2.2') else False
+
+        return {
+            'type': 'console', #console, tv
+            'screenSize': '3840x2160',
+            'stanName': STAN_NAME,
+            'stanVersion': '4.9.1',
+            'manufacturer': 'NVIDIA', #NVIDIA, Sony
+            'model': 'SHIELD Android TV' if (enable_4k or enable_h265) else '', #SHIELD Android TV, BRAVIA 4K 2020
+            'os': 'Android-9',
+            'videoCodecs': 'h264,decode,h263,h265,hevc,mjpeg,mpeg2v,mp4,mpeg4,vc1,vp8,vp9',
+            'features': 'hdr10,hevc',
+            'capabilities.audioCodec': 'aac',
+            'capabilities.drm': 'widevine',
+            'capabilities.screenSize': '3840x2160',
+            'capabilities.videoCodec': 'h264,decode,h263,h265,hevc,mjpeg,mpeg2v,mp4,mpeg4,vc1,vp8,vp9',
+            'sdk': '28',
+            'audioCodecs': 'aac',
+            'drm': 'widevine',
+            'hdcpVersion': '2.2' if enable_4k else '0', #0, 1, 2, 2.2
+            'colorSpace': 'hdr10',
         }
 
-        self._login('/login/v1/sessions/mobile/app', payload, params)
-
-    def _login(self, url, payload, params=None):
-        data = self._session.post(url, data=payload, params=params).json()
+    def _oauth(self, payload):
+        payload.update(self._device_data())
+        data = self._session.post('/login/v1/sessions/app', data=payload).json()
 
         if 'errors' in data:
             try:
                 msg = data['errors'][0]['code']
                 if msg == 'Streamco.Login.VPNDetected':
-                    msg = _.IP_ADDRESS_ERROR
+                    msg = _.GEO_ERROR
             except:
                 msg = ''
 
@@ -120,16 +152,11 @@ class API(object):
         userdata.set('token', data['jwToken'])
         userdata.set('expires', int(time.time() + (data['renew'] - data['now']) - 30))
         userdata.set('user_id', data['userId'])
-
         userdata.set('profile_id', data['profile']['id'])
         userdata.set('profile_name', data['profile']['name'])
         userdata.set('profile_icon', data['profile']['iconImage']['url'])
         userdata.set('profile_kids', int(data['profile'].get('isKidsProfile', False)))
-
         self._set_authentication()
-
-        try: log.debug('Token Data: {}'.format(json.dumps(jwt_data(userdata.get('token')))))
-        except: pass
 
     def watchlist(self):
         self._check_token()
@@ -154,38 +181,6 @@ class API(object):
 
         url = '/history/v1/users/{user_id}/profiles/{profile_id}/history'.format(user_id=userdata.get('user_id'), profile_id=userdata.get('profile_id'))
         return self._session.get(url, params=params).json()
-
-    # def resume_series(self, series_id):
-    #     params = {
-    #         'jwToken': userdata.get('token'),
-    #     }
-
-    #     url = '/resume/v1/users/{user_id}/profiles/{profile_id}/resumeSeries/{series_id}'.format(user_id=userdata.get('user_id'), profile_id=userdata.get('profile_id'), series_id=series_id)
-    #     return self._session.get(url, params=params).json()
-
-    # def resume_program(self, program_id):
-    #     params = {
-    #         'jwToken': userdata.get('token'),
-    #     }
-
-    #     url = '/resume/v1/users/{user_id}/profiles/{profile_id}/resume/{program_id}'.format(user_id=userdata.get('user_id'), profile_id=userdata.get('profile_id'), program_id=program_id)
-    #     return self._session.get(url, params=params).json()
-
-    def set_profile(self, profile_id):
-        self._check_token()
-
-        params = {
-            'type': 'mobile',
-            'os': 'Android',
-            'stanVersion': STAN_VERSION,
-        }
-
-        payload = {
-            'jwToken': userdata.get('token'),
-            'profileId': profile_id,
-        }
-
-        self._login('/login/v1/sessions/mobile/app', payload, params)
 
     def profiles(self):
         self._check_token()
@@ -250,7 +245,7 @@ class API(object):
             try:
                 msg = program_data['errors'][0]['code']
                 if msg == 'Streamco.Concurrency.OutOfRegion':
-                    msg = _.IP_ADDRESS_ERROR
+                    msg = _.GEO_ERROR
                 elif msg == 'Streamco.Catalogue.NOT_SAFE_FOR_KIDS':
                     msg = _.KIDS_PLAY_DENIED
             except:
@@ -261,20 +256,20 @@ class API(object):
         jw_token = userdata.get('token')
 
         params = {
-            'programId': program_id,
             'jwToken': jw_token,
+            'programId': program_id,
+            'stanName': STAN_NAME,
+            'quality': 'ultra', #auto, ultra, high, low
             'format': 'dash',
-            'capabilities.drm': 'widevine',
-            'quality': 'high',
         }
 
-        data = self._session.get('/concurrency/v1/streams', params=params).json()
+        data = self._session.post('/concurrency/v1/streams', params=params).json()
 
         if 'errors' in data:
             try:
                 msg = data['errors'][0]['code']
                 if msg == 'Streamco.Concurrency.OutOfRegion':
-                    msg = _.IP_ADDRESS_ERROR
+                    msg = _.GEO_ERROR
             except:
                 msg = ''
 
@@ -282,9 +277,23 @@ class API(object):
 
         play_data = data['media']
         play_data['drm']['init_data'] = self._init_data(play_data['drm']['keyId'])
-        play_data['videoUrl'] = API_URL.format('/manifest/v1/dash/androidtv.mpd?url={url}&audioType=all&version=88'.format(
-            url = quote_plus(play_data['videoUrl']),
-        ))
+
+        params = {
+            'url': play_data['videoUrl'],
+            'audioType': 'all',
+            # 'audioCodecs': 'aac',
+            # 'screenSize': '1080x1920',
+            # 'hdcpVersion': '0',
+            # 'colorSpace': '',
+            # 'minHeight': '520',
+            # 'drm': 'widevine',
+            # 'type': 'console',
+            # 'model': 'SHIELD Android TV',
+            # 'manufacturer': 'NVIDIA',
+            # 'osVersion': '28',
+        }
+
+        play_data['videoUrl'] = API_URL.format('/manifest/v1/dash/androidtv.mpd?{}'.format(urlencode(params)))
 
         params = {
             'form': 'json',
@@ -300,47 +309,11 @@ class API(object):
         return program_data, play_data
 
     def _init_data(self, key):
-        key     = key.replace('-', '')
+        key = key.replace('-', '')
         key_len = '{:x}'.format(len(bytearray.fromhex(key)))
-        key     = '12{}{}'.format(key_len, key)
-        key     = bytearray.fromhex(key)
-
+        key = '12{}{}'.format(key_len, key)
+        key = bytearray.fromhex(key)
         return cenc_init(key)
-
-    def _get_sign(self, payload):
-        module_version = 214
-
-        f3757a = bytearray((144, 100, 149, 1, 2, 8, 36, 208, 209, 51, 103, 131, 240, 66, module_version,
-                            20, 195, 170, 44, 194, 17, 161, 118, 71, 105, 42, 76, 116, 230, 87, 227, 40, 115,
-                            5, 62, 199, 66, 7, 251, 125, 238, 123, 71, 220, 179, 29, 165, 136, 16, module_version,
-                            117, 10, 100, 222, 41, 60, 103, 2, 121, 130, 217, 75, 220, 100, 59, 35, 193, 22, 117,
-                            27, 74, 50, 85, 40, 39, 31, 180, 81, 34, 155, 172, 202, 71, 162, 202, 234, 91, 176, 199, 207, 131,
-                            229, 125, 105, 9, 227, 188, 234, 61, 33, 17, 113, 222, 173, 182, 120, 34, 80, 135, 219, 8, 97, 176, 62,
-                            137, 126, 222, 139, 136, 77, 243, 37, 11, 234, 82, 244, 222, 44))
-
-        f3758b = bytearray((120, 95, 52, 175, 139, 155, 151, 35, 39, 184, 141, 27, 55, 215, 102, 173, 2, 37, 141, 164, 236, 217,
-                            173, 194, 94, 67, 195, 24, 221, 66, 233, 11, 226, 91, 33, 249, 225, 54, 88, 54, 118, 101, 31, 248, 11,
-                            208, 206, 226, 68, 20, 143, 37, 104, 159, 184, 22, 53, 179, 104, 152, 170, 29, 26, 6, 163, 45, 87, 193,
-                            136, 226, 128, 245, 231, 238, 154, 211, 71, 134, 232, 99, 35, 54, 170, 128, 1, 218, 249, 70, 182, 145,
-                            125, 211, 16, 43, 118, 177, 64, 128, 111, 73, 234, 22, 21, 165, 67, 23, 15, 5, 11, 70, 48, 97, 134, 185,
-                            11, 28, 167, 140, 123, 81, 240, 247, 77, 187, 23, 243, 89, 54))
-
-        msg = ''
-        for key in sorted(payload.keys()):
-            if msg: msg += '&'
-            msg += key + '=' + quote_plus(payload[key], safe="_-!.~'()*")
-
-        bArr = bytearray(len(f3757a))
-        for i in range(len(bArr)):
-            bArr[i] = f3757a[i] ^ f3758b[i]
-
-        bArr2 = bytearray(int(len(bArr)/2))
-        for i in range(len(bArr2)):
-            bArr2[i] = bArr[i] ^ bArr[len(bArr2) + i]
-
-        signature = hmac.new(bArr2, msg=msg.encode('utf8'), digestmod=hashlib.sha256).digest()
-
-        return base64.b64encode(signature).decode('utf8')
 
     def logout(self):
         userdata.delete('token')
@@ -353,3 +326,19 @@ class API(object):
         userdata.delete('profile_kids')
 
         self.new_session()
+
+    # def resume_series(self, series_id):
+    #     params = {
+    #         'jwToken': userdata.get('token'),
+    #     }
+
+    #     url = '/resume/v1/users/{user_id}/profiles/{profile_id}/resumeSeries/{series_id}'.format(user_id=userdata.get('user_id'), profile_id=userdata.get('profile_id'), series_id=series_id)
+    #     return self._session.get(url, params=params).json()
+
+    # def resume_program(self, program_id):
+    #     params = {
+    #         'jwToken': userdata.get('token'),
+    #     }
+
+    #     url = '/resume/v1/users/{user_id}/profiles/{profile_id}/resume/{program_id}'.format(user_id=userdata.get('user_id'), profile_id=userdata.get('profile_id'), program_id=program_id)
+    #     return self._session.get(url, params=params).json()

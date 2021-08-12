@@ -1,6 +1,11 @@
 msgid ""
 msgstr ""
 
+msgctxt "#30000"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+
 msgctxt "#30001"
 msgid "Email Address"
 msgstr ""
@@ -14,11 +19,25 @@ msgid "Failed to login / refresh token.\n"
 "Message: {msg}"
 msgstr ""
 
+msgctxt "#30004"
+msgid "Login with"
+msgstr ""
 
 msgctxt "#30005"
 msgid "Stan detected your not using an Australian IP address or may be using a VPN"
 msgstr ""
 
+msgctxt "#30006"
+msgid "Device Link"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Email / Password"
+msgstr ""
+
+msgctxt "#30008"
+msgid "H265"
+msgstr ""
 
 msgctxt "#30009"
 msgid "TV"
@@ -37,11 +56,7 @@ msgid "Featured"
 msgstr ""
 
 msgctxt "#30013"
-msgid "Search: {query} ({page})"
-msgstr ""
-
-msgctxt "#30014"
-msgid "Next Page ({next})"
+msgid "4K"
 msgstr ""
 
 msgctxt "#30015"
@@ -53,14 +68,6 @@ msgctxt "#30016"
 msgid "Trailers & Extras"
 msgstr ""
 
-msgctxt "#30017"
-msgid "Add Profile"
-msgstr ""
-
-msgctxt "#30018"
-msgid "Delete Profile"
-msgstr ""
-
 msgctxt "#30019"
 msgid "Select Profile"
 msgstr ""
@@ -69,52 +76,8 @@ msgctxt "#30020"
 msgid "Profile Activated"
 msgstr ""
 
-msgctxt "#30021"
-msgid "Select profile to delete"
-msgstr ""
-
-msgctxt "#30022"
-msgid "All history for this profile will be lost. Are you sure you want to permanently delete this profile?"
-msgstr ""
-
-msgctxt "#30023"
-msgid "Delete {name}'s profile?"
-msgstr ""
-
-msgctxt "#30024"
-msgid "Profile Deleted"
-msgstr ""
-
-msgctxt "#30025"
-msgid "Random Pick"
-msgstr ""
-
-msgctxt "#30026"
-msgid "{label} (USED)"
-msgstr ""
-
-msgctxt "#30027"
-msgid "Select Avatar"
-msgstr ""
-
-msgctxt "#30028"
-msgid "Profile Name"
-msgstr ""
-
-msgctxt "#30029"
-msgid "Kids Profile?"
-msgstr ""
-
-msgctxt "#30030"
-msgid "Kid friendly interface with only content suitable for kids."
-msgstr ""
-
 msgctxt "#30031"
 msgid "Disable profile switching in Kids profile"
-msgstr ""
-
-msgctxt "#30032"
-msgid "{name} is already being used"
 msgstr ""
 
 msgctxt "#30033"
