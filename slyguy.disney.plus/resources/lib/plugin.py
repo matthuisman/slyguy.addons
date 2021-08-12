@@ -1,7 +1,7 @@
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.log import log
 from slyguy.exceptions import PluginError
-from slyguy.constants import KODI_VERSION, ROUTE_RESUME_TAG
+from slyguy.constants import KODI_VERSION
 
 from .api import API
 from .constants import *
@@ -261,6 +261,9 @@ def _parse_collection(row):
     )
 
 def _get_play_path(content_id):
+    if not content_id:
+        return None
+
     kwargs = {
         'content_id': content_id,
     }
