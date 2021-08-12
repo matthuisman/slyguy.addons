@@ -674,15 +674,19 @@ def process_news():
     if not news:
         return
 
-    settings.common_settings.set('_news', '')
-
     try:
         news = json.loads(news)
         _time = time.time()
 
         if _time > news.get('timestamp', _time) + NEWS_MAX_TIME:
             log.debug('news is too old')
+            settings.common_settings.set('_news', '')
             return
+
+        if news.get('show_in') and ADDON_ID.lower() not in [x.lower() for x in news['show_in'].split(',')]:
+            return
+
+        settings.common_settings.set('_news', '')
 
         if news.get('country'):
             valid = False
@@ -698,14 +702,14 @@ def process_news():
                     valid = cur_country != rule[1:] if rule.startswith('!') else cur_country == rule
 
             if not valid:
-                log.debug('news is only for country: {}'.format(news['country']))
+                log.debug('news is only for countries: {}'.format(news['country']))
                 return
 
         if news.get('requires') and not get_addon(news['requires'], install=False):
-            log.debug('news is only for users with addon {} installed'.format(news['requires']))
+            log.debug('news only for users with add-on: {} '.format(news['requires']))
             return
 
-        elif news['type'] == 'message':
+        if news['type'] == 'message':
             gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
 
         elif news['type'] == 'addon_release':
@@ -720,5 +724,6 @@ def process_news():
 
                 url = url_for('', _addon_id=news['addon_id'])
                 xbmc.executebuiltin('ActivateWindow(Videos,{})'.format(url))
+
     except Exception as e:
         log.exception(e)
