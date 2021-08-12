@@ -255,7 +255,7 @@ def configure_merge(**kwargs):
         if code in user_regions:
             preselect.append(index)
 
-    indexes = gui.select(heading=_.SELECT_REGIONS, options=options, multi=True, useDetails=True, preselect=preselect)
+    indexes = gui.select(heading=_.SELECT_REGIONS, options=options, multi=True, useDetails=False, preselect=preselect)
     if indexes is None:
         return
 
