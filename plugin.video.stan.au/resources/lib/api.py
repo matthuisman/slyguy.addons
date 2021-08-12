@@ -9,7 +9,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
 from slyguy.util import cenc_init
-from slyguy.drm import hdcp_level, is_wv_secure
+from slyguy.drm import req_wv_level, req_hdcp_level, WV_L1, HDCP_2_2
 
 from .constants import *
 from .language import _
@@ -112,7 +112,7 @@ class API(object):
 
     def _device_data(self):
         enable_h265 = settings.getBool('enable_h265', False)
-        enable_4k = settings.getBool('enable_4k', True) if (is_wv_secure() and hdcp_level() == '2.2') else False
+        enable_4k = settings.getBool('enable_4k', True) if (req_wv_level(WV_L1) and req_hdcp_level(HDCP_2_2)) else False
 
         return {
             'type': 'console', #console, tv
