@@ -28,6 +28,7 @@ class API(object):
         self.logged_in = False
         self._session = Session(HEADERS, timeout=30)
         self._set_authentication(userdata.get('access_token'))
+        self._cache = {}
 
     @mem_cache.cached(60*60, key='config')
     def get_config(self):
@@ -36,19 +37,6 @@ class API(object):
     @mem_cache.cached(60*60, key='transaction_id')
     def _transaction_id(self):
         return str(uuid.uuid4())
-
-    @mem_cache.cached(60*60, key='profile')
-    def _get_profile(self):
-        data = self.account()
-
-        profile = None
-        if data['account']['activeProfile']:
-            for row in data['account']['profiles']:
-                if row['id'] == data['account']['activeProfile']['id']:
-                    profile = row
-                    break
-
-        return data['activeSession'], profile
 
     @property
     def session(self):
@@ -188,10 +176,20 @@ class API(object):
         data = self._session.post(endpoint, json=payload).json()
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk']['token'])
-        mem_cache.delete('profile')
 
     def _endpoint(self, href, **kwargs):
-        session, profile = self._get_profile()
+        session = self._cache.get('session')
+        profile = self._cache.get('profile')
+
+        if not session or not profile:
+            data = self.account()
+
+            self._cache['session'] = session = data['activeSession']
+            if data['account']['activeProfile']:
+                for row in data['account']['profiles']:
+                    if row['id'] == data['account']['activeProfile']['id']:
+                        self._cache['profile'] = profile = row
+                        break
 
         region = session['location']['countryCode']
         maturity = session['preferredMaturityRating']['impliedMaturityRating'] if session['preferredMaturityRating'] else 1850
@@ -322,9 +320,6 @@ class API(object):
         userdata.delete('access_token')
         userdata.delete('expires')
         userdata.delete('refresh_token')
-
         mem_cache.delete('transaction_id')
         mem_cache.delete('config')
-        mem_cache.delete('profile')
-
         self.new_session()
