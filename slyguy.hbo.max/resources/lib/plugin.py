@@ -5,7 +5,6 @@ from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.session import Session
 from slyguy.util import cenc_init
-from slyguy.drm import is_wv_secure
 from slyguy.constants import ADDON_PROFILE
 
 from .api import API
@@ -427,74 +426,56 @@ def _get_play_path(slug):
 @plugin.plugin_callback()
 def mpd_request(_data, _data_path, **kwargs):
     data = _data.decode('utf8')
-
-    data = data.replace('_xmlns:cenc', 'xmlns:cenc')
-    data = data.replace('_:default_KID', 'cenc:default_KID')
-    data = data.replace('<pssh', '<cenc:pssh')
-    data = data.replace('</pssh>', '</cenc:pssh>')
-
     root = parseString(data.encode('utf8'))
 
-    if not is_wv_secure():
-        for adap_set in root.getElementsByTagName('AdaptationSet'):
-            height = int(adap_set.getAttribute('maxHeight') or 0)
-            width = int(adap_set.getAttribute('maxWidth') or 0)
-
-            if height >= 720:
-                parent = adap_set.parentNode
-                parent.removeChild(adap_set)
-
     dolby_vison = settings.getBool('dolby_vision', False)
-    h265 = settings.getBool('h265', False)
     enable_4k = settings.getBool('4k_enabled', True)
+    h265 = enable_4k or settings.getBool('h265', False)
     enable_ac3 = settings.getBool('ac3_enabled', False)
     enable_ec3 = settings.getBool('ec3_enabled', False)
     enable_atmos = settings.getBool('atmos_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
 
-    for elem in root.getElementsByTagName('Representation'):
-        parent = elem.parentNode
-        codecs = elem.getAttribute('codecs').lower()
-        height = int(elem.getAttribute('height') or 0)
-        width = int(elem.getAttribute('width') or 0)
+    for adap_set in root.getElementsByTagName('AdaptationSet'):
+        if not enable_accessibility and adap_set.getElementsByTagName('Accessibility'):
+            adap_set.parentNode.removeChild(adap_set)
+            continue
 
-        if not dolby_vison and codecs.startswith('dvh1'):
-            parent.removeChild(elem)
+        if int(adap_set.getAttribute('maxHeight') or 0) >= 720:
+            for elem in adap_set.getElementsByTagName('ContentProtection'):
+                if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                    elem.setAttribute('xmlns:widevine', 'urn:mpeg:widevine:2013')
+                    wv_robust = root.createElement('widevine:license')
+                    wv_robust.setAttribute('robustness_level', 'HW_SECURE_CODECS_REQUIRED')
+                    elem.appendChild(wv_robust)
 
-        elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
-            parent.removeChild(elem)
+        for elem in adap_set.getElementsByTagName('Representation'):
+            parent = elem.parentNode
+            codecs = elem.getAttribute('codecs').lower()
+            height = int(elem.getAttribute('height') or 0)
+            width = int(elem.getAttribute('width') or 0)
 
-        elif not enable_4k and (height > 1080 or width > 1920):
-            parent.removeChild(elem)
-
-        elif not enable_ac3 and codecs == 'ac-3':
-            parent.removeChild(elem)
-
-        elif (not enable_ec3 or not enable_atmos) and codecs == 'ec-3':
-            is_atmos = False
-            for supelem in elem.getElementsByTagName('SupplementalProperty'):
-                if supelem.getAttribute('value') == 'JOC':
-                    is_atmos = True
-                    break
-
-            if not enable_ec3 or (not enable_atmos and is_atmos):
+            if not dolby_vison and codecs.startswith('dvh1'):
                 parent.removeChild(elem)
 
-    for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not adap_set.getElementsByTagName('Representation') or \
-            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')):
-            adap_set.parentNode.removeChild(adap_set)
+            elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
+                parent.removeChild(elem)
 
-    ## do below to convert all to cenc0 to work on firestick
-    cenc_data = ''
-    for elem in root.getElementsByTagName('ContentProtection'):
-        default_kid = elem.getAttribute('cenc:default_KID').replace('-','').replace(' ','')
-        if default_kid and default_kid not in cenc_data:
-            cenc_data += '1210' + default_kid
+            elif not enable_4k and (height > 1080 or width > 1920):
+                parent.removeChild(elem)
 
-    new_cenc = cenc_init(bytearray.fromhex(cenc_data))
-    for elem in root.getElementsByTagName('cenc:pssh'):
-        elem.firstChild.nodeValue = new_cenc
+            elif not enable_ac3 and codecs == 'ac-3':
+                parent.removeChild(elem)
+
+            elif (not enable_ec3 or not enable_atmos) and codecs == 'ec-3':
+                is_atmos = False
+                for supelem in elem.getElementsByTagName('SupplementalProperty'):
+                    if supelem.getAttribute('value') == 'JOC':
+                        is_atmos = True
+                        break
+
+                if not enable_ec3 or (not enable_atmos and is_atmos):
+                    parent.removeChild(elem)
 
     with open(_data_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
@@ -525,7 +506,7 @@ def play(slug, **kwargs):
     )
 
     if 'drm' in data:
-        item.inputstream = inputstream.Widevine(license_key = data['drm']['licenseUrl'])
+        item.inputstream = inputstream.Widevine(license_key=data['drm']['licenseUrl'])
         item.proxy_data['manifest_middleware'] = plugin.url_for(mpd_request)
 
     if settings.getBool('sync_playback', False):
