@@ -2,6 +2,7 @@ from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION
+from slyguy.drm import is_wv_secure
 
 from .api import API
 from .constants import *
@@ -510,6 +511,7 @@ def play(content_id=None, family_id=None, **kwargs):
         license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
         manifest_type = 'hls',
         mimetype = 'application/vnd.apple.mpegurl',
+        wv_secure = is_wv_secure(),
     )
 
     if not ia.check() or not inputstream.require_version(ver_required):
@@ -525,8 +527,7 @@ def play(content_id=None, family_id=None, **kwargs):
         raise PluginError(_.NO_VIDEO_FOUND)
 
     playback_url = video['mediaMetadata']['playbackUrls'][0]['href']
-    playback_data = api.playback_data(playback_url)
-
+    playback_data = api.playback_data(playback_url, ia.wv_secure)
     media_stream = playback_data['stream']['complete'][0]['url']
     original_language = video.get('originalLanguage') or 'en'
 

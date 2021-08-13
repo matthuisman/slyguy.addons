@@ -7,7 +7,6 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import get_kodi_setting, jwt_data
 from slyguy.log import log
-from slyguy.drm import is_wv_secure
 
 from kodi_six import xbmc
 
@@ -290,13 +289,13 @@ class API(object):
         endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['postEvent']['href']
         return self._session.post(endpoint, json=payload).status_code
 
-    def playback_data(self, playback_url):
+    def playback_data(self, playback_url, wv_secure=False):
         self._refresh_token()
 
         config = self.get_config()
         scenario = config['services']['media']['extras']['restrictedPlaybackScenario']
 
-        if is_wv_secure():
+        if wv_secure:
             #scenario = config['services']['media']['extras']['playbackScenarioDefault']
             scenario = 'tv-drm-ctr'
 
