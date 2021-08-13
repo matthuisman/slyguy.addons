@@ -25,9 +25,8 @@ ERROR_MAP = {
 
 class API(object):
     def new_session(self):
-        self.logged_in = False
         self._session = Session(HEADERS, timeout=30)
-        self._set_authentication(userdata.get('access_token'))
+        self.logged_in = userdata.get('refresh_token') != None
         self._cache = {}
 
     @mem_cache.cached(60*60, key='config')
@@ -42,16 +41,16 @@ class API(object):
     def session(self):
         return self._session
 
-    def _set_authentication(self, access_token):
-        if not access_token:
+    def _set_authentication(self, token):
+        if not token:
             return
 
-        self._session.headers.update({'Authorization': 'Bearer {}'.format(access_token)})
+        self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
         self._session.headers.update({'x-bamsdk-transaction-id': self._transaction_id()})
-        self.logged_in = True
 
-    def _refresh_token(self, force=False):
-        if not force and userdata.get('expires', 0) > time():
+    def _set_token(self, force=False):
+        if self._cache.get('access_token'):
+            self._set_authentication(self._cache['access_token'])
             return
 
         payload = {
@@ -66,13 +65,9 @@ class API(object):
         self._set_auth(data)
 
     def _set_auth(self, data):
-        token = data.get('accessToken') or data['access_token']
-        expires = data.get('expiresIn') or data['expires_in']
+        self._cache['access_token'] = data.get('accessToken') or data['access_token']
+        self._set_authentication(self._cache['access_token'])
         refresh_token = data.get('refreshToken') or data['refresh_token']
-
-        self._set_authentication(token)
-        userdata.set('access_token', token)
-        userdata.set('expires', int(time() + expires - 15))
         userdata.set('refresh_token', refresh_token)
 
     def login(self, username, password):
@@ -136,13 +131,13 @@ class API(object):
             raise APIError(_(error, msg=data.get('message')))
 
     def _json_call(self, endpoint):
-        self._refresh_token()
+        self._set_token()
         data = self._session.get(endpoint).json()
         self._check_errors(data)
         return data
 
     def account(self):
-        self._refresh_token()
+        self._set_token()
 
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
 
@@ -157,7 +152,7 @@ class API(object):
         return data['data']['me']
 
     def switch_profile(self, profile_id, pin=None):
-        self._refresh_token()
+        self._set_token()
 
         payload = {
             'operationName': 'switchProfile',
@@ -263,7 +258,7 @@ class API(object):
         return self._json_call(endpoint)['data']['DmcEpisodes']
 
     def update_resume(self, media_id, fguid, playback_time):
-        self._refresh_token()
+        self._set_token()
 
         payload = [{
             'server': {
@@ -288,7 +283,7 @@ class API(object):
         return self._session.post(endpoint, json=payload).status_code
 
     def playback_data(self, playback_url, wv_secure=False):
-        self._refresh_token()
+        self._set_token()
 
         config = self.get_config()
         scenario = config['services']['media']['extras']['restrictedPlaybackScenario']
@@ -308,7 +303,7 @@ class API(object):
                 if settings.getBool('dolby_atmos', False):
                     scenario += '-atmos'
 
-        headers = {'accept': 'application/vnd.media-service+json; version=5', 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
+        headers = {'accept': 'application/vnd.media-service+json; version=5', 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         endpoint = playback_url.format(scenario=scenario)
         playback_data = self._session.get(endpoint, headers=headers).json()
@@ -317,9 +312,9 @@ class API(object):
         return playback_data
 
     def logout(self):
-        userdata.delete('access_token')
-        userdata.delete('expires')
         userdata.delete('refresh_token')
         mem_cache.delete('transaction_id')
         mem_cache.delete('config')
+        userdata.delete('access_token') #LEGACY
+        userdata.delete('expires') #LEGACY
         self.new_session()
