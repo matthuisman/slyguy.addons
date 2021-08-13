@@ -4,8 +4,10 @@ from xml.dom.minidom import parseString
 from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.session import Session
-from slyguy.util import cenc_init
+from slyguy.util import replace_kids
 from slyguy.constants import ADDON_PROFILE
+from slyguy.drm import is_wv_secure
+from slyguy.log import log
 
 from .api import API
 from .constants import *
@@ -426,6 +428,12 @@ def _get_play_path(slug):
 @plugin.plugin_callback()
 def mpd_request(_data, _data_path, **kwargs):
     data = _data.decode('utf8')
+
+    data = data.replace('_xmlns:cenc', 'xmlns:cenc')
+    data = data.replace('_:default_KID', 'cenc:default_KID')
+    data = data.replace('<pssh', '<cenc:pssh')
+    data = data.replace('</pssh>', '</cenc:pssh>')
+
     root = parseString(data.encode('utf8'))
 
     dolby_vison = settings.getBool('dolby_vision', False)
@@ -442,12 +450,16 @@ def mpd_request(_data, _data_path, **kwargs):
             continue
 
         if int(adap_set.getAttribute('maxHeight') or 0) >= 720:
-            for elem in adap_set.getElementsByTagName('ContentProtection'):
-                if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
-                    elem.setAttribute('xmlns:widevine', 'urn:mpeg:widevine:2013')
-                    wv_robust = root.createElement('widevine:license')
-                    wv_robust.setAttribute('robustness_level', 'HW_SECURE_CODECS_REQUIRED')
-                    elem.appendChild(wv_robust)
+            if is_wv_secure():
+                for elem in adap_set.getElementsByTagName('ContentProtection'):
+                    if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                        elem.setAttribute('xmlns:widevine', 'urn:mpeg:widevine:2013')
+                        wv_robust = root.createElement('widevine:license')
+                        wv_robust.setAttribute('robustness_level', 'HW_SECURE_CODECS_REQUIRED')
+                        elem.appendChild(wv_robust)
+            else:
+                adap_set.parentNode.removeChild(adap_set)
+                continue
 
         for elem in adap_set.getElementsByTagName('Representation'):
             parent = elem.parentNode
@@ -476,6 +488,28 @@ def mpd_request(_data, _data_path, **kwargs):
 
                 if not enable_ec3 or (not enable_atmos and is_atmos):
                     parent.removeChild(elem)
+
+    ## Remove empty adaption sets
+    for adap_set in root.getElementsByTagName('AdaptationSet'):
+        if not adap_set.getElementsByTagName('Representation'):
+            adap_set.parentNode.removeChild(adap_set)
+    #################
+
+    ## Fix of cenc pssh to only contain kids still present
+    kids = []
+    for elem in root.getElementsByTagName('ContentProtection'):
+        kids.append(elem.getAttribute('cenc:default_KID'))
+
+    if kids:
+        for elem in root.getElementsByTagName('ContentProtection'):
+            if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                    current_cenc = elem2.firstChild.nodeValue
+                    new_cenc = replace_kids(current_cenc, kids, version0=True)
+                    if current_cenc != new_cenc:
+                        elem2.firstChild.nodeValue = new_cenc
+                        log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+    ################################################
 
     with open(_data_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
