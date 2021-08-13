@@ -55,6 +55,12 @@ class API(object):
 
         return self._session.get('/event', params=params).json()['page']['contents']
 
+    def play_network(self, network):
+        params = {
+            'network': network,
+        }
+        return self._session.get('/playback/event', params=params).json()['playbackState']
+
     def play(self, content_id):
         variables = {
             'countryCode': 'US',

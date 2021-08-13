@@ -134,7 +134,7 @@ def _provider_logout(**kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(content_id=None, event_id=None, **kwargs):
+def play(content_id=None, event_id=None, network_id=None, **kwargs):
     is_live = ROUTE_LIVE_TAG in kwargs
 
     if event_id:
@@ -142,6 +142,9 @@ def play(content_id=None, event_id=None, **kwargs):
         content_id = _select_stream(data)
         if not content_id:
             return
+    elif network_id:
+        data = api.play_network(network_id)
+        content_id = data['id']
 
     playback_data = api.play(content_id)
 

@@ -84,8 +84,13 @@ class Provider(object):
 
         resp = self._session.get('{}/api/v1{}'.format(config['serviceUrl'], path), params=params, headers=headers)
         if resp.ok:
+            data = resp.json()
+            expires = int(data['expires'])
             userdata.set('provider_device_id', device_id)
             return True
+
+    def re_authenticate(self):
+        self.authenticate(userdata.get('provider_device_id'))
 
     def delete_code(self, code):
         config = self._config()['adobePass']
@@ -100,6 +105,8 @@ class Provider(object):
         return resp.ok
 
     def token(self, resource):
+        self.re_authenticate()
+
         config = self._config()['adobePass']
 
         path = '/authorize'
