@@ -63,7 +63,7 @@ def _landing(slug, params=None):
             items.extend(_parse_contents(data.get('contents', [])))
 
     for row in api.landing(slug, params)['panels']:
-        if slug=='shows' and row['title'].lower() == 'channels':
+        if slug=='shows' and 'channels' in row['title'].lower():
             continue
 
         if row['panelType'] == 'hero-carousel' and settings.getBool('show_hero_contents', True):
@@ -84,17 +84,19 @@ def _landing(slug, params=None):
     return items
 
 def _live_channels():
-    panel_id = None
+    data = None
     for row in api.landing('shows')['panels']:
-        if row['title'].lower() == 'channels':
-            panel_id = row['id']
+        if 'channels' in row['title'].lower():
+            data = row
             break
 
-    if not panel_id:
+    if not data:
         raise PluginError(_.LIVE_PANEL_ID_MISSING)
 
+    if not data.get('contents', []):
+        data = api.panel(panel_id=row['id'])
+
     channels = []
-    data = api.panel(panel_id=panel_id)
     chnos = api.channel_numbers()
 
     for row in data.get('contents', []):
