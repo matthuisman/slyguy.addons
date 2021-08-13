@@ -18,11 +18,12 @@ from requests import ConnectionError
 from slyguy import settings, gui, inputstream
 from slyguy.log import log
 from slyguy.constants import *
-from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin
+from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, replace_kids
 from slyguy.plugin import failed_playback
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
+from slyguy.drm import is_wv_secure
 
 from .language import _
 
@@ -333,10 +334,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         data = response.stream.content.decode('utf8')
         data = self._manifest_middleware(data)
 
+        wv_secure = is_wv_secure()
+
         ## SUPPORT NEW DOLBY FORMAT https://github.com/xbmc/inputstream.adaptive/pull/466
         data = data.replace('tag:dolby.com,2014:dash:audio_channel_configuration:2011', 'urn:dolby:dash:audio_channel_configuration:2011')
         ## SUPPORT EC-3 CHANNEL COUNT https://github.com/xbmc/inputstream.adaptive/pull/618
         data = data.replace('urn:mpeg:mpegB:cicp:ChannelConfiguration', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
+
+        data = data.replace('_xmlns:cenc', 'xmlns:cenc')
+        data = data.replace('_:default_KID', 'cenc:default_KID')
+        data = data.replace('<pssh', '<cenc:pssh')
+        data = data.replace('</pssh>', '</cenc:pssh>')
 
         root = parseString(data.encode('utf8'))
         mpd = root.getElementsByTagName("MPD")[0]
@@ -377,6 +385,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             rep_index = 0
             for adap_set in period.getElementsByTagName('AdaptationSet'):
                 adap_parent = adap_set.parentNode
+
+                if not wv_secure:
+                    remove = False
+
+                    for elem in adap_set.getElementsByTagName('widevine:license'):
+                        if (elem.getAttribute('robustness_level') or '').upper().startswith('HW'):
+                            remove = True
+                            break
+
+                    if remove:
+                        adap_parent.removeChild(adap_set)
+                        continue
 
                 highest_bandwidth = 0
                 is_video = False
@@ -611,6 +631,22 @@ class RequestHandler(BaseHTTPRequestHandler):
             if not adap_set.getElementsByTagName('Representation'):
                 adap_set.parentNode.removeChild(adap_set)
         #################
+
+        ## Fix of cenc pssh to only contain kids still present
+        kids = []
+        for elem in root.getElementsByTagName('ContentProtection'):
+            kids.append(elem.getAttribute('cenc:default_KID'))
+
+        if kids:
+            for elem in root.getElementsByTagName('ContentProtection'):
+                if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                    for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                        current_cenc = elem2.firstChild.nodeValue
+                        new_cenc = replace_kids(current_cenc, kids, version0=True)
+                        if current_cenc != new_cenc:
+                            elem2.firstChild.nodeValue = new_cenc
+                            log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+        ################################################
 
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')

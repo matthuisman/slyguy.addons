@@ -114,17 +114,18 @@ class Playready(InputstreamItem):
         return require_version(self.minversion, required=True) and KODI_VERSION > 17 and xbmc.getCondVisibility('system.platform.android')
 
 class Widevine(InputstreamItem):
-    license_type  = 'com.widevine.alpha'
+    license_type = 'com.widevine.alpha'
 
-    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', license_data=None, **kwargs):
+    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', license_data=None, wv_secure=False, **kwargs):
         super(Widevine, self).__init__(**kwargs)
-        self.license_key   = license_key
-        self.content_type  = content_type
-        self.challenge     = challenge
-        self.response      = response
+        self.license_key = license_key
+        self.content_type = content_type
+        self.challenge = challenge
+        self.response = response
         self.manifest_type = manifest_type
-        self.mimetype      = mimetype
-        self.license_data  = license_data
+        self.mimetype = mimetype
+        self.license_data = license_data
+        self.wv_secure = wv_secure
 
     def do_check(self):
         return install_widevine()

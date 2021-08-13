@@ -11,6 +11,7 @@ import gzip
 import re
 import threading
 import socket
+import binascii
 from contextlib import closing
 
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
@@ -533,12 +534,15 @@ def strip_namespaces(tree):
                     del attrib[name]
                     attrib[name.partition('}')[2]] = value
 
-def cenc_init(data=None, uuid=None, kids=None):
+def cenc_init(data=None, uuid=None, kids=None, version=None):
     data = data or bytearray()
     uuid = uuid or WIDEVINE_UUID
     kids = kids or []
 
     length = len(data) + 32
+
+    if version == 0:
+        kids = []
 
     if kids:
         #each kid is 16 bytes (+ 4 for kid count)
@@ -640,6 +644,34 @@ def cenc_version1to0(cenc):
         return cenc
 
     return cenc_init(data)
+
+def replace_kids(cenc, kids, version0=False):
+    uuid, version, old_data, old_kids = parse_cenc_init(cenc)
+
+    old_data = binascii.hexlify(old_data).decode('utf8')
+    if '1210' in old_data:
+        pre_data = re.search('^([0-9a-z]*?)1210', old_data)
+        pre_data = pre_data.group(1) if pre_data else ''
+
+        old_data = old_data.replace(pre_data, '')
+        for match in re.findall('1210[0-9a-z]{32}', old_data):
+            old_data = old_data.replace(match, '')
+
+        data = pre_data
+        new_kids = []
+        for kid in kids:
+            kid = kid.replace('-', '').replace(' ','').strip() if kid else None
+            if not kid or kid in data:
+                continue
+
+            data += '1210' + kid
+            new_kids.append(bytearray.fromhex(kid))
+
+        data += old_data
+    else:
+        data = data
+
+    return cenc_init(bytearray.fromhex(data), uuid, new_kids, 0 if version0 else version)
 
 def pthms_to_seconds(duration):
     if not duration:
