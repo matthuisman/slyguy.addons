@@ -157,7 +157,7 @@ class API(object):
 
         return self._session.get('/v3.0/androidphone{}'.format(url), params=self._params(params)).json()['carousel']
 
-    @mem_cache.cached(60*10)
+    #@mem_cache.cached(60*10)
     def featured(self):
         params = {
             'minProximity': 1,
@@ -247,6 +247,8 @@ class API(object):
         video_data = self._session.get('/v2.0/androidphone/video/cid/{}.json'.format(video_id), params=self._params()).json()['itemList'][0]
         if 'pid' not in video_data:
             raise APIError('Check your subscription is valid')
+
+        #target=n6_Kpu3b3pKr for icarly s01e01
 
         params = {
             #'formats': 'mpeg-dash',

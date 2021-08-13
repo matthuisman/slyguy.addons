@@ -26,6 +26,8 @@ class Language(BaseLanguage):
     ACCESSIBILITY        = 30023
     EC3_ENABLED          = 30024
     AC3_ENABLED          = 30025
+    PARTNER_LOGIN        = 30026
+    SELECT_PARTNER       = 30027
 
     IGNORE_SUBS          = 30028
 

@@ -102,6 +102,14 @@ msgctxt "#30025"
 msgid "Dolby Digital (AC-3)"
 msgstr ""
 
+msgctxt "#30026"
+msgid "Partner Login"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Select Partner"
+msgstr ""
+
 msgctxt "#30028"
 msgid "Ignore Subtitles"
 msgstr ""

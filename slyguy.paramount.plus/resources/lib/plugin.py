@@ -11,6 +11,7 @@ from slyguy.monitor import monitor
 from .language import _
 from .api import API
 from .config import Config
+from .mvpd import MVPD
 
 api = API()
 config = Config()
@@ -64,10 +65,29 @@ def login(**kwargs):
     if not config.init(fresh=True):
         raise PluginError(_.OUT_OF_REGION)
 
-    if config.has_device_link() and gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
-        result = _device_link()
+    device_link = config.has_device_link()
+    mvpd = config.has_mvpd()
+
+    options = [[_.EMAIL_PASSWORD, _email_password]]
+
+    if config.has_device_link():
+        options.append([_.DEVICE_LINK, _device_link])
+
+    # if config.has_mvpd():
+    #     options.append([_.PARTNER_LOGIN, _partner_login])
+
+    if len(options) == 1:
+        result = options[0][1]()
+    elif len(options) == 2:
+        if gui.yes_no(_.LOGIN_WITH, yeslabel=options[1][0], nolabel=options[0][0]):
+            result = options[1][1]()
+        else:
+            result = options[0][1]()
     else:
-        result = _email_password()
+        index = gui.select(_.LOGIN_WITH, options=[x[0] for x in options])
+        if index == -1:
+            return
+        result = options[index][1]()
 
     if not result:
         return
@@ -77,6 +97,35 @@ def login(**kwargs):
         _select_profile()
 
     gui.refresh()
+
+def _partner_login():
+    mpvd = MVPD(config)
+
+    options = []
+    providers = mpvd.providers()
+    for provider in providers:
+        options.append(plugin.Item(label=provider['primaryName'], art={'thumb': provider['pickerLogoUrl']}))
+
+    index = gui.select(_.SELECT_PARTNER, options=options, useDetails=True)
+    if index == -1:
+        return
+
+    provider = providers[index]
+    code, url = mpvd.code(provider)
+    start = time.time()
+    max_time = 600
+    last_check = start
+
+    thread = mpvd.wait_login(code)
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=url, code=code), heading=_.PARTNER_LOGIN) as progress:
+        while (time.time() - start) < max_time:
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
+
+            progress.update(int(((time.time() - start) / max_time) * 100))
+            if not thread.is_alive():
+                return mpvd.authorize()
 
 def _email_password():
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
@@ -146,10 +195,10 @@ def featured(slug=None, **kwargs):
     folder = plugin.Folder(_.FEATURED)
 
     for row in api.featured():
-        if row['model'] not in ('show', 'movie'):
-            continue
-
         if slug is None:
+            if row['apiParams']['name'] in ('Keep+Watching', 'My+List', 'On+Now'): # TO DO
+                continue
+
             folder.add_item(
                 label = row['title'],
                 path = plugin.url_for(featured, slug=row['apiParams']['name']),
