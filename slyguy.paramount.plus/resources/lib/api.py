@@ -157,7 +157,7 @@ class API(object):
 
         return self._session.get('/v3.0/androidphone{}'.format(url), params=self._params(params)).json()['carousel']
 
-    #@mem_cache.cached(60*10)
+    @mem_cache.cached(60*10)
     def featured(self):
         params = {
             'minProximity': 1,
@@ -166,7 +166,7 @@ class API(object):
             'rows': 15,
         }
         return self._session.get('/v3.0/androidphone/home/configurator.json', params=self._params(params)).json()['config']
-    
+
     @mem_cache.cached(60*10)
     def trending_movies(self):
         return self._session.get('/v3.0/androidphone/movies/trending.json', params=self._params()).json()
