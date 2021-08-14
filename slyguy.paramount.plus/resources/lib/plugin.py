@@ -65,6 +65,7 @@ def login(**kwargs):
     if not config.init(fresh=True):
         raise PluginError(_.OUT_OF_REGION)
 
+    api.new_session(config)
     device_link = config.has_device_link()
     mvpd = config.has_mvpd()
 
@@ -73,8 +74,8 @@ def login(**kwargs):
     if config.has_device_link():
         options.append([_.DEVICE_LINK, _device_link])
 
-    # if config.has_mvpd():
-    #     options.append([_.PARTNER_LOGIN, _partner_login])
+    if config.has_mvpd():
+        options.append([_.PARTNER_LOGIN, _partner_login])
 
     if len(options) == 1:
         result = options[0][1]()
@@ -125,7 +126,9 @@ def _partner_login():
 
             progress.update(int(((time.time() - start) / max_time) * 100))
             if not thread.is_alive():
-                return mpvd.authorize()
+                token = mpvd.authorize()
+                api.mvpd_login(provider, token)
+                return True
 
 def _email_password():
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()

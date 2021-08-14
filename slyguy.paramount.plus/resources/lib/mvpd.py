@@ -20,15 +20,17 @@ class MVPD(object):
 
     def _refresh_token(self):
         payload = {}
+        url = '/accessToken'
         if self._token_data:
             payload['refreshToken'] = self._token_data['deviceRefreshToken']
+            url += '/refresh'
 
         params = {
             'clientId': self._client_id,
             'countryCode': self._config.country_code,
         }
 
-        self._token_data = self._session.post('/accessToken', params=params, json=payload).json()
+        self._token_data = self._session.post(url, params=params, json=payload).json()
         self._session.headers.update({'authorization': 'Bearer {}'.format(self._token_data['applicationAccessToken'])})
 
     def providers(self):
@@ -73,7 +75,7 @@ class MVPD(object):
                 if (time.time() - last_call) < 5:
                     time.sleep(1)
                     continue
-                
+
                 last_call = time.time()
                 try:
                     result = self._session.get('/access/activationCode/{}'.format(code), params=params, timeout=(10, 40), attempts=1).json()
@@ -104,4 +106,14 @@ class MVPD(object):
         if data.get('errorCode'):
             raise MVPDError(data['errorCode'])
 
-        return True
+        self._refresh_token()
+        return self._token_data['applicationAccessToken']
+
+    # def status(self):
+    #     params = {
+    #         'logoSchema': 'white',
+    #         'clientId': self._client_id,
+    #         'countryCode': self._config.country_code,
+    #     }
+
+    #     return self._session.get('/access/status', params=params).json()

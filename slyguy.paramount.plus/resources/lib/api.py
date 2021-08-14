@@ -75,7 +75,7 @@ class API(object):
         resp = self._session.post('/v2.0/androidtv/auth/login.json', params=self._params(), data=payload)
         data = resp.json()
 
-        if not data['success']:
+        if not data.get('success'):
             raise APIError(data.get('message'))
 
         self._save_auth(resp.cookies)
@@ -98,13 +98,36 @@ class API(object):
 
         if data.get('regenerateCode'):
             return -1
-        elif not data['success']:
+        elif not data.get('success'):
             return False
 
         self._save_auth(resp.cookies)
         self._set_profile_data(self.user()['activeProfile'])
 
         return True
+
+    def mvpd_login(self, provider, token):
+        self.logout()
+
+        params = {
+            'mvpdId': provider['code'],
+        }
+
+        headers = {
+            'x-auth-suite-token': token,
+        }
+
+        data = self._session.post('/v2.0/androidtv/mvpd/authSuite/user/bounded.json', params=self._params(params), headers=headers).json()
+        if not data.get('success'):
+            raise APIError(data.get('error') or data.get('message'))
+
+        resp = self._session.post('/v2.0/androidtv/mvpd/authSuite/user.json', params=self._params(), headers=headers)
+        data = resp.json()
+        if not data.get('success'):
+            raise APIError(data.get('error') or data.get('message'))
+
+        self._save_auth(resp.cookies)
+        self._set_profile_data(self.user()['activeProfile'])
 
     def _save_auth(self, cookies):
         expires = None
@@ -125,7 +148,7 @@ class API(object):
         resp = self._session.post('/v2.0/androidtv/user/account/profile/switch/{}.json'.format(profile_id), params=self._params())
         data = resp.json()
 
-        if not data['success']:
+        if not data.get('success'):
             raise APIError('Failed to set profile: {}'.format(profile_id))
 
         self._set_profile_data(data['profile'])
@@ -331,7 +354,7 @@ class API(object):
         }
 
         data = self._session.get('/v3.0/androidphone/dma.json', params=self._params(params)).json()
-        if not data['success']:
+        if not data.get('success'):
             log.warning('Failed to get local CBS channel for IP address ({}). Server message: {}'.format(ip, data.get('message')))
             return None
 
