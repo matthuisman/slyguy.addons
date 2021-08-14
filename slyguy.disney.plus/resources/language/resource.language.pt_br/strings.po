@@ -74,8 +74,8 @@ msgid "HDR10 / 4K"
 msgstr "HDR10 / 4K"
 
 msgctxt "#30019"
-msgid "H.265 / 1080P"
-msgstr "H.265 / 1080P"
+msgid "H.265"
+msgstr "H.265"
 
 msgctxt "#30020"
 msgid "Skip Credits"

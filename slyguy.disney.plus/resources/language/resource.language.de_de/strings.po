@@ -48,16 +48,16 @@ msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Ve
 msgstr ""
 
 msgctxt "#30015"
-msgid "Dolby Vision"
-msgstr "Dolby Vision"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
 
 msgctxt "#30016"
 msgid "Sync with Disney+"
 msgstr ""
 
 msgctxt "#30018"
-msgid "HDR10"
-msgstr "HDR10"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
 
 msgctxt "#30019"
 msgid "H.265"

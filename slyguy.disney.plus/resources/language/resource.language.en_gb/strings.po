@@ -72,7 +72,7 @@ msgid "HDR10 / 4K"
 msgstr ""
 
 msgctxt "#30019"
-msgid "H.265 / 1080P"
+msgid "H.265"
 msgstr ""
 
 msgctxt "#30020"

@@ -50,12 +50,12 @@ msgstr "Full støtte på Kodi {kodi_ver} krever minst Inputstream Adaptive versi
 "Du kan støte på avspillingsproblemer med din nåværende version."
 
 msgctxt "#30015"
-msgid "Dolby Vision"
-msgstr "Dolby Vision"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
 
 msgctxt "#30018"
-msgid "HDR10"
-msgstr "HDR10"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
 
 msgctxt "#30019"
 msgid "H.265"

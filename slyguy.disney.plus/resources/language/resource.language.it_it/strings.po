@@ -50,18 +50,18 @@ msgstr "La riproduzione su Kodi {kodi_ver} richiede almeno la versione {ver_requ
 "Questa versione è stata rilasciata di recente, quindi dovrebbe aggiornarsi nei prossimi giorni."
 
 msgctxt "#30015"
-msgid "Dolby Vision"
-msgstr "Dolby Vision"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
 
 msgctxt "#30018"
-msgid "HDR10"
-msgstr "HDR10"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
 
 msgctxt "#30019"
 msgid "H.265"
 msgstr "H.265"
 
-sgctxt "#30020"
+msgctxt "#30020"
 msgid "Skip Credits"
 msgstr ""
 
