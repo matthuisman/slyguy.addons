@@ -253,10 +253,17 @@ def show(slug, data):
                 for row3 in row2.get('items') or []:
                     for row4 in row3.get('items') or []:
                         if row4.get('childType') == 'EpisodeContainer':
-                            try: season = int(row3['title'])
-                            except: season = row3['title']
+                            try: season_num = int(row3['title'])
+                            except: season_num = None
 
-                            seasons.append([season, row2['title'], row4])
+                            if season_num:
+                                label = _(_.SEASON, number=season_num)
+                                sort = season_num
+                            else:
+                                label = row3['title']
+                                sort = 0
+
+                            seasons.append([sort, label, row4])
 
     seasons = sorted(seasons, key=lambda x: x[0])
     if len(seasons) == 1 and settings.getBool('flatten_single_season', True):
@@ -266,7 +273,7 @@ def show(slug, data):
     else:
         for season in seasons:
             folder.add_item(
-                label = '{} {}'.format(season[1], season[0]),
+                label = season[1],
                 art = {'thumb': thumb, 'fanart': fanart},
                 info = {'plot': plot},
                 path = plugin.url_for(component, slug=slug, id=season[2]['id'], label=show_name, episodes=1, fanart=fanart),

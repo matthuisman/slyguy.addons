@@ -19,5 +19,6 @@ class Language(BaseLanguage):
     SUGGESTED         = 30016
     OLYMPICS          = 30017
     NO_VIDEO          = 30018
+    SEASON            = 30019
 
 _ = Language()
