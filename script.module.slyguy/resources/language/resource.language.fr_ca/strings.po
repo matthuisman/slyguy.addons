@@ -259,7 +259,7 @@ msgid "M3U8 file does not start with #EXTM3U"
 msgstr ""
 
 msgctxt "#32058"
-msgid "{version} (INSTALLED)"
+msgid "{label} [B](INSTALLED)[/B]"
 msgstr ""
 
 msgctxt "#32059"

@@ -278,8 +278,8 @@ msgid "M3U8 file does not start with #EXTM3U"
 msgstr "M3U8-filen starter ikke med #EXTM3U"
 
 msgctxt "#32058"
-msgid "{version} (INSTALLED)"
-msgstr "{version} (INNSTALLERT)"
+msgid "{label} [B](INSTALLED)[/B]"
+msgstr "{label} [B](INNSTALLERT)[/B]"
 
 msgctxt "#32059"
 msgid "Max Bandwidth (Mbit/s)"

@@ -12,7 +12,10 @@ def format_string(string, *args, **kwargs):
                 style[key.lstrip('_')] = kwargs.pop(key)
 
     if args or kwargs:
-        string = string.format(*args, **kwargs)
+        try:
+            string = string.format(*args, **kwargs)
+        except Exception as e:
+            log.debug('failed to format string: {} ({})'.format(string, e))
 
     if not style:
         return string
