@@ -49,6 +49,30 @@ msgctxt "#30011"
 msgid "Remove Numbers from Channel name"
 msgstr ""
 
+msgctxt "#30012"
+msgid "Show Providers"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Hide My Channels"
+msgstr ""
+
+msgctxt "#30014"
+msgid "My Channels"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Add to My Channels"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Remove from My Channels"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Added to My Channels"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

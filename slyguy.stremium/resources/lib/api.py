@@ -67,12 +67,15 @@ class API(object):
 
         return self._session.get('/playbackAuthenticated', params=params).json()
 
-    def epg(self, id=None):
+    def epg(self, id=None, date=None):
         self._refresh_token()
 
         params = {}
         if id:
             params['channelId'] = id
+
+        if date:
+            params['dateKey'] = date.format('YYYYMMDD')
 
         return self._session.get('/programGuide', params=params).json()
 

@@ -27,6 +27,8 @@ def home(**kwargs):
         folder.add_item(label=_(_.REGISTER, _bold=True), path=plugin.url_for(login, register=1))
     else:
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+        if not settings.getBool('hide_my_channels', False):
+            folder.add_item(label=_(_.MY_CHANNELS, _bold=True), path=plugin.url_for(live_tv, provider=MY_CHANNELS))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -42,26 +44,17 @@ def home(**kwargs):
 def _channels():
     return api.channels()
 
-def _providers(playlist=False, epg=False):
-    if not playlist and not epg:
-        hide_public = settings.getBool('hide_public', False)
-        hide_custom = settings.getBool('hide_custom', False)
-    else:
-        hide_public, hide_custom = False, False
-
+def _providers(channels):
+    hide_public = settings.getBool('hide_public', False)
+    hide_custom = settings.getBool('hide_custom', False)
     remove_numbers = settings.getBool('remove_numbers', False)
 
-    if epg:
-        channels = api.epg()
-    elif playlist:
-        channels = api.channels()
-    else:
-        channels = _channels()
+    providers = {
+        ALL: {'name': _.ALL, 'channels': [], 'logo': None, 'sort': 0},
+        MY_CHANNELS: {'name': _.MY_CHANNELS, 'channels': [], 'logo': None, 'sort': 0},
+    }
 
-    providers = {}
-    if not playlist and not epg:
-        providers[ALL] = {'name': _.ALL, 'channels': [], 'logo': None, 'sort': 0}
-
+    favourites = userdata.get('favourites') or []
     for channel in channels:
         key = channel['providerDisplayName'].lower()
 
@@ -76,15 +69,16 @@ def _providers(playlist=False, epg=False):
             channel['title'] = re.sub('^[0-9]+\.[0-9]+', '', channel['title']).strip()
 
         providers[key]['channels'].append(channel)
-        if not playlist and not epg:
-            providers[ALL]['channels'].append(channel)
+        providers[ALL]['channels'].append(channel)
+        if channel['id'] in favourites:
+            providers[MY_CHANNELS]['channels'].append(channel)
 
-    if not playlist and not epg and len(providers) == 2:
-        providers.pop(ALL)
+    if settings.getBool('hide_my_channels', False):
+        providers.pop(MY_CHANNELS)
 
     return providers
 
-def _get_channels(channels, query=None):
+def _process_channels(channels, query=None, provider=ALL):
     items = []
     for channel in sorted(channels, key=lambda x: x['title'].lower().strip()):
         if query and query not in channel['title'].lower():
@@ -94,7 +88,7 @@ def _get_channels(channels, query=None):
         if channel['currentEpisode']:
             start = arrow.get(channel['currentEpisode']['airTime'])
             end = start.shift(minutes=channel['currentEpisode']['duration'])
-            plot = u'[{} - {}]\n{}'.format(start.to('local').format('h:mma'), end.to('local').format('h:mma'), channel['currentEpisode']['title'])
+            plot += u'[{} - {}]\n{}'.format(start.to('local').format('h:mma'), end.to('local').format('h:mma'), channel['currentEpisode']['title'])
 
         item = plugin.Item(
             label = channel['title'],
@@ -102,21 +96,44 @@ def _get_channels(channels, query=None):
             art = {'thumb': channel['thumb']},
             playable = True,
             path = plugin.url_for(play, id=channel['id'], _is_live=True),
+            context = ((_.DEL_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(del_favourite, id=channel['id']))),) if provider == MY_CHANNELS else ((_.ADD_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(add_favourite, id=channel['id'], name=channel['title'], icon=channel['thumb']))),),
         )
         items.append(item)
 
     return items
 
 @plugin.route()
+def del_favourite(id, **kwargs):
+    favourites = userdata.get('favourites') or []
+    if id in favourites:
+        favourites.remove(id)
+
+    userdata.set('favourites', favourites)
+    gui.refresh()
+
+@plugin.route()
+def add_favourite(id, name, icon, **kwargs):
+    favourites = userdata.get('favourites') or []
+    if id not in favourites:
+        favourites.append(id)
+
+    userdata.set('favourites', favourites)
+    gui.notification(_.MY_CHANNEL_ADDED, heading=name, icon=icon)
+
+@plugin.route()
 def live_tv(provider=None, **kwargs):
-    providers = _providers()
+    providers = _providers(_channels())
 
     if len(providers) == 1:
         provider = list(providers.keys())[0]
 
+    if not settings.getBool('show_providers', True) and provider != MY_CHANNELS:
+        provider = ALL
+
     if provider is None:
         folder = plugin.Folder(_.LIVE_TV)
 
+        providers.pop(MY_CHANNELS)
         for slug in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'].lower())):
             provider = providers[slug]
 
@@ -128,25 +145,17 @@ def live_tv(provider=None, **kwargs):
 
         return folder
 
-    provider = _providers()[provider]
-    folder = plugin.Folder(provider['name'])
-    items = _get_channels(provider['channels'])
+    _provider = providers[provider]
+    folder = plugin.Folder(_provider['name'])
+    items = _process_channels(_provider['channels'], provider=provider)
     folder.add_items(items)
     return folder
 
 @plugin.route()
-def search(**kwargs):
-    query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-    if not query:
-        return
-
-    userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-    provider = _providers()[ALL]
-    items = _get_channels(provider['channels'], query=query)
-    folder.add_items(items)
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    provider = _providers(_channels())[ALL]
+    return _process_channels(provider['channels'], query=query), False
 
 @plugin.route()
 def login(register=0, **kwargs):
@@ -211,46 +220,44 @@ def logout(**kwargs):
 @plugin.merge()
 @plugin.login_required()
 def playlist(output, **kwargs):
-    user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
+    user_providers = userdata.get('merge_providers', [])
     if not user_providers:
         raise PluginError(_.NO_PROVIDERS)
 
-    avail_providers = _providers(playlist=True)
-    providers = [x for x in avail_providers if x in user_providers]
-    if not providers:
-        raise PluginError(_.NO_PROVIDERS)
-
+    providers = _providers(api.channels())
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
-        for key in sorted(providers, key=lambda x: (avail_providers[x]['sort'], avail_providers[x]['name'].lower())):
-            provider = avail_providers[key]
+        added = []
+        for key in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'].lower())):
+            if key not in user_providers:
+                continue
 
-            for channel in sorted(provider['channels'], key=lambda x: x['title'].lower().strip()):
+            for channel in sorted(providers[key]['channels'], key=lambda x: x['title'].lower().strip()):
+                if channel['id'] in added:
+                    continue
+
+                added.append(channel['id'])
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{provider}",{name}\n{url}'.format(
-                    id=channel['id'], name=channel['title'], logo=channel['thumb'], provider=provider['name'], url=plugin.url_for(play, id=channel['id'], _is_live=True),
+                    id=channel['id'], name=channel['title'], logo=channel['thumb'], provider=channel['providerDisplayName'], url=plugin.url_for(play, id=channel['id'], _is_live=True),
                 ))
 
 @plugin.route()
 @plugin.merge()
 @plugin.login_required()
 def epg(output, **kwargs):
-    user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
+    user_providers = userdata.get('merge_providers', [])
     if not user_providers:
         raise PluginError(_.NO_PROVIDERS)
 
-    avail_providers = _providers(epg=True)
-    providers = [x for x in avail_providers if x in user_providers]
-    if not providers:
-        raise PluginError(_.NO_PROVIDERS)
-
+    now = arrow.utcnow()
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
-        for key in providers:
-            provider = avail_providers[key]
+        for i in range(0, settings.getInt('epg_days', 3)):
+            providers = _providers(api.epg(date=now.shift(days=i)))
 
-            for channel in provider['channels']:
+            for channel in providers[ALL]['channels']:
                 f.write(u'<channel id="{id}"></channel>'.format(id=channel['id']))
 
                 def write_program(program):
@@ -283,12 +290,13 @@ def epg(output, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def configure_merge(**kwargs):
-    user_providers = [x.lower() for x in userdata.get('merge_providers', [])]
-    avail_providers = _providers(playlist=True)
+    user_providers = userdata.get('merge_providers', [])
+    avail_providers = _providers(_channels())
 
     options = []
     values = []
     preselect = []
+
     for index, key in enumerate(sorted(avail_providers, key=lambda x: (avail_providers[x]['sort'], avail_providers[x]['name']))):
         provider = avail_providers[key]
 

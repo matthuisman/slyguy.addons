@@ -12,6 +12,7 @@ API_URL = 'https://api.stremium.com{}'
 ALL = '_'
 PUBLIC = 'public'
 CUSTOM = 'custom'
+MY_CHANNELS = 'my_channels'
 
 PROVIDER_ART = {
     CUSTOM: None,
