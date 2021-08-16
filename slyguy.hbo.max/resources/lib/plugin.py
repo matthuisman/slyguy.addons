@@ -524,6 +524,8 @@ def callback(url, cut_id, runtime, _time, **kwargs):
 @plugin.route()
 def play(slug, **kwargs):
     data, content, edit = api.play(slug)
+    if not data or not content or not edit:
+        return
 
     headers = {
         'Authorization': 'Bearer {}'.format(userdata.get('access_token')),

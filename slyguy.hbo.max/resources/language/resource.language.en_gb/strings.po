@@ -36,6 +36,10 @@ msgctxt "#30008"
 msgid "Ignore Subtitles"
 msgstr ""
 
+msgctxt "#30009"
+msgid "Playback language"
+msgstr ""
+
 msgctxt "#30010"
 msgid "Play Next Episode"
 msgstr ""
@@ -153,6 +157,10 @@ msgstr ""
 
 msgctxt "#30038"
 msgid "Remove from My List"
+msgstr ""
+
+msgctxt "#30039"
+msgid "Default Playback language"
 msgstr ""
 
 ## COMMON SETTINGS ##

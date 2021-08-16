@@ -4,7 +4,7 @@ from time import time
 import arrow
 from kodi_six import xbmc
 
-from slyguy import userdata, settings, mem_cache
+from slyguy import userdata, settings, mem_cache, gui
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
@@ -390,11 +390,31 @@ class API(object):
         if not edits:
             raise APIError(_.NO_VIDEO_FOUND)
 
-        ## select dialog for language?
-        edit = edits[0]
+        edit = None
+        options = []
+        playback_language = settings.get('playback_language', '').strip().lower()
         for row in edits:
-            if 'en' in row['originalAudioLanguage']:
+            if playback_language and row['originalAudioLanguage'].lower().startswith(playback_language):
                 edit = row
+                break
+
+            label = row['originalAudioLanguage']
+            for track in row['audioTracks']:
+                if track['language'].lower().startswith(row['originalAudioLanguage'].lower()):
+                    label = track['displayName']
+                    break
+
+            options.append(label)
+
+        if edit is None:
+            if len(options) == 1:
+                index = 0
+            else:
+                index = gui.select(options=options, heading=_.PLAYBACK_LANGUAGE)
+                if index == -1:
+                    return None, None, None
+
+            edit = edits[index]
 
         payload = [{
             'id': edit['video'],
