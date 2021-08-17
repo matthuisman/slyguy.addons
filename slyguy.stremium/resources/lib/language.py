@@ -19,5 +19,6 @@ class Language(BaseLanguage):
     ADD_MY_CHANNEL     = 30015
     DEL_MY_CHANNEL     = 30016
     MY_CHANNEL_ADDED   = 30017
+    STREMIUM_FAVORITES = 30018
 
 _ = Language()

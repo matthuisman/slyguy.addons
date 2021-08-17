@@ -54,7 +54,11 @@ def _providers(channels):
         MY_CHANNELS: {'name': _.MY_CHANNELS, 'channels': [], 'logo': None, 'sort': 0},
     }
 
-    favourites = userdata.get('favourites') or []
+    if settings.getBool('stremium_favourites', False):
+        favourites = api.favorites()
+    else:
+        favourites = userdata.get('favourites') or []
+
     for channel in channels:
         key = channel['providerDisplayName'].lower()
 
@@ -104,20 +108,26 @@ def _process_channels(channels, query=None, provider=ALL):
 
 @plugin.route()
 def del_favourite(id, **kwargs):
-    favourites = userdata.get('favourites') or []
-    if id in favourites:
-        favourites.remove(id)
+    if settings.getBool('stremium_favourites', False):
+        api.del_favorite(id)
+    else:
+        favourites = userdata.get('favourites') or []
+        if id in favourites:
+            favourites.remove(id)
+        userdata.set('favourites', favourites)
 
-    userdata.set('favourites', favourites)
     gui.refresh()
 
 @plugin.route()
 def add_favourite(id, name, icon, **kwargs):
-    favourites = userdata.get('favourites') or []
-    if id not in favourites:
-        favourites.append(id)
+    if settings.getBool('stremium_favourites', False):
+        api.add_favorite(id)
+    else:
+        favourites = userdata.get('favourites') or []
+        if id not in favourites:
+            favourites.append(id)
+        userdata.set('favourites', favourites)
 
-    userdata.set('favourites', favourites)
     gui.notification(_.MY_CHANNEL_ADDED, heading=name, icon=icon)
 
 @plugin.route()

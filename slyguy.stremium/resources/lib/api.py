@@ -49,6 +49,25 @@ class API(object):
         userdata.set('expires', int(time()) + int(data['expires_in']) - 30)
         self._set_authentication()
 
+    def user(self):
+        self._refresh_token()
+        params = {'cardInfo': 'true'}
+        return self._session.get('/user', params=params).json()
+
+    def favorites(self):
+        self._refresh_token()
+        return self._session.get('/favoriteChannels').json()
+
+    def add_favorite(self, channel_id):
+        self._refresh_token()
+        data = self._session.put('/favoriteChannels', params={'channelId': channel_id}).json()
+        if 'error' in data:
+            raise APIError(data['error'])
+
+    def del_favorite(self, channel_id):
+        self._refresh_token()
+        return self._session.delete('/favoriteChannels', params={'channelId': channel_id}).ok
+
     def channels(self):
         self._refresh_token()
 

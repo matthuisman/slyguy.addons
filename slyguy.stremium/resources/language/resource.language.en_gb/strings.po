@@ -73,6 +73,10 @@ msgctxt "#30017"
 msgid "Added to My Channels"
 msgstr ""
 
+msgctxt "#30018"
+msgid "Use Stremium Favorites for My Channels (requires premium)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

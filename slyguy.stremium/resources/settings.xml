@@ -4,6 +4,7 @@
         <setting label="30009" id="hide_public" type="bool" default="false"/>
         <setting label="30010" id="hide_custom" type="bool" default="false"/>
         <setting label="30013" id="hide_my_channels" type="bool" default="false"/>
+        <setting label="30018" id="stremium_favourites" type="bool" default="false" enable="eq(-1,false)"/>
         <setting label="30011" id="remove_numbers" type="bool" default="true"/>
         <setting label="30012" id="show_providers" type="bool" default="true"/>
     </category>
