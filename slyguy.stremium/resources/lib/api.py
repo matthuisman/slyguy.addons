@@ -60,13 +60,27 @@ class API(object):
 
     def add_favorite(self, channel_id):
         self._refresh_token()
-        data = self._session.put('/favoriteChannels', params={'channelId': channel_id}).json()
+        resp = self._session.put('/favoriteChannels', params={'channelId': channel_id})
+        if resp.ok:
+            return True
+
+        data = resp.json()
         if 'error' in data:
             raise APIError(data['error'])
 
+        return False
+
     def del_favorite(self, channel_id):
         self._refresh_token()
-        return self._session.delete('/favoriteChannels', params={'channelId': channel_id}).ok
+        resp = self._session.delete('/favoriteChannels', params={'channelId': channel_id})
+        if resp.ok:
+            return True
+
+        data = resp.json()
+        if 'error' in data:
+            raise APIError(data['error'])
+
+        return False
 
     def channels(self):
         self._refresh_token()
