@@ -143,7 +143,6 @@ def live_tv(provider=None, **kwargs):
     if provider is None:
         folder = plugin.Folder(_.LIVE_TV)
 
-        providers.pop(MY_CHANNELS)
         for slug in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'].lower())):
             provider = providers[slug]
 
