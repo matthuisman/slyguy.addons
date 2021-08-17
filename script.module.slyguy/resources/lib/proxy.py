@@ -652,13 +652,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             return attribs
 
-        audio_whitelist   = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
-        subs_whitelist    = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
-        subs_forced       = self._session.get('subs_forced', True)
-        subs_non_forced   = self._session.get('subs_non_forced', True)
+        audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
+        subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
+        subs_forced = self._session.get('subs_forced', True)
+        subs_non_forced = self._session.get('subs_non_forced', True)
         audio_description = self._session.get('audio_description', True)
         original_language = self._session.get('original_language', '').lower().strip()
-        default_language  = self._session.get('default_language', '').lower().strip()
+        default_language = self._session.get('default_language', '').lower().strip()
 
         if original_language and not default_language:
             default_language = original_language
@@ -754,10 +754,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             elif line1 and not line.startswith('#'):
                 attribs = _process_media(lines[line1])
 
-                codecs     = [x for x in attribs.get('CODECS', '').split(',') if x]
-                bandwidth  = int(attribs.get('BANDWIDTH') or 0)
+                codecs = [x for x in attribs.get('CODECS', '').split(',') if x]
+                bandwidth = int(attribs.get('BANDWIDTH') or 0)
                 resolution = attribs.get('RESOLUTION', '')
-                frame_rate = attribs.get('FRAME_RATE', '')
+                frame_rate = attribs.get('FRAME-RATE', '')
 
                 url = line
                 if '://' in url:

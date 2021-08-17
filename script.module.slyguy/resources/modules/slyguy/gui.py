@@ -259,6 +259,11 @@ class Item(object):
             if self.info.get('mediatype') in ('tvshow','season') and settings.getBool('show_series_folders', True):
                 self.info.pop('mediatype')
 
+            if self.info.get('mediatype') == 'movie':
+                self.info.pop('season', None)
+                self.info.pop('episode', None)
+                self.info.pop('tvshowtitle', None)
+
             li.setInfo('video', self.info)
 
         if self.specialsort:
