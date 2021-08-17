@@ -94,5 +94,7 @@ class Language(BaseLanguage):
     CONF_DELETE_CHANNEL    = 30090
     DISABLE_EPG            = 30091
     ENABLE_EPG             = 30092
+    MERGE_PLAYLISTS        = 30093
+    MERGE_EPGS             = 30094
 
 _ = Language()

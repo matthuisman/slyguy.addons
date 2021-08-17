@@ -367,6 +367,10 @@ class Merger(object):
         playlist_path = os.path.join(self.output_path, PLAYLIST_FILE_NAME)
         working_path = os.path.join(self.working_path, PLAYLIST_FILE_NAME)
 
+        if not settings.getBool('merge_playlists', True):
+            log.debug('Merge playlists is disabled in settings')
+            return working_path
+
         if not refresh and xbmcvfs.exists(playlist_path) and xbmcvfs.exists(working_path):
             return working_path
 
@@ -490,6 +494,10 @@ class Merger(object):
         epg_path = os.path.join(self.output_path, EPG_FILE_NAME)
         working_path = os.path.join(self.working_path, EPG_FILE_NAME)
         epg_path_tmp = os.path.join(self.working_path, EPG_FILE_NAME+'_tmp')
+
+        if not settings.getBool('merge_epgs', True):
+            log.debug('Merge EPGs is disabled in settings')
+            return working_path
 
         if not refresh and xbmcvfs.exists(epg_path) and xbmcvfs.exists(working_path):
             return working_path

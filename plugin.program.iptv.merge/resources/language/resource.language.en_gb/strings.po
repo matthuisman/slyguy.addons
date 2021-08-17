@@ -377,6 +377,14 @@ msgctxt "#30092"
 msgid "Enable EPG"
 msgstr ""
 
+msgctxt "#30093"
+msgid "Merge Playlists"
+msgstr ""
+
+msgctxt "#30094"
+msgid "Merge EPGs"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

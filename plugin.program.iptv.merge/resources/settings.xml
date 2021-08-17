@@ -5,6 +5,8 @@
         <setting label="30002" id="auto_merge" type="bool" default="true"/>
         <setting label="30003" id="reload_time_hours" type="slider" default="12" range="1,1,48" option="int" visible="eq(-1,true)"/>
         <setting label="30073" id="boot_merge" type="bool" default="false"/>
+        <setting label="30093" id="merge_playlists" type="bool" default="true"/>
+        <setting label="30094" id="merge_epgs" type="bool" default="true"/>
         <setting label="30004" id="restart_pvr" type="bool" default="true"/>
         <setting label="30079" id="http_api" type="bool" default="false"/>
         <setting label="30080" id="http_force_merge" type="bool" default="true" visible="eq(-1,true)"/>
