@@ -3,7 +3,6 @@ import re
 from xml.sax.saxutils import escape
 
 import arrow
-from kodi_six import xbmcplugin
 from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
@@ -60,10 +59,11 @@ def search(query, page, **kwargs):
 def _image(url, width=IMAGE_WIDTH):
     return IMAGE_URL.format(url=quote_plus(url.encode('utf8')), width=width)
 
-def _process_rows(rows, slug='', expand_media=False, season_name=''):
+def _process_rows(rows, slug='', expand_media=False, season_num=0):
     items = []
     now = arrow.now()
 
+    count = len(rows)
     for row in rows:
         item = None
         if row['type'] in ('mediaShelf', 'channelShelf') and row['cName'] not in ('My Watchlist', 'Continue Watching'):
@@ -81,7 +81,6 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
 
             info = {
                 'plot': row['cardData'].get('synopsis') or row.get('infoPanelData', {}).get('shortSynopsis') or row['cardData'].get('subtitle'),
-                'mediatype': 'episode',
             }
 
             if 'infoPanelData' in row:
@@ -127,6 +126,12 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
             info['season'], info['episode'] = _get_season_episode(row)
             info['duration'] = _get_duration(row)
 
+            if not info['season'] and not info['episode'] and count == 1:
+                info['mediatype'] = 'movie'
+                info['year'] = season_num
+            else:
+                info['mediatype'] = 'episode'
+
             item = plugin.Item(
                 label = title,
                 info = info,
@@ -151,7 +156,10 @@ def _process_rows(rows, slug='', expand_media=False, season_name=''):
         if row['type'] in ('SeriesCard', 'contentLinkedImage'):
             item = plugin.Item(
                 label = row.get('title') or row['image']['altTag'] or row.get('cName'),
-                info = {'plot': row.get('lozengeText')},
+                info = {
+                    'plot': row.get('lozengeText'),
+                    'mediatype': 'tvshow',
+                },
                 art = {'thumb': _image(row['image']['url'])},
             )
 
@@ -199,7 +207,7 @@ def shows(**kwargs):
     data = api.content(SHOWS_SLUG)
     folder.add_item(label=_(_.ALL, _bold=True), path=plugin.url_for(component, slug=SHOWS_SLUG, id=data['id'], label=_.ALL, expand_media=1))
 
-    items = _process_rows(data['items'], SHOWS_SLUG, False)
+    items = _process_rows(data['items'], SHOWS_SLUG)
     folder.add_items(items)
 
     return folder
@@ -266,17 +274,20 @@ def show(slug, data):
                             seasons.append([sort, label, row4])
 
     seasons = sorted(seasons, key=lambda x: x[0])
-    if len(seasons) == 1 and settings.getBool('flatten_single_season', True):
-        items = _process_rows(seasons[0][2].get('mediaItems', []), '{} {}'.format(seasons[0][1], seasons[0][0]))
-        folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
+    if len(seasons) == 1 and (settings.getBool('flatten_single_season', True) or len(seasons[0][2].get('mediaItems', [])) <= 1):
+        items = _process_rows(seasons[0][2].get('mediaItems', []), season_num=seasons[0][0])
         folder.add_items(items)
     else:
         for season in seasons:
             folder.add_item(
                 label = season[1],
                 art = {'thumb': thumb, 'fanart': fanart},
-                info = {'plot': plot},
-                path = plugin.url_for(component, slug=slug, id=season[2]['id'], label=show_name, episodes=1, fanart=fanart),
+                info = {
+                    'plot': plot,
+                    'mediatype': 'season',
+                    'tvshowtitle': data['title'],
+                },
+                path = plugin.url_for(component, slug=slug, id=season[2]['id'], label=show_name, fanart=fanart),
             )
 
     if clips and not settings.getBool('hide_clips', False):
@@ -300,14 +311,10 @@ def show(slug, data):
     return folder
 
 @plugin.route()
-def component(slug, id, label, expand_media=0, episodes=0, fanart=None, **kwargs):
+def component(slug, id, label, expand_media=0, fanart=None, **kwargs):
     expand_media = int(expand_media)
-    episodes = int(episodes)
 
     folder = plugin.Folder(label, fanart=fanart)
-    if episodes:
-        folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
-
     items = _process_rows(api.component(slug, id)['items'], slug, expand_media)
     folder.add_items(items)
 

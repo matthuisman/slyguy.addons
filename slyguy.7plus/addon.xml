@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.7plus" name="7plus" provider-name="SlyGuy" version="0.2.3">
+<addon id="slyguy.7plus" name="7plus" provider-name="SlyGuy" version="0.2.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix shows not working when using special seasons</news>
+    <news>Better handling of movies</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
