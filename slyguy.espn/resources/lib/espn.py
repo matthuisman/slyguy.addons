@@ -6,6 +6,7 @@ from contextlib import contextmanager
 import websocket
 from slyguy.session import Session
 from slyguy import userdata
+from slyguy.exceptions import Error
 
 from .bam import Bam
 
@@ -26,9 +27,15 @@ class ESPN(object):
             'refreshToken': userdata.get('espn_refresh'),
         }
 
-        data = self._session.post('/guest/refresh-auth', json=payload).json()['data']['token']
-        self._set_tokens(data)
-        return data['id_token']
+        data = self._session.post('/guest/refresh-auth', json=payload).json()
+        if not data['data']:
+            try: error = data['error']['errors'][0]['code']
+            except: error = 'Failed to refresh token'
+            raise Error(error)
+
+        token_data = data['data']['token']
+        self._set_tokens(token_data)
+        return token_data['id_token']
 
     def _set_tokens(self, data):
         userdata.set('espn_swid', data['swid'])
