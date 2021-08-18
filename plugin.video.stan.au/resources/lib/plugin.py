@@ -411,12 +411,13 @@ def play(program_id, play_type=PLAY_FROM_LIVE, **kwargs):
     play_type = int(play_type)
     is_live = ROUTE_LIVE_TAG in kwargs
 
+    resume_from = None
     if is_live:
         if play_type == PLAY_FROM_START:
-            item.resume_from = 1
+            resume_from = 1
         elif play_type == PLAY_FROM_ASK:
-            item.resume_from = plugin.live_or_start()
-            if item.resume_from == -1:
+            resume_from = plugin.live_or_start()
+            if resume_from == -1:
                 return
 
     program_data, play_data = api.play(program_id)
@@ -434,6 +435,7 @@ def play(program_id, play_type=PLAY_FROM_LIVE, **kwargs):
             license_data = play_data['drm']['init_data'],
             response = 'JBlicense',
         ),
+        resume_from = resume_from,
     )
 
     for row in play_data.get('captions', []):
