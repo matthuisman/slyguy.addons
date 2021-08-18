@@ -96,5 +96,6 @@ class Language(BaseLanguage):
     ENABLE_EPG             = 30092
     MERGE_PLAYLISTS        = 30093
     MERGE_EPGS             = 30094
+    DISABLE_GROUPS         = 30095
 
 _ = Language()

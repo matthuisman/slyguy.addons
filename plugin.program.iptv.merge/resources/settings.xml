@@ -14,7 +14,8 @@
         <setting label="30070" id="start_ch_no" type="number" default="1"/>
         <setting label="30077" id="ask_to_add" type="bool" default="true"/>
         <setting label="30081" id="remove_epg_orphans" type="bool" default="true"/>
-        <setting label="30078" id="group_order" type="text" default=""/>
+        <setting label="Disable Groups" id="disable_groups" type="bool" default="false"/>
+        <setting label="30078" id="group_order" type="text" default="" enable="eq(-1,false)"/>
         <setting label="30006" type="action" action="RunPlugin(plugin://$ID/?_=setup)" option="close"/>
     </category>
 

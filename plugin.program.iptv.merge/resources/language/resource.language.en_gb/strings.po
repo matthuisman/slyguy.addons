@@ -385,6 +385,10 @@ msgctxt "#30094"
 msgid "Merge EPGs"
 msgstr ""
 
+msgctxt "#30095"
+msgid "Disable Groups"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

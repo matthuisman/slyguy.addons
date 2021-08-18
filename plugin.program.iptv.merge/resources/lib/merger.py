@@ -432,6 +432,7 @@ class Merger(object):
 
             count = 0
             starting_ch_no = settings.getInt('start_ch_no', 1)
+            groups_disabled = settings.getBool('disable_groups', False)
 
             with codecs.open(working_path, 'w', encoding='utf8') as outfile:
                 outfile.write(u'#EXTM3U')
@@ -447,7 +448,10 @@ class Merger(object):
                         channel.chno = chno
                     chno = channel.chno + 1
 
-                    tv_groups.extend(channel.groups)
+                    if groups_disabled:
+                        channel.groups = []
+                    else:
+                        tv_groups.extend(channel.groups)
 
                     outfile.write(u'\n\n')
                     outfile.write(channel.get_lines())
@@ -459,17 +463,19 @@ class Merger(object):
                         channel.chno = chno
                     chno = channel.chno + 1
 
-                    new_groups = []
-                    for group in channel.groups:
-                        count = 1
-                        while group in tv_groups:
-                            group = _(_.RADIO_GROUP, group=group)
-                            if count > 1:
-                                group = u'{} #{}'.format(group, count)
-                            count += 1
-                        new_groups.append(group)
-
-                    channel.groups = new_groups
+                    if groups_disabled:
+                        channel.groups = []
+                    else:
+                        new_groups = []
+                        for group in channel.groups:
+                            count = 1
+                            while group in tv_groups:
+                                group = _(_.RADIO_GROUP, group=group)
+                                if count > 1:
+                                    group = u'{} #{}'.format(group, count)
+                                count += 1
+                            new_groups.append(group)
+                        channel.groups = new_groups
 
                     outfile.write(u'\n\n')
                     outfile.write(channel.get_lines())
