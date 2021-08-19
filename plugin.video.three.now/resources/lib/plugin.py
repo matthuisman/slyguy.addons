@@ -1,6 +1,5 @@
+import re
 import string
-
-from kodi_six import xbmcplugin
 
 from slyguy import plugin, gui, settings, userdata, inputstream
 
@@ -14,13 +13,13 @@ api = API()
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.SHOWS, _bold=True),  path=plugin.url_for(shows))
-    folder.add_item(label=_(_.GENRE, _bold=True),  path=plugin.url_for(genres))
+    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+    folder.add_item(label=_(_.GENRE, _bold=True), path=plugin.url_for(genres))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE, _bold=True),   path=plugin.url_for(live))
+    folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
     if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -76,8 +75,8 @@ def genres(**kwargs):
     for row in api.genres():
         folder.add_item(
             label = row['displayName'],
-            path  = plugin.url_for(genre, genre=row['slug'], title=row['displayName']),
-            art   = {'thumb': row.get('logo', None)},
+            path = plugin.url_for(genre, genre=row['slug'], title=row['displayName']),
+            art = {'thumb': row.get('logo')},
         )
 
     return folder
@@ -97,12 +96,12 @@ def _parse_shows(rows):
 
         item = plugin.Item(
             label = row['name'],
-            art   = {'thumb': thumb, 'fanart': fanart},
-            path  = plugin.url_for(show, id=row['showId']),
+            art = {'thumb': thumb, 'fanart': fanart},
+            path = plugin.url_for(show, id=row['showId']),
             info = {
                 'title': row['name'],
-                'plot': row.get('synopsis'), 
-               # 'mediatype': 'tvshow',
+                'plot': row.get('synopsis'),
+                'mediatype': 'tvshow',
                 'tvshowtitle': row['name'],
             }
         )
@@ -115,32 +114,41 @@ def _parse_episodes(rows):
     items = []
     for row in rows:
         videoid = row['videoRenditions']['videoCloud']['brightcoveId']
-        thumb   = row.get('images',{}).get('videoTile','').split('?')[0]
+        thumb = row.get('images', {}).get('videoTile','').split('?')[0]
 
         info = {
             'title': row['name'],
-            'genre': row.get('genre'), 
-            'plot': row.get('synopsis'), 
-            'duration': int(row.get('duration')), 
-            'aired': row.get('airedDate'),
+            'genre': row.get('genre'),
+            'plot': row.get('synopsis'),
+            'duration': int(row.get('duration')),
             'dateadded': row.get('airedDate'),
             'mediatype': 'episode',
             'tvshowtitle': row.get('showTitle'),
+            'episode': int(row.get('episode')) if row.get('episode') else None,
+            'season': int(row.get('season')) if row.get('season') else None,
         }
 
-        try:
-            info.update({
-                'episode': int(row.get('episode')), 
-                'season': int(row.get('season')),
-            })
-        except:
-            pass
+        if info['episode'] or not info['season']:
+            search = '{} {} {}'.format(row['name'], row.get('synopsis', ''), row.get('cust_params', ''))
+            patterns = ['Season ([0-9]+) Ep ([0-9]+)', 'S([0-9]+) Ep([0-9]+)', 'season([0-9]+)ep([0-9]+)']
+            for pattern in patterns:
+                result = re.search(pattern, search)
+                if result:
+                    season, episode = result.groups(0)
+                    if not info['episode']:
+                        info['episode'] = int(episode)
+                    if not info['season']:
+                        info['season'] = int(season)
+                    break
+
+        if 'movie' in row.get('genres', []) or (len(rows) == 1 and not info['episode'] and row['name'] == row.get('tvshowtitle')):
+            info['mediatype'] = 'movie'
 
         item = plugin.Item(
             label = row['name'],
-            art   = {'thumb': thumb},
-            path  = plugin.url_for(play, id=videoid),
-            info  = info,
+            art = {'thumb': thumb},
+            path = plugin.url_for(play, id=videoid),
+            info = info,
             playable = True,
         )
 
@@ -152,7 +160,7 @@ def _parse_episodes(rows):
 def show(id, **kwargs):
     row = api.show(id)
     fanart = row.get('images',{}).get('dashboardHero','').replace('[width]', '1600').replace('[height]', '520')
-    folder = plugin.Folder(row['name'], sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED, xbmcplugin.SORT_METHOD_UNSORTED], fanart=fanart)
+    folder = plugin.Folder(row['name'], fanart=fanart)
     folder.add_items(_parse_episodes(row['episodes']))
     return folder
 
@@ -165,9 +173,8 @@ def play_channel(channel, **kwargs):
     for row in api.live():
         if row['title'] == channel:
             return plugin.Item(
-                inputstream = inputstream.HLS(live=True), 
-                path = row['videoRenditions']['videoCloud']['hlsUrl'], 
-                art = False,
+                inputstream = inputstream.HLS(live=True),
+                path = row['videoRenditions']['videoCloud']['hlsUrl'],
             )
 
 @plugin.route()
@@ -182,8 +189,8 @@ def live(**kwargs):
     for row in api.live():
         folder.add_item(
             label = row['displayName'],
-            art   = {'thumb': row.get('logo','').split('?')[0]},
-            path  = plugin.url_for(play_channel, channel=row['title'], _is_live=True),
+            art = {'thumb': row.get('logo','').split('?')[0]},
+            path = plugin.url_for(play_channel, channel=row['title'], _is_live=True),
             playable = True,
         )
 

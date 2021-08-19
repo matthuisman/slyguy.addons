@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.three.now" name="ThreeNow" provider-name="SlyGuy" version="0.12.8">
+<addon id="plugin.video.three.now" name="ThreeNow" provider-name="SlyGuy" version="0.12.9">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
