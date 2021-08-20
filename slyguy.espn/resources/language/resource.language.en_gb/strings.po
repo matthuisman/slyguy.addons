@@ -12,7 +12,7 @@ msgstr ""
 
 msgctxt "#30002"
 msgid "You are not entitled to access this content.\n"
-"Check your subscription is valid."
+"Tip: You can hide channels via the context menu"
 msgstr ""
 
 msgctxt "#30003"
@@ -50,6 +50,18 @@ msgstr ""
 
 msgctxt "#30011"
 msgid "Select Broadcast"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Reset hidden channels"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Hidden channels reset OK"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Hide channel"
 msgstr ""
 
 ## COMMON SETTINGS ##

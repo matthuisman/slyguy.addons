@@ -13,5 +13,8 @@ class Language(BaseLanguage):
     ACCOUNT            = 30009
     NO_SOURCE          = 30010
     SELECT_BROADCAST   = 30011
+    RESET_HIDDEN       = 30012
+    RESET_HIDDEN_OK    = 30013
+    HIDE_CHANNEL       = 30014
 
 _ = Language()

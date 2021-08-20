@@ -1,5 +1,5 @@
 import arrow
-from slyguy import plugin, gui, signals, inputstream, settings
+from slyguy import plugin, gui, signals, inputstream, settings, userdata
 from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
@@ -45,10 +45,15 @@ def live(**kwargs):
     if api.espn.logged_in:
         avail_auth.append('direct')
 
+    hidden = userdata.get('hidden', [])
+
     data = api.bucket(LIVE_BUCKET_ID)
     for row in data['buckets'][0]['contents']:
         streams = []
         for stream in row['streams']:
+            if stream['source']['id'] in hidden:
+                continue
+
             if any(x in stream['authTypes'] for x in avail_auth):
                 streams.append(stream)
 
@@ -74,9 +79,23 @@ def live(**kwargs):
             art = {'thumb': row['imageHref']},
             playable = True,
             path = path,
+            context = ((_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))),),
         )
 
     return folder
+
+@plugin.route()
+def hide_channel(id, **kwargs):
+    hidden = userdata.get('hidden', [])
+    if id not in hidden:
+        hidden.append(id)
+    userdata.set('hidden', hidden)
+    gui.refresh()
+
+@plugin.route()
+def clear_hidden(**kwargs):
+    userdata.delete('hidden')
+    gui.notification(_.RESET_HIDDEN_OK)
 
 @plugin.route()
 def account(**kwargs):
