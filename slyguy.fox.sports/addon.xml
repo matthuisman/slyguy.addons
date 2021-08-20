@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.fox.sports" name="Fox Sports" provider-name="SlyGuy" version="0.0.2">
+<addon id="slyguy.fox.sports" name="Fox Sports" provider-name="SlyGuy" version="0.0.3">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -9,8 +9,7 @@
   <extension point="xbmc.addon.metadata">
     <description lang="en">Stream live sporting events, news, &amp; highlights, and all your favorite sports shows featuring former athletes and experts
 
-Subscription required.
-WORK IN PROGRESS. LIMITED FEATURES</description>
+Tv Provider login required.</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
