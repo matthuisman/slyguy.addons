@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.espn" name="ESPN" provider-name="Slyguy" version="0.0.9">
+<addon id="slyguy.espn" name="ESPN" provider-name="Slyguy" version="0.1.0">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -9,9 +9,7 @@
   <extension point="xbmc.addon.metadata">
     <description lang="en">Stream exclusive live sports from UFC, College Basketball, Soccer, Golf, and more
 
-Subscription required.
-WORK IN PROGRESS. LIMITED FEATURES
-    </description>
+ESPN+ and/or Tv Provider login required</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
