@@ -31,7 +31,7 @@ from threading import Lock
 
 try:
     if six.PY3:
-        import numpy
+        numpy = None #https://github.com/xbmc/repo-scripts/pull/2023
     else:
         numpy = None
 except ImportError:
