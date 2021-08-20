@@ -39,11 +39,25 @@ def index(**kwargs):
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE)
 
+    avail_auth = []
+    if api.provider.logged_in:
+        avail_auth.append('mvpd')
+    if api.espn.logged_in:
+        avail_auth.append('direct')
+
     data = api.bucket(LIVE_BUCKET_ID)
     for row in data['buckets'][0]['contents']:
-        sources = u'/'.join([x['source']['name'] for x in row['streams']])
+        streams = []
+        for stream in row['streams']:
+            if any(x in stream['authTypes'] for x in avail_auth):
+                streams.append(stream)
 
-        if len(row['streams']) > 1:
+        if not streams:
+            continue
+
+        sources = u'/'.join([x['source']['name'] for x in streams])
+
+        if len(streams) > 1:
             path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
         else:
             path = plugin.url_for(play, content_id=row['id'], _is_live=True)
@@ -140,6 +154,7 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
         content_id = _select_stream(data)
         if not content_id:
             return
+
     elif network_id:
         data = api.play_network(network_id)
         content_id = data['id']
@@ -156,12 +171,19 @@ def _select_stream(data):
     options = []
     values = []
 
-    for row in data['streams']:
-        if row.get('status') != 'live':
+    avail_auth = []
+    if api.provider.logged_in:
+        avail_auth.append('mvpd')
+    if api.espn.logged_in:
+        avail_auth.append('direct')
+
+    for stream in data['streams']:
+        if stream.get('status') != 'live':
             continue
 
-        options.append(row['source']['name'])
-        values.append(row['id'])
+        if any(x in stream['authTypes'] for x in avail_auth):
+            options.append(stream['source']['name'])
+            values.append(stream['id'])
 
     if not values:
         raise PluginError(_.NO_SOURCE)
