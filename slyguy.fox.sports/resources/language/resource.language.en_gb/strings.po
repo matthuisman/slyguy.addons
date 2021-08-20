@@ -34,6 +34,10 @@ msgctxt "#30007"
 msgid "Error refreshing access token"
 msgstr ""
 
+msgctxt "#30008"
+msgid "Hide Unentitled Content"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

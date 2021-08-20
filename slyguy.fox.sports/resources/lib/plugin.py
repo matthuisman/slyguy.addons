@@ -37,7 +37,12 @@ def live(**kwargs):
     folder = plugin.Folder(_.LIVE)
 
     now = arrow.now()
-    entitlements = api.entitlements()
+
+    if settings.getBool('hide_unentitled', True):
+        entitlements = api.entitlements()
+    else:
+        entitlements = []
+
     for panel in api.live():
         current = None
         for epg in panel.get('items', {}).get('member', []):
@@ -51,7 +56,7 @@ def live(**kwargs):
             continue
 
         sku = current['contentSKUResolved'][0]['baseId'].split('.')[-1]
-        if sku not in entitlements:
+        if entitlements and sku not in entitlements:
             continue
 
         plot = u''

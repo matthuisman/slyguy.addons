@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32035]">
+        <setting label="30008" type="bool" id="hide_unentitled" default="true"/>
         <setting label="30003" type="bool" id="enable_4k" default="true"/>
         <setting label="30004" type="bool" id="enable_hdr" default="false" enable="eq(-1,true)"/>
 
