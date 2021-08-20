@@ -69,6 +69,7 @@ class API(object):
         userdata.set('device_id', device_id)
         userdata.set('access_token', access_token)
         userdata.set('user_id', data['user_id'])
+        userdata.set('parental_pin', data.get('parental_pin',''))
 
     def logout(self):
         userdata.delete('device_id')
@@ -188,8 +189,8 @@ class API(object):
         if 'url' not in data:
             raise APIError(data.get('message'))
 
-        url        = data['url']
-        task_id    = data['packaging_task_id']
+        url = data['url']
+        task_id = data['packaging_task_id']
         session_id = data['session_id']
 
         data = {
@@ -203,6 +204,7 @@ class API(object):
         params = {
             'showmax_rating': '18-plus',
             'mode': 'paid',
+            'parental_pin': userdata.get('parental_pin'),
             'subscription_status': 'full',
             'lang': self._language,
         }
