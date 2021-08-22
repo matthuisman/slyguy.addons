@@ -44,51 +44,59 @@ def live(**kwargs):
         entitlements = []
 
     for panel in api.live():
-        current = None
+        currents = []
         for epg in panel.get('items', {}).get('member', []):
             epg['startDate'] = arrow.get(epg['startDate'])
             epg['endDate'] = arrow.get(epg['endDate'])
 
-            if epg.get('isLiveNow') and (not current or epg['startDate'] < now):
-                current = epg
+            if epg.get('isLiveNow') and epg.get('callSign'):
+                sku = epg['contentSKUResolved'][0]['baseId'].split('.')[-1]
+                if entitlements and sku not in entitlements:
+                    continue
+                if epg['callSign'].endswith('DIGITAL'):
+                    currents.append(epg)
+                elif not currents or epg['startDate'] < now:
+                    currents = [epg]
 
-        if not current or not current.get('callSign'):
+        if not currents:
             continue
 
-        sku = current['contentSKUResolved'][0]['baseId'].split('.')[-1]
-        if entitlements and sku not in entitlements:
-            continue
+        for current in currents:
+            if current['callSign'].endswith('DIGITAL'):
+                path = plugin.url_for(play_channel, stream_id=current['id'], _is_live=True)
+                plot = current.get('description')
+            else:
+                path = plugin.url_for(play_channel, callsign=current['callSign'], _is_live=True)
+                plot = u''
+                epg_count = 6
+                for epg in panel.get('items', {}).get('member', []):
+                    if epg['startDate'] >= current['startDate']:
+                        title = epg['seriesName']
+                        if epg.get('headline') and epg['headline'].lower() != epg['seriesName'].lower():
+                            title += u' - {}'.format(epg['headline'])
 
-        plot = u''
-        epg_count = 6
-        for epg in panel.get('items', {}).get('member', []):
-            if epg['startDate'] >= current['startDate']:
-                title = epg['seriesName']
-                if epg['headline'].lower() != epg['seriesName'].lower():
-                    title += u' - {}'.format(epg['headline'])
+                        plot += u'[{}] {}\n'.format(epg['startDate'].to('local').format('h:mma'), title)
+                        epg_count -= 1
+                        if not epg_count:
+                            break
 
-                plot += u'[{}] {}\n'.format(epg['startDate'].to('local').format('h:mma'), title)
-                epg_count -= 1
-                if not epg_count:
-                    break
+            title = current['seriesName']
+            if current.get('headline') and current['headline'].lower() != current['seriesName'].lower():
+                title += u' - {}'.format(current['headline'])
+            title += u' [{}]'.format(current['callSign'])
 
-        title = current['seriesName']
-        if current['headline'].lower() != current['seriesName'].lower():
-            title += u' - {}'.format(current['headline'])
-        title += u' [{}]'.format(current['callSign'])
-
-        folder.add_item(
-            label = title,
-            info = {
-                'plot': plot,
-            },
-            art = {
-                'thumb': current['images']['seriesList']['HD'],
-               # 'fanart': NETWORK_LOGO.format(network=current['network']),
-            },
-            playable = True,
-            path = plugin.url_for(play_channel, callsign=current['callSign'], _is_live=True),
-        )
+            folder.add_item(
+                label = title,
+                info = {
+                    'plot': plot,
+                },
+                art = {
+                    'thumb': current['images']['seriesList']['HD'],
+                # 'fanart': NETWORK_LOGO.format(network=current['network']),
+                },
+                playable = True,
+                path = path,
+            )
 
     return folder
 
@@ -108,8 +116,8 @@ def login(**kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play_channel(callsign, **kwargs):
-    def get_stream_id():
+def play_channel(callsign=None, stream_id=None, **kwargs):
+    def get_stream_id(callsign):
         for panel in api.live():
             if panel.get('callSign') != callsign:
                 continue
@@ -122,9 +130,10 @@ def play_channel(callsign, **kwargs):
 
             return current['id']
 
-    stream_id = get_stream_id()
     if not stream_id:
-        raise PluginError(_.NO_STREAM_ID)
+        stream_id = get_stream_id(callsign)
+        if not stream_id:
+            raise PluginError(_.NO_STREAM_ID)
 
     url = api.play(stream_id, stream_type='live')
 
