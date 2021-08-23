@@ -104,10 +104,7 @@ class Session(RawSession):
             if self.before_request:
                 self.before_request()
 
-            try:
-                log('{}{} {} {}'.format(attempt, method, url, kwargs if method != 'POST' else ""))
-            except:
-                log('{}{} {}'.format(attempt, method, url))
+            log('{}{} {}'.format(attempt, method, url))
 
             try:
                 resp = super(Session, self).request(method, url, **kwargs)
