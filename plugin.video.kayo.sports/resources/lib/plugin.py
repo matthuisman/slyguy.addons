@@ -444,7 +444,6 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
     streams = [s for s in streams if s['mediaFormat'] in SUPPORTED_FORMATS]
-
     if not streams:
         raise PluginError(_.NO_STREAM)
 
@@ -452,14 +451,16 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     prefer_format = SUPPORTED_FORMATS[0]
 
     if prefer_cdn == CDN_AUTO:
-        prefer_cdn = AVAILABLE_CDNS[0]
-        # try:
-        #     data = api.use_cdn(is_live)
-        #     prefer_cdn = data['useCDN']
-        #     prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
-        # except Exception as e:
-        #     log.debug('Failed to get preferred cdn')
-        #     prefer_cdn = AVAILABLE_CDNS[0]
+        try:
+            data = api.use_cdn(is_live, sport=asset['metadata'].get('sport'))
+            prefer_cdn = data['useCDN']
+            prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
+            if prefer_format.startswith('ssai-'):
+                log.debug('Stream Format: Ignoring prefer ssai format')
+                prefer_format = prefer_format[5:]
+        except Exception as e:
+            log.debug('Failed to get preferred cdn')
+            prefer_cdn = AVAILABLE_CDNS[0]
 
     providers = [prefer_cdn]
     providers.extend([s['provider'] for s in streams])
