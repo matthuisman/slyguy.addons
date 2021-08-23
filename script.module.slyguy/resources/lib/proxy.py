@@ -624,7 +624,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         response.stream.content = mpd
 
-    def _parse_m3u8_sub(self, m3u8, master_url):
+    def _parse_m3u8_sub(self, m3u8, url):
         lines = []
 
         for line in m3u8.splitlines():
@@ -641,16 +641,25 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             lines.append(line)
 
-        # prev_last_line = self._session.get('m3u8_last_line', None)
-        # if prev_last_line and prev_last_line not in lines:
-        #     self._session['m3u8_last_line'] = None
-        #     xbmc.sleep(500)
-        #     raise Exception('Invalid M3U8 refresh. Could not find previous last segment in latest playlist')
-        # self._session['m3u8_last_line'] = lines[-1]
+        # Kayo bad playlist test
+        # if 'master_vid-ts-500.m3u8' in url:
+        #     self._session['count'] = self._session.get('count', 0) + 1
+        #     print(self._session['count'])
+        #     if self._session['count'] == 5:
+        #         self._session['count'] = 0
+        #         lines = lines[:len(lines)-500]
+
+        self._session['m3u8_last_lines'] = self._session.get('m3u8_last_lines', {})
+        if url in self._session['m3u8_last_lines'] and self._session['m3u8_last_lines'][url] not in lines:
+            self._session['m3u8_last_lines'].pop(url)
+            xbmc.sleep(500)
+            raise Exception('Invalid M3U8 refresh. Could not find previous last segment in latest playlist')
+
+        self._session['m3u8_last_lines'][url] = lines[-1]
 
         return '\n'.join(lines)
 
-    def _parse_m3u8_master(self, m3u8, master_url):
+    def _parse_m3u8_master(self, m3u8, url):
         def _process_media(line):
             attribs = {}
 
