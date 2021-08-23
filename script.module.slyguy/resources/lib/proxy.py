@@ -641,12 +641,12 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             lines.append(line)
 
-        prev_last_line = self._session.get('m3u8_last_line', None)
-        if prev_last_line and prev_last_line not in lines:
-            self._session['m3u8_last_line'] = None
-            xbmc.sleep(500)
-            raise Exception('Invalid M3U8 refresh. Could not find previous last segment in latest playlist')
-        self._session['m3u8_last_line'] = lines[-1]
+        # prev_last_line = self._session.get('m3u8_last_line', None)
+        # if prev_last_line and prev_last_line not in lines:
+        #     self._session['m3u8_last_line'] = None
+        #     xbmc.sleep(500)
+        #     raise Exception('Invalid M3U8 refresh. Could not find previous last segment in latest playlist')
+        # self._session['m3u8_last_line'] = lines[-1]
 
         return '\n'.join(lines)
 
