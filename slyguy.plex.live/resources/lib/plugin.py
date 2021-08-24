@@ -4,6 +4,7 @@ import arrow
 from slyguy import plugin, inputstream, mem_cache, settings, userdata, gui
 from slyguy.session import Session
 from slyguy.util import gzip_extract
+from slyguy.exceptions import PluginError
 
 from .language import _
 from .constants import *
@@ -129,6 +130,14 @@ def search(query, page, **kwargs):
 def play(id, **kwargs):
     data = _app_data()
     channel = data['regions'][ALL]['channels'][id]
+    region = data['regions'][channel['regions'][0]]
+
+    headers = data['headers']
+    headers.update(region.get('headers', {}))
+
+    url = Session().head(PLAY_URL.format(id=id), headers=headers).headers.get('location')
+    if not url:
+        raise PluginError(_.NO_VIDEO_FOUND)
 
     return plugin.Item(
         label = channel['name'],
@@ -136,7 +145,7 @@ def play(id, **kwargs):
         art = {'thumb': channel['logo']},
         inputstream = inputstream.HLS(live=True),
         headers = data['headers'],
-        path = channel['url'],
+        path = url,
     )
 
 @plugin.route()

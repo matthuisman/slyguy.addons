@@ -5,7 +5,9 @@ msgctxt "#30000"
 msgid "Live TV"
 msgstr ""
 
-
+msgctxt "#30001"
+msgid "No video url found"
+msgstr ""
 
 msgctxt "#30002"
 msgid "Region"

@@ -3,7 +3,7 @@ from .constants import *
 
 class Language(BaseLanguage):
     LIVE_TV        = 30000
-
+    NO_VIDEO_FOUND = 30001
     REGION         = 30002
     ALL            = 30003
     SHOW_EPG       = 30004
