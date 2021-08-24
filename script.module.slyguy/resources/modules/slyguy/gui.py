@@ -408,6 +408,7 @@ class Item(object):
 
             proxy_data = {
                 'manifest': self.path,
+                'slug': '{}-{}'.format(ADDON_ID, sys.argv[2]),
                 'license_url': license_url,
                 'session_id': hash_6(time.time()),
                 'audio_whitelist': settings.get('audio_whitelist', ''),

@@ -51,7 +51,7 @@ CODECS = [
 CODEC_RANKING = ['MPEG-4', 'H.264', 'H.265', 'HDR', 'H.265 Dolby Vision']
 
 PROXY_GLOBAL = {
-    'last_quality': QUALITY_BEST,
+    'last_qualities': [],
     'session': {},
 }
 
@@ -280,25 +280,26 @@ class RequestHandler(BaseHTTPRequestHandler):
             values = [x[0] for x in options]
             labels = [x[1] for x in options]
 
-            default = -1
-            if PROXY_GLOBAL['last_quality'] in values:
-                default = values.index(PROXY_GLOBAL['last_quality'])
-            else:
-                options = [streams[-1]]
-                for stream in streams:
-                    if PROXY_GLOBAL['last_quality'] >= stream['bandwidth']:
-                        options.append(stream)
-
-                default = values.index(sorted(options, key=quality_compare, reverse=True)[0])
+            default = 0
+            remove = None
+            for quality in PROXY_GLOBAL['last_qualities']:
+                if quality[0] == self._session['slug']:
+                    remove = quality
+                    default = quality[1]
+                    break
 
             index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=5000)
             if index < 0:
                 raise Exit('Cancelled quality select')
 
             quality = values[index]
+
+            if remove:
+                PROXY_GLOBAL['last_qualities'].remove(remove)
+
             if index != default:
-                PROXY_GLOBAL['last_quality'] = quality['bandwidth'] if quality in qualities else quality
-                set_kodi_string('_slyguy_last_quality', PROXY_GLOBAL['last_quality'])
+                PROXY_GLOBAL['last_qualities'].insert(0, [self._session['slug'], index])
+                PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
 
         if quality in (QUALITY_DISABLED, QUALITY_SKIP):
             quality = quality

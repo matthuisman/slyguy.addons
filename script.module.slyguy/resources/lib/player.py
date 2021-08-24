@@ -103,7 +103,7 @@ class Player(xbmc.Player):
     #         self.onPlayBackStopped()
 
     # def onPlayBackStopped(self):
-    #     set_kodi_string('_slyguy_last_quality')
+    #     pass
 
     # def onPlayBackStarted(self):
     #     pass
