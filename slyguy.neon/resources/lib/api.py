@@ -39,7 +39,7 @@ class API(object):
 
     def _query_request(self, query, variables=None, **kwargs):
         data = {
-            'query': ' '.join(query.split()), 
+            'query': ' '.join(query.split()),
             'variables': variables or {},
         }
 
@@ -85,7 +85,7 @@ class API(object):
 
     def account(self):
         self._check_token()
-        
+
         return self._query_request(queries.ACCOUNT)['data']['account']
 
     def set_profile(self, profile_id):
@@ -98,7 +98,7 @@ class API(object):
 
         data = self._query_request(queries.UPDATE_ACCOUNT, variables)['data']['account']
         self._set_token(data['session']['token'])
-        
+
         for row in data['profiles']:
             if row['id'] == data['selectedProfile']:
                 userdata.set('profile_id', row['id'])

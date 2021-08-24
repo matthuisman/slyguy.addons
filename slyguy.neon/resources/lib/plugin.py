@@ -1,5 +1,3 @@
-from kodi_six import xbmcplugin
-
 from slyguy import plugin, gui, userdata, signals, settings
 
 from .api import API
@@ -18,7 +16,7 @@ def home(**kwargs):
     folder = plugin.Folder()
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.TV,  _bold=True), path=plugin.url_for(menu, screen_id=TV_ID, title=_.TV))
         folder.add_item(label=_(_.MOVIES,  _bold=True), path=plugin.url_for(menu, screen_id=MOVIES_ID, title=_.MOVIES))
@@ -62,11 +60,11 @@ def select_profile(**kwargs):
     gui.refresh()
 
 def _select_profile():
-    account  = api.account()
+    account = api.account()
     profiles = account['profiles']
 
     options = []
-    values  = []
+    values = []
     default = -1
 
     for index, profile in enumerate(profiles):
@@ -101,7 +99,7 @@ def menu(screen_id, title=None, **kwargs):
     for row in data['components'][0]['items']:
         folder.add_item(
             label = row['name'],
-            path  = plugin.url_for(content, screen_id=row['id']),
+            path = plugin.url_for(content, screen_id=row['id']),
         )
 
     return folder
@@ -141,8 +139,7 @@ def _parse_content(rows):
 def _parse_movie(row):
     return plugin.Item(
         label = row['header'],
-        path = plugin.url_for(play, id=row['contentItem']['id']),
-        info  = {
+        info = {
             'plot': row['contentItem']['summary'],
             'year': row['contentItem']['year'],
             'duration': row['contentItem']['duration']*60,
@@ -153,13 +150,13 @@ def _parse_movie(row):
             'fanart': row['contentItem']['keyart']['uri'],
         },
         playable = True,
+        path = plugin.url_for(play, id=row['contentItem']['id']),
     )
 
 def _parse_show(row):
     return plugin.Item(
         label = row['header'],
-        path  = plugin.url_for(show, path=row['contentItem']['path']),
-        info  = {
+        info = {
             'plot': row['contentItem']['description'],
             'mediatype': 'tvshow',
         },
@@ -167,6 +164,7 @@ def _parse_show(row):
             'thumb': row['image'],
             'fanart': row['contentItem']['keyart']['uri'],
         },
+        path = plugin.url_for(show, path=row['contentItem']['path']),
     )
 
 @plugin.route()
@@ -177,7 +175,6 @@ def show(path, **kwargs):
     for season in show['seasons']:
         folder.add_item(
             label = _(_.SEASON, season_number=season['seasonNumber']),
-            path  = plugin.url_for(episodes, path=show['path'], season_id=season['id']),
             info = {
                 'plot': season['description'],
                 'mediatype': 'season',
@@ -186,6 +183,7 @@ def show(path, **kwargs):
                 'thumb': show['tile']['image'],
                 'fanart': show['keyart']['uri'],
             },
+            path = plugin.url_for(episodes, path=show['path'], season_id=season['id']),
         )
 
     return folder
@@ -193,8 +191,7 @@ def show(path, **kwargs):
 @plugin.route()
 def episodes(path, season_id, **kwargs):
     show = api.content(path)['components'][0]['series']
-
-    folder = plugin.Folder(show['title'], fanart=show['keyart']['uri'], sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED, xbmcplugin.SORT_METHOD_UNSORTED])
+    folder = plugin.Folder(show['title'], fanart=show['keyart']['uri'])
 
     for season in show['seasons']:
         if season['id'] == season_id:
@@ -218,8 +215,6 @@ def _parse_episodes(show, season):
 
         item = plugin.Item(
             label = episode['title'],
-            playable = True,
-            path = plugin.url_for(play, id=episode['id']),
             info = {
                 'title': episode['title'],
                 'plot': episode['description'],
@@ -232,6 +227,8 @@ def _parse_episodes(show, season):
             art = {
                 'thumb': episode['images'][0]['uri'],
             },
+            playable = True,
+            path = plugin.url_for(play, id=episode['id']),
         )
 
         items.append(item)
@@ -248,7 +245,7 @@ def play(id, **kwargs):
         plugin.exception(msg)
 
     referenceID = data['data']['playbackAuth']['videos'][0]['referenceId']
-    jwt_token   = data['data']['playbackAuth']['videos'][0]['token']
+    jwt_token = data['data']['playbackAuth']['videos'][0]['token']
 
     item = api.get_brightcove_src(referenceID, jwt_token)
     item.headers = HEADERS
