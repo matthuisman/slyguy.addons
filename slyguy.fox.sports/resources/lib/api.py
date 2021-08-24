@@ -37,7 +37,7 @@ class API(object):
         return config
 
     def _check_token(self):
-        if self.logged_in and userdata.get('expires', 0) > time():
+        if self.logged_in and userdata.get('expires', 0) < time():
             if not self.check_auth(userdata.get('device_id')):
                 self.logout()
                 raise APIError(_.ERROR_REFRESH_TOKEN)
