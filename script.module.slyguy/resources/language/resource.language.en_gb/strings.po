@@ -71,6 +71,22 @@ msgctxt "#30015"
 msgid "3.0"
 msgstr ""
 
+msgctxt "#30016"
+msgid "No add-on errors found"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Add-on log errors"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Upload / share log?"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Check Kodi log for add-on errors"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

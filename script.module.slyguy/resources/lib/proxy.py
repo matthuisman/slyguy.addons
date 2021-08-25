@@ -642,8 +642,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             lines.append(line)
 
-        # Kayo bad playlist test
-        # if 'master_vid-ts-500.m3u8' in url:
+        # # bad playlist test
+        # if ADDON_DEV:
         #     self._session['count'] = self._session.get('count', 0) + 1
         #     print(self._session['count'])
         #     if self._session['count'] == 5:

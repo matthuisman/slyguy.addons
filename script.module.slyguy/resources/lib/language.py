@@ -17,5 +17,9 @@ class Language(BaseLanguage):
     HDCP_1            = 30013
     HDCP_2_2          = 30014
     HDCP_3_0          = 30015
+    NO_LOG_ERRORS     = 30016
+    LOG_ERRORS        = 30017
+    UPLOAD_LOG        = 30018
+    CHECK_LOG         = 30019
 
 _ = Language()
