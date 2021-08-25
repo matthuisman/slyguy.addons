@@ -182,15 +182,22 @@ def play(id, play_type=PLAY_FROM_LIVE, **kwargs):
     mpd_url, license, headers, from_start = api.play(id)
 
     item = plugin.Item(
-        path        = mpd_url,
+        path = mpd_url,
         inputstream = inputstream.Widevine(license_key=license),
-        headers     = headers,
+        headers = headers,
     )
 
     play_type = int(play_type)
-    if from_start and (play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
-        item.resume_from = 1
-    elif ROUTE_LIVE_TAG in kwargs:
+
+    if from_start:
+        if play_type == PLAY_FROM_START:
+            item.resume_from = 1
+        elif play_type == PLAY_FROM_ASK:
+            item.resume_from = plugin.live_or_start()
+            if item.resume_from == -1:
+                return
+
+    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
         ## Need below to seek to live over multi-periods
         item.resume_from = LIVE_HEAD
 
