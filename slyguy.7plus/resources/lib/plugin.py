@@ -5,7 +5,7 @@ from xml.sax.saxutils import escape
 import arrow
 from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, settings, userdata, signals, inputstream, mem_cache
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG
 
@@ -24,12 +24,8 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
-    folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, slug='home'))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
-    folder.add_item(label=_(_.OLYMPICS, _bold=True), path=plugin.url_for(content, slug='olympics'))
-    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-    folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(content, slug='movies'))
-    folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(content, slug='sport'))
+    _nav(folder)
+
     folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(content, slug='news'))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(content, slug='all-categories'))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
@@ -50,6 +46,22 @@ def _get_url(url):
         return url
 
     return params['channel-id']
+
+@mem_cache.cached(60*5)
+def _nav(folder):
+    replaces = {
+        'shows': plugin.url_for(shows),
+        'live-tv': plugin.url_for(live_tv),
+    }
+
+    data = api.content('nav')
+    for row in data['items']:
+        slug = row['contentLink'].lstrip('/')
+        path = replaces.get(slug, plugin.url_for(content, slug=slug))
+        folder.add_item(
+            label = _(row['title'], _bold=True),
+            path = path,
+        )
 
 @plugin.route()
 @plugin.search()
@@ -426,27 +438,3 @@ def epg(output, **kwargs):
                 ))
 
         f.write(u'</tv>')
-
-@plugin.route()
-def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
-    if not username:
-        return
-
-    userdata.set('username', username)
-
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
-
-    api.login(username, password)
-    gui.refresh()
-
-
-@plugin.route()
-def logout(**kwargs):
-    if not gui.yes_no(_.LOGOUT_YES_NO):
-        return
-
-    api.logout()
-    gui.refresh()

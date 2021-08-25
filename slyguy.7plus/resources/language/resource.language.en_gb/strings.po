@@ -1,32 +1,8 @@
 msgid ""
 msgstr ""
 
-msgctxt "#30001"
-msgid "Email Address"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
-
-msgctxt "#30003"
-msgid "Home"
-msgstr ""
-
 msgctxt "#30004"
-msgid "Live TV"
-msgstr ""
-
-msgctxt "#30005"
-msgid "Shows"
-msgstr ""
-
-msgctxt "#30006"
-msgid "Movies"
-msgstr ""
-
-msgctxt "#30007"
-msgid "Sport"
+msgid "Live"
 msgstr ""
 
 msgctxt "#30008"
@@ -38,7 +14,7 @@ msgid "Categories"
 msgstr ""
 
 msgctxt "#30010"
-msgid "Recently Added"
+msgid "Shows"
 msgstr ""
 
 msgctxt "#30011"
@@ -63,10 +39,6 @@ msgstr ""
 
 msgctxt "#30016"
 msgid "Suggested"
-msgstr ""
-
-msgctxt "#30017"
-msgid "Olympics"
 msgstr ""
 
 msgctxt "#30018"
