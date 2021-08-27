@@ -72,19 +72,19 @@ msgid "3.0"
 msgstr ""
 
 msgctxt "#30016"
-msgid "No add-on errors found"
+msgid "No SlyGuy errors found"
 msgstr ""
 
 msgctxt "#30017"
-msgid "Add-on log errors"
+msgid "SlyGuy errors"
 msgstr ""
 
 msgctxt "#30018"
-msgid "Upload / share log?"
+msgid "Upload / share Kodi log?"
 msgstr ""
 
 msgctxt "#30019"
-msgid "Check Kodi log for add-on errors"
+msgid "Check Kodi log for SlyGuy errors"
 msgstr ""
 
 ## COMMON ##
@@ -645,4 +645,25 @@ msgstr ""
 
 msgctxt "#32130"
 msgid "Play from live"
+msgstr ""
+
+msgctxt "#32131"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#32132"
+msgid "Password"
+msgstr ""
+
+msgctxt "#32133"
+msgid "Device Code"
+msgstr ""
+
+msgctxt "#32134"
+msgid "Email / Password"
+msgstr ""
+
+msgctxt "#32135"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
 msgstr ""

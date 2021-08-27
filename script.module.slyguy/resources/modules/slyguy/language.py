@@ -181,6 +181,12 @@ class BaseLanguage(object):
     NEWS_HEADING                = 32128
     VIDEO_FOLDER_CONTENT        = 32129
     PLAY_FROM_LIVE_CONTEXT      = 32130
+    ASK_EMAIL                   = 32131
+    ASK_PASSWORD                = 32132
+    DEVICE_CODE                 = 32133
+    EMAIL_PASSWORD              = 32134
+    DEVICE_LINK_STEPS           = 32135
+
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021
 

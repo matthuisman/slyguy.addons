@@ -5,7 +5,7 @@ from kodi_six import xbmc
 from slyguy import plugin, settings, gui
 from slyguy.util import get_kodi_setting, get_addon, run_plugin
 
-from .util import check_updates
+from .util import check_updates, get_slyguy_addons
 from .language import _
 
 @plugin.route('')
@@ -41,12 +41,19 @@ def check_log(**kwargs):
     with open(log_file, 'rb') as f:
         text = f.read()
 
+    addon_ids = [x.lower() for x in get_slyguy_addons()]
+
     errors = []
     text = text.decode('utf8')
     for line in text.splitlines():
-        if 'ERROR <general>:' in line or 'ERROR:' in line:
-            if re.search(': [^ :]+ -', line):
-                errors.append(line.strip())
+        match = None
+        if 'ERROR <general>:' in line: #Kodi 19+
+            match = re.search('ERROR <general>: ([^ :-]+?) -', line)
+        elif 'ERROR:' in line: #Kodi 18
+            match = re.search('ERROR: ([^ :-]+?) -', line)
+
+        if match and match.group(1) in addon_ids:
+            errors.append(line.strip())
 
     if not errors:
         gui.ok(_.NO_LOG_ERRORS)

@@ -10,6 +10,9 @@ from slyguy.util import kodi_rpc, get_addon
 
 from .constants import *
 
+def get_slyguy_addons():
+    return Session(timeout=15).gz_json(ADDONS_URL)
+
 def check_updates(force=False):
     _time = int(time())
     if not force and _time < settings.getInt('_last_updates_check', 0) + UPDATES_CHECK_TIME:
@@ -17,15 +20,14 @@ def check_updates(force=False):
 
     settings.setInt('_last_updates_check', _time)
 
-    session = Session(timeout=15)
-    new_md5 = session.get(ADDONS_MD5).text.split(' ')[0]
+    new_md5 = Session(timeout=15).get(ADDONS_MD5).text.split(' ')[0]
     if not force and new_md5 == settings.get('addon_md5'):
         return 0
 
     settings.set('_addon_md5', new_md5)
 
     updates = []
-    slyguy_addons = session.gz_json(ADDONS_URL)
+    slyguy_addons = get_slyguy_addons()
     slyguy_installed = [x['addonid'] for x in kodi_rpc('Addons.GetAddons', {'installed': True, 'enabled': True})['addons'] if x['addonid'] in slyguy_addons]
 
     for addon_id in slyguy_installed:
