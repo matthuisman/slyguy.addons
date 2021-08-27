@@ -646,15 +646,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         # if ADDON_DEV:
         #     self._session['count'] = self._session.get('count', 0) + 1
         #     print(self._session['count'])
-        #     if self._session['count'] == 5:
-        #         self._session['count'] = 0
-        #         lines = lines[:len(lines)-500]
+        #     if self._session['count'] >= 5:
+        #         if self._session['count'] == 6:
+        #             self._session['count'] = 0
+        #         lines = lines[:int(len(lines)/2)]
 
         self._session['m3u8_last_lines'] = self._session.get('m3u8_last_lines', {})
         if url in self._session['m3u8_last_lines'] and self._session['m3u8_last_lines'][url] not in lines:
-            self._session['m3u8_last_lines'].pop(url)
-            xbmc.sleep(500)
-            raise Exception('Invalid M3U8 refresh. Could not find previous last segment in latest playlist')
+            raise Exception('Invalid M3U8 refresh. Could not find previous last good segment in playlist')
 
         self._session['m3u8_last_lines'][url] = lines[-1]
 
