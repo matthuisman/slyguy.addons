@@ -72,26 +72,17 @@ def login(**kwargs):
     options = [[_.EMAIL_PASSWORD, _email_password]]
 
     if config.has_device_link():
-        options.append([_.DEVICE_LINK, _device_link])
+        options.append([_.DEVICE_CODE, _device_link])
 
     if config.has_mvpd():
         options.append([_.PARTNER_LOGIN, _partner_login])
 
     if len(options) == 1:
         result = options[0][1]()
-    elif len(options) == 2:
-        if gui.yes_no(_.LOGIN_WITH, yeslabel=options[1][0], nolabel=options[0][0]):
-            result = options[1][1]()
-        else:
-            result = options[0][1]()
     else:
-        index = gui.select(_.LOGIN_WITH, options=[x[0] for x in options])
-        if index == -1:
+        index = gui.context_menu([x[0] for x in options])
+        if index == -1 or not options[index][1]():
             return
-        result = options[index][1]()
-
-    if not result:
-        return
 
     config.save()
     if config.has_profiles():
@@ -131,7 +122,7 @@ def _partner_login():
                 return True
 
 def _email_password():
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -154,7 +145,7 @@ def _device_link():
     device_token = data['deviceToken']
     code = data['activationCode']
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=config.device_link_url, code=code), heading=_.DEVICE_LINK) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=config.device_link_url, code=code), heading=_.DEVICE_CODE) as progress:
         while (time.time() - start) < max_time:
             for i in range(poll_time):
                 if progress.iscanceled() or monitor.waitForAbort(1):

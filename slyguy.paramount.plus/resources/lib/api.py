@@ -146,6 +146,7 @@ class API(object):
 
     def set_profile(self, profile_id):
         self._set_profile(profile_id)
+        self._config.refresh()
         mem_cache.empty()
 
     def _set_profile(self, profile_id):
