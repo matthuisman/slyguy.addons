@@ -28,7 +28,7 @@ class Language(BaseLanguage):
     AC3_ENABLED          = 30025
     PARTNER_LOGIN        = 30026
     SELECT_PARTNER       = 30027
-
     IGNORE_SUBS          = 30028
+    REFRESH_TOKEN_ERROR  = 30029
 
 _ = Language()

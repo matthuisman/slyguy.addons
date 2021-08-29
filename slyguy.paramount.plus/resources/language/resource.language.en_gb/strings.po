@@ -114,6 +114,12 @@ msgctxt "#30028"
 msgid "Ignore Subtitles"
 msgstr ""
 
+msgctxt "#30029"
+msgid "Failed to refresh auth token\n"
+"Check your subscription is still valid\n"
+"Then try logout and login again"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

@@ -61,7 +61,11 @@ class API(object):
             return
 
         log.debug('Refreshing token')
-        self._set_profile(userdata.get('profile_id'))
+        try:
+            self._set_profile(userdata.get('profile_id'))
+        except Exception as e:
+            log.exception(e)
+            raise APIError(_.REFRESH_TOKEN_ERROR)
         self._config.refresh()
 
     def login(self, username, password):
@@ -168,6 +172,7 @@ class API(object):
 
     @mem_cache.cached(60*10)
     def carousel(self, url, params=None):
+        self._refresh_token()
         params = params or {}
         params.update({
             '_clientRegion': self._config.country_code,
@@ -182,6 +187,7 @@ class API(object):
 
     @mem_cache.cached(60*10)
     def featured(self):
+        self._refresh_token()
         params = {
             'minProximity': 1,
             'minCarouselItems':5,
@@ -192,10 +198,12 @@ class API(object):
 
     @mem_cache.cached(60*10)
     def trending_movies(self):
+        self._refresh_token()
         return self._session.get('/v3.0/androidphone/movies/trending.json', params=self._params()).json()
 
     @mem_cache.cached(60*10)
     def movies(self, genre=None, num_results=12, page=1):
+        self._refresh_token()
         params = {
             'includeTrailerInfo': False,
             'packageCode': 'CBS_ALL_ACCESS_AD_FREE_PACKAGE',
@@ -212,24 +220,29 @@ class API(object):
 
     @mem_cache.cached(60*10)
     def movie_genres(self):
+        self._refresh_token()
         return self._session.get('/v3.0/androidphone/movies/genre.json', params=self._params()).json()['genres']
 
     @mem_cache.cached(60*10)
     def show_groups(self):
+        self._refresh_token()
         params = {'includeAllShowGroups': 'true'}
         return self._session.get('/v2.0/androidphone/shows/groups.json', params=self._params(params)).json()['showGroups']
 
     @mem_cache.cached(60*10)
     def show_group(self, group_id):
+        self._refresh_token()
         params = {'includeAllShowGroups': 'true'}
         return self._session.get('/v2.0/androidphone/shows/group/{}.json'.format(group_id), params=self._params(params)).json()['group']
 
     @mem_cache.cached(60*10)
     def show(self, show_id):
+        self._refresh_token()
         return self._session.get('/v3.0/androidphone/shows/{}.json'.format(show_id), params=self._params()).json()
 
     @mem_cache.cached(60*10)
     def episodes(self, show_id, season):
+        self._refresh_token()
         params = {
             'platformType': 'apps',
             'rows': 1,
@@ -249,10 +262,12 @@ class API(object):
 
     @mem_cache.cached(60*10)
     def seasons(self, show_id):
+        self._refresh_token()
         return self._session.get('/v3.0/androidphone/shows/{}/video/season/availability.json'.format(show_id), params=self._params()).json()['video_available_season']['itemList']
 
     @mem_cache.cached(60*10)
     def search(self, query):
+        self._refresh_token()
         params = {
             'term': query,
             'termCount': 50,
