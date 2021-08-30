@@ -364,6 +364,16 @@ class RequestHandler(BaseHTTPRequestHandler):
             mpd.setAttribute('timeShiftBufferDepth', 'PT{}S'.format(buffer_seconds))
             log.debug('Dash Fix: {}S timeShiftBufferDepth added'.format(buffer_seconds))
 
+        if self._session.get('addon_id') == 'plugin.video.optus.sport':
+            mpd.removeAttribute('timeShiftBufferDepth')
+            log.debug('Dash Hack: Optus Sport removed timeShiftBufferDepth')
+            for elem in root.getElementsByTagName('S'):
+                r = elem.getAttribute('r')
+                if r:
+                    new_r = int(r) - 7
+                    elem.setAttribute('r', str(new_r))
+                    log.debug('Dash Hack: Set Optus Sport r value from: {} to {}'.format(r, new_r))
+
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
         audio_sets = []
