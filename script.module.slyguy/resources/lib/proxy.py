@@ -644,10 +644,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # # bad playlist test
         # if ADDON_DEV:
+        #     error_every = 5
+        #     error_repeat = 3
+
         #     self._session['count'] = self._session.get('count', 0) + 1
         #     print(self._session['count'])
-        #     if self._session['count'] >= 5:
-        #         if self._session['count'] == 6:
+        #     if self._session['count'] >= error_every:
+        #         if self._session['count'] == error_every + error_repeat - 1:
         #             self._session['count'] = 0
         #         lines = lines[:int(len(lines)/2)]
 
