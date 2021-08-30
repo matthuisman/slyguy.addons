@@ -561,8 +561,12 @@ def play(content_id=None, family_id=None, **kwargs):
             item.play_skips.append({'from': intro_start, 'to': intro_end})
 
     if milestones and settings.getBool('skip_credits', False):
-        next_start = _get_milestone(milestones, 'up_next')
-        item.play_next['time'] = next_start
+        credits_start = _get_milestone(milestones, 'up_next')
+        tag_start = _get_milestone(milestones, 'tag_start')
+        tag_end = _get_milestone(milestones, 'tag_end')
+        item.play_skips.append({'from': credits_start, 'to': tag_start})
+        if tag_end:
+            item.play_skips.append({'from': tag_end, 'to': 0})
 
     if video['programType'] == 'episode' and settings.getBool('play_next_episode', True):
         data = api.up_next(video['contentId'])
