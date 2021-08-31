@@ -1,5 +1,18 @@
+# Language file for Disney+ Video Add-on for Kodi
+# Addon Name: Disney+
+# Addon id: slyguy.disney.plys
+# Addon Provider: SlyGuy
 msgid ""
 msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: thombet\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr_ca\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30001"
 msgid "Email Address"
@@ -12,8 +25,8 @@ msgstr "Mot de passe"
 msgctxt "#30003"
 msgid "API request failed\n"
 "Server Error: {msg}"
-msgstr "La Requête API a échoué\n"
-"Erreur serveur: {msg}"
+msgstr "L'API de requête a échoué\n"
+"Erreur serveur : {msg}"
 
 msgctxt "#30004"
 msgid "Movies"
@@ -25,15 +38,23 @@ msgstr "Séries"
 
 msgctxt "#30006"
 msgid "Originals"
-msgstr "Originaux"
+msgstr "Originals"
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "Détails"
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr "Univers"
 
 msgctxt "#30010"
 msgid "Suggested"
-msgstr "Suggérés"
+msgstr "Suggestions"
 
 msgctxt "#30011"
 msgid "Featured"
-msgstr "Recommandés"
+msgstr "À la une"
 
 msgctxt "#30012"
 msgid "Season {season}"
@@ -41,33 +62,37 @@ msgstr "Saison {season}"
 
 msgctxt "#30013"
 msgid "Extras"
-msgstr "Extras"
+msgstr "Bonus"
 
 msgctxt "#30014"
 msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
 "You may experience playback issues with your current version."
-msgstr "Le support complet sur Kodi {kodi_ver} requiert au moins la version {ver_required} d'Inputstream Adaptative\n"
-"Vous pourriez expérimenter certains problèmes avec votre version actuelle."
+msgstr "Pour utiliser toutes les fonctionnalités sur Kodi {kodi_ver}, la version {ver_required} au minimum d'Inputstream Adaptative est nécessaire.\n"
+"Vous risquez d'avoir des problèmes de lecture avec votre version actuelle."
 
 msgctxt "#30015"
 msgid "Dolby Vision / 4K"
-msgstr ""
+msgstr "Dolby Vision / 4K"
 
 msgctxt "#30016"
-msgid "Sync with Disney+"
-msgstr "Sync avec Disney+"
+msgid "Disney+ Sync Playback"
+msgstr "Synchroniser la lecture avec Disney+"
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr "{name} [PIN]"
 
 msgctxt "#30018"
 msgid "HDR10 / 4K"
-msgstr ""
+msgstr "HDR10 / 4K"
 
 msgctxt "#30019"
 msgid "H.265"
-msgstr ""
+msgstr "H.265"
 
 msgctxt "#30020"
 msgid "Skip Credits"
-msgstr "Sauter le générique"
+msgstr "Passer le générique de fin"
 
 msgctxt "#30021"
 msgid "Play Next Episode"
@@ -77,13 +102,9 @@ msgctxt "#30022"
 msgid "Play Next Recommended Movie"
 msgstr "Jouer le prochain film recommandé"
 
-msgctxt "#30023"
-msgid "Play without Intro"
-msgstr "Jouer sans l'intro"
-
 msgctxt "#30024"
 msgid "Skip Intros"
-msgstr "Sauter l'intro"
+msgstr "Passer l'intro"
 
 msgctxt "#30025"
 msgid "Play from Start"
@@ -105,15 +126,14 @@ msgctxt "#30029"
 msgid "Added to Watchlist"
 msgstr "Ajouté à Ma Liste"
 
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "Entrer le code PIN de profil"
 
-
-msgctxt "#30041"
-msgid "Play with Intro"
-msgstr "Jouer avec l'intro"
 
 msgctxt "#30042"
 msgid "Continue Watching"
-msgstr "Continuer"
+msgstr "Continuer à regarder"
 
 msgctxt "#30043"
 msgid "You are not entitled to access this content.\n"
@@ -127,7 +147,17 @@ msgid "Your login details are in-correct.\n"
 msgstr "Vos informations de connexion sont incorrects.\n"
 "Veuillez les vérifier et essayer de nouveau."
 
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr "{label} [B](bientôt disponible)[/B]"
 
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr "Code PIN incorrect"
+
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr "Ma Liste Disney+"
 
 msgctxt "#30048"
 msgid "From {time:0>8}"
@@ -135,11 +165,11 @@ msgstr "Depuis {time:0>8}"
 
 msgctxt "#30049"
 msgid "{label} [B](Available {date})[/B]"
-msgstr "{label} [B](Disponible {date})[/B]"
+msgstr "{label} [B](disponible {date})[/B]"
 
 msgctxt "#30050"
-msgid "D/MM/YYYY"
-msgstr ""
+msgid "DD/MM/YYYY"
+msgstr "JJ/MM/AAAA"
 
 msgctxt "#30051"
 msgid "Could not find stream data for this content"
@@ -147,15 +177,15 @@ msgstr "Impossible de trouver les données de flux pour ce contenu"
 
 msgctxt "#30052"
 msgid "Dolby Atmos"
-msgstr ""
+msgstr "Dolby Atmos"
 
 msgctxt "#30053"
 msgid "Profile Settings"
-msgstr "Informations du compte"
+msgstr "Informations du profil"
 
 msgctxt "#30054"
 msgid "Continue Watching"
-msgstr "Continuer"
+msgstr "Continuer à regarder"
 
 ## COMMON SETTINGS ##
 
@@ -165,11 +195,11 @@ msgstr "Demander"
 
 msgctxt "#32043"
 msgid "Best"
-msgstr "Meilleur"
+msgstr "Le/La meilleur(e)"
 
 msgctxt "#32060"
 msgid "Lowest"
-msgstr "Plus bas"
+msgstr "Le/La plus bas(se)"
 
 msgctxt "#32048"
 msgid "Bypass"
@@ -177,8 +207,8 @@ msgstr "Contourner"
 
 msgctxt "#32054"
 msgid "Custom"
-msgstr "Manuel"
+msgstr "Personnalisé(e)"
 
 msgctxt "#32073"
 msgid "Disabled"
-msgstr "Désactivé"
+msgstr "Désactivé(e)"
