@@ -4,6 +4,7 @@ import re
 import time
 import json
 
+
 from xml.dom.minidom import parseString
 from collections import defaultdict
 from functools import cmp_to_key
@@ -965,6 +966,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = self._get_url()
         log.debug('POST IN: {}'.format(url))
         response = self._proxy_request('POST', url)
+
+        if response.status_code in (406,) and url == self._session.get('license_url') and not xbmc.getCondVisibility('System.Platform.Android') and gui.yes_no(_.WV_FAILED):
+            thread = threading.Thread(target=inputstream.install_widevine, kwargs={'reinstall': True})
+            thread.start()
+
         self._output_response(response)
 
 class Response(object):

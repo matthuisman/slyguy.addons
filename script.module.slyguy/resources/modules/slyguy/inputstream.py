@@ -185,6 +185,12 @@ def require_version(required_version, required=False):
 
     return ia_addon if result else False
 
+def supports_arm64tls():
+    try:
+        return int(os.environ['LIBC_WIDEVINE_PATCHLEVEL']) >= 1
+    except KeyError:
+        return False
+
 def install_widevine(reinstall=False):
     DST_FILES = {
         'Linux': 'libwidevinecdm.so',
@@ -244,6 +250,31 @@ def install_widevine(reinstall=False):
     if not wv_versions:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
+    current = None
+    tls_min_version = LooseVersion('4.10.2252.0')
+    for wv in wv_versions:
+        wv['compatible'] = True
+        wv['ver'] = LooseVersion(wv['ver'])
+        wv['label'] = str(wv['ver'])
+        wv.pop('confirm', None)
+
+        if 'arm' in arch.lower() and wv['ver'] >= tls_min_version and not supports_arm64tls():
+            wv['label'] = _(_.WV_UNSUPPORTED_OS, label=wv['label'])
+            wv['confirm'] = _.WV_UNSUPPORTED_OS_CONFIRM
+            wv['compatible'] = False
+
+        if wv.get('revoked'):
+            wv['label'] = _(_.WV_REVOKED, label=wv['label'])
+            wv['compatible'] = False
+
+        if wv['md5'] == installed:
+            current = wv
+            wv['label'] = _(_.WV_INSTALLED, label=wv['label'])
+
+    wv_versions = sorted(wv_versions, key=lambda x: (x['compatible'], x['ver']), reverse=True)
+    if wv_versions[0]['compatible']:
+        wv_versions[0]['label'] = _(_.WV_LATEST, label=wv_versions[0]['label'])
+
     latest = wv_versions[0]
     latest_known = userdata.get('_wv_latest_md5')
     userdata.set('_wv_latest_md5', latest['md5'])
@@ -251,19 +282,8 @@ def install_widevine(reinstall=False):
     if not reinstall and (installed == latest['md5'] or latest['md5'] == latest_known):
         return True
 
-    current = None
-    for wv in wv_versions:
-        wv['label'] = _(_.WV_LATEST, label=wv['ver']) if wv == latest and not wv.get('revoked') else wv['ver']
-
-        if wv.get('revoked'):
-            wv['label'] = _(_.WV_REVOKED, label=wv['label'])
-
-        if wv['md5'] == installed:
-            current = wv
-            wv['label'] = _(_.WV_INSTALLED, label=wv['label'])
-
     if installed and not current:
-        wv_versions.append({
+        wv_versions.insert(0, {
             'ver': installed[:6],
             'label': _(_.WV_UNKNOWN, version=installed[:6]),
         })
@@ -295,12 +315,7 @@ def install_widevine(reinstall=False):
         except Exception as e:
             log.debug('libnss3 failed to install')
 
-    if selected != latest:
-        message = _.WV_NOT_LATEST
-    else:
-        message = _.IA_WV_INSTALL_OK
-
-    gui.ok(_(message, version=selected['ver']))
+    gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
 
     return True
 

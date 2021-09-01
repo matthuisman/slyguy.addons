@@ -122,7 +122,7 @@ class BaseLanguage(object):
     QUALITY_FPS                 = 32069
     SELECT_WV_VERSION           = 32070
     WV_UNKNOWN                  = 32071
-    WV_NOT_LATEST               = 32072
+
     DISABLED                    = 32073
     QUALITY_HTTP_ERROR          = 32074
     IA_ANDROID_REINSTALL        = 32075
@@ -171,7 +171,7 @@ class BaseLanguage(object):
     XZ_ERROR                    = 32118
     INSTALLING_APT_IA           = 32119
     FOLDERS_FOR_SHOW_SERIES     = 32120
-    IA_TESTING_NOT_AVAILABLE    = 32121
+
     WV_REVOKED                  = 32122
     WV_REVOKED_CONFIRM          = 32123
     WV_FAILED                   = 32124
@@ -186,6 +186,8 @@ class BaseLanguage(object):
     DEVICE_CODE                 = 32133
     EMAIL_PASSWORD              = 32134
     DEVICE_LINK_STEPS           = 32135
+    WV_UNSUPPORTED_OS           = 32136
+    WV_UNSUPPORTED_OS_CONFIRM   = 32137
 
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021
