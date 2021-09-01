@@ -1,5 +1,18 @@
+# Translation file for script.module.slyguy
+# Addon Name: SlyGuy Common
+# Addon id: script.module.slyguy
+# Addon Provider: SlyGuy
 msgid ""
 msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: thombet\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr_ca\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30001"
 msgid "SlyGuy News"
@@ -93,7 +106,7 @@ msgstr ""
 
 msgctxt "#32019"
 msgid "Reset Add-on"
-msgstr ""
+msgstr "Réinitialiser l'addiciel"
 
 msgctxt "#32020"
 msgid "{addon} - Error"
@@ -101,7 +114,7 @@ msgstr ""
 
 msgctxt "#32021"
 msgid "Install Widevine CDM"
-msgstr ""
+msgstr "Installer Widevine CDM"
 
 msgctxt "#32022"
 msgid "Widevine CDM ({version}) Installed OK\n"
@@ -114,19 +127,19 @@ msgstr ""
 
 msgctxt "#32024"
 msgid "Login"
-msgstr ""
+msgstr "Connexion"
 
 msgctxt "#32025"
 msgid "Logout"
-msgstr ""
+msgstr "Deconnexion"
 
 msgctxt "#32026"
 msgid "Settings"
-msgstr ""
+msgstr "Paramètres de l'addiciel"
 
 msgctxt "#32027"
 msgid "Are you sure you want to logout?"
-msgstr ""
+msgstr "Voulez-vous vraiment vous deconnecter ?"
 
 msgctxt "#32028"
 msgid "Failed to login.\n"
@@ -135,15 +148,15 @@ msgstr ""
 
 msgctxt "#32029"
 msgid "Search"
-msgstr ""
+msgstr "Rechercher"
 
 msgctxt "#32030"
 msgid "Search: {query}"
-msgstr ""
+msgstr "Recherche : {query}"
 
 msgctxt "#32031"
 msgid "No Results"
-msgstr ""
+msgstr "Aucun résultat"
 
 msgctxt "#32032"
 msgid "{addon} ({version}) - Unexpected Error"
@@ -155,19 +168,19 @@ msgstr ""
 
 msgctxt "#32034"
 msgid "General"
-msgstr ""
+msgstr "Général"
 
 msgctxt "#32035"
 msgid "Playback"
-msgstr ""
+msgstr "Lecture"
 
 msgctxt "#32036"
 msgid "Advanced"
-msgstr ""
+msgstr "Avancé"
 
 msgctxt "#32037"
 msgid "Verify SSL Certs"
-msgstr ""
+msgstr "Vérifier les certificats SSL"
 
 msgctxt "#32038"
 msgid "Select Widevine CDM version to install"
@@ -184,7 +197,7 @@ msgstr ""
 
 msgctxt "#32041"
 msgid "No Items"
-msgstr ""
+msgstr "Aucun élément"
 
 msgctxt "#32042"
 msgid "New add-on not found.\n"
@@ -193,19 +206,19 @@ msgstr ""
 
 msgctxt "#32043"
 msgid "Best"
-msgstr ""
+msgstr "La meilleure"
 
 msgctxt "#32044"
 msgid "HTTP Timeout (seconds)"
-msgstr ""
+msgstr "Délai d'attente HTTP (secondes)"
 
 msgctxt "#32045"
 msgid "HTTP Retries"
-msgstr ""
+msgstr "Nombre d'essais HTTP"
 
 msgctxt "#32046"
 msgid "Chunksize"
-msgstr ""
+msgstr "Taille des blocs"
 
 msgctxt "#32047"
 msgid "{label} (LATEST)"
@@ -213,7 +226,7 @@ msgstr ""
 
 msgctxt "#32048"
 msgid "Bypass"
-msgstr ""
+msgstr "Contourner"
 
 msgctxt "#32049"
 msgid "\"{choose}\" item not found that matches pattern \"{pattern}\""
@@ -264,15 +277,15 @@ msgstr ""
 
 msgctxt "#32059"
 msgid "Max Bandwidth (Mbit/s)"
-msgstr ""
+msgstr "Bande passante max (Mo/s)"
 
 msgctxt "#32060"
 msgid "Lowest"
-msgstr ""
+msgstr "La plus basse"
 
 msgctxt "#32061"
 msgid "Playback Quality"
-msgstr ""
+msgstr "Qualité de la vidéo"
 
 msgctxt "#32062"
 msgid "Inputstream HLS required to watch streams From Live.\n"
@@ -345,7 +358,7 @@ msgstr ""
 
 msgctxt "#32078"
 msgid "Kiosk Mode"
-msgstr ""
+msgstr "Mode kiosque"
 
 msgctxt "#32079"
 msgid "Setup IPTV Merge"
@@ -369,7 +382,7 @@ msgstr ""
 
 msgctxt "#32084"
 msgid "Select Profile"
-msgstr ""
+msgstr "Sélectionner un profil"
 
 msgctxt "#32085"
 msgid "This service requires a {required} location\n"
@@ -378,23 +391,23 @@ msgstr ""
 
 msgctxt "#32086"
 msgid "Audio Allow List"
-msgstr ""
+msgstr "Pistes audio autorisées"
 
 msgctxt "#32087"
 msgid "Subtitle Allow List"
-msgstr ""
+msgstr "Langues de sous-titre autorisées"
 
 msgctxt "#32088"
 msgid "Include Forced Subs"
-msgstr ""
+msgstr "Inclure les sous-titres forcés"
 
 msgctxt "#32089"
 msgid "Include Non-forced Subs"
-msgstr ""
+msgstr "Inclure les sous-titres non forcés"
 
 msgctxt "#32090"
 msgid "Include Audio Description Tracks"
-msgstr ""
+msgstr "Inclure les pistes d'audiodescription"
 
 msgctxt "#32091"
 msgid "Add Profile"
@@ -450,7 +463,7 @@ msgstr ""
 
 msgctxt "#32104"
 msgid "Disable profile switching in Kids profile"
-msgstr ""
+msgstr "Ne pas autoriser les profils enfants à changer de profil"
 
 msgctxt "#32105"
 msgid "Content requires a newer version of Inputstream Adaptive\n"
@@ -469,3 +482,119 @@ msgstr ""
 msgctxt "#32108"
 msgid "Next Page ({page})"
 msgstr "Page suivante ({page})"
+
+msgctxt "#32109"
+msgid "Failed to fetch JSON data\n"
+"Make sure your IP address is allowed (not geo-blocked)\n"
+"Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
+msgstr ""
+
+msgctxt "#32110"
+msgid "URL returned no response\n"
+"Check your internet connection and make sure your IP address is allowed (not geo-blocked)"
+msgstr ""
+
+msgctxt "#32111"
+msgid "Bookmarks"
+msgstr "Favoris"
+
+msgctxt "#32112"
+msgid "Add Bookmark"
+msgstr "Ajouter aux favoris de l'addiciel"
+
+msgctxt "#32113"
+msgid "Remove Bookmark"
+msgstr "Retirer des favoris"
+
+msgctxt "#32114"
+msgid "Bookmark Added"
+msgstr "Ajouté aux favoris"
+
+msgctxt "#32115"
+msgid "Move Up"
+msgstr ""
+
+msgctxt "#32116"
+msgid "Move Down"
+msgstr ""
+
+msgctxt "#32117"
+msgid "Rename Bookmark"
+msgstr "Renommer favori"
+
+msgctxt "#32118"
+msgid "XZ extracting requires Kodi 19 or above"
+msgstr ""
+
+msgctxt "#32119"
+msgid "Attempting to install Inputstream Adaptive from apt..."
+msgstr ""
+
+msgctxt "#32120"
+msgid "Folders for TV Show and Seasons"
+msgstr "Afficher un icône dossier pour les séries et les saisons"
+
+msgctxt "#32121"
+msgid "Inputstream Adaptive Testing is not available for UWP or IOS"
+msgstr ""
+
+msgctxt "#32122"
+msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#32123"
+msgid "This Widevine versions has been revoked by Google\n"
+"It will no longer work and playback will fail\n"
+"Select Yes if you still want to proceed with installing it"
+msgstr ""
+
+msgctxt "#32124"
+msgid "Widevine license request failed\n"
+"Usual cause is Google revoking older Widevine versions\n"
+"Select Yes to check for new Widevine versions"
+msgstr ""
+
+msgctxt "#32125"
+msgid "tvOS does not support Widevine playback on Kodi"
+msgstr ""
+
+msgctxt "#32126"
+msgid "New Search"
+msgstr "Nouvelle recherche"
+
+msgctxt "#32127"
+msgid "Remove search"
+msgstr "Supprimer cette recherche"
+
+msgctxt "#32128"
+msgid "SlyGuy News"
+msgstr ""
+
+msgctxt "#32129"
+msgid "Video view for all content"
+msgstr "Forcer les types de vue vidéo pour tous les contenus"
+
+msgctxt "#32130"
+msgid "Play from live"
+msgstr ""
+
+msgctxt "#32131"
+msgid "Email Address"
+msgstr ""
+
+msgctxt "#32132"
+msgid "Password"
+msgstr ""
+
+msgctxt "#32133"
+msgid "Device Code"
+msgstr ""
+
+msgctxt "#32134"
+msgid "Email / Password"
+msgstr ""
+
+msgctxt "#32135"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
