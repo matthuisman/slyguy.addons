@@ -576,7 +576,7 @@ msgid "Bookmarks"
 msgstr ""
 
 msgctxt "#32112"
-msgid "Add Bookmark"
+msgid "Add to Bookmarks"
 msgstr ""
 
 msgctxt "#32113"
