@@ -230,9 +230,9 @@ def _process_rows(rows, content_class=None):
 
         if watchlist_enabled:
             if content_class == 'WatchlistSet':
-                item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, content_id=row['contentId']))))
+                item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, content_id=row['contentId']))))
             elif (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
-                item.context.insert(0, (_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, content_id=row['contentId'], title=item.label, icon=item.art.get('thumb')))))
+                item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, content_id=row['contentId'], title=item.label, icon=item.art.get('thumb')))))
 
         items.append(item)
 
