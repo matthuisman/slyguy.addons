@@ -30,7 +30,7 @@ def index(**kwargs):
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('sync_watchlist', False):
-            folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(collection, slug='watchlist', content_class='watchlist'))
+            folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(sets, set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE))
 
         if settings.getBool('sync_playback', False):
             folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(sets, set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE))
@@ -143,7 +143,7 @@ def _switch_profile(profile):
 
 @plugin.route()
 def collection(slug, content_class, label=None, **kwargs):
-    data = api.collection_by_slug(slug, content_class)
+    data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection')
     folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_get_art(data.get('image', []).get('fanart')))
 
     for row in data['containers']:
@@ -160,20 +160,15 @@ def collection(slug, content_class, label=None, **kwargs):
         if not set_id:
             return None
 
-        if slug == 'home' and _style == 'brandSix':
+        if slug == 'home' and _style in ('brandSix', 'ContinueWatchingSet', 'hero', 'WatchlistSet'):
             continue
 
-        if _style in ('hero', 'WatchlistSet'):
-            items = _process_rows(_set.get('items', []), content_class=_style)
-            folder.add_items(items)
+        if _style == 'BecauseYouSet':
             continue
-
-        elif _style == 'BecauseYouSet':
-            data = api.set_by_id(set_id, _style, page_size=0)
-            if not data['meta']['hits']:
-                continue
-
-            title = _get_text(data['text'], 'title', 'set')
+            # data = api.set_by_id(set_id, _style, page_size=0)
+            # if not data['meta']['hits']:
+            #     continue
+            # title = _get_text(data['text'], 'title', 'set')
         else:
             title = _get_text(_set['text'], 'title', 'set')
 

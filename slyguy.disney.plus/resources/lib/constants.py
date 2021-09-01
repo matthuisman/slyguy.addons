@@ -4,6 +4,8 @@ CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v3.0/disney-svod-3d932
 PAGE_SIZE = 15
 PAGE_SIZE_EPISODES = 30
 
+WATCHLIST_SET_ID = '6f3e3200-ce38-4865-8500-a9f463c1971e'
+WATCHLIST_SET_TYPE = 'WatchlistSet'
 CONTINUE_WATCHING_SET_ID = '76aed686-1837-49bd-b4f5-5d2a27c0c8d4'
 CONTINUE_WATCHING_SET_TYPE = 'ContinueWatchingSet'
 HUBS_SET_ID = 'e3abff32-0325-41e2-be1d-c9dc1f556f44'

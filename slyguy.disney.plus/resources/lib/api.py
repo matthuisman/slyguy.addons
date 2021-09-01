@@ -230,9 +230,9 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['deleteFromWatchlist']['href'], contentId=content_id)
         return self._json_call(endpoint)['data']['DeleteFromWatchlist']
 
-    def collection_by_slug(self, slug, content_class):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCompleteStandardCollection']['href'], contentClass=content_class, slug=slug)
-        return self._json_call(endpoint)['data']['CompleteStandardCollection']
+    def collection_by_slug(self, slug, content_class, sub_type='StandardCollection'):
+        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCollection']['href'], collectionSubType=sub_type, contentClass=content_class, slug=slug)
+        return self._json_call(endpoint)['data']['Collection']
 
     def set_by_id(self, set_id, set_type, page=1, page_size=15):
         if set_type == 'ContinueWatchingSet':
