@@ -354,7 +354,7 @@ msgid "M3U8 file does not start with #EXTM3U"
 msgstr ""
 
 msgctxt "#32058"
-msgid "{label} [B](INSTALLED)[/B]"
+msgid "{label} [INSTALLED]"
 msgstr ""
 
 msgctxt "#32059"
@@ -407,7 +407,7 @@ msgid "Available Widevine CDM Versions"
 msgstr ""
 
 msgctxt "#32071"
-msgid "Unknown {version} [B](INSTALLLED)[/B]"
+msgid "{label} (Unknown)"
 msgstr ""
 
 msgctxt "#32073"
@@ -618,8 +618,8 @@ msgstr ""
 
 msgctxt "#32123"
 msgid "This Widevine versions has been revoked by Google\n"
-"It most likely will not work and playback will fail\n"
-"Select Yes if you still want to proceed with installing it"
+"It most likely will cause playback to fail\n"
+"Select Yes to install anyway"
 msgstr ""
 
 msgctxt "#32124"
@@ -674,11 +674,11 @@ msgid "1. Go to: [B]{url}[/B]\n"
 msgstr ""
 
 msgctxt "#32136"
-msgid "{label} [COLOR orange][B](Not yet supported)[/B][/COLOR]"
+msgid "{label} [COLOR orange][B](OS Update Needed)[/B][/COLOR]"
 msgstr ""
 
 msgctxt "#32137"
-msgid "Your system does not yet support this version of Widevine\n"
+msgid "Your OS does not yet support this version of Widevine\n"
 "See [B]http://mjh.nz/widevine[/B] for more information\n"
 "Select Yes to install anyway"
 msgstr ""

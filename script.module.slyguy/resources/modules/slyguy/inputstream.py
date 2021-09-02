@@ -189,6 +189,12 @@ def supports_arm64tls():
     try:
         return int(os.environ['LIBC_WIDEVINE_PATCHLEVEL']) >= 1
     except KeyError:
+        pass
+
+    try:
+        return 'arm64tls' in subprocess.check_output(['ldd', '--version'], stderr=subprocess.STDOUT).decode('utf-8').split('\n')[0].lower()
+    except Exception as e:
+        log.exception(e)
         return False
 
 def install_widevine(reinstall=False):
@@ -213,11 +219,11 @@ def install_widevine(reinstall=False):
     if system not in DST_FILES:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
-    userdata     = Userdata(COMMON_ADDON)
-    decryptpath  = xbmc.translatePath(ia_addon.getSetting('DECRYPTERPATH') or ia_addon.getAddonInfo('profile'))
-    wv_path      = os.path.join(decryptpath, DST_FILES[system])
-    installed    = md5sum(wv_path)
-    last_check   = int(userdata.get('_wv_last_check', 0))
+    userdata = Userdata(COMMON_ADDON)
+    decryptpath = xbmc.translatePath(ia_addon.getSetting('DECRYPTERPATH') or ia_addon.getAddonInfo('profile'))
+    wv_path = os.path.join(decryptpath, DST_FILES[system])
+    installed = md5sum(wv_path)
+    last_check = int(userdata.get('_wv_last_check', 0))
 
     if not installed:
         if system == 'UWP':
@@ -251,29 +257,38 @@ def install_widevine(reinstall=False):
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
     current = None
+    latest = None
     tls_min_version = LooseVersion('4.10.2252.0')
     for wv in wv_versions:
         wv['compatible'] = True
-        wv['ver'] = LooseVersion(wv['ver'])
         wv['label'] = str(wv['ver'])
-        wv.pop('confirm', None)
+        wv['ver'] = LooseVersion(wv['ver'])
+        wv['confirm'] = wv.get('confirm', None)
+        wv['notes'] = wv.get('notes', None)
 
         if 'arm' in arch.lower() and wv['ver'] >= tls_min_version and not supports_arm64tls():
-            wv['label'] = _(_.WV_UNSUPPORTED_OS, label=wv['label'])
-            wv['confirm'] = _.WV_UNSUPPORTED_OS_CONFIRM
             wv['compatible'] = False
+            wv['label'] = _(_.WV_UNSUPPORTED_OS, label=wv['label'])
+            if not wv['confirm']:
+                wv['confirm'] = _.WV_UNSUPPORTED_OS_CONFIRM
 
         if wv.get('revoked'):
-            wv['label'] = _(_.WV_REVOKED, label=wv['label'])
             wv['compatible'] = False
+            wv['label'] = _(_.WV_REVOKED, label=wv['label'])
+            if not wv['confirm']:
+                wv['confirm'] = _.WV_REVOKED_CONFIRM
+
+        if not latest:
+            latest = wv
+            if wv['compatible']:
+                wv['label'] = _(_.WV_LATEST, label=wv['label'])
 
         if wv['md5'] == installed:
             current = wv
             wv['label'] = _(_.WV_INSTALLED, label=wv['label'])
 
-    wv_versions = sorted(wv_versions, key=lambda x: (x['compatible'], x['ver']), reverse=True)
-    if wv_versions[0]['compatible']:
-        wv_versions[0]['label'] = _(_.WV_LATEST, label=wv_versions[0]['label'])
+        if wv['notes']:
+            wv['label'] = u'{}\n{}'.format(wv['label'], wv['notes'])
 
     latest = wv_versions[0]
     latest_known = userdata.get('_wv_latest_md5')
@@ -285,7 +300,7 @@ def install_widevine(reinstall=False):
     if installed and not current:
         wv_versions.insert(0, {
             'ver': installed[:6],
-            'label': _(_.WV_UNKNOWN, version=installed[:6]),
+            'label': _(_.WV_INSTALLED, label=_(_.WV_UNKNOWN, label=str(installed[:6]))),
         })
 
     while True:
@@ -294,11 +309,7 @@ def install_widevine(reinstall=False):
             return False
 
         selected = wv_versions[index]
-
-        if selected.get('revoked') and not gui.yes_no(_.WV_REVOKED_CONFIRM):
-            continue
-
-        if 'confirm' in selected and not gui.yes_no(selected['confirm']):
+        if selected.get('confirm') and not gui.yes_no(selected['confirm']):
             continue
 
         if 'src' in selected:

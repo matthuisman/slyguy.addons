@@ -318,7 +318,7 @@ msgid "M3U8 file does not start with #EXTM3U"
 msgstr "M3U8-Datei beginnt nicht mit #EXTM3U"
 
 msgctxt "#32058"
-msgid "{label} [B](INSTALLED)[/B]"
+msgid "{label} [INSTALLED]"
 msgstr ""
 
 msgctxt "#32059"
@@ -372,8 +372,8 @@ msgid "Available Widevine CDM Versions"
 msgstr "Verfügbare Widevine CDM-Versionen"
 
 msgctxt "#32071"
-msgid "Unknown {version} (INSTALLLED)"
-msgstr "Unbekannt {version} (installiert)"
+msgid "{label} (Unknown)"
+msgstr "{label} (Unbekannt)"
 
 msgctxt "#32072"
 msgid ""

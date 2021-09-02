@@ -278,8 +278,8 @@ msgid "M3U8 file does not start with #EXTM3U"
 msgstr "M3U8-filen starter ikke med #EXTM3U"
 
 msgctxt "#32058"
-msgid "{label} [B](INSTALLED)[/B]"
-msgstr "{label} [B](INNSTALLERT)[/B]"
+msgid "{label} [INSTALLED]"
+msgstr "{label} [INNSTALLERT]"
 
 msgctxt "#32059"
 msgid "Max Bandwidth (Mbit/s)"
@@ -332,8 +332,8 @@ msgid "Available Widevine CDM Versions"
 msgstr "Tilgjengelige Widevine CDM-versjoner"
 
 msgctxt "#32071"
-msgid "Unknown {version} (INSTALLLED)"
-msgstr "Ukjent {version} (INSTALLLED)"
+msgid "{label} (Unknown)"
+msgstr "{label} (Ukjent)"
 
 msgctxt "#32072"
 msgid "Widevine CDM ({version}) Installed\n"
