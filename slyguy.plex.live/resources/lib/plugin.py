@@ -135,10 +135,12 @@ def play(id, **kwargs):
     headers = data['headers']
     headers.update(region.get('headers', {}))
 
-    if not channel.get('url'):
-        channel['url'] = Session().head(PLAY_URL.format(id=id), headers=headers).headers.get('location')
+    url = channel.get('url')
+    resp = Session().head(PLAY_URL.format(id=id), headers=headers, allow_redirects=True)
+    if resp.ok:
+        url = resp.url
 
-    if not channel['url']:
+    if not url:
         raise PluginError(_.NO_VIDEO_FOUND)
 
     return plugin.Item(
@@ -147,7 +149,7 @@ def play(id, **kwargs):
         art = {'thumb': channel['logo']},
         inputstream = inputstream.HLS(live=True),
         headers = data['headers'],
-        path = channel['url'],
+        path = url,
     )
 
 @plugin.route()
