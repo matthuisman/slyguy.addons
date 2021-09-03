@@ -17,30 +17,34 @@ class Player(xbmc.Player):
 
     def playback(self):
         play_time = 0
-        last_play_time = 0
+        last_play_time = int(self.getTime())
         last_callback = None
 
         while not monitor.waitForAbort(1) and self.isPlaying() and self.getPlayingFile() == self._playing_file:
             play_time = int(self.getTime())
 
-            if self._play_skips:
-                play_skips = []
-                for row in self._play_skips:
-                    if play_time >= row['to']:
-                        continue
+            diff = abs(play_time - last_play_time)
+            last_play_time = play_time
 
-                    if play_time >= row['from']:
-                        self.seekTime(row['to'])
-                    else:
-                        play_skips.append(row)
+            if diff > 5:
+                #we are jumping around
+                continue
 
-                self._play_skips = play_skips
+            play_skips = []
+            for row in self._play_skips:
+                if play_time >= row['to']:
+                    continue
 
+                diff = play_time - row['from']
+                if diff < 0:
+                    play_skips.append(row)
+                elif diff <= 5:
+                    self.seekTime(row['to'])
+            self._play_skips = play_skips
+
+            diff = 0
             if last_callback is not None:
-                if play_time > last_callback:
-                    diff = play_time - last_callback
-                else:
-                    diff = last_callback - play_time
+                diff = abs(play_time - last_callback)
 
             if self._callback and self._callback['type'] == 'interval' and last_callback != play_time and (last_callback is None or diff >= self._callback['interval']):
                 callback = add_url_args(self._callback['callback'], _time=play_time)
