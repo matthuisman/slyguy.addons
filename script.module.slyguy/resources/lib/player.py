@@ -26,10 +26,14 @@ class Player(xbmc.Player):
             if self._play_skips:
                 play_skips = []
                 for row in self._play_skips:
-                    if play_time >= row['from'] and play_time < row['to']:
+                    if play_time >= row['to']:
+                        continue
+
+                    if play_time >= row['from']:
                         self.seekTime(row['to'])
-                    elif play_time < row['to']:
+                    else:
                         play_skips.append(row)
+
                 self._play_skips = play_skips
 
             if last_callback is not None:

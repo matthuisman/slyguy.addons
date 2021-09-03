@@ -81,7 +81,7 @@ def build_url(_url, _addon_id=ADDON_ID, **kwargs):
     kwargs[ROUTE_TAG] = _url
 
     is_live = kwargs.pop(ROUTE_LIVE_TAG, False)
-    no_resume = is_live or kwargs.pop(NO_RESUME_TAG, False)
+    no_resume = kwargs.pop(NO_RESUME_TAG, False)
 
     params = []
     for k in sorted(kwargs):
@@ -94,7 +94,10 @@ def build_url(_url, _addon_id=ADDON_ID, **kwargs):
     if is_live:
         params.append((ROUTE_LIVE_TAG, '1'))
 
-    return 'plugin://{0}/?{1}{2}'.format(_addon_id, urlencode(params), NO_RESUME_SUFFIX if no_resume else '')
+    if is_live or no_resume:
+        params.append((NO_RESUME_TAG, NO_RESUME_SUFFIX))
+
+    return 'plugin://{}/?{}'.format(_addon_id, urlencode(params))
 
 def redirect(url):
     log.debug('Redirect -> {}'.format(url))
