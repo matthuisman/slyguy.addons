@@ -52,12 +52,13 @@ def index(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
-        result = _device_link()
-    else:
-        result = _email_password()
+    options = [
+        [_.DEVICE_CODE, _device_code],
+       # [_.EMAIL_PASSWORD, _email_password],
+    ]
 
-    if not result:
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
         return
 
     _select_profile()
@@ -65,7 +66,7 @@ def login(**kwargs):
 
 @plugin.route()
 def _email_password(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -78,12 +79,12 @@ def _email_password(**kwargs):
     api.login(username=username, password=password)
     return True
 
-def _device_link():
+def _device_code():
     start = time.time()
     code, url = api.device_code()
     timeout = 600
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=ACTIVATE_URL, code=code), heading=_.DEVICE_LINK) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=ACTIVATE_URL, code=code), heading=_.DEVICE_CODE) as progress:
         for i in range(timeout):
             if progress.iscanceled() or monitor.waitForAbort(1):
                 return

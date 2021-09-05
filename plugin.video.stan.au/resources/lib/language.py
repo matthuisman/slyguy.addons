@@ -1,14 +1,8 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-    DEVICE_LINK_STEPS     = 30000
-    ASK_USERNAME          = 30001
-    ASK_PASSWORD          = 30002
     LOGIN_ERROR           = 30003
-    LOGIN_WITH            = 30004
     GEO_ERROR             = 30005
-    DEVICE_LINK           = 30006
-    EMAIL_PASSWORD        = 30007
     ENABLE_H265           = 30008
     TV                    = 30009
     MOVIES                = 30010

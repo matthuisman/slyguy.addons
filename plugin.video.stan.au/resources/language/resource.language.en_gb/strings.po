@@ -1,38 +1,13 @@
 msgid ""
 msgstr ""
 
-msgctxt "#30000"
-msgid "1. Go to: [B]{url}[/B]\n"
-"2. Enter code: [B]{code}[/B]"
-msgstr ""
-
-msgctxt "#30001"
-msgid "Email Address"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
-
 msgctxt "#30003"
 msgid "Failed to login / refresh token.\n"
 "Message: {msg}"
 msgstr ""
 
-msgctxt "#30004"
-msgid "Login with"
-msgstr ""
-
 msgctxt "#30005"
 msgid "Stan detected your not using an Australian IP address or may be using a VPN"
-msgstr ""
-
-msgctxt "#30006"
-msgid "Device Link"
-msgstr ""
-
-msgctxt "#30007"
-msgid "Email / Password"
 msgstr ""
 
 msgctxt "#30008"
