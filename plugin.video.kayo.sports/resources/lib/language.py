@@ -1,8 +1,6 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-    ASK_USERNAME          = 30001
-    ASK_PASSWORD          = 30002
     LOGIN_ERROR           = 30003
     ASSET_ERROR           = 30004
     SELECT_PROFILE        = 30005
@@ -15,6 +13,7 @@ class Language(BaseLanguage):
     LIVE_PANEL_ID_MISSING = 30012
     SELECT_PROFILE        = 30013
     SHOW_HERO             = 30014
+    SHOW_EPG              = 30015
 
     HLS_REQUIRED          = 30025
 
@@ -23,11 +22,6 @@ class Language(BaseLanguage):
     LIVE_CHANNELS         = 30029
 
     PROFILE_ACTIVATED     = 30031
-
-    LOGIN_WITH            = 30042
-    DEVICE_LINK           = 30043
-    EMAIL_PASSWORD        = 30044
-    DEVICE_LINK_STEPS     = 30045
 
     REFRESH_TOKEN_ERROR   = 30047
     PREFER_CDN            = 30048

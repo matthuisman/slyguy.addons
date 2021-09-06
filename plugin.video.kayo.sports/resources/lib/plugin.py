@@ -47,16 +47,46 @@ def home(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
-        result = _device_link()
-    else:
-        result = _email_password()
+    options = [
+        [_.DEVICE_CODE, _device_code],
+        [_.EMAIL_PASSWORD, _email_password],
+    ]
 
-    if not result:
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
         return
 
     _select_profile()
     gui.refresh()
+
+def _device_code():
+    start = time.time()
+    data = api.device_code()
+    monitor = xbmc.Monitor()
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_CODE) as progress:
+        while (time.time() - start) < data['expires_in']:
+            for i in range(data['interval']):
+                if progress.iscanceled() or monitor.waitForAbort(1):
+                    return
+
+                progress.update(int(((time.time() - start) / data['expires_in']) * 100))
+
+            if api.device_login(data['device_code']):
+                return True
+
+def _email_password():
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+    if not username:
+        return
+
+    userdata.set('username', username)
+    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+    if not password:
+        return
+
+    api.login(username=username, password=password)
+    return True
 
 def _live_channels():
     panel_id = None
@@ -70,15 +100,18 @@ def _live_channels():
 
     channels = []
     data = api.panel(panel_id)
-    chnos = api.channel_numbers()
+    live_data = api.channel_data()
 
     for row in data.get('contents', []):
         if row['contentType'] != 'video':
             continue
 
-        row['data']['chno'] = chnos.get(row['data']['asset']['id'], None)
-        if row['data']['chno']:
-            row['data']['chno'] = int(row['data']['chno'])
+        row['data']['chno'] = None
+        row['data']['epg'] = []
+        if row['data']['asset']['id'] in live_data:
+            row['data']['chno'] = live_data[row['data']['asset']['id']]['chno']
+            row['data']['epg'] = live_data[row['data']['asset']['id']]['epg']
+
         channels.append(row['data'])
 
     return sorted(channels, key=lambda x: (x is None, x['chno']))
@@ -88,44 +121,38 @@ def live(**kwargs):
     folder = plugin.Folder(_.LIVE_CHANNELS)
     show_chnos = settings.getBool('show_chnos', True)
 
-    for row in _live_channels():
-        item = _parse_video(row)
+    if settings.getBool('show_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        epg_count = None
 
-        if row['chno'] and show_chnos:
-            item.label = _(_.LIVE_CHNO, chno=row['chno'], label=item.label)
+    for channel in _live_channels():
+        item = _parse_video(channel)
+
+        if channel['chno'] and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
+
+        plot = u''
+        if epg_count:
+            count = 0
+            for index, row in enumerate(channel.get('epg', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['epg'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if plot:
+            item.info['plot'] = plot
 
         folder.add_items(item)
 
     return folder
-
-def _device_link():
-    start = time.time()
-    data = api.device_code()
-    monitor = xbmc.Monitor()
-
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_LINK) as progress:
-        while (time.time() - start) < data['expires_in']:
-            for i in range(data['interval']):
-                if progress.iscanceled() or monitor.waitForAbort(1):
-                    return
-
-                progress.update(int(((time.time() - start) / data['expires_in']) * 100))
-
-            if api.device_login(data['device_code']):
-                return True
-
-def _email_password():
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
-    if not username:
-        return
-
-    userdata.set('username', username)
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
-
-    api.login(username=username, password=password)
-    return True
 
 @plugin.route()
 @plugin.login_required()

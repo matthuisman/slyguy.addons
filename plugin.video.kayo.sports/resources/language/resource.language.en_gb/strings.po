@@ -1,14 +1,6 @@
 msgid ""
 msgstr ""
 
-msgctxt "#30001"
-msgid "Email Address"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
-
 msgctxt "#30003"
 msgid "Failed to login.\n"
 "Server Message: {msg}"
@@ -59,6 +51,10 @@ msgctxt "#30014"
 msgid "Show Hero Contents"
 msgstr ""
 
+msgctxt "#30015"
+msgid "Show Mini EPG"
+msgstr ""
+
 msgctxt "#30025"
 msgid "Inputstream HLS is required to watch this content\n"
 "Check Inputstream Adaptive is installed and enabled"
@@ -78,23 +74,6 @@ msgstr ""
 
 msgctxt "#30031"
 msgid "Profile Activated"
-msgstr ""
-
-msgctxt "#30042"
-msgid "Login with"
-msgstr ""
-
-msgctxt "#30043"
-msgid "Device Link"
-msgstr ""
-
-msgctxt "#30044"
-msgid "Email / Password"
-msgstr ""
-
-msgctxt "#30045"
-msgid "1. Go to: [B]{url}[/B]\n"
-"2. Enter code: [B]{code}[/B]"
 msgstr ""
 
 msgctxt "#30047"

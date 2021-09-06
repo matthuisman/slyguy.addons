@@ -151,9 +151,9 @@ class API(object):
 
         return self._session.get('{host}/content/types/landing/names/{name}'.format(host=self._config()['endPoints']['contentAPI'], name=name), params=params, headers=self._auth_header).json()
 
-    def channel_numbers(self):
+    def channel_data(self):
         try:
-            return self._session.get(CHNO_URL).json()
+            return self._session.get(LIVE_DATA_URL).json()
         except:
             return {}
 
