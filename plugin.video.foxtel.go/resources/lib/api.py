@@ -4,7 +4,7 @@ import uuid
 import arrow
 import pyaes
 
-from slyguy import userdata, gui, settings
+from slyguy import userdata, gui, settings, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
@@ -274,21 +274,12 @@ class API(object):
 
         return self._session.get('/userCatalog.class.api.php/getCarousel/{site_id}/{catalog_name}'.format(site_id=site_id, catalog_name=catalog_name), params=params).json()
 
-    def epg(self, channel_codes, starttime=None, endtime=None):
-        now = arrow.utcnow()
-
-        starttime = starttime or now.shift(hours=-2)
-        endtime = endtime or starttime.shift(days=1)
-
-        params = {
-            'filter_starttime': starttime.timestamp,
-            'filter_endtime': endtime.timestamp,
-            'filter_channels': ','.join(channel_codes),
-            'filter_fields': 'EventTitle,ShortSynopsis,StartTimeUTC,EndTimeUTC,RawStartTimeUTC,RawEndTimeUTC,ProgramTitle,EpisodeTitle,Genre,HighDefinition,ClosedCaption,EpisodeNumber,SeriesNumber,ParentalRating,MergedShortSynopsis',
-            'format': 'json',
-        }
-
-        return self._session.get(EPG_URL, params=params).json()
+    @mem_cache.cached(60*5)
+    def channel_data(self):
+        try:
+            return self._session.get(LIVE_DATA_URL).json()
+        except:
+            return {}
 
     def search(self, query, _type='VOD'):
         params = {

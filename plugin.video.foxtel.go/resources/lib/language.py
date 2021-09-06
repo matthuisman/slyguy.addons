@@ -1,8 +1,6 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-    ASK_USERNAME       = 30001
-    ASK_PASSWORD       = 30002
     LOGIN_ERROR        = 30003
     DEREGISTER_CHOOSE  = 30004
     LIVE_TV            = 30005
@@ -29,5 +27,6 @@ class Language(BaseLanguage):
     SEARCH_FOR         = 30026
     CONTINUE_WATCHING  = 30027
     WATCHLIST          = 30028
+    SHOW_EPG           = 30029
 
 _ = Language()

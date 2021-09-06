@@ -5,6 +5,7 @@
         <setting label="30021" type="text" id="device_name" default="Kodi-{mac_address} on {system}"/>
         <setting label="30022" type="text" id="device_id" default="{username}{mac_address}"/>
         <setting label="30008" type="bool" id="save_password" default="false"/>
+        <setting label="30029" id="show_epg" type="bool" default="true"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

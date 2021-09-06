@@ -13,6 +13,7 @@ SEARCH_URL = 'https://foxtel-prod-elb.digitalsmiths.net/sd/foxtel/taps/assets/se
 EPG_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/go-mobile-440/api/epg.class.api.php/getChannelListings/' + LIVE_SITEID
 PLAY_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/now-box-140/api/playback.class.api.php/{endpoint}/{site_id}/1/{id}'
 LICENSE_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/now-mobile-140/api/playback.class.api.php/{endpoint}/{site_id}/1/{id}'
+LIVE_DATA_URL = 'https://i.mjh.nz/Foxtel/app.json'
 
 AES_IV = 'b2d40461b54d81c8c6df546051370328'
 PLT_DEVICE = 'andr_phone'

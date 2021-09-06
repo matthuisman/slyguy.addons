@@ -354,8 +354,13 @@ def live_tv(_filter=None, **kwargs):
     else:
         entitlements = _get_entitlements()
 
+        show_epg = settings.getBool('show_epg', True)
+        if show_epg:
+            now = arrow.utcnow()
+            channel_data = api.channel_data()
+
         channels = []
-        codes    = []
+        codes = []
         for elem in sorted(data['liveChannel'], key=lambda e: e['channelId']):
             elem['locked'] = entitlements and elem['channelCode'] not in entitlements
 
@@ -365,28 +370,20 @@ def live_tv(_filter=None, **kwargs):
                 channels.append(elem)
                 codes.append(elem['channelCode'])
 
-        epg = {}
-        try:
-            for row in api.epg(codes):
-                epg[row['SourceChannel']['ChannelTag']] = row['ChannelSchedule']['EventList']
-        except Exception as e:
-            log.debug('failed to get EPG')
-
         for elem in channels:
             plot = u''
-            now = arrow.utcnow()
             count = 0
+            if show_epg and elem['channelCode'] in channel_data:
+                for index, row in enumerate(channel_data[elem['channelCode']].get('epg', [])):
+                    start = arrow.get(row[0])
+                    try: stop = arrow.get(channel['epg'][index+1][0])
+                    except: stop = start.shift(hours=1)
 
-            for event in epg.get(elem['channelCode'], []):
-                start = arrow.get(int(event['StartTimeUTC']))
-                end   = arrow.get(int(event['EndTimeUTC']))
-                if (now > start and now < end) or start > now:
-                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), event['EventTitle'])
-                    count += 1
-
-                    if count == EPG_EVENTS_COUNT:
-                        plot = plot.strip('\n')
-                        break
+                    if (now > start and now < stop) or start > now:
+                        plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                        count += 1
+                        if count == EPG_EVENTS_COUNT:
+                            break
 
             label = _(_.CHANNEL, channel=elem['channelId'], title=elem['title'])
             if elem['locked']:
@@ -394,11 +391,11 @@ def live_tv(_filter=None, **kwargs):
 
             folder.add_item(
                 label = label,
-                art   = {'thumb': _image('{id}:{site_id}:CHANNEL:IMAGE'.format(id=elem['id'], site_id=LIVE_SITEID, name=elem['title']), fragment=elem['title'])},
-                info  = {
+                art = {'thumb': _image('{id}:{site_id}:CHANNEL:IMAGE'.format(id=elem['id'], site_id=LIVE_SITEID, name=elem['title']), fragment=elem['title'])},
+                info = {
                     'plot': plot,
                 },
-                path  = plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True),
+                path = plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True),
                 playable = True,
             )
 
@@ -431,7 +428,7 @@ def _play(media_type, id):
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
