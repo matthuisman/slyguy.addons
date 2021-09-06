@@ -1,6 +1,11 @@
 import re
+import sys
 
-from six.moves.html_parser import HTMLParser
+if sys.version_info >= (3, 8):
+    import html
+else:
+    from six.moves.html_parser import HTMLParser
+    html = HTMLParser()
 
 from slyguy import plugin, gui, settings, userdata, inputstream, signals
 from slyguy.log import log
@@ -27,7 +32,7 @@ def home(**kwargs):
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.MY_COURSES, _bold=True), path=plugin.url_for(my_courses))
-        folder.add_item(label=_(_.SEARCH, _bold=True),      path=plugin.url_for(search))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -40,7 +45,7 @@ def home(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -62,40 +67,23 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
-def search(query=None, page=1, **kwargs):
-    page = int(page)
-    if not query:
-        query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
-        if not query:
-            return
-
-        userdata.set('search', query)
-
-    folder = plugin.Folder(_(_.SEARCH_FOR, query=query))
-    data   = api.my_courses(page=page, query=query)
-    items  = _process_courses(data['results'])
-    folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, _bold=True),
-            path  = plugin.url_for(search, query=query, page=page+1),
-        )
-
-    return folder
+@plugin.search()
+def search(query, page, **kwargs):
+    data = api.my_courses(page=page, query=query)
+    return _process_courses(data['results']), data['next']
 
 @plugin.route()
 def my_courses(page=1, **kwargs):
-    page   = int(page)
+    page = int(page)
     folder = plugin.Folder(_.MY_COURSES)
-    data   = api.my_courses(page=page)
-    items  = _process_courses(data['results'])
+    data = api.my_courses(page=page)
+    items = _process_courses(data['results'])
     folder.add_items(items)
 
     if data['next']:
         folder.add_item(
             label = _(_.NEXT_PAGE, _bold=True),
-            path  = plugin.url_for(my_courses, page=page+1),
+            path = plugin.url_for(my_courses, page=page+1),
         )
 
     return folder
@@ -104,17 +92,17 @@ def _process_courses(rows):
     items = []
     for row in rows:
         plot = _(_.COURSE_INFO,
-            title            = row['headline'],
-            num_lectures     = row['num_published_lectures'],
+            title = row['headline'],
+            num_lectures = row['num_published_lectures'],
             percent_complete = row['completion_ratio'],
-            length           = row['content_info'],
+            length = row['content_info'],
         )
 
         item = plugin.Item(
-            label     = row['title'],
-            path      = plugin.url_for(chapters, course_id=row['id'], title=row['title']),
-            art       = {'thumb': row['image_480x270']},
-            info      = {'plot': plot},
+            label = row['title'],
+            path = plugin.url_for(chapters, course_id=row['id'], title=row['title']),
+            art = {'thumb': row['image_480x270']},
+            info = {'plot': plot},
             is_folder = True,
         )
 
@@ -124,30 +112,30 @@ def _process_courses(rows):
 
 @plugin.route()
 def chapters(course_id, title, page=1, **kwargs):
-    page   = int(page)
+    page = int(page)
     folder = plugin.Folder(title)
 
     rows, next_page = api.chapters(course_id, page=page)
 
     for row in sorted(rows, key=lambda r: r['object_index']):
         folder.add_item(
-            label     = _(_.SECTION_LABEL, section_number=row['object_index'], section_title=row['title']),
-            path      = plugin.url_for(lectures, course_id=course_id, chapter_id=row['id'], title=title),
-            art       = {'thumb': row['course']['image_480x270']},
-            info      = {'plot': strip_tags(row['description'])},
+            label = _(_.SECTION_LABEL, section_number=row['object_index'], section_title=row['title']),
+            path = plugin.url_for(lectures, course_id=course_id, chapter_id=row['id'], title=title),
+            art = {'thumb': row['course']['image_480x270']},
+            info = {'plot': strip_tags(row['description'])},
         )
 
     if next_page:
         folder.add_item(
             label = _(_.NEXT_PAGE, _bold=True),
-            path  = plugin.url_for(chapters, course_id=course_id, title=title, page=page+1),
+            path = plugin.url_for(chapters, course_id=course_id, title=title, page=page+1),
         )
 
     return folder
 
 @plugin.route()
 def lectures(course_id, chapter_id, title, page=1, **kwargs):
-    page    = int(page)
+    page = int(page)
     folder = plugin.Folder(title)
 
     rows, next_page = api.lectures(course_id, chapter_id, page=page)
@@ -155,9 +143,9 @@ def lectures(course_id, chapter_id, title, page=1, **kwargs):
     for row in rows:
         folder.add_item(
             label = row['title'],
-            path  = plugin.url_for(play, asset_id=row['asset']['id']),
-            art   = {'thumb': row['course']['image_480x270']},
-            info  = {
+            path = plugin.url_for(play, asset_id=row['asset']['id']),
+            art = {'thumb': row['course']['image_480x270']},
+            info = {
                 'title':      row['title'],
                 'plot':       strip_tags(row['description']),
                 'duration':   row['asset']['length'],
@@ -170,7 +158,7 @@ def lectures(course_id, chapter_id, title, page=1, **kwargs):
     if next_page:
         folder.add_item(
             label = _(_.NEXT_PAGE, _bold=True),
-            path  = plugin.url_for(lectures, course_id=course_id, chapter_id=chapter_id, title=title, page=page+1),
+            path = plugin.url_for(lectures, course_id=course_id, chapter_id=chapter_id, title=title, page=page+1),
         )
 
     return folder
@@ -210,9 +198,9 @@ def select_quality(qualities):
 @plugin.route()
 @plugin.login_required()
 def play(asset_id, **kwargs):
-    use_ia_hls  = settings.getBool('use_ia_hls')
+    use_ia_hls = settings.getBool('use_ia_hls')
     stream_data = api.get_stream_data(asset_id)
-    token       = userdata.get('access_token')
+    token = userdata.get('access_token')
 
     play_item = plugin.Item(
         art = False,
@@ -240,7 +228,10 @@ def play(asset_id, **kwargs):
     qualities = []
     for item in streams:
         if item['type'] != 'application/x-mpegURL':
-            data = stream_data['data']['outputs'][item['label']]
+            try:
+                data = stream_data['data']['outputs'][item['label']]
+            except:
+                data = {'migrated_from_non_labeled_conversions': True}
 
             if data.get('migrated_from_non_labeled_conversions'):
                 bandwidth, resolution = BANDWIDTH_MAP.get(int(item['label']))
@@ -311,12 +302,11 @@ def play(asset_id, **kwargs):
 
     return play_item
 
-h = HTMLParser()
 def strip_tags(text):
     if not text:
         return ''
 
     text = re.sub('\([^\)]*\)', '', text)
     text = re.sub('<[^>]*>', '', text)
-    text = h.unescape(text)
+    text = html.unescape(text)
     return text

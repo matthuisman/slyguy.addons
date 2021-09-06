@@ -34,10 +34,10 @@ class API(object):
 
     def my_courses(self, page=1, query=None):
         params = {
-            'page'            : page,
-            'page_size'       : PAGE_SIZE,
-            'ordering'        : 'title',
-            'fields[course]'  : 'id,title,image_480x270,image_750x422,headline,num_published_lectures,content_info,completion_ratio',
+            'page': page,
+            'page_size': PAGE_SIZE,
+            'ordering': 'title',
+            'fields[course]': 'id,title,image_480x270,image_750x422,headline,num_published_lectures,content_info,completion_ratio',
         }
 
         if query:
@@ -47,32 +47,32 @@ class API(object):
 
     def chapters(self, course_id, page=1):
         params = {
-            'page'             : page,
-            'page_size'        : PAGE_SIZE,
-            'fields[course]'   : 'image_480x270',
-            'fields[chapter]'  : 'description,object_index,title,course',
-            'fields[lecture]'  : 'id',
-            'fields[practice]' : 'id',
-            'fields[quiz]'     : 'id',
+            'page': page,
+            'page_size': PAGE_SIZE,
+            'fields[course]': 'image_480x270',
+            'fields[chapter]': 'description,object_index,title,course',
+            'fields[lecture]': 'id',
+            'fields[practice]': 'id',
+            'fields[quiz]': 'id',
         }
 
-        data = self._session.get('courses/{}/cached-subscriber-curriculum-items'.format(course_id), params=params).json()
+        data = self._session.get('courses/{}/subscriber-curriculum-items/'.format(course_id), params=params).json()
         rows = [r for r in data['results'] if r['_class'] == 'chapter']
         return rows, data['next']
 
     def lectures(self, course_id, chapter_id, page=1):
         params = {
-            'page'             : page,
-            'page_size'        : PAGE_SIZE,
-            'fields[course]'   : 'image_480x270,title',
-            'fields[chapter]'  : 'id',
-            'fields[lecture]'  : 'title,object_index,description,is_published,course,id,asset',
-            'fields[asset]'    : 'asset_type,length,status',
-            'fields[practice]' : 'id',
-            'fields[quiz]'     : 'id',
+            'page': page,
+            'page_size': PAGE_SIZE,
+            'fields[course]': 'image_480x270,title',
+            'fields[chapter]': 'id',
+            'fields[lecture]': 'title,object_index,description,is_published,course,id,asset',
+            'fields[asset]': 'asset_type,length,status',
+            'fields[practice]': 'id',
+            'fields[quiz]': 'id',
         }
 
-        data = self._session.get('courses/{}/cached-subscriber-curriculum-items'.format(course_id), params=params).json()
+        data = self._session.get('courses/{}/subscriber-curriculum-items/'.format(course_id), params=params).json()
 
         lectures = []
         found = False
@@ -90,10 +90,10 @@ class API(object):
 
     def get_stream_data(self, asset_id):
         params = {
-            'fields[asset]'   : '@all',
+            'fields[asset]': '@all',
         }
 
-        data = self._session.get('assets/{0}'.format(asset_id), params=params).json()
+        data = self._session.get('assets/{}'.format(asset_id), params=params).json()
         if 'detail' in data:
             raise APIError(data['detail'])
 
