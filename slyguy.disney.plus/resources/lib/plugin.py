@@ -67,7 +67,7 @@ def login(**kwargs):
 def hubs(**kwargs):
     folder = plugin.Folder(_.HUBS)
 
-    data = api.collection_by_slug('home', 'home')
+    data = api.collection_by_slug('home', 'home', 'StandardCollection')
     for row in data['containers']:
         _style = row.get('style')
         _set = row.get('set')
@@ -143,7 +143,7 @@ def _switch_profile(profile):
 
 @plugin.route()
 def collection(slug, content_class, label=None, **kwargs):
-    data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection')
+    data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection' if slug == 'home' else 'StandardCollection')
     folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_get_art(data.get('image', []).get('fanart')))
 
     for row in data['containers']:
@@ -222,7 +222,7 @@ def _process_rows(rows, content_class=None):
         elif content_type == 'DmcSeries':
             item = _parse_series(row)
 
-        elif content_type == 'StandardCollection':
+        elif content_type in ('PersonalizedCollection', 'StandardCollection'):
             item = _parse_collection(row)
 
         if not item:
