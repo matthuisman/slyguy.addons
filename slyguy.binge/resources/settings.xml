@@ -3,6 +3,7 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30031" id="show_hero_contents" type="bool" default="false"/>
         <setting label="30000" id="show_chnos" type="bool" default="true"/>
+        <setting label="30008" id="show_epg" type="bool" default="true"/>
         <setting label="30024" type="bool" id="hevc" default="false"/>
     </category>
 

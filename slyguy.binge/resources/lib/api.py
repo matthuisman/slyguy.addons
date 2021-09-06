@@ -47,9 +47,9 @@ class API(object):
         self._set_authentication()
         return True, token_data
 
-    def channel_numbers(self):
+    def channel_data(self):
         try:
-            return self._session.get(CHNO_URL).json()
+            return self._session.get(LIVE_DATA_URL).json()
         except:
             return {}
 

@@ -47,6 +47,48 @@ def home(**kwargs):
     return folder
 
 @plugin.route()
+def login(**kwargs):
+    options = [
+        [_.DEVICE_CODE, _device_code],
+        [_.EMAIL_PASSWORD, _email_password],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    _select_profile()
+    gui.refresh()
+
+def _device_code():
+    start = time.time()
+    data = api.device_code()
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_CODE) as progress:
+        while (time.time() - start) < data['expires_in']:
+            for i in range(data['interval']):
+                if progress.iscanceled() or monitor.waitForAbort(1):
+                    return
+
+                progress.update(int(((time.time() - start) / data['expires_in']) * 100))
+
+            if api.device_login(data['device_code']):
+                return True
+
+def _email_password():
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+    if not username:
+        return
+
+    userdata.set('username', username)
+
+    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+    if not password:
+        return
+
+    api.login(username=username, password=password)
+    return True
+
+@plugin.route()
 def landing(slug, title, **kwargs):
     folder = plugin.Folder(title)
     folder.add_items(_landing(slug))
@@ -97,15 +139,18 @@ def _live_channels():
         data = api.panel(panel_id=row['id'])
 
     channels = []
-    chnos = api.channel_numbers()
+    live_data = api.channel_data()
 
     for row in data.get('contents', []):
         if row['data']['type'] != 'live-linear':
             continue
 
-        row['data']['chno'] = chnos.get(row['data']['playback']['info']['assetId'], None)
-        if row['data']['chno']:
-            row['data']['chno'] = int(row['data']['chno'])
+        row['data']['chno'] = None
+        row['data']['epg'] = []
+        if row['data']['playback']['info']['assetId'] in live_data:
+            row['data']['chno'] = live_data[row['data']['playback']['info']['assetId']]['chno']
+            row['data']['epg'] = live_data[row['data']['playback']['info']['assetId']]['epg']
+
         channels.append(row['data'])
 
     return sorted(channels, key=lambda x: (x is None, x['chno']))
@@ -115,12 +160,35 @@ def live(**kwargs):
     folder = plugin.Folder(_.LIVE_CHANNELS)
     show_chnos = settings.getBool('show_chnos', True)
 
-    for row in _live_channels():
-        asset = _get_asset(row)
+    if settings.getBool('show_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        epg_count = None
+
+    for channel in _live_channels():
+        asset = _get_asset(channel)
         item = _parse_video(asset)
 
-        if row['chno'] and show_chnos:
-            item.label = _(_.LIVE_CHNO, chno=row['chno'], label=item.label)
+        if channel['chno'] and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
+
+        plot = u''
+        if epg_count:
+            count = 0
+            for index, row in enumerate(channel.get('epg', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['epg'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if plot:
+            item.info['plot'] = plot
 
         folder.add_items(item)
 
@@ -413,48 +481,6 @@ def _parse_video(asset):
     item.path = plugin.url_for(play, id=asset['asset_id'], start_from=start_from, play_type=play_type, _is_live=is_live)
 
     return item
-
-@plugin.route()
-def login(**kwargs):
-    if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
-        result = _device_link()
-    else:
-        result = _email_password()
-
-    if not result:
-        return
-
-    try: _select_profile()
-    except: pass
-    gui.refresh()
-
-def _device_link():
-    start = time.time()
-    data = api.device_code()
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_LINK) as progress:
-        while (time.time() - start) < data['expires_in']:
-            for i in range(data['interval']):
-                if progress.iscanceled() or monitor.waitForAbort(1):
-                    return
-
-                progress.update(int(((time.time() - start) / data['expires_in']) * 100))
-
-            if api.device_login(data['device_code']):
-                return True
-
-def _email_password():
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
-    if not username:
-        return
-
-    userdata.set('username', username)
-
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
-
-    api.login(username=username, password=password)
-    return True
 
 @plugin.route()
 @plugin.login_required()
