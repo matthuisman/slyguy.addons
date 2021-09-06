@@ -261,10 +261,15 @@ def _safe_copy(src, dst, del_src=False):
         return
 
     if xbmcvfs.exists(dst):
-        xbmcvfs.delete(dst)
+        if xbmcvfs.delete(dst):
+            log.debug('Deleted: {}'.format(dst))
+        else:
+            log.debug('Failed to delete: {}'.format(dst))
 
-    log.debug('Copying: {} > {}'.format(src, dst))
-    xbmcvfs.copy(src, dst)
+    if xbmcvfs.copy(src, dst):
+        log.debug('Copied: {} > {}'.format(src, dst))
+    else:
+        log.debug('Failed to copy: {} > {}'.format(src, dst))
 
     if del_src:
         xbmcvfs.delete(src)
