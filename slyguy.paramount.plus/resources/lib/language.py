@@ -1,7 +1,6 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-
     LIVE_TV              = 30002
     LOCAL_CHANNEL_IP     = 30003
 

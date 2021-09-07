@@ -332,10 +332,10 @@ class API(object):
             'showListing': 'true',
         }
 
-        data = self._session.get('/v3.0/androidphone/live/channels.json', params=self._params(params)).json()
+        data = self._session.get('/v3.0/androidphone/home/configurator/channels.json', params=self._params(params)).json()
 
         channels = []
-        for row in data['channels']:
+        for row in data['carousel']:
             if row['dma'] and dma:
                 row['dma'] = dma['tokenDetails']
 
@@ -353,6 +353,7 @@ class API(object):
 
         return self._session.get('/v3.0/androidphone/live/channels/{slug}/listings.json'.format(slug=channel), params=self._params(params)).json()['listing']
 
+    @mem_cache.cached(60*10)
     def dma(self):
         self._refresh_token()
 

@@ -69,20 +69,19 @@ def login(**kwargs):
     device_link = config.has_device_link()
     mvpd = config.has_mvpd()
 
-    options = [[_.EMAIL_PASSWORD, _email_password]]
+    options = []
 
     if config.has_device_link():
-        options.append([_.DEVICE_CODE, _device_link])
+        options.append([_.DEVICE_CODE, _device_code])
 
     if config.has_mvpd():
         options.append([_.PARTNER_LOGIN, _partner_login])
 
-    if len(options) == 1:
-        result = options[0][1]()
-    else:
-        index = gui.context_menu([x[0] for x in options])
-        if index == -1 or not options[index][1]():
-            return
+    options.append([_.EMAIL_PASSWORD, _email_password])
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
 
     config.save()
     if config.has_profiles():
@@ -136,7 +135,7 @@ def _email_password():
 
     return True
 
-def _device_link():
+def _device_code():
     start = time.time()
     data = api.device_code()
 
@@ -414,25 +413,30 @@ def live_tv(**kwargs):
     now = arrow.utcnow()
 
     for row in api.live_channels():
-        if not row['currentListing'] or (not row['dma'] and not row['currentListing'][-1]['contentCANVideo'].get('liveStreamingUrl')):
+        if not row['currentListing']:
             continue
 
+        listings = []
+        listings.extend(row['currentListing'])
+        listings.extend(row['upcomingListing'])
+
         plot = u''
-        for listing in row['currentListing']:
+        for listing in listings:
             start = arrow.get(listing['startTimestamp'])
             end = arrow.get(listing['endTimestamp'])
             if (now > start and now < end) or start > now:
-                plot += u'[{} - {}]\n{}\n'.format(start.to('local').format('h:mma'), end.to('local').format('h:mma'), listing['title'])
+                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), listing['title'])
 
-        folder.add_item(
-            label = row['channelName'],
-            info = {
-                'plot': plot.strip('\n'),
-            },
-            art = {'thumb': config.image(row['filePathLogoSelected'])},
-            path = plugin.url_for(play_channel, slug=row['slug'], _is_live=True),
-            playable = True,
-        )
+        for listing in row['currentListing'] or []:
+            folder.add_item(
+                label = row['channelName'].strip(),
+                info = {
+                    'plot': plot,
+                },
+                art = {'thumb': config.image(row['filePathLogoSelected'])},
+                path = plugin.url_for(play_channel, slug=row['slug'], listing_id=listing['id'] if row['streamType'] == 'mpx_live' else None, _is_live=True),
+                playable = True,
+            )
 
     return folder
 
@@ -593,29 +597,38 @@ def play(video_id, **kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play_channel(slug, **kwargs):
+def play_channel(slug, listing_id=None, **kwargs):
     channels = api.live_channels()
 
     for row in channels:
-        if row['slug'] == slug:
-            if row['dma']:
-                play_path = row['dma']['playback_url']
-            elif row['currentListing']:
+        if row['slug'] != slug:
+            continue
+
+        play_path = None
+        if row['dma']:
+            play_path = row['dma']['playback_url']
+        elif row['currentListing']:
+            if not listing_id:
                 play_path = row['currentListing'][0]['contentCANVideo']['liveStreamingUrl']
             else:
-                raise Exception('No url found for this channel')
+                for listing in row['currentListing']:
+                    if str(listing['id']) == listing_id:
+                        play_path = listing['contentCANVideo']['liveStreamingUrl']
 
-            return plugin.Item(
-                label = row['channelName'],
-                info = {
-                    'plot': row['description'],
-                },
-                art = {'thumb': config.image(row['filePathLogoSelected'])},
-                path = play_path,
-                inputstream = inputstream.HLS(live=True),
+        if not play_path:
+            raise PluginError('No url found for this channel')
+
+        return plugin.Item(
+            label = row['channelName'],
+            info = {
+                'plot': row['description'],
+            },
+            art = {'thumb': config.image(row['filePathLogoSelected'])},
+            path = play_path,
+            inputstream = inputstream.HLS(live=True),
             )
 
-    raise Exception('Unable to find that channel')
+    raise PluginError('Unable to find that channel')
 
 @plugin.route()
 def logout(**kwargs):
@@ -633,7 +646,7 @@ def playlist(output, **kwargs):
         f.write(u'#EXTM3U\n')
 
         for row in api.live_channels():
-            if not row['currentListing'] or len(row['currentListing']) > 1:
+            if not row['currentListing'] or row['streamType'] == 'mpx_live':
                 continue
 
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{path}\n'.format(
