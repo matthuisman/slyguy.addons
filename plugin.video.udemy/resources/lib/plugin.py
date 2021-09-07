@@ -1,17 +1,8 @@
-import re
-import sys
-
-if sys.version_info >= (3, 8):
-    import html
-else:
-    from six.moves.html_parser import HTMLParser
-    html = HTMLParser()
-
 from slyguy import plugin, gui, settings, userdata, inputstream, signals
 from slyguy.log import log
 from slyguy.constants import QUALITY_TAG, QUALITY_CUSTOM, QUALITY_ASK, QUALITY_BEST, QUALITY_LOWEST, QUALITY_TYPES
 from slyguy.exceptions import FailedPlayback
-from slyguy.util import get_system_arch
+from slyguy.util import get_system_arch, strip_html_tags
 
 from .api import API
 from .language import _
@@ -122,7 +113,7 @@ def chapters(course_id, title, page=1, **kwargs):
             label = _(_.SECTION_LABEL, section_number=row['object_index'], section_title=row['title']),
             path = plugin.url_for(lectures, course_id=course_id, chapter_id=row['id'], title=title),
             art = {'thumb': row['course']['image_480x270']},
-            info = {'plot': strip_tags(row['description'])},
+            info = {'plot': strip_html_tags(row['description'])},
         )
 
     if next_page:
@@ -146,10 +137,10 @@ def lectures(course_id, chapter_id, title, page=1, **kwargs):
             path = plugin.url_for(play, asset_id=row['asset']['id']),
             art = {'thumb': row['course']['image_480x270']},
             info = {
-                'title':      row['title'],
-                'plot':       strip_tags(row['description']),
-                'duration':   row['asset']['length'],
-                'mediatype':  'episode',
+                'title': row['title'],
+                'plot': strip_html_tags(row['description']),
+                'duration': row['asset']['length'],
+                'mediatype': 'episode',
                 'tvshowtitle': row['course']['title'],
             },
             playable = True,
@@ -301,12 +292,3 @@ def play(asset_id, **kwargs):
             break
 
     return play_item
-
-def strip_tags(text):
-    if not text:
-        return ''
-
-    text = re.sub('\([^\)]*\)', '', text)
-    text = re.sub('<[^>]*>', '', text)
-    text = html.unescape(text)
-    return text
