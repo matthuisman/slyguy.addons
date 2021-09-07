@@ -1,4 +1,5 @@
 import os
+import sys
 import hashlib
 import shutil
 import platform
@@ -19,6 +20,12 @@ from six.moves import queue
 from six.moves.urllib.parse import urlparse, urlunparse
 from six import PY2
 import requests
+
+if sys.version_info >= (3, 8):
+    import html
+else:
+    from six.moves.html_parser import HTMLParser
+    html = HTMLParser()
 
 from .language import _
 from .log import log
@@ -695,3 +702,12 @@ def pthms_to_seconds(duration):
             seconds += float(count) * key[1]
 
     return int(seconds)
+
+def strip_html_tags(text):
+    if not text:
+        return ''
+
+    text = re.sub('\([^\)]*\)', '', text)
+    text = re.sub('<[^>]*>', '', text)
+    text = html.unescape(text)
+    return text
