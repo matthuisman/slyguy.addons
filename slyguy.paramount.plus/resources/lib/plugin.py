@@ -416,18 +416,10 @@ def live_tv(**kwargs):
         if not row['currentListing']:
             continue
 
-        listings = []
-        listings.extend(row['currentListing'])
-        listings.extend(row['upcomingListing'])
-
-        plot = u''
-        for listing in listings:
+        for listing in row['currentListing']:
             start = arrow.get(listing['startTimestamp'])
-            end = arrow.get(listing['endTimestamp'])
-            if (now > start and now < end) or start > now:
-                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), listing['title'])
+            plot = u'[{}] {}\n'.format(start.to('local').format('h:mma'), listing['title'])
 
-        for listing in row['currentListing'] or []:
             folder.add_item(
                 label = row['channelName'].strip(),
                 info = {
@@ -600,6 +592,8 @@ def play(video_id, **kwargs):
 def play_channel(slug, listing_id=None, **kwargs):
     channels = api.live_channels()
 
+    headers = {}
+
     for row in channels:
         if row['slug'] != slug:
             continue
@@ -609,11 +603,19 @@ def play_channel(slug, listing_id=None, **kwargs):
             play_path = row['dma']['playback_url']
         elif row['currentListing']:
             if not listing_id:
-                play_path = row['currentListing'][0]['contentCANVideo']['liveStreamingUrl']
+                selected = row['currentListing'][0]
             else:
                 for listing in row['currentListing']:
                     if str(listing['id']) == listing_id:
-                        play_path = listing['contentCANVideo']['liveStreamingUrl']
+                        selected = listing
+                        break
+
+            if selected:
+                if selected['contentCANVideo'].get('liveStreamingUrl'):
+                    play_path = selected['contentCANVideo']['liveStreamingUrl']
+                elif selected['streamType'] == 'mpx_live':
+                    play_path, license_url, token, data = api.play(selected['videoContentId'])
+                    headers['authorization'] = 'Bearer {}'.format(token)
 
         if not play_path:
             raise PluginError('No url found for this channel')
@@ -623,10 +625,11 @@ def play_channel(slug, listing_id=None, **kwargs):
             info = {
                 'plot': row['description'],
             },
+            headers = headers,
             art = {'thumb': config.image(row['filePathLogoSelected'])},
             path = play_path,
             inputstream = inputstream.HLS(live=True),
-            )
+        )
 
     raise PluginError('Unable to find that channel')
 
