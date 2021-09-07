@@ -27,7 +27,7 @@ class API(object):
         for row in self.shows():
             if row['id'] == id:
                 return row
-        
+
         raise APIError('Show not found')
 
     def videos(self, video_ids):
@@ -60,25 +60,32 @@ class API(object):
             'page_size': 999,
             'page_number': 0,
         }
-        
+
         return show, self._session.get(url, params=params).json()['items']
 
     def live_channels(self):
-        url = self._config()['LiveTV']['Livestream_schedule'].format(
-            state = STATES[settings.getInt('state')],
-            channel = 'all',
-        )
+        return self._session.get('https://10play.com.au/api/v1/live/{}'.format(self._get_state())).json()
 
-        return self._session.get(url).json()
+    @mem_cache.cached(60*5)
+    def state(self):
+        return self._session.get('https://10play.com.au/geo-web').json()['state']
+
+    def _get_state(self):
+        state = STATES[settings.getInt('state')]
+        if not state:
+            state = self.state()
+        return state
 
     def play(self, id):
         data = self.videos([id])[0]
         return data['HLSURL']
 
     def play_channel(self, id):
-        url = self._config()['LiveTV']['Livestream_endpoint'].format(
-            state = STATES[settings.getInt('state')],
-            channel = id,
-        )
+        channels = self.live_channels()
 
-        return self._session.get(url).json()[0]['HLSURL']
+        stream_key = None
+        for row in channels:
+            if row['channel']['id'] == id:
+                return 'https://pubads.g.doubleclick.net/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
+
+        raise APIError('Failed to find stream key')

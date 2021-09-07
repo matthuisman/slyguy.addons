@@ -149,7 +149,7 @@ def shows(sort=None, **kwargs):
 @plugin.route()
 def show(show_id, **kwargs):
     show = api.show(int(show_id))
-    
+
     folder = plugin.Folder(show['tv_show'])
 
     seasons = []
@@ -253,29 +253,31 @@ def _parse_shows(rows):
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
-    now = arrow.now()
     for row in api.live_channels():
         plot = u''
         count = 0
 
-        for event in row.get('Schedule', []):
-            start = arrow.get(event['ScheduleStart'])
-            end = arrow.get(event['ScheduleEnd'])
+        epg = []
+        if row.get('liveShow'):
+            epg.append(row['liveShow'])
+        if row.get('nextShow'):
+            epg.append(row['nextShow'])
 
-            if (now > start and now < end) or start > now:
-                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), event['Name'])
-                count += 1
-                if count == 5:
-                    break
+        for event in epg:
+            if event['title'] == 'No Stream Available':
+                continue
+
+            start = arrow.get(event['startTime'])
+            plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), event['title'])
 
         folder.add_item(
-            label = row['ChannelDisplay'],
-            art = {'thumb': row['ChannelLogo'].split('?')[0] + '?width=450'},
+            label = row['channel']['name'],
+            art = {'thumb': row['channel']['logoUrl'] + '?image-profile=logo'},
             info = {
-                'plot': plot.strip('\n'),
+                'plot': plot,
             },
             playable = True,
-            path = plugin.url_for(play_channel, id=row['Channel'], _is_live=True),
+            path = plugin.url_for(play_channel, id=row['channel']['id'], _is_live=True),
         )
 
     return folder
@@ -297,7 +299,7 @@ def play_channel(id, **kwargs):
     return plugin.Item(
         path = url,
         headers = HEADERS,
-        inputstream = inputstream.HLS(live=True),
+        inputstream = inputstream.HLS(live=True, force=True),
     )
 
 @plugin.route()
@@ -307,7 +309,9 @@ def playlist(output, **kwargs):
         f.write(u'#EXTM3U')
 
         for row in api.live_channels():
+            if 'TenSport' in row['channel']['id']:
+                continue
+
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=row['Channel'], name=row['ChannelDisplay'], logo=row['ChannelLogo'].split('?')[0] + '?width=450',
-                    url=plugin.url_for(play_channel, id=row['Channel']), _is_live=True),
-            )
+                id=row['channel']['id'], name=row['channel']['name'], logo=row['channel']['logoUrl'] + '?image-profile=logo',
+                    url=plugin.url_for(play_channel, id=row['channel']['id'], _is_live=True)))
