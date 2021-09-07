@@ -1,13 +1,18 @@
+# Language file for Sky Sport Now Video Add-on for Kodi
+# Addon Name: Sky Sport now
+# Addon id: plugin.video.sky.sport.now
+# Addon Provider: SlyGuy
 msgid ""
 msgstr ""
-
-msgctxt "#30001"
-msgid "Email"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30003"
 msgid "Live TV"
@@ -19,10 +24,6 @@ msgstr ""
 
 msgctxt "#30005"
 msgid " ({cur_page}/{total_pages})"
-msgstr ""
-
-msgctxt "#30006"
-msgid "Next Page"
 msgstr ""
 
 msgctxt "#30007"

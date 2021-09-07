@@ -54,7 +54,7 @@ def live(**kwargs):
 def replay(**kwargs):
     folder = plugin.Folder(_.REPLAY)
 
-    now      = arrow.utcnow()
+    now = arrow.utcnow()
     earliest = now.shift(hours=-24)
 
     dates = [now, earliest]
@@ -79,7 +79,7 @@ def replay(**kwargs):
 
 @plugin.route()
 def highlights(page=1, **kwargs):
-    page    = int(page)
+    page = int(page)
     folder = plugin.Folder(_.HIGHLIGHTS)
 
     data = api.highlights(page=page)
@@ -115,7 +115,7 @@ def highlights(page=1, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
