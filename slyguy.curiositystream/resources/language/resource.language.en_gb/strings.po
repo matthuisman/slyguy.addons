@@ -1,13 +1,18 @@
+# Language file for Kodi
+# Addon Name: CuriosityStream
+# Addon id: slyguy.curiositystream
+# Addon Provider: SlyGuy
 msgid ""
 msgstr ""
-
-msgctxt "#30001"
-msgid "Email Address"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30003"
 msgid "Failed to login.\n"
@@ -41,10 +46,6 @@ msgstr ""
 
 msgctxt "#30010"
 msgid "Sync with CuriosityStream"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Next Page ({next_page})"
 msgstr ""
 
 msgctxt "#30012"

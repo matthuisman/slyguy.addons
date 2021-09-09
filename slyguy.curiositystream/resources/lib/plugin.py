@@ -44,46 +44,63 @@ def _image(row, key):
 
     return None
 
-def _process_media(row, in_watchlist=False):
-    if settings.getBool('child_friendly', False) and not row.get('is_child_friendly', False):
-        #maybe just block playback and add label, so pagination still correct
-        return None
+def _process_rows(rows, in_watchlist=False):
+    items = []
 
-    is_published   = row.get('is_published', True)
-    is_collection  = row.get('is_collection', False)
-    is_free        = row.get('is_free', False)
-    is_series      = row.get('is_numbered_series', False)
-    duration       = row.get('duration', 0) if plugin.logged_in or is_free else PREVIEW_LENGTH
+    child_friendly = settings.getBool('child_friendly', False)
+    sync_playback = settings.getBool('sync_playback', False)
 
-    context = []
+    for row in rows:
+        if child_friendly and not row.get('is_child_friendly', False):
+            #maybe just block playback and add label, so pagination still correct
+            return None
 
-    if plugin.logged_in:
-        if in_watchlist:
-            context.append((_.REMOVE_WATCHLIST, "RunPlugin({})".format(plugin.url_for(remove_watchlist, id=row['id'], title=row['title'], series=int(is_collection)))))
+        is_published = row.get('is_published', True)
+        is_collection = row.get('is_collection', False)
+        is_free = row.get('is_free', False)
+        is_series = row.get('is_numbered_series', False)
+        duration = row.get('duration', 0) if plugin.logged_in or is_free else PREVIEW_LENGTH
+
+        context = []
+
+        if plugin.logged_in:
+            if in_watchlist:
+                context.append((_.REMOVE_WATCHLIST, "RunPlugin({})".format(plugin.url_for(remove_watchlist, id=row['id'], title=row['title'], series=int(is_collection)))))
+            else:
+                context.append((_.ADD_WATCHLIST, "RunPlugin({})".format(plugin.url_for(add_watchlist, id=row['id'], title=row['title'], series=int(is_collection)))))
+
+        if is_collection:
+            path = plugin.url_for(series, id=row['id'])
         else:
-            context.append((_.ADD_WATCHLIST, "RunPlugin({})".format(plugin.url_for(add_watchlist, id=row['id'], title=row['title'], series=int(is_collection)))))
+            path = _get_play_path(row['id'])
 
-    if is_collection:
-        path = plugin.url_for(series, id=row['id'])
-    else:
-        path = _get_play_path(row['id'])
+        item = plugin.Item(
+            label = row.get('title'),
+            info  = {'plot': row['description'], 'duration': duration, 'year': row.get('year_produced')},
+            art   = {'thumb': _image(row, 'image_medium')},
+            path  = path,
+            context = context,
+            playable = not is_collection,
+        )
 
-    item = plugin.Item(
-        label = row.get('title'),
-        info  = {'plot': row['description'], 'duration': duration, 'year': row.get('year_produced')},
-        art   = {'thumb': _image(row, 'image_medium')},
-        path  = path,
-        context = context,
-        playable = not is_collection,
-    )
+        if item.playable:
+            if row.get('obj_type') == 'episode':
+                item.info['tvshowtitle'] = row['display_tag']
+                item.info['mediatype'] = 'episode'
+                if row.get('collection_order') is not None:
+                    item.info['season'] = 1
+                    item.info['episode'] = row['collection_order'] + 1
+            else:
+                item.info['mediatype'] = 'movie'
 
-    if settings.getBool('sync_playback', False):
-        try:
-            item.resume_from = row['user_media']['progress_in_seconds']
-        except:
-            item.resume_from = 0
+            try: progress = row['user_media']['progress_in_seconds']
+            except: progress = 0
+            if progress:
+                item.resume_from = -1
 
-    return item
+        items.append(item)
+
+    return items
 
 def _search_category(rows, id):
     for row in rows:
@@ -121,8 +138,8 @@ def categories(id=None, **kwargs):
 
         folder.add_item(
             label = row['label'],
-            art   = {'thumb': _image(row, 'image_url')},
-            path  = path,
+            art = {'thumb': _image(row, 'image_url')},
+            path = path,
         )
 
     return folder
@@ -136,14 +153,13 @@ def media(title, filterby, term, page=1, **kwargs):
 
     folder = plugin.Folder(title)
 
-    for row in data['data']:
-        item = _process_media(row)
-        folder.add_items([item])
+    items = _process_rows(data['data'])
+    folder.add_items(items)
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE, next_page=page+1),
-            path  = plugin.url_for(media, title=title, filterby=filterby, term=term, page=page+1),
+            label = _(_.NEXT_PAGE),
+            path = plugin.url_for(media, title=title, filterby=filterby, term=term, page=page+1),
         )
 
     return folder
@@ -160,38 +176,36 @@ def collections(page=1, **kwargs):
     for row in data['data']:
         folder.add_item(
             label = row['title'],
-            info  = {'plot': row['description']},
-            art   = {'thumb': _image(row, 'image_url')},
-            path  = plugin.url_for(collection, id=row['id']),
+            info = {'plot': row['description']},
+            art = {'thumb': _image(row, 'image_url')},
+            path = plugin.url_for(collection, id=row['id']),
         )
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE, next_page=page+1),
-            path  = plugin.url_for(collections, page=page+1),
+            label = _(_.NEXT_PAGE),
+            path = plugin.url_for(collections, page=page+1),
         )
 
     return folder
 
 @plugin.route()
 def series(id, **kwargs):
-    data   = api.series(id)
+    data = api.series(id)
     folder = plugin.Folder(data['title'], fanart=_image(data, 'image_large'))
 
-    for row in data.get('media', []):
-        item = _process_media(row)
-        folder.add_items([item])
+    items = _process_rows(data.get('media', []))
+    folder.add_items(items)
 
     return folder
 
 @plugin.route()
 def collection(id, **kwargs):
-    data   = api.collection(id)
+    data = api.collection(id)
     folder = plugin.Folder(data['title'], fanart=_image(data, 'background_url'))
 
-    for row in data.get('media', []):
-        item = _process_media(row)
-        folder.add_items([item])
+    items = _process_rows(data.get('media', []))
+    folder.add_items(items)
 
     return folder
 
@@ -207,10 +221,8 @@ def featured(id=None, **kwargs):
                 folder.title = row['label']
                 folder.fanart = _image(row, 'background_url')
 
-                for subrow in row.get('media', []):
-                    item = _process_media(subrow)
-                    folder.add_items([item])
-
+                items = _process_rows(row.get('media', []))
+                folder.add_items(items)
                 break
 
     else:
@@ -222,15 +234,11 @@ def featured(id=None, **kwargs):
             else:
                 path = plugin.url_for(media, title=row['label'], filterby=row['type'], term=row['name'])
 
-            thumb = _image(row, 'image_url')
-            if not thumb and row.get('media', []):
-                thumb = _image(row['media'][0], 'image_medium')
-
             folder.add_item(
                 label = row['label'],
-                info  = {'plot': row.get('description')},
-                art   = {'thumb': thumb},
-                path  = path,
+                info = {'plot': row.get('description')},
+                art = {'thumb':  _image(row, 'image_url')},
+                path = path,
             )
 
     return folder
@@ -240,29 +248,23 @@ def featured(id=None, **kwargs):
 def search(query, page, **kwargs):
     data = api.filter_media('keyword', query, page=page)
     total_pages = int(data['paginator']['total_pages'])
-
-    items = []
-    for row in data['data']:
-        items.append(_process_media(row))
-
-    return items, total_pages > page
+    return _process_rows(data['data']), total_pages > page
 
 @plugin.route()
 def watchlist(page=1, **kwargs):
     page = int(page)
 
     folder = plugin.Folder(_.WATCHLIST)
-    data   = api.filter_media('bookmarked', page=page)
+    data = api.filter_media('bookmarked', page=page)
     total_pages = int(data['paginator']['total_pages'])
 
-    for row in data['data']:
-        item = _process_media(row, in_watchlist=True)
-        folder.add_items([item])
+    items = _process_rows(data['data'], in_watchlist=True)
+    folder.add_items(items)
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE, next_page=page+1),
-            path  = plugin.url_for(watchlist, page=page+1),
+            label = _(_.NEXT_PAGE),
+            path = plugin.url_for(watchlist, page=page+1),
         )
 
     return folder
@@ -294,21 +296,20 @@ def watching(page=1, **kwargs):
     data   = api.filter_media('watching', page=page)
     total_pages = int(data['paginator']['total_pages'])
 
-    for row in data['data']:
-        item = _process_media(row)
-        folder.add_items([item])
+    items = _process_rows(data['data'])
+    folder.add_items(items)
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE, next_page=page+1),
-            path  = plugin.url_for(watchlist, page=page+1),
+            label = _(_.NEXT_PAGE),
+            path = plugin.url_for(watchlist, page=page+1),
         )
 
     return folder
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -327,7 +328,7 @@ def _get_play_path(id):
     }
 
     if settings.getBool('sync_playback', False):
-        kwargs['sync'] = 1
+        kwargs['_noresume'] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -345,6 +346,13 @@ def play(id, **kwargs):
         item.subtitles.append([row['file'], row['code']])
 
     if settings.getBool('sync_playback', False):
+        try: progress = data['user_media']['progress_in_seconds']
+        except: progress = 0
+
+        item.resume_from = plugin.resume_from(progress)
+        if item.resume_from == -1:
+            return
+
         item.callback = {
             'type': 'interval',
             'interval': 10,
