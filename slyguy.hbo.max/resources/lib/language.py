@@ -1,8 +1,7 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-    DEVICE_LINK           = 30001
-    DEVICE_LINK_STEPS     = 30002
+
     DEVICE_ID             = 30003
     API_ERROR             = 30004
     GO_TO_SERIES          = 30005

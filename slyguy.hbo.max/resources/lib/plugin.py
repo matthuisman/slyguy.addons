@@ -25,7 +25,7 @@ def index(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:home', label=_.FEATURED))
         folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(page, slug='urn:hbo:page:series', label=_.SERIES))
@@ -316,18 +316,18 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    if not _device_link():
+    if not _device_code():
         return
 
     _select_profile()
     gui.refresh()
 
-def _device_link():
+def _device_code():
     monitor = xbmc.Monitor()
     serial, code = api.device_code()
     timeout = 600
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, code=code), heading=_.DEVICE_LINK) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_CODE_URL), heading=_.DEVICE_CODE) as progress:
         for i in range(timeout):
             if progress.iscanceled() or monitor.waitForAbort(1):
                 return

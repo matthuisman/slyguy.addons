@@ -270,29 +270,15 @@ class API(object):
         else:
             return resp.json().get('status') == 'Accepted'
 
-    def _age_category(self):
-        month, year = userdata.get('profile', {}).get('birth', [0,0])
-
-        i = arrow.now()
-        n = i.year - year
-        if i.month < month:
-            n -= 1
-        age = max(0, n)
-
-        group = AGE_CATS[0][1]
-        for cat in AGE_CATS:
-            if age >= cat[0]:
-                group = cat[1]
-
-        return group
-
     @mem_cache.cached(60*30)
     def _flighted_features(self):
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
         }
 
-        return self._session.get(self.url('comet', '/flighted-features'), headers=headers).json()
+        data = self._session.get(self.url('comet', '/flighted-features'), headers=headers).json()
+        self._check_errors(data)
+        return data
 
     def _headwaiter(self):
         headwaiter = ''
