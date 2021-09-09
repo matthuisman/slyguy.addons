@@ -1,11 +1,11 @@
 DEVICE_MODEL = 'androidtv'
 
-#VERSION = '50.35.0.280' #needs to be >= playstore version else get "time to update"
+VERSION = '100.35.0.280'
 
 HEADERS = {
     'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 8.1.0; SHIELD Android TV Build/LMY47D)',
     'X-Hbo-Device-Name': DEVICE_MODEL,
-  #  'X-Hbo-Client-Version': 'Hadron/{0} android/{0} (SHIELD/8.1.0)'.format(VERSION),
+    'X-Hbo-Client-Version': 'Hadron/{0} android/{0} (SHIELD/8.1.0)'.format(VERSION),
     'X-Hbo-Device-Os-Version': '8.1.0',
     'Accept': 'application/vnd.hbo.v9.full+json',
     'Accept-Language': 'en-us',
