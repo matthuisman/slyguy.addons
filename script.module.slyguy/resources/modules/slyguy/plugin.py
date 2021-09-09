@@ -11,7 +11,7 @@ from pycaption import detect_format, WebVTTWriter
 from kodi_six import xbmc, xbmcplugin
 from six.moves.urllib.parse import quote
 
-from . import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks
+from . import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache
 from .constants import *
 from .log import log
 from .language import _
@@ -209,6 +209,7 @@ def _error(e):
         signals.emit(signals.ON_EXCEPTION, e)
         return
 
+    mem_cache.empty()
     _close()
 
     log.debug(e, exc_info=True)
@@ -217,6 +218,7 @@ def _error(e):
 
 @signals.on(signals.ON_EXCEPTION)
 def _exception(e):
+    mem_cache.empty()
     _close()
 
     if type(e) == FailedPlayback:
