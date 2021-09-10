@@ -16,7 +16,7 @@ import binascii
 from contextlib import closing
 
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
-from six.moves import queue
+from six.moves import queue, range
 from six.moves.urllib.parse import urlparse, urlunparse
 from six import PY2
 import requests
@@ -711,3 +711,7 @@ def strip_html_tags(text):
     text = re.sub('<[^>]*>', '', text)
     text = html.unescape(text)
     return text
+
+def chunked(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
