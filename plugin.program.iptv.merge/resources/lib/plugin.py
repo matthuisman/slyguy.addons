@@ -5,8 +5,9 @@ from kodi_six import xbmc, xbmcvfs
 
 from slyguy import plugin, settings, gui, userdata
 from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin
-from slyguy.constants import ADDON_PROFILE, ADDON_ICON
+from slyguy.constants import ADDON_PROFILE, ADDON_ICON, KODI_VERSION
 from slyguy.exceptions import PluginError
+from slyguy.monitor import monitor
 
 from .language import _
 from .models import Playlist, EPG, Channel, Override, merge_info
@@ -562,8 +563,10 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
         return True
 
+    kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
+
     ## IMPORT ANY CURRENT URL SOURCES ##
-    cur_epg_url  = addon.getSetting('epgUrl')
+    cur_epg_url = addon.getSetting('epgUrl')
     cur_epg_type = addon.getSetting('epgPathType')
     if cur_epg_url:
         epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
@@ -590,6 +593,9 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
     addon.setSetting('m3uUrl', '')
     addon.setSetting('m3uPathType', '0')
     addon.setSetting('epgPathType', '0')
+
+    monitor.waitForAbort(2)
+    kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': True})
 
     set_kodi_setting('epg.futuredaystodisplay', 7)
     #  set_kodi_setting('epg.ignoredbforclient', True)
