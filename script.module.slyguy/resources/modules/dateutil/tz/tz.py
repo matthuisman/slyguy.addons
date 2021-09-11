@@ -257,8 +257,11 @@ class tzlocal(_tzinfo):
                 (naive_dst != self._naive_is_dst(dt - self._dst_saved)))
 
     def _naive_is_dst(self, dt):
-        timestamp = _datetime_to_timestamp(dt)
-        return time.localtime(normalize_timestamp(timestamp + time.timezone)).tm_isdst
+        try:
+            timestamp = _datetime_to_timestamp(dt)
+            return time.localtime(normalize_timestamp(timestamp + time.timezone)).tm_isdst
+        except:
+            return False
 
     def _isdst(self, dt, fold_naive=True):
         # We can't use mktime here. It is unstable when deciding if
