@@ -4,6 +4,7 @@
         <setting label="30014" id="show_hero_contents" type="bool" default="true"/>
         <setting label="30006" id="show_chnos" type="bool" default="true"/>
         <setting label="30015" id="show_epg" type="bool" default="true"/>
+        <setting label="30017" id="hide_locked" type="bool" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -23,6 +24,8 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32129]" id="video_folder_content" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>

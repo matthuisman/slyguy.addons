@@ -55,6 +55,14 @@ msgctxt "#30015"
 msgid "Show Mini EPG"
 msgstr ""
 
+msgctxt "#30016"
+msgid "{label} [COLOR red][LOCKED][/COLOR]"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Hide Locked Content"
+msgstr ""
+
 msgctxt "#30025"
 msgid "Inputstream HLS is required to watch this content\n"
 "Check Inputstream Adaptive is installed and enabled"

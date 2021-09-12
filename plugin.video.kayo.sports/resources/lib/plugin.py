@@ -27,16 +27,16 @@ def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.FEATURED, _bold=True),  path=plugin.url_for(featured))
-        folder.add_item(label=_(_.SHOWS, _bold=True),  path=plugin.url_for(shows))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
         folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(sports))
         folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
-            folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
         folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': userdata.get('avatar')}, info={'plot': userdata.get('profile_name')}, _kiosk=False, bookmark=False)
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
@@ -129,6 +129,8 @@ def live(**kwargs):
 
     for channel in _live_channels():
         item = _parse_video(channel)
+        if not item:
+            continue
 
         if channel['chno'] and show_chnos:
             item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
@@ -169,7 +171,7 @@ def logout(**kwargs):
 @plugin.route()
 def featured(**kwargs):
     folder = plugin.Folder(_.FEATURED)
-    folder.add_items(_landing('home'))
+    folder.add_items(_landing('home' if api.is_subscribed() else 'free'))
     return folder
 
 @plugin.route()
@@ -332,7 +334,7 @@ def _parse_section(row):
 
     return plugin.Item(
         label = asset['title'],
-        art  = {
+        art = {
             'thumb': _get_image(asset, 'show', 'thumb'),
             'fanart': _get_image(asset, 'show', 'fanart'),
         },
@@ -344,7 +346,7 @@ def _parse_section(row):
 
 def _get_image(asset, media_type, img_type='thumb', width=None):
     if not asset.get('image-pack'):
-        images    = asset.get('images') or {}
+        images = asset.get('images') or {}
         image_url = images.get('defaultUrl')
         if not image_url:
             return None
@@ -375,9 +377,9 @@ def _makeHumanised(now, start=None):
     if not start:
         return ''
 
-    now   = now.to('local').replace(hour = 0, minute = 0, second = 0, microsecond = 0)
+    now = now.to('local').replace(hour = 0, minute = 0, second = 0, microsecond = 0)
     start = start.to('local').replace(hour = 0, minute = 0, second = 0, microsecond = 0)
-    days  = (start - now).days
+    days = (start - now).days
 
     if days == -1:
         return 'yesterday'
@@ -406,6 +408,14 @@ def _parse_video(row):
     title = display.get('heroTitle') or display['title'] or asset['title']
     if 'heroHeader' in display:
         title += ' [' + display['heroHeader'].replace('${DATE_HUMANISED}', _makeHumanised(now, start).upper()).replace('${TIME}', _makeTime(start)) + ']'
+
+    if not api.is_subscribed():
+        is_free = asset.get('isFreemium', False)
+
+        if settings.getBool('hide_locked', False) and not is_free:
+            return None
+        elif not is_free:
+            title = _(_.LOCKED, label=title)
 
     item = plugin.Item(
         label = title,

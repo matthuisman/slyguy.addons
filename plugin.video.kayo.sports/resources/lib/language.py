@@ -14,6 +14,8 @@ class Language(BaseLanguage):
     SELECT_PROFILE        = 30013
     SHOW_HERO             = 30014
     SHOW_EPG              = 30015
+    LOCKED                = 30016
+    HIDE_LOCKED           = 30017
 
     HLS_REQUIRED          = 30025
 

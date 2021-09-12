@@ -4,6 +4,7 @@ from slyguy import settings, userdata, mem_cache
 from slyguy.log import log
 from slyguy.session import Session
 from slyguy.exceptions import Error
+from slyguy.util import jwt_data
 from slyguy.drm import is_wv_secure
 
 from .constants import *
@@ -16,6 +17,7 @@ class API(object):
     def new_session(self):
         self.logged_in = False
         self._auth_header = {}
+        self._subscribed = None
 
         self._session = Session(HEADERS)
         self._set_authentication()
@@ -31,6 +33,17 @@ class API(object):
 
         self._auth_header = {'authorization': 'Bearer {}'.format(access_token)}
         self.logged_in = True
+
+    def is_subscribed(self):
+        if self._subscribed is not None:
+            return self._subscribed
+
+        if not self.logged_in:
+            return False
+
+        data = jwt_data(userdata.get('access_token'))
+        self._subscribed = data['https://kayosports.com.au/status']['account_status'] == 'ACTIVE_SUBSCRIPTION'
+        return self._subscribed
 
     def _oauth_token(self, data, _raise=True):
         token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, headers={'User-Agent': 'okhttp/3.10.0'}, error_msg=_.TOKEN_ERROR).json()
