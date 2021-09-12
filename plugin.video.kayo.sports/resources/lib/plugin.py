@@ -406,6 +406,8 @@ def _parse_video(row):
     title = display.get('heroTitle') or display['title'] or asset['title']
     if 'heroHeader' in display:
         title += ' [' + display['heroHeader'].replace('${DATE_HUMANISED}', _makeHumanised(now, start).upper()).replace('${TIME}', _makeTime(start)) + ']'
+    if asset['labeledAsFree']:
+        title += ' - FREEBIE'
 
     item = plugin.Item(
         label = title,
