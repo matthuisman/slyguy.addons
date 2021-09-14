@@ -93,10 +93,11 @@ def _process_rows(rows, in_watchlist=False):
             else:
                 item.info['mediatype'] = 'movie'
 
-            try: progress = row['user_media']['progress_in_seconds']
-            except: progress = 0
-            if progress:
-                item.resume_from = -1
+            if sync_playback:
+                try: progress = row['user_media']['progress_in_seconds']
+                except: progress = 0
+                if progress:
+                    item.resume_from = 1
 
         items.append(item)
 
