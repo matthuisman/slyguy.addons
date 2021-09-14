@@ -18,6 +18,6 @@ VIDEO_TESTS = [
         'name': 'InputStream Adaptive - Dash with Widevine',
         'type': 'ia_widevine',
         'url': 'https://bitmovin-a.akamaihd.net/content/art-of-motion_drm/mpds/11331.mpd',
-        'license_key': 'https://cwip-shaka-proxy.appspot.com/no_auth',
+        'license_key': 'https://widevine-proxy.appspot.com/proxy',
     },
 ]
