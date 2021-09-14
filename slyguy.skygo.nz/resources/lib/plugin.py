@@ -259,12 +259,9 @@ def show(id, season=None, **kwargs):
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
-
     data = api.channels()
-
     items = process_rows(data)
     folder.add_items(items)
-
     return folder
 
 @plugin.route()
