@@ -14,6 +14,7 @@ from slyguy.util import jwt_data
 from .constants import HEADERS, DEFAULT_TOKEN, UUID_NAMESPACE, API_BASE, WV_LICENSE_URL
 from .language import _
 
+
 class APIError(Error):
     pass
 
@@ -26,11 +27,11 @@ class API(object):
         self._set_authentication()
 
     def _set_authentication(self):
-        token = userdata.get('token')
+        token = userdata.get("token")
         if not token:
             return
 
-        self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
+        self._session.headers.update({"Authorization": "Bearer {}".format(token)})
         self.logged_in = True
 
     @contextmanager
@@ -45,23 +46,23 @@ class API(object):
             raise APIError(_.NO_DATA)
 
     def refresh_token(self):
-        if not self.logged_in or time.time() < userdata.get('expires', 0):
+        if not self.logged_in or time.time() < userdata.get("expires", 0):
             return
 
-        data = self._session.put('/oam/v2/user/tokens').json()
+        data = self._session.put("/oam/v2/user/tokens").json()
 
-        if 'errorMessage' in data:
+        if "errorMessage" in data:
             self.logout()
-            raise APIError(_(_.TOKEN_ERROR, msg=data['errorMessage']))
+            raise APIError(_(_.TOKEN_ERROR, msg=data["errorMessage"]))
 
-        self._set_token(data['sessionToken'])
+        self._set_token(data["sessionToken"])
 
     def _set_token(self, token):
         data = jwt_data(token)
-        expires = min(int(time.time()+86400), data['exp']-10)
+        expires = min(int(time.time() + 86400), data["exp"] - 10)
 
-        userdata.set('expires', expires)
-        userdata.set('token', token)
+        userdata.set("expires", expires)
+        userdata.set("token", token)
 
         self._set_authentication()
 
@@ -76,76 +77,80 @@ class API(object):
             "deviceID": deviceid,
         }
 
-        headers = {'Authorization': 'Bearer {}'.format(DEFAULT_TOKEN)}
+        headers = {"Authorization": "Bearer {}".format(DEFAULT_TOKEN)}
 
         with self.api_call():
-            data = self._session.post('/oam/v2/user/tokens', json=payload, headers=headers).json()
+            data = self._session.post(
+                "/oam/v2/user/tokens", json=payload, headers=headers
+            ).json()
 
-        if 'errorMessage' in data:
-            raise APIError(_(_.LOGIN_ERROR, msg=data['errorMessage']))
+        if "errorMessage" in data:
+            raise APIError(_(_.LOGIN_ERROR, msg=data["errorMessage"]))
 
-        userdata.set('deviceid', deviceid)
+        userdata.set("deviceid", deviceid)
 
-        self._set_token(data['sessionToken'])
+        self._set_token(data["sessionToken"])
 
-    def whats_on(self, query=''):
-        now   = arrow.utcnow()
+    def whats_on(self, query=""):
+        now = arrow.utcnow()
         later = now.shift(days=21)
 
         params = {
-            'count': 100,
-            'offset': 0,
-            'language': '*',
-            'query': query,
-            'sort': 'startTime',
-            'sortOrder': 'asc',
-            'startTime.lte': later.format('YYYY-MM-DDTHH:mm:ss.000') + 'Z',
-            'endTime.gte': now.format('YYYY-MM-DDTHH:mm:ss.000') + 'Z',
-            'types': 'live/competitions,live/teamCompetitions,live/events',
+            "count": 100,
+            "offset": 0,
+            "language": "*",
+            "query": query,
+            "sort": "startTime",
+            "sortOrder": "asc",
+            "startTime.lte": later.format("YYYY-MM-DDTHH:mm:ss.000") + "Z",
+            "endTime.gte": now.format("YYYY-MM-DDTHH:mm:ss.000") + "Z",
+            "types": "live/competitions,live/teamCompetitions,live/events",
         }
 
         with self.api_call():
-            return self._session.get('/ocm/v2/search', params=params).json()['results']
+            return self._session.get("/ocm/v2/search", params=params).json()["results"]
 
     def search(self, query):
         params = {
-            'count': 100,
-            'offset': 0,
-            'language': '*',
-            'query': query,
-            'sort': 'liveEventDate',
-            'sortOrder': 'desc',
-            'searchMethods': 'prefix,fuzzy',
-            'types': 'vod/competitions,vod/teamCompetitions,vod/events',
+            "count": 100,
+            "offset": 0,
+            "language": "*",
+            "query": query,
+            "sort": "liveEventDate",
+            "sortOrder": "desc",
+            "searchMethods": "prefix,fuzzy",
+            "types": "vod/competitions,vod/teamCompetitions,vod/events",
         }
 
         with self.api_call():
-            return self._session.get('/ocm/v2/search', params=params).json()['results']
+            return self._session.get("/ocm/v2/search", params=params).json()["results"]
 
     def sparksport(self):
         with self.api_call():
-            return self._session.get('https://d2rhrqdzx7i00p.cloudfront.net/sparksport2').json()
+            return self._session.get(
+                "https://d2rhrqdzx7i00p.cloudfront.net/sparksport2"
+            ).json()
 
     def page(self, page_id):
         with self.api_call():
-            return self._session.get('/ocm/v4/pages/{}'.format(page_id)).json()
+            return self._session.get("/ocm/v4/pages/{}".format(page_id)).json()
 
-    @cached(expires=60*10)
+    @cached(expires=60 * 10)
     def section(self, section_id):
         with self.api_call():
-            return self._session.get('/ocm/v4/sections/{}'.format(section_id)).json()
+            return self._session.get("/ocm/v4/sections/{}".format(section_id)).json()
 
     def live_channels(self):
         with self.api_call():
-            return self._session.get('/ocm/v2/epg/stations').json()['epg/stations']
+            return self._session.get("/ocm/v2/epg/stations").json()["epg/stations"]
 
     def entitiy(self, entity_id):
         with self.api_call():
-            data = self._session.get('/ocm/v2/entities/{}'.format(entity_id)).json()
+            data = self._session.get("/ocm/v2/entities/{}".format(entity_id)).json()
 
         for key in data:
             try:
-                if data[key][0]['id'] == entity_id:
+                if data[key][0]["id"] == entity_id:
                     return data[key][0]
             except (TypeError, KeyError):
                 continue
@@ -154,19 +159,25 @@ class API(object):
 
     def play(self, entity_id):
         entity = self.entitiy(entity_id)
-        if not entity or not entity.get('assetIDs'):
+        if not entity or not entity.get("assetIDs"):
             raise APIError(_.NO_ASSET_ERROR)
 
         with self.api_call():
-            assets = self._session.get('/ocm/v2/assets/{}'.format(entity['assetIDs'][0])).json()['assets']
+            assets = self._session.get(
+                "/ocm/v2/assets/{}".format(entity["assetIDs"][0])
+            ).json()["assets"]
 
         mpd_url = None
         for asset in assets:
             try:
-                urls = asset['liveURLs'] or asset['vodURLs']
-                mpd_url = urls['dash']['primary']
-                backup  = urls['dash'].get('backup')
-                if 'dai.google.com' in mpd_url and backup and 'dai.google.com' not in backup:
+                urls = asset["liveURLs"] or asset["vodURLs"]
+                mpd_url = urls["dash"]["primary"]
+                backup = urls["dash"].get("backup")
+                if (
+                    "dai.google.com" in mpd_url
+                    and backup
+                    and "dai.google.com" not in backup
+                ):
                     mpd_url = backup
             except (TypeError, KeyError):
                 continue
@@ -183,34 +194,39 @@ class API(object):
         #
 
         payload = {
-            'assetID': entity_id,
-            'playbackUrl': mpd_url,
-            'deviceID': userdata.get('deviceid'),
+            "assetID": entity_id,
+            "playbackUrl": mpd_url,
+            "deviceID": userdata.get("deviceid"),
         }
 
-        data = self._session.post('/oem/v2/entitlement?tokentype=isp-atlas', json=payload).json()
-        token = data.get('entitlementToken')
+        data = self._session.post(
+            "/oem/v2/entitlement?tokentype=isp-atlas", json=payload
+        ).json()
+        token = data.get("entitlementToken")
 
         if not token:
-            raise APIError(_(_.NO_ENTITLEMENT, error=data.get('errorMessage')))
+            raise APIError(_(_.NO_ENTITLEMENT, error=data.get("errorMessage")))
 
         params = {
-            'progress': 0,
-            'device': userdata.get('deviceid'),
+            "progress": 0,
+            "device": userdata.get("deviceid"),
         }
 
-        self._session.put('/oxm/v1/streams/{}/stopped'.format(entity_id), params=params)
+        self._session.put("/oxm/v1/streams/{}/stopped".format(entity_id), params=params)
 
-        headers = {'X-ISP-TOKEN': token}
+        headers = {"X-ISP-TOKEN": token}
 
         from_start = True
-        if entity.get('customAttributes', {}).get('isLinearChannelInLiveEvent') == 'true':
+        if (
+            entity.get("customAttributes", {}).get("isLinearChannelInLiveEvent")
+            == "true"
+        ):
             from_start = False
 
         return mpd_url, WV_LICENSE_URL, headers, from_start
 
     def logout(self):
-        userdata.delete('token')
-        userdata.delete('deviceid')
-        userdata.delete('expires')
+        userdata.delete("token")
+        userdata.delete("deviceid")
+        userdata.delete("expires")
         self.new_session()

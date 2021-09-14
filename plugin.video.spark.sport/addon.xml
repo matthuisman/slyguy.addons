@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.spark.sport" name="Spark Sport" provider-name="Slyguy" version="0.6.5">
+<addon id="plugin.video.spark.sport" name="Spark Sport" provider-name="Slyguy" version="0.6.6">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Remove service and reminders</news>
+    <news>Remove x-forward. Black format</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
