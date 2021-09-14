@@ -89,8 +89,11 @@ def plugin_callback():
     def decorator(func):
         @wraps(func)
         def decorated_function(*args, **kwargs):
-            with open(kwargs['_data_path'], 'rb') as f:
-                kwargs['_data'] = f.read()
+            try:
+                with open(kwargs['_data_path'], 'rb') as f:
+                    kwargs['_data'] = f.read()
+            except:
+                kwargs['_data'] = None
 
             remove_file(kwargs['_data_path'])
             kwargs['_headers'] = json.loads(kwargs['_headers'])
@@ -326,10 +329,8 @@ def _settings(**kwargs):
 @plugin_callback()
 def _webvtt(url, _data_path, _headers, **kwargs):
     r = Session().get(url, headers=_headers)
-
     data = r.content.decode('utf8')
     reader = detect_format(data)
-
     data = WebVTTWriter().write(reader().read(data))
     with open(_data_path, 'wb') as f:
         f.write(data.encode('utf8'))

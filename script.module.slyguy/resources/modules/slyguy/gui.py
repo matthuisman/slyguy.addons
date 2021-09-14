@@ -242,6 +242,8 @@ class Item(object):
         return string.strip('&')
 
     def get_li(self):
+        proxy_path = settings.common_settings.get('_proxy_path')
+
         if KODI_VERSION < 18:
             li = xbmcgui.ListItem()
         else:
@@ -289,6 +291,8 @@ class Item(object):
             for key in self.art:
                 if self.art[key] and self.art[key].lower().startswith('http'):
                     self.art[key] = self.art[key].replace(' ', '%20')
+                elif self.art[key] and self.art[key].lower().startswith('plugin'):
+                    self.art[key] = proxy_path + self.art[key]
 
             li.setArt(self.art)
 
@@ -300,11 +304,7 @@ class Item(object):
         if self.context:
             li.addContextMenuItems(self.context)
 
-        # Fake resume - show icon but dont show resume context #
-        if self.resume_from == -1:
-            self.properties['ResumeTime'] = 1
-            self.properties['TotalTime'] = 0
-        elif self.resume_from is not None:
+        if self.resume_from is not None:
             self.properties['ResumeTime'] = self.resume_from
             self.properties['TotalTime'] = self.resume_from
 
@@ -317,8 +317,6 @@ class Item(object):
 
         headers = self.get_url_headers()
         mimetype = self.mimetype
-
-        proxy_path = settings.common_settings.get('_proxy_path')
 
         def get_url(url):
             _url = url.lower()
