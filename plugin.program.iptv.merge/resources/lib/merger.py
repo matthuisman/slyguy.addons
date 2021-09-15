@@ -10,7 +10,7 @@ from six.moves.urllib.parse import unquote_plus
 
 from slyguy import settings, database, gui, router
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, _safe_copy
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, safe_copy
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
@@ -19,10 +19,6 @@ from .constants import *
 from .models import Source, Playlist, EPG, Channel, merge_info
 from .language import _
 from . import iptv_manager
-
-TROLL_URL = 'https://'
-TROLL_NAME = 'Free-IPTV playlists not supported'
-TROLLS = ['free-iptv', 'Food4Monkeys', u'Free\u0097IPTV', 'Raspifan2020', '3eeynA4', 'omDl2kB', 'omG1nwS', 'F R E E - I P T V']
 
 class AddonError(Error):
     pass
@@ -160,7 +156,6 @@ class Merger(object):
         path         = source.path.strip()
         source_type  = source.source_type
         archive_type = source.archive_type
-        self._is_troll = False
 
         if source_type == Source.TYPE_ADDON:
             addon_id = path
@@ -202,15 +197,10 @@ class Merger(object):
                 log.debug('Downloading: {} > {}'.format(path, file_path))
                 resp = Session().chunked_dl(path, file_path)
 
-                for troll in TROLLS:
-                    if troll.lower() in resp.url.lower():
-                        self._is_troll = True
-                        break
-
         elif not xbmcvfs.exists(path):
             raise Error(_(_.LOCAL_PATH_MISSING, path=path))
         else:
-            _safe_copy(path, file_path)
+            safe_copy(path, file_path)
 
         if archive_type == Source.ARCHIVE_AUTO:
             archive_type = Source.auto_archive_type(path)
@@ -231,12 +221,6 @@ class Merger(object):
         if playlist.use_start_chno:
             chnos = {'tv': playlist.start_chno, 'radio': playlist.start_chno}
 
-        if not self._is_troll:
-            for troll in TROLLS:
-                if troll.lower() in playlist.path.lower():
-                    self._is_troll = True
-                    break
-
         valid_file = False
         default_attribs = {}
 
@@ -246,12 +230,6 @@ class Merger(object):
 
                 if not line:
                     continue
-
-                if not self._is_troll:
-                    for troll in TROLLS:
-                        if troll.lower() in line.lower():
-                            self._is_troll = True
-                            break
 
                 if not valid_file and '#EXTM3U' not in line:
                     raise Error('Invalid playlist - Does not start with #EXTM3U')
@@ -330,10 +308,6 @@ class Merger(object):
                                 channel.chno = chnos['tv']
 
                             chnos['tv'] = channel.chno + 1
-
-                    if self._is_troll:
-                        channel.url = TROLL_URL
-                        channel.name = TROLL_NAME
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = playlist.default_visible
@@ -486,7 +460,7 @@ class Merger(object):
 
             log.debug('Wrote {} Channels'.format(count))
             Playlist.after_merge()
-            _safe_copy(working_path, playlist_path)
+            safe_copy(working_path, playlist_path)
         finally:
             database.close()
             if progress: progress.close()
@@ -583,7 +557,7 @@ class Merger(object):
             remove_file(working_path)
             shutil.move(epg_path_tmp, working_path)
 
-            _safe_copy(working_path, epg_path)
+            safe_copy(working_path, epg_path)
         finally:
             database.close()
             if progress: progress.close()
