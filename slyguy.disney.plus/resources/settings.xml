@@ -8,17 +8,19 @@
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="30047" type="bool" id="sync_watchlist" default="true"/>
         <setting label="30016" type="bool" id="sync_playback" default="false"/>
-
-        <setting label="30019" type="bool" id="h265" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
-            <setting label="30052" type="bool" id="dolby_atmos" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-1,true)"/>
-            <setting label="30018" type="bool" id="hdr10" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-2,true)+eq(1,false)"/>
-            <setting label="30015" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-3,true)+eq(-1,false)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
+        <setting label="30019" type="bool" id="h265" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
+            <setting label="30052" type="bool" id="dolby_atmos" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-1,true)"/>
+            <setting label="30018" type="bool" id="hdr10" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-2,true)+eq(1,false)"/>
+            <setting label="30015" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-3,true)+eq(-1,false)"/>
+
+        <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
+        <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32086]" id="audio_whitelist" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32087]" id="subs_whitelist" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32088]" id="subs_forced" type="bool" default="true"/>

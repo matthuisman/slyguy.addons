@@ -1,6 +1,6 @@
 # Language file for Disney+ Video Add-on for Kodi
 # Addon Name: Disney+
-# Addon id: slyguy.disney.plys
+# Addon id: slyguy.disney.plus
 # Addon Provider: SlyGuy
 msgid ""
 msgstr ""

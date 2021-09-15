@@ -534,7 +534,7 @@ def play(content_id=None, family_id=None, **kwargs):
         path = media_stream,
         inputstream = ia,
         headers = headers,
-        proxy_data = {'default_language': original_language, 'original_language': original_language},
+        proxy_data = {'original_language': original_language},
     )
 
     milestones = video.get('milestone', [])
