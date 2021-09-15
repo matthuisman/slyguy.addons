@@ -122,7 +122,7 @@ class BaseLanguage(object):
     QUALITY_FPS                 = 32069
     SELECT_WV_VERSION           = 32070
     WV_UNKNOWN                  = 32071
-
+    DEFAULT_LANGUAGE            = 32072
     DISABLED                    = 32073
     QUALITY_HTTP_ERROR          = 32074
     IA_ANDROID_REINSTALL        = 32075
@@ -171,7 +171,7 @@ class BaseLanguage(object):
     XZ_ERROR                    = 32118
     INSTALLING_APT_IA           = 32119
     FOLDERS_FOR_SHOW_SERIES     = 32120
-
+    DEFAULT_SUBTITLE            = 32121
     WV_REVOKED                  = 32122
     WV_REVOKED_CONFIRM          = 32123
     WV_FAILED                   = 32124

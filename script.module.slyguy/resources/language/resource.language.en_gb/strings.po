@@ -410,6 +410,10 @@ msgctxt "#32071"
 msgid "{label} (Unknown)"
 msgstr ""
 
+msgctxt "#32072"
+msgid "Default Audio"
+msgstr ""
+
 msgctxt "#32073"
 msgid "Disabled"
 msgstr ""
@@ -611,6 +615,9 @@ msgctxt "#32120"
 msgid "Folders for TV Show and Seasons"
 msgstr ""
 
+msgctxt "#32121"
+msgid "Default Subtitle"
+msgstr ""
 
 msgctxt "#32122"
 msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"

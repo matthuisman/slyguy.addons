@@ -335,12 +335,6 @@ msgctxt "#32071"
 msgid "{label} (Unknown)"
 msgstr "{label} (Sconosciuta)"
 
-msgctxt "#32072"
-msgid "Widevine CDM ({version}) Installed\n"
-"If content does not play, you may need to install the latest CDM version instead."
-msgstr "Installata Widevine CDM ({version})\n"
-"Se il contenuto non viene riprodotto, potrebbe essere necessario installare la versione CDM più aggiornata"
-
 msgctxt "#32073"
 msgid "Disabled"
 msgstr "Disabilitata"

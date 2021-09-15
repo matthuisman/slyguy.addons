@@ -683,100 +683,49 @@ class RequestHandler(BaseHTTPRequestHandler):
         audio_description = self._session.get('audio_description', True)
         original_language = self._session.get('original_language', '').lower().strip()
         default_language = self._session.get('default_language', '').lower().strip()
+        default_subtitle = self._session.get('default_subtitle', '').lower().strip()
 
-        if original_language and not default_language:
-            default_language = original_language
-
-        if audio_whitelist:
-            audio_whitelist.append(original_language)
-            audio_whitelist.append(default_language)
-
-        default_groups = []
-        groups = defaultdict(list)
-        for line in m3u8.splitlines():
-            if not line.startswith('#EXT-X-MEDIA'):
-                continue
-
-            attribs = _process_media(line)
-            if not attribs:
-                continue
-
-            if audio_whitelist and attribs.get('TYPE') == 'AUDIO' and 'LANGUAGE' in attribs and not _lang_allowed(attribs['LANGUAGE'].lower().strip(), audio_whitelist):
-                m3u8 = m3u8.replace(line, '')
-                continue
-
-            if subs_whitelist and attribs.get('TYPE') == 'SUBTITLES' and 'LANGUAGE' in attribs and not _lang_allowed(attribs['LANGUAGE'].lower().strip(), subs_whitelist):
-                m3u8 = m3u8.replace(line, '')
-                continue
-
-            if not subs_forced and attribs.get('TYPE') == 'SUBTITLES' and attribs.get('FORCED','').upper() == 'YES':
-                m3u8 = m3u8.replace(line, '')
-                continue
-
-            if not subs_non_forced and attribs.get('TYPE') == 'SUBTITLES' and attribs.get('FORCED','').upper() != 'YES':
-                m3u8 = m3u8.replace(line, '')
-                continue
-
-            if not audio_description and attribs.get('TYPE') == 'AUDIO' and attribs.get('CHARACTERISTICS','').lower() == 'public.accessibility.describes-video':
-                m3u8 = m3u8.replace(line, '')
-                continue
-
-            if attribs.get('TYPE') == 'AUDIO' and 'JOC' in attribs.get('CHANNELS', ''):
-                attribs['NAME'] = _(_.ATMOS, name=attribs['NAME'])
-                attribs['CHANNELS'] = attribs['CHANNELS'].split('/')[0]
-
-            groups[attribs['GROUP-ID']].append([attribs, line])
-            if attribs.get('DEFAULT') == 'YES' and attribs['GROUP-ID'] not in default_groups:
-                default_groups.append(attribs['GROUP-ID'])
-
-        if default_language:
-            for group_id in groups:
-                if group_id in default_groups:
-                    continue
-
-                languages = []
-                for group in groups[group_id]:
-                    attribs, line = group
-
-                    attribs['AUTOSELECT'] = 'NO'
-                    attribs['DEFAULT']    = 'NO'
-
-                    if attribs['LANGUAGE'] not in languages or attribs.get('TYPE') == 'SUBTITLES':
-                        attribs['AUTOSELECT'] = 'YES'
-
-                        if attribs['LANGUAGE'].lower().strip().startswith(default_language):
-                            attribs['DEFAULT'] = 'YES'
-
-                        languages.append(attribs['LANGUAGE'])
-
-        for group_id in groups:
-            for group in groups[group_id]:
-                attribs, line = group
-
-                # FIX es-ES > es / fr-FR > fr languages #
-                if 'LANGUAGE' in attribs:
-                    split = attribs['LANGUAGE'].split('-')
-                    if len(split) > 1 and split[1].lower() == split[0].lower():
-                        attribs['LANGUAGE'] = split[0]
-                #############################
-
-                new_line = '#EXT-X-MEDIA:' if attribs else ''
-                for key in attribs:
-                    new_line += u'{}="{}",'.format(key, attribs[key])
-
-                m3u8 = m3u8.replace(line, new_line.rstrip(','))
-
-        lines = list(m3u8.splitlines())
-        line1 = None
+        stream_inf = None
         streams, all_streams, urls, metas = [], [], [], []
-        for index, line in enumerate(lines):
+        audio = []
+        subtitles = []
+        video = []
+        new_lines = []
+        has_default_audio = False
+        found_default_language = False
+        has_default_subs = False
+        found_default_subs = False
+
+        for line in m3u8.splitlines():
             if not line.strip():
                 continue
 
-            if line.startswith('#EXT-X-STREAM-INF'):
-                line1 = index
-            elif line1 and not line.startswith('#'):
-                attribs = _process_media(lines[line1])
+            if line.startswith('#EXT-X-MEDIA'):
+                attribs = _process_media(line)
+                if not attribs:
+                    continue
+
+                if attribs.get('TYPE') == 'AUDIO':
+                    audio.append(attribs)
+                    if attribs.get('DEFAULT') == 'YES':
+                        has_default_audio = True
+
+                    if default_language and attribs.get('LANGUAGE').lower().strip().startswith(default_language):
+                        found_default_language = True
+
+                elif attribs.get('TYPE') == 'SUBTITLES':
+                    subtitles.append(attribs)
+                    if attribs.get('DEFAULT') == 'YES':
+                        has_default_subs = True
+
+                    if default_subtitle and attribs.get('LANGUAGE').lower().strip().startswith(default_subtitle):
+                        found_default_subs = True
+
+            elif line.startswith('#EXT-X-STREAM-INF'):
+                stream_inf = line
+
+            elif stream_inf and not line.startswith('#'):
+                attribs = _process_media(stream_inf)
 
                 codecs = [x for x in attribs.get('CODECS', '').split(',') if x]
                 bandwidth = int(attribs.get('BANDWIDTH') or 0)
@@ -787,26 +736,104 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if '://' in url:
                     url = '/'+'/'.join(url.lower().split('://')[1].split('/')[1:])
 
-                stream = {'bandwidth': int(bandwidth), 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'lines': [line1, index]}
+                stream = {'bandwidth': int(bandwidth), 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video)}
                 all_streams.append(stream)
+                video.append([stream_inf, line])
 
-                if stream['url'] not in urls and lines[line1] not in metas:
+                if stream['url'] not in urls and stream_inf not in metas:
                     streams.append(stream)
                     urls.append(stream['url'])
-                    metas.append(lines[line1])
+                    metas.append(stream_inf)
 
-                line1 = None
+                stream_inf = None
+            else:
+                new_lines.append(line)
+
+        want_subs = None
+        if not found_default_language:
+            if default_language:
+                want_subs = default_language
+                default_language = None
+        else:
+            has_default_audio = False
+
+        if not default_language and not has_default_audio:
+            default_language = original_language
+
+        if audio_whitelist:
+            audio_whitelist.append(original_language)
+            audio_whitelist.append(default_language)
+
+        for attribs in audio:
+            lang = attribs.get('LANGUAGE').lower().strip()
+
+            if audio_whitelist and not _lang_allowed(lang, audio_whitelist):
+                continue
+
+            if not audio_description and attribs.get('CHARACTERISTICS','').lower() == 'public.accessibility.describes-video':
+                continue
+
+            if 'JOC' in attribs.get('CHANNELS', ''):
+                attribs['NAME'] = _(_.ATMOS, name=attribs['NAME'])
+                attribs['CHANNELS'] = attribs['CHANNELS'].split('/')[0]
+
+            if default_language:
+                attribs['DEFAULT'] = 'YES' if lang.startswith(default_language) else 'NO'
+
+            # FIX es-ES > es / fr-FR > fr languages #
+            split = attribs['LANGUAGE'].split('-')
+            if len(split) > 1 and split[1].lower() == split[0].lower():
+                attribs['LANGUAGE'] = split[0]
+            #############
+
+            new_line = '#EXT-X-MEDIA:' if attribs else ''
+            for key in attribs:
+                new_line += u'{}="{}",'.format(key, attribs[key])
+            new_lines.append(new_line)
+
+        if not found_default_subs:
+            default_subtitle = None
+        else:
+            has_default_subs = False
+
+        if not found_default_subs and not has_default_subs:
+            default_subtitle = want_subs
+
+        if subs_whitelist:
+            subs_whitelist.append(default_subtitle)
+
+        for attribs in subtitles:
+            lang = attribs.get('LANGUAGE').lower().strip()
+
+            if subs_whitelist and not _lang_allowed(lang, subs_whitelist):
+                continue
+                
+            if not subs_forced and attribs.get('FORCED','').upper() == 'YES':
+                continue
+
+            if not subs_non_forced and attribs.get('FORCED','').upper() != 'YES':
+                continue
+
+            if default_subtitle:
+                attribs['DEFAULT'] = 'YES' if lang.startswith(default_subtitle) else 'NO'
+
+            new_line = '#EXT-X-MEDIA:' if attribs else ''
+            for key in attribs:
+                new_line += u'{}="{}",'.format(key, attribs[key])
+            new_lines.append(new_line)
 
         selected = self._quality_select(streams)
         if selected:
             adjust = 0
             for stream in all_streams:
                 if stream['url'] != selected['url']:
-                    for index in stream['lines']:
-                        lines.pop(index-adjust)
-                        adjust += 1
+                    video.pop(stream['index']-adjust)
+                    adjust += 1
 
-        return '\n'.join(lines)
+        for stream in video:
+            new_lines.extend(stream)
+
+        return '\n'.join(new_lines)
 
     def _parse_m3u8(self, response):
         m3u8 = response.stream.content.decode('utf8')

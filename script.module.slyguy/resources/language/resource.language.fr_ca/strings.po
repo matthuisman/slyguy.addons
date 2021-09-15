@@ -328,11 +328,6 @@ msgctxt "#32071"
 msgid "{label} (Unknown)"
 msgstr ""
 
-msgctxt "#32072"
-msgid "Widevine CDM ({version}) Installed\n"
-"If content does not play, you may need to install the latest CDM version instead."
-msgstr ""
-
 msgctxt "#32073"
 msgid "Disabled"
 msgstr ""
@@ -533,10 +528,6 @@ msgstr ""
 msgctxt "#32120"
 msgid "Folders for TV Show and Seasons"
 msgstr "Afficher un icône dossier pour les séries et les saisons"
-
-msgctxt "#32121"
-msgid "Inputstream Adaptive Testing is not available for UWP or IOS"
-msgstr ""
 
 msgctxt "#32122"
 msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"
