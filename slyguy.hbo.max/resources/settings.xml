@@ -9,6 +9,12 @@
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="30032" type="bool" id="sync_watchlist" default="true"/>
         <setting label="30033" type="bool" id="sync_playback" default="false"/>
+    </category>
+
+    <category label="$ADDON[script.module.slyguy 32035]">
+        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
+        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
+
         <setting label="30008" type="bool" id="ignore_subs" default="false"/>
         <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
         <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
@@ -18,11 +24,8 @@
         <setting label="30014" type="bool" id="h265" default="false"/>
         <setting label="30015" type="bool" id="4k_enabled" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
         <setting label="30016" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
-    </category>
-
-    <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
-        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
+        <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
+        <!-- <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/> -->
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="false" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
