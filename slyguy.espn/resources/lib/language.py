@@ -16,5 +16,6 @@ class Language(BaseLanguage):
     RESET_HIDDEN       = 30012
     RESET_HIDDEN_OK    = 30013
     HIDE_CHANNEL       = 30014
+    SHOW_UPCOMING      = 30015
 
 _ = Language()

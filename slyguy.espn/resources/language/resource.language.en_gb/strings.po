@@ -64,6 +64,10 @@ msgctxt "#30014"
 msgid "Hide channel"
 msgstr ""
 
+msgctxt "#30015"
+msgid "Show Upcoming"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

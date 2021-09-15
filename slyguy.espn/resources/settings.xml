@@ -2,6 +2,7 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30012" type="action" action="RunPlugin(plugin://$ID/?_=clear_hidden)"/>
+        <setting label="30015" type="bool" id="show_upcoming" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

@@ -48,7 +48,11 @@ def live(**kwargs):
     hidden = userdata.get('hidden', [])
 
     data = api.bucket(LIVE_BUCKET_ID)
+    events = []
     for row in data['buckets'][0]['contents']:
+        if row['status'] != 'live' and not settings.getBool('show_upcoming', False):
+            continue
+
         streams = []
         for stream in row['streams']:
             if stream['source']['id'] in hidden:
@@ -60,12 +64,15 @@ def live(**kwargs):
         if not streams:
             continue
 
-        sources = u'/'.join([x['source']['name'] for x in streams])
-
-        if len(streams) > 1:
+        if row.get('eventId'):
+            if row['eventId'] in events:
+                continue
+            events.append(row['eventId'])
             path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
         else:
             path = plugin.url_for(play, content_id=row['id'], _is_live=True)
+
+        sources = u'/'.join([x['source']['name'] for x in streams])
 
         label = u'{name} [{sources}] '.format(name=row['name'], sources=sources)
         if row['status'] != 'live':
@@ -169,8 +176,7 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
     is_live = ROUTE_LIVE_TAG in kwargs
 
     if event_id:
-        data = api.event(event_id)
-        content_id = _select_stream(data)
+        content_id = _select_stream(event_id)
         if not content_id:
             return
 
@@ -186,7 +192,7 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
         headers = playback_data.get('headers'),
     )
 
-def _select_stream(data):
+def _select_stream(event_id):
     options = []
     values = []
 
@@ -196,13 +202,21 @@ def _select_stream(data):
     if api.espn.logged_in:
         avail_auth.append('direct')
 
-    for stream in data['streams']:
-        if stream.get('status') != 'live':
-            continue
+    hidden = userdata.get('hidden', [])
 
-        if any(x in stream['authTypes'] for x in avail_auth):
-            options.append(stream['source']['name'])
-            values.append(stream['id'])
+    for group in api.picker(event_id):
+        for row in group.get('contents', []):
+            if row.get('status') != 'live' or not row.get('streams'):
+                continue
+
+            stream = row['streams'][0]
+            if stream['source']['id'] in hidden:
+                continue
+            if not any(x in stream['authTypes'] for x in avail_auth):
+                continue
+
+            options.append(row['name'])
+            values.append(row['id'])
 
     if not values:
         raise PluginError(_.NO_SOURCE)

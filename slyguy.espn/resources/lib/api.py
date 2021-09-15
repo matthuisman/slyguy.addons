@@ -45,15 +45,28 @@ class API(object):
         params = {
             'bucketId': bucket_id,
         }
-
         return self._session.get('/bucket', params=params).json()['page']
 
     def event(self, event_id):
         params = {
             'eventId': event_id,
         }
-
         return self._session.get('/event', params=params).json()['page']['contents']
+
+    def picker(self, event_id):
+        params = {
+            'eventId': event_id,
+            'partitionDtc': 'true',
+            'tz': 'UTC',
+            # 'countryCode': 'US',
+            # 'lang': 'en',
+            # 'deviceType': 'settop',
+            # 'entitlements': 'ESPN_PLUS',
+            # 'appVersion': '4.7.1',
+            # 'iapPackages': 'ESPN_PLUS_UFC_PPV_265,ESPN_PLUS',
+            # 'features': 'imageRatio58x13,promoTiles,openAuthz',
+        }
+        return self._session.get('/picker', params=params).json()['page']['buckets']
 
     def play_network(self, network):
         params = {
