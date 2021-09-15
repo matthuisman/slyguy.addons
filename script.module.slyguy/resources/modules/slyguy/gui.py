@@ -409,8 +409,6 @@ class Item(object):
                 'slug': '{}-{}'.format(ADDON_ID, sys.argv[2]),
                 'license_url': license_url,
                 'session_id': hash_6(time.time()),
-                'default_language': settings.get('default_language', ''),
-                'default_subtitle': settings.get('default_subtitle', ''),
                 'audio_whitelist': settings.get('audio_whitelist', ''),
                 'subs_whitelist':  settings.get('subs_whitelist', ''),
                 'audio_description': settings.getBool('audio_description', True),
@@ -432,6 +430,11 @@ class Item(object):
                 proxy_data['type'] = 'mpd'
 
             proxy_data.update(self.proxy_data)
+
+            for key in ['default_language', 'default_subtitle']:
+                value = settings.get(key, '')
+                if value:
+                    proxy_data[key] = value
 
             if self.subtitles:
                 subs = []
