@@ -525,6 +525,10 @@ class Item(gui.Item):
 
         self.proxy_data['quality'] = quality
 
+        if self.resume_from is not None and self.resume_from < 0:
+            self.play_skips.append({'to': int(self.resume_from)})
+            self.resume_from = 1
+
         li = self.get_li()
         handle = _handle()
 

@@ -88,13 +88,17 @@ class Player(xbmc.Player):
                 play_skips.extend(data['skips'])
 
         for skip in play_skips:
-            if not skip.get('from'):
-                continue
-
             if not skip.get('to'):
                 skip['to'] = int(self.getTotalTime())+1
             else:
+                if skip['to'] < 0:
+                    self.seekTime(self.getTotalTime() + skip['to'] - 3)
+                    continue
+
                 skip['to'] -= 3
+
+            if not skip.get('from'):
+                continue
 
             self._play_skips.append(skip)
 
