@@ -705,12 +705,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if not attribs:
                     continue
 
+                lang = attribs.get('LANGUAGE','').lower().strip()
                 if attribs.get('TYPE') == 'AUDIO':
                     audio.append(attribs)
                     if attribs.get('DEFAULT') == 'YES':
                         has_default_audio = True
 
-                    if default_language and attribs.get('LANGUAGE').lower().strip().startswith(default_language):
+                    if default_language and lang.startswith(default_language):
                         found_default_language = True
 
                 elif attribs.get('TYPE') == 'SUBTITLES':
@@ -718,7 +719,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if attribs.get('DEFAULT') == 'YES':
                         has_default_subs = True
 
-                    if default_subtitle and attribs.get('LANGUAGE').lower().strip().startswith(default_subtitle):
+                    if default_subtitle and lang.startswith(default_subtitle):
                         found_default_subs = True
 
             elif line.startswith('#EXT-X-STREAM-INF'):
@@ -765,7 +766,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             audio_whitelist.append(default_language)
 
         for attribs in audio:
-            lang = attribs.get('LANGUAGE').lower().strip()
+            lang = attribs.get('LANGUAGE','').lower().strip()
 
             if audio_whitelist and not _lang_allowed(lang, audio_whitelist):
                 continue
@@ -781,7 +782,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 attribs['DEFAULT'] = 'YES' if lang.startswith(default_language) else 'NO'
 
             # FIX es-ES > es / fr-FR > fr languages #
-            split = attribs['LANGUAGE'].split('-')
+            split = attribs.get('LANGUAGE','').split('-')
             if len(split) > 1 and split[1].lower() == split[0].lower():
                 attribs['LANGUAGE'] = split[0]
             #############
@@ -803,11 +804,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             subs_whitelist.append(default_subtitle)
 
         for attribs in subtitles:
-            lang = attribs.get('LANGUAGE').lower().strip()
+            lang = attribs.get('LANGUAGE','').lower().strip()
 
             if subs_whitelist and not _lang_allowed(lang, subs_whitelist):
                 continue
-                
+
             if not subs_forced and attribs.get('FORCED','').upper() == 'YES':
                 continue
 
