@@ -66,7 +66,7 @@ class API(object):
             # 'iapPackages': 'ESPN_PLUS_UFC_PPV_265,ESPN_PLUS',
             # 'features': 'imageRatio58x13,promoTiles,openAuthz',
         }
-        return self._session.get('/picker', params=params).json()['page']['buckets']
+        return self._session.get('/picker', params=params).json()['page'].get('buckets', [])
 
     def play_network(self, network):
         params = {
@@ -89,7 +89,8 @@ class API(object):
         }
 
         data = self._session.get(WATCH_URL, params=params).json()
-        source = data['data']['airing']['source']
+        airing = data['data']['airing']
+        source = airing['source']
 
         if not source['url']:
             raise APIError(_.NO_SOURCE)
@@ -98,7 +99,7 @@ class API(object):
             if not self._provider.logged_in:
                 raise APIError(_.NOT_ENTITLED)
 
-            provider_data = self._provider.token(data['data']['airing']['adobeRSS'])
+            provider_data = self._provider.token(airing['adobeRSS'])
 
             payload = {
                 'adobeToken': provider_data['serializedToken'],
@@ -110,13 +111,13 @@ class API(object):
             data = self._session.post(source['url'], params={'apikey': SHIELD_API_KEY}, data=payload).json()
             check_errors(data)
 
-            return {'url': data['stream']}
+            return airing, {'url': data['stream']}
 
         elif source['authorizationType'] == 'BAM':
             if not self._espn.logged_in:
                 raise APIError(_.NOT_ENTITLED)
 
-            return self._espn.playback(source['url'])
+            return airing, self._espn.playback(source['url'])
         else:
             raise Exception('unknown auth type!')
 

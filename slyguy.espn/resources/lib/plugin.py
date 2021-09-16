@@ -3,8 +3,8 @@ from slyguy import plugin, gui, signals, inputstream, settings, userdata
 from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
-from slyguy.constants import ROUTE_LIVE_TAG
 from slyguy.exceptions import PluginError
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_LIVE_TAG
 
 from .constants import *
 from .language import _
@@ -46,11 +46,17 @@ def live(**kwargs):
         avail_auth.append('direct')
 
     hidden = userdata.get('hidden', [])
+    show_upcoming = settings.getBool('show_upcoming', False)
+    show_scores = settings.getBool('show_live_scores', False)
+    now = arrow.now()
 
     data = api.bucket(LIVE_BUCKET_ID)
     events = []
     for row in data['buckets'][0]['contents']:
-        if row['status'] != 'live' and not settings.getBool('show_upcoming', False):
+        if row['id'] in events or row.get('eventId') in events:
+            continue
+
+        if row['status'] != 'live' and not show_upcoming:
             continue
 
         streams = []
@@ -64,24 +70,40 @@ def live(**kwargs):
         if not streams:
             continue
 
+        catalog = {}
+        for cat in row.get('catalog', []):
+            catalog[cat['type']] = cat['name']
+
+        subtitle = '{} - {}'.format(catalog.get('sport' ,''), catalog.get('league', '')).strip().strip('-').strip()
+        if subtitle:
+            subtitle = '({})'.format(subtitle)
+
         if row.get('eventId'):
-            if row['eventId'] in events:
-                continue
             events.append(row['eventId'])
+        events.append(row['id'])
+
+        start = arrow.get(row['utc']).to('local')
+        plot = row['subtitle']
+        label = u'{name} {subtitle} '.format(name=row['name'], subtitle=subtitle).strip()
+        if row['status'] != 'live':
+            label = u'{} [B][{}][/B]'.format(label, start.format('h:mm A'))
+
+        if start < now:
+            plot += '\n' + _(_.STARTED, time=start.format('h:mma'))
+        else:
+            plot += '\n' + _(_.STARTS, time=start.format('h:mma'))
+
+        if row.get('eventId'):
             path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
+            if 'event' in row and show_scores:
+                plot += u'\n\n{statusTextOne}\n{teamOneName} {teamOneScore}\n{teamTwoName} {teamTwoScore}'.format(**row['event'])
         else:
             path = plugin.url_for(play, content_id=row['id'], _is_live=True)
-
-        sources = u'/'.join([x['source']['name'] for x in streams])
-
-        label = u'{name} [{sources}] '.format(name=row['name'], sources=sources)
-        if row['status'] != 'live':
-            label = u'{} [{}]'.format(label, arrow.get(row['utc']).to('local').format('h:mm A'))
 
         folder.add_item(
             label = label,
             info = {
-                'plot': row['subtitle'],
+                'plot': plot,
             },
             art = {'thumb': row['imageHref']},
             playable = True,
@@ -184,13 +206,28 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
         data = api.play_network(network_id)
         content_id = data['id']
 
-    playback_data = api.play(content_id)
+    airing, playback_data = api.play(content_id)
 
-    return plugin.Item(
+    item = plugin.Item(
         path = playback_data['url'],
         inputstream = inputstream.HLS(live=is_live),
         headers = playback_data.get('headers'),
     )
+
+    offset = int((arrow.get(airing['startDateTime']) - arrow.now()).total_seconds())
+    if is_live and not airing.get('requiresLinearPlayback', True) and offset < 0:
+        play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+        if play_type == PLAY_FROM_ASK:
+            result = plugin.live_or_start()
+            if result == -1:
+                return
+            elif result == 1:
+                item.resume_from = offset
+
+        elif play_type == PLAY_FROM_START:
+            item.resume_from = offset
+
+    return item
 
 def _select_stream(event_id):
     options = []
@@ -203,10 +240,14 @@ def _select_stream(event_id):
         avail_auth.append('direct')
 
     hidden = userdata.get('hidden', [])
+    alt_lang = settings.getBool('alt_languages', True)
 
     for group in api.picker(event_id):
+        if not alt_lang and group['name'].lower().startswith('watch in'):
+            continue
+
         for row in group.get('contents', []):
-            if row.get('status') != 'live' or not row.get('streams'):
+            if not row.get('streams'):
                 continue
 
             stream = row['streams'][0]
@@ -224,7 +265,7 @@ def _select_stream(event_id):
     elif len(values) == 1:
         return values[0]
 
-    index = gui.select(options=options, heading=_.SELECT_BROADCAST)
+    index = gui.context_menu(options)
     if index < 0:
         return
 

@@ -68,6 +68,22 @@ msgctxt "#30015"
 msgid "Show Upcoming"
 msgstr ""
 
+msgctxt "#30016"
+msgid "Show Live Scores"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Show Other Language Broadcasts"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Starts {time}"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Started {time}"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
@@ -92,4 +108,16 @@ msgstr ""
 
 msgctxt "#32073"
 msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
 msgstr ""
