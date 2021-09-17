@@ -593,7 +593,8 @@ def play(slug, **kwargs):
 
     if not settings.getBool('ignore_subs', False):
         for row in data.get('textTracks', []):
-            item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
+            if 'url' in row:
+                item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
 
     if settings.getBool('sync_playback', False):
         item.callback = {
