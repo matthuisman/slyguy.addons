@@ -326,7 +326,7 @@ def _process_entries(entries):
 
                 if 'episode' in row:
                     program_id = row['episode']['id']
-                    if row['episode']['bonusFeature']:
+                    if row['episode'].get('bonusFeature'):
                         item.info['duration'] = None
                 else:
                     program_id = row['id']
