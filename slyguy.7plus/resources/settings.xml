@@ -3,6 +3,8 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30015" type="bool" id="flatten_single_season" default="true"/>
         <setting label="30014" type="bool" id="hide_suggested" default="false"/>
+        <setting label="30001" type="text" id="lat" default=""/>
+        <setting label="30002" type="text" id="long" default=""/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

@@ -18,6 +18,14 @@ msgctxt "#30000"
 msgid "Home"
 msgstr ""
 
+msgctxt "#30001"
+msgid "Latitude"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Longitude"
+msgstr ""
+
 msgctxt "#30004"
 msgid "Live"
 msgstr ""

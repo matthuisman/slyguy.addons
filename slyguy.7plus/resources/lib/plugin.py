@@ -1,11 +1,11 @@
-import codecs
 import re
+import codecs
 from xml.sax.saxutils import escape
 
 import arrow
 from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
-from slyguy import plugin, gui, settings, userdata, signals, inputstream, mem_cache
+from slyguy import plugin, settings, signals, mem_cache
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG
 

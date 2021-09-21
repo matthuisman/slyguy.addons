@@ -1,9 +1,7 @@
-from time import time
-
-from slyguy import userdata, mem_cache
+from slyguy import mem_cache, settings
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import jwt_data, process_brightcove
+from slyguy.util import process_brightcove
 from slyguy.log import log
 
 from .constants import *
@@ -17,13 +15,34 @@ class API(object):
         self.logged_in = False
         self._session = Session(headers=HEADERS)
 
-    @mem_cache.cached(60*5)
     def _market_id(self):
-        try:
-            return self._session.get('https://market-cdn.swm.digital/v1/market/ip/', params={'apikey': 'web'}).json()['_id']
-        except:
-            log.debug('Failed to get market id')
-            return '4' #Sydney
+        SYDNEY_MARKET_ID = 4
+
+        @mem_cache.cached(60*10)
+        def auto():
+            try:
+                return self._session.get('https://market-cdn.swm.digital/v1/market/ip/', params={'apikey': 'web'}).json()['_id']
+            except:
+                log.debug('Failed to get market id from IP. Default to Sydney')
+                return SYDNEY_MARKET_ID
+
+        @mem_cache.cached(60*30)
+        def lat_long(lat, long):
+            try:
+                return self._session.get('https://market-cdn.swm.digital/v1/market/location/', params={'apikey': 'web', 'lat': '{:.4f}'.format(lat), 'lon': '{:.4f}'.format(long)}).json()['_id']
+            except:
+                log.debug('Failed to get market id from lat long. Default to Sydney')
+                return SYDNEY_MARKET_ID
+
+        latitude = settings.getFloat('lat')
+        longitude = settings.getFloat('long')
+
+        if latitude is not None and longitude is not None:
+            market_id = lat_long(latitude, longitude)
+        else:
+            market_id = auto()
+
+        return market_id
 
     def nav(self):
         params = {
