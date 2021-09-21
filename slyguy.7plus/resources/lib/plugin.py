@@ -24,6 +24,8 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
+    folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, slug='ctv-home'))
+
     _nav(folder)
 
     folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(content, slug='news'))
@@ -54,8 +56,7 @@ def _nav(folder):
         'live-tv': plugin.url_for(live_tv),
     }
 
-    data = api.content('nav')
-    for row in data['items']:
+    for row in api.nav():
         slug = row['contentLink'].lstrip('/')
         path = replaces.get(slug, plugin.url_for(content, slug=slug))
         folder.add_item(
@@ -362,10 +363,6 @@ def play_channel(slug, **kwargs):
     item = _play(params['accountId'], params['referenceId'], live=True)
     item.label = data['posterImage']['altTag']
     item.art = {'thumb': _image(data['posterImage']['url'])}
-
-    ## Dont use Inputstream for Iwonder
-    if slug == 'RLIN1':
-        item.inputstream = None
 
     return item
 

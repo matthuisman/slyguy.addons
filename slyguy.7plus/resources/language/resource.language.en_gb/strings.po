@@ -1,4 +1,21 @@
+# Language file for Kodi
+# Addon Name: 7plus
+# Addon id: slyguy.7plus
+# Addon Provider: SlyGuy
 msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "Home"
 msgstr ""
 
 msgctxt "#30004"

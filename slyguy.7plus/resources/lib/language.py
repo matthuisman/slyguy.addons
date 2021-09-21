@@ -1,6 +1,7 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
+    HOME              = 30000
     LIVE_TV           = 30004
 
     NEWS              = 30008
