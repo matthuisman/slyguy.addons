@@ -374,6 +374,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         default_language = self._session.get('default_language', '')
         original_language = self._session.get('original_language', '')
+        subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
 
         for period_index, period in enumerate(root.getElementsByTagName('Period')):
             rep_index = 0
@@ -525,13 +526,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         ##################
 
         ## REMOVE SUBS
-        # if subs_whitelist:
-        #     for adap_set in root.getElementsByTagName('AdaptationSet'):
-        #         if adap_set.getAttribute('contentType') == 'text':
-        #             language = adap_set.getAttribute('lang')
-        #             if not _lang_allowed(language.lower().strip(), subs_whitelist):
-        #                 adap_set.parentNode.removeChild(adap_set)
-        ##
+        if subs_whitelist:
+            for adap_set in root.getElementsByTagName('AdaptationSet'):
+                if adap_set.getAttribute('contentType') == 'text':
+                    language = adap_set.getAttribute('lang')
+                    if not _lang_allowed(language.lower().strip(), subs_whitelist):
+                        adap_set.parentNode.removeChild(adap_set)
+        ################
 
         ## Convert BaseURLS
         base_url_parents = []
