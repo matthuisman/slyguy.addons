@@ -23,10 +23,6 @@ msgctxt "#30007"
 msgid "Dolby Digital Plus (EC-3)"
 msgstr ""
 
-msgctxt "#30008"
-msgid "Ignore Subtitles"
-msgstr ""
-
 msgctxt "#30009"
 msgid "Playback language"
 msgstr ""

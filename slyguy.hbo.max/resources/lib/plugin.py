@@ -591,10 +591,9 @@ def play(slug, **kwargs):
                     item.play_next['next_file'] = 'urn:hbo:feature:' + slug.split(':')[3]
                     break
 
-    if not settings.getBool('ignore_subs', False):
-        for row in data.get('textTracks', []):
-            if 'url' in row:
-                item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
+    for row in data.get('textTracks', []):
+        if 'url' in row:
+            item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
 
     if settings.getBool('sync_playback', False):
         item.callback = {

@@ -15,7 +15,7 @@
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
-        <setting label="30008" type="bool" id="ignore_subs" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 32087]" id="subs_whitelist" type="text" default=""/>
         <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
         <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
             <setting label="30031" type="bool" id="atmos_enabled" default="false" enable="eq(-1,true)"/>
