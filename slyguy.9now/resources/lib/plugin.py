@@ -7,7 +7,7 @@ from slyguy import plugin, gui, settings, userdata, inputstream
 from slyguy.constants import *
 
 from .api import API
-from .constants import HEADERS
+from .constants import *
 from .language import _
 
 api = API()
@@ -245,12 +245,16 @@ def search(query, page, **kwargs):
 
     return items, False
 
+def _channels():
+    region = settings.getEnum('region', REGIONS, default=AUTO)
+    return api.channels(region)
+
 @plugin.route()
 def live_events(**kwargs):
-    folder = plugin.Folder(_.LIVE_EVENTS)
-
-    data = api.channels()
+    data = _channels()
     now = arrow.now()
+
+    folder = plugin.Folder(_.LIVE_EVENTS)
 
     for row in data['events']:
         start = arrow.get(row['startDate']).to('local')
@@ -275,10 +279,10 @@ def live_events(**kwargs):
 
 @plugin.route()
 def live_tv(**kwargs):
-    folder = plugin.Folder(_.LIVE_TV)
-
-    data = api.channels()
+    data = _channels()
     now = arrow.now()
+
+    folder = plugin.Folder(_(_.LIVE_TV_REGION, region=data['localRegion']['state']))
 
     for row in data['channels']:
         plot = u''
@@ -358,7 +362,7 @@ def _parse_episode(row):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    data = api.channels()
+    data = _channels()
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')

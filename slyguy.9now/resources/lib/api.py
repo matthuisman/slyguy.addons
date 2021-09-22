@@ -55,8 +55,8 @@ class API(object):
         return self._session.get('/genres/{category}'.format(category=category), params={'device': 'web'}).json()
 
     @mem_cache.cached(60*5)
-    def channels(self):
-        return self._session.get('/livestreams', params={'device': 'web'}).json()
+    def channels(self, region=''):
+        return self._session.get('/livestreams{}'.format('/'+region if region else ''), params={'device': 'web'}).json()
 
     def get_brightcove_src(self, reference):
         if not reference.isdigit():
