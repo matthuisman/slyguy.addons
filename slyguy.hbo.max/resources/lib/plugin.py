@@ -531,6 +531,11 @@ def play(slug, **kwargs):
         'Authorization': 'Bearer {}'.format(userdata.get('access_token')),
     }
 
+    # if '_noanc_ad_' not in data['url']:
+    #     new_url = data['url'].replace('_ad_', '_noanc_ad_')
+    #     log.debug('Manifest url changed from {} to {} (to disable embedded ads)'.format(data['url'], new_url))
+    #     data['url'] = new_url
+
     item = plugin.Item(
         path = data['url'],
         inputstream = inputstream.MPD(),
@@ -591,9 +596,15 @@ def play(slug, **kwargs):
                     item.play_next['next_file'] = 'urn:hbo:feature:' + slug.split(':')[3]
                     break
 
+    # base_url = data['url'].rsplit('/', 1)[0]
     for row in data.get('textTracks', []):
-        if 'url' in row:
-            item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
+        if 'url' not in row:
+            continue
+            # row['url'] = '{base_url}/t/sub/{language}_{type}.xml'.format(base_url=base_url, language=row['language'], type='forced' if row['type'].lower() == 'forced' else 'sub')
+            # log.debug('Generated subtitle url: {}'.format(row['url']))
+            # sometimes they end with sub and other times sdh
+
+        item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
 
     if settings.getBool('sync_playback', False):
         item.callback = {
