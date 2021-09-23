@@ -151,10 +151,11 @@ class API(object):
         self._refresh_token()
         return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
 
-    def license_request(self, data):
+    def license_request(self, data, headers):
         self._refresh_token()
 
-        resp = self._session.post(LICENSE_URL, data=data, headers=self._auth_header)
+        headers.update(self._auth_header)
+        resp = Session().post(LICENSE_URL, data=data, headers=headers)
         if not resp.ok:
             raise APIError('Failed to get license')
 
@@ -166,7 +167,7 @@ class API(object):
         payload = {
             'assetId': asset_id,
             'canPlayHevc': settings.getBool('hevc', False),
-            'contentType':  'application/xml+dash',
+            'contentType': 'application/xml+dash',
             'drm': True,
             'forceSdQuality': False,
             'playerName': 'exoPlayerTV',

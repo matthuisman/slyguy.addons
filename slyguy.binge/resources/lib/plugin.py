@@ -534,8 +534,8 @@ def _set_profile(profile, notify=True):
 
 @plugin.route()
 @plugin.plugin_callback()
-def license_request(_data, _data_path, **kwargs):
-    data = api.license_request(_data)
+def license_request(_data, _data_path, _headers, **kwargs):
+    data = api.license_request(_data, _headers)
 
     with open(_data_path, 'wb') as f:
         f.write(data)
