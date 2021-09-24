@@ -533,14 +533,10 @@ def _set_profile(profile, notify=True):
         gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=_get_avatar(profile['avatar_id']))
 
 @plugin.route()
-@plugin.plugin_callback()
-def license_request(_data, _data_path, _headers, **kwargs):
-    data = api.license_request(_data, _headers)
-
-    with open(_data_path, 'wb') as f:
-        f.write(data)
-
-    return _data_path
+@plugin.plugin_request()
+def license_request(**kwargs):
+    url, headers = api.license_request()
+    return {'url': url, 'headers': headers}
 
 @plugin.route()
 @plugin.login_required()

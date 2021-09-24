@@ -151,15 +151,9 @@ class API(object):
         self._refresh_token()
         return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
 
-    def license_request(self, data, headers):
+    def license_request(self):
         self._refresh_token()
-
-        headers.update(self._auth_header)
-        resp = Session().post(LICENSE_URL, data=data, headers=headers)
-        if not resp.ok:
-            raise APIError('Failed to get license')
-
-        return resp.content
+        return LICENSE_URL, self._auth_header
 
     def stream(self, asset_id):
         self._refresh_token()
