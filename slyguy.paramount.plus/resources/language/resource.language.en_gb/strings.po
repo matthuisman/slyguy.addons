@@ -99,7 +99,7 @@ msgid "Select Partner"
 msgstr ""
 
 msgctxt "#30028"
-msgid "Ignore Subtitles"
+msgid "Dolby Atmos"
 msgstr ""
 
 msgctxt "#30029"

@@ -7,6 +7,9 @@ import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
+from slyguy.util import replace_kids
+from slyguy.drm import is_wv_secure
+from slyguy.log import log
 
 from .language import _
 from .api import API
@@ -521,49 +524,93 @@ def _parse_item(row):
     return plugin.Item()
 
 @plugin.route()
-@plugin.plugin_callback()
-def mpd_request(_data, _data_path, **kwargs):
+@plugin.plugin_middleware()
+def mpd_request(_data, _path, **kwargs):
     root = parseString(_data)
 
     dolby_vison = settings.getBool('dolby_vision', False)
-    h265 = settings.getBool('h265', False)
     enable_4k = settings.getBool('4k_enabled', True)
+    h265 = enable_4k or settings.getBool('h265', False)
     enable_ac3 = settings.getBool('ac3_enabled', False)
     enable_ec3 = settings.getBool('ec3_enabled', False)
+    enable_atmos = settings.getBool('atmos_enabled', False)
     enable_accessibility = settings.getBool('accessibility_enabled', False)
-    ignore_subs = settings.getBool('ignore_subs', False)
 
-    for elem in root.getElementsByTagName('Representation'):
-        parent = elem.parentNode
-        _codecs = elem.getAttribute('codecs').lower()
-        height = int(elem.getAttribute('height') or 0)
-        width = int(elem.getAttribute('width') or 0)
-
-        if not dolby_vison and (_codecs.startswith('dvhe') or _codecs.startswith('dvh1')):
-            parent.removeChild(elem)
-
-        elif not h265 and (_codecs.startswith('hvc') or _codecs.startswith('hev')):
-            parent.removeChild(elem)
-
-        elif not enable_4k and (height > 1080 or width > 1920):
-            parent.removeChild(elem)
-
-        elif not enable_ac3 and _codecs == 'ac-3':
-            parent.removeChild(elem)
-
-        elif not enable_ec3 and _codecs == 'ec-3':
-            parent.removeChild(elem)
-
+    vid_sets = []
     for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not adap_set.getElementsByTagName('Representation') or \
-            (not enable_accessibility and adap_set.getElementsByTagName('Accessibility')) or \
-                (ignore_subs and adap_set.getAttribute('contentType') == 'text'):
+        if not enable_accessibility and adap_set.getElementsByTagName('Accessibility'):
             adap_set.parentNode.removeChild(adap_set)
+            continue
 
-    with open(_data_path, 'wb') as f:
+        if adap_set.getAttribute('contentType') == 'video':
+            kid = None
+            for elem in adap_set.getElementsByTagName('ContentProtection'):
+                _kid = elem.getAttribute('cenc:default_KID')
+                if _kid:
+                    kid = _kid
+                    break
+
+            vid_sets.append([int(adap_set.getAttribute('maxHeight') or 0), kid, adap_set])
+
+        for elem in adap_set.getElementsByTagName('Representation'):
+            parent = elem.parentNode
+            codecs = elem.getAttribute('codecs').lower()
+            height = int(elem.getAttribute('height') or 0)
+            width = int(elem.getAttribute('width') or 0)
+
+            if not dolby_vison and (codecs.startswith('dvh1') or codecs.startswith('dvhe')):
+                parent.removeChild(elem)
+
+            elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
+                parent.removeChild(elem)
+
+            elif not enable_4k and (height > 1080 or width > 1920):
+                parent.removeChild(elem)
+
+            elif not enable_ac3 and codecs == 'ac-3':
+                parent.removeChild(elem)
+
+            elif (not enable_ec3 or not enable_atmos) and codecs == 'ec-3':
+                is_atmos = False
+                for supelem in elem.getElementsByTagName('SupplementalProperty'):
+                    if supelem.getAttribute('value') == 'JOC':
+                        is_atmos = True
+                        break
+
+                if not enable_ec3 or (not enable_atmos and is_atmos):
+                    parent.removeChild(elem)
+
+    vid_sets = sorted(vid_sets, key=lambda x: x[0], reverse=True)
+    if vid_sets and not is_wv_secure():
+        lowest = vid_sets.pop()
+        for row in vid_sets:
+            if row[1] != lowest[1]:
+                row[2].parentNode.removeChild(row[2])
+
+    ## Remove empty adaption sets
+    for adap_set in root.getElementsByTagName('AdaptationSet'):
+        if not adap_set.getElementsByTagName('Representation'):
+            adap_set.parentNode.removeChild(adap_set)
+    #################
+
+    ## Fix of cenc pssh to only contain kids still present
+    kids = []
+    for elem in root.getElementsByTagName('ContentProtection'):
+        kids.append(elem.getAttribute('cenc:default_KID'))
+
+    if kids:
+        for elem in root.getElementsByTagName('ContentProtection'):
+            if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                    current_cenc = elem2.firstChild.nodeValue
+                    new_cenc = replace_kids(current_cenc, kids, version0=True)
+                    if current_cenc != new_cenc:
+                        elem2.firstChild.nodeValue = new_cenc
+                        log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+    ################################################
+
+    with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
-
-    return _data_path
 
 @plugin.route()
 @plugin.login_required()
@@ -571,7 +618,7 @@ def play(video_id, **kwargs):
     url, license_url, token, data = api.play(video_id)
 
     item = _parse_item(data)
-    item.proxy_data['manifest_middleware'] = plugin.url_for(mpd_request)
+    item.proxy_data['middleware'] = {url: plugin.url_for(mpd_request)}
 
     headers = {
         'authorization': 'Bearer {}'.format(token),
