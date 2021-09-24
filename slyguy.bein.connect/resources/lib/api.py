@@ -274,11 +274,8 @@ class API(object):
             'idChannel': channel_id,
         }
 
-        resp = self._session.post('arkena/askLicenseWV', params=params, data=challenge, headers=self._auth_headers)
-        if not resp.ok or '<LICENSE>' not in resp.text:
-            raise APIError('Failed to get Widevine license')
-
-        return resp.text.split('</LICENSE>')[0].split('<LICENSE>')[1]
+        url = self._session._base_url.format('arkena/askLicenseWV?' + urlencode(params))
+        return url, self._auth_headers
 
     def play(self, channel_id):
         self._create_session(force=True)

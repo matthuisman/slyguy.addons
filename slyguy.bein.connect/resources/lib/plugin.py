@@ -67,14 +67,18 @@ def live(**kwargs):
     return folder
 
 @plugin.route()
-@plugin.plugin_callback()
-def license_request(channel_id, _data, _data_path, **kwargs):
-    data = api.license_request(channel_id, _data)
+@plugin.plugin_request()
+def license_request(channel_id, **kwargs):
+    url, headers = api.license_request(channel_id)
+    return {'url': url, 'headers': headers}
 
-    with open(_data_path, 'w') as f:
-        f.write(data)
-
-    return _data_path
+@plugin.route()
+@plugin.plugin_middleware()
+def license_middleware(_data, _path, **kwargs):
+    _data = _data.decode('utf8')
+    _data = _data.split('</LICENSE>')[0].split('<LICENSE>')[1]
+    with open(_path, 'wb') as f:
+        f.write(_data.encode('utf8'))
 
 @plugin.route()
 @plugin.login_required()
@@ -87,7 +91,10 @@ def play(channel_id, **kwargs):
         path = url,
         inputstream = inputstream.Widevine(license_key=license_path, challenge='b{SSM}', response='B'),
         headers = HEADERS,
-        proxy_data = {'default_language': settings.get('default_language')},
+        proxy_data = {
+            'default_language': settings.get('default_language'),
+            'middleware': {license_path: plugin.url_for(license_middleware)},
+        },
     )
 
 @plugin.route()
