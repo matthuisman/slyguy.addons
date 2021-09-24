@@ -425,8 +425,8 @@ def _get_play_path(slug):
     return plugin.url_for(play, **kwargs)
 
 @plugin.route()
-@plugin.plugin_callback()
-def mpd_request(_data, _data_path, **kwargs):
+@plugin.plugin_middleware()
+def mpd_request(_data, _path, **kwargs):
     data = _data.decode('utf8')
 
     data = data.replace('_xmlns:cenc', 'xmlns:cenc')
@@ -467,7 +467,7 @@ def mpd_request(_data, _data_path, **kwargs):
             height = int(elem.getAttribute('height') or 0)
             width = int(elem.getAttribute('width') or 0)
 
-            if not dolby_vison and codecs.startswith('dvh1'):
+            if not dolby_vison and (codecs.startswith('dvh1') or codecs.startswith('dvhe')):
                 parent.removeChild(elem)
 
             elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
@@ -511,10 +511,8 @@ def mpd_request(_data, _data_path, **kwargs):
                         log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
     ################################################
 
-    with open(_data_path, 'wb') as f:
+    with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
-
-    return _data_path
 
 @plugin.route()
 @plugin.no_error_gui()
@@ -548,7 +546,7 @@ def play(slug, **kwargs):
 
     if 'drm' in data:
         item.inputstream = inputstream.Widevine(license_key=data['drm']['licenseUrl'])
-        item.proxy_data['manifest_middleware'] = plugin.url_for(mpd_request)
+        item.proxy_data['middleware'] = {data['url']: plugin.url_for(mpd_request)}
 
     if settings.getBool('sync_playback', False):
         marker = api.markers([edit['playbackMarkerId'],])
