@@ -84,29 +84,45 @@ def route(url=None):
         return decorated_function
     return lambda f: decorator(f, url)
 
-# @plugin.plugin_callback()
-def plugin_callback():
+# @plugin.plugin_middleware()
+def plugin_middleware():
+    def decorator(func):
+        @wraps(func)
+        def decorated_function(*args, **kwargs):
+            kwargs['_path'] = xbmc.translatePath(kwargs['_path'])
+            with open(kwargs['_path'], 'rb') as f:
+                kwargs['_data'] = f.read()
+
+            remove_file(kwargs['_path'])
+
+            try:
+                data = func(*args, **kwargs)
+            except Exception as e:
+                log.exception(e)
+                data = None
+
+            folder = Folder(show_news=False)
+            folder.add_item(
+                path = quote_plus(json.dumps(data or {})),
+            )
+            return folder
+        return decorated_function
+    return lambda func: decorator(func)
+
+# @plugin.plugin_request()
+def plugin_request():
     def decorator(func):
         @wraps(func)
         def decorated_function(*args, **kwargs):
             try:
-                with open(kwargs['_data_path'], 'rb') as f:
-                    kwargs['_data'] = f.read()
-            except:
-                kwargs['_data'] = None
-
-            remove_file(kwargs['_data_path'])
-            kwargs['_headers'] = json.loads(kwargs['_headers'])
-
-            try:
-                path = func(*args, **kwargs)
+                data = func(*args, **kwargs)
             except Exception as e:
                 log.exception(e)
-                path = None
+                data = None
 
             folder = Folder(show_news=False)
             folder.add_item(
-                path = quote_plus(path or ''),
+                path = quote_plus(json.dumps(data or {})),
             )
             return folder
         return decorated_function
@@ -326,16 +342,15 @@ def _settings(**kwargs):
     gui.refresh()
 
 @route(ROUTE_WEBVTT)
-@plugin_callback()
-def _webvtt(url, _data_path, _headers, **kwargs):
-    r = Session().get(url, headers=_headers)
-    data = r.content.decode('utf8')
+@plugin_middleware()
+def _webvtt(_data, _path, **kwargs):
+    data = _data.decode('utf8')
     reader = detect_format(data)
     data = WebVTTWriter().write(reader().read(data))
-    with open(_data_path, 'wb') as f:
+    with open(_path, 'wb') as f:
         f.write(data.encode('utf8'))
 
-    return _data_path + '|content-type=text/vtt'
+    return {'headers': {'content-type': 'text/vtt'}}
 
 @route(ROUTE_RESET)
 def _reset(**kwargs):

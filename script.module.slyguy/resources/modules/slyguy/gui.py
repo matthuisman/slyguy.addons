@@ -375,7 +375,7 @@ class Item(object):
             if self.inputstream and self.inputstream.manifest_type == 'mpd':
                 if mimetype not in ('application/ttml+xml', 'text/vtt') and not url.lower().startswith('plugin://'):
                     ## can't play directly - covert to webvtt
-                    url = url_for(ROUTE_WEBVTT, url=url)
+                    proxy_data['middleware'][url] = url_for(ROUTE_WEBVTT)
                     mimetype = 'text/vtt'
 
                 proxy_data['subtitles'].append([mimetype, language, url, 'forced' if forced else None])
@@ -383,7 +383,7 @@ class Item(object):
 
             ## only srt or webvtt (text/) supported
             if not mimetype.startswith('text/') and not url.lower().startswith('plugin://'):
-                url = url_for(ROUTE_WEBVTT, url=url)
+                proxy_data['middleware'][url] = url_for(ROUTE_WEBVTT)
                 mimetype = 'text/vtt'
 
             proxy_url = '{}{}.srt'.format(language, '.forced' if forced else '')
@@ -419,7 +419,7 @@ class Item(object):
                 'path_subs': {},
                 'addon_id': ADDON_ID,
                 'quality': QUALITY_DISABLED,
-                'manifest_middleware': None,
+                'middleware': {},
                 'type': None,
                 'dns_rewrites': get_dns_rewrites(),
             }

@@ -3,16 +3,15 @@ import os
 import re
 import time
 import json
-
+import shutil
 
 from xml.dom.minidom import parseString
-from collections import defaultdict
 from functools import cmp_to_key
 
 import arrow
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
-from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl, quote_plus
+from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
 from kodi_six import xbmc
 from requests import ConnectionError
 
@@ -80,11 +79,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         BaseHTTPRequestHandler.setup(self)
         self.request.settimeout(5)
 
-    def _get_url(self):
+    def _get_url(self, method):
         url = self.path.lstrip('/').strip('\\')
+        log.debug('{} IN: {}'.format(method, url))
 
         self._headers = {}
-        self._plugin_headers = {}
         for header in self.headers:
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
@@ -109,71 +108,66 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = self._session.get('path_subs', {}).get(url) or url
 
         if url.lower().startswith('plugin'):
-            new_url = self._plugin_request(url)
-
-            if url == self._session.get('license_url'):
-                self._session['license_url'] = new_url
-
-            url = new_url
+            url = self._update_urls(url, self._plugin_request(url))
 
         return url
 
+    def _update_urls(self, url, new_url):
+        if url == new_url:
+            return new_url
+
+        if url == self._session.get('manifest'):
+            self._session['manifest'] = new_url
+        if url == self._session.get('license_url'):
+            self._session['license_url'] = new_url
+        if url in self._session.get('middleware', {}):
+            self._session['middleware'][new_url] = self._session['middleware'].pop(url)
+
+        return new_url
+
     def _plugin_request(self, url):
-        data_path = xbmc.translatePath('special://temp/proxy.post')
-        with open(data_path, 'wb') as f:
-            f.write(self._post_data or b'')
-
-        url = add_url_args(url, _data_path=data_path, _headers=json.dumps(self._headers))
-
         log.debug('PLUGIN REQUEST: {}'.format(url))
         dirs, files = run_plugin(url, wait=True)
         if not files:
             raise Exception('No data returned from plugin')
 
-        path = unquote_plus(files[0])
-        split = path.split('|')
-        url = split[0]
+        data = json.loads(unquote_plus(files[0]))
+        self._headers.update(data.get('headers', {}))
+        return data['url']
 
-        if len(split) > 1:
-            self._plugin_headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
+    def _middleware(self, url, response):
+        if url not in self._session.get('middleware', {}):
+            return
 
-        return url
+        url = self._session['middleware'][url]
 
-    def _manifest_middleware(self, data):
-        url = self._session.get('manifest_middleware')
-        if not url:
-            return data
+        path = 'special://temp/proxy.middleware'
+        real_path = xbmc.translatePath(path)
+        with open(real_path, 'wb') as f:
+            f.write(response.stream.content)
 
-        data_path = xbmc.translatePath('special://temp/proxy.manifest')
-        with open(data_path, 'wb') as f:
-            f.write(data.encode('utf8'))
+        if ADDON_DEV:
+            shutil.copy(real_path, real_path+'.in')
 
-        url = add_url_args(url, _data_path=data_path, _headers=json.dumps(self._headers))
+        url = add_url_args(url, _path=path)
 
-        log.debug('PLUGIN MANIFEST MIDDLEWARE REQUEST: {}'.format(url))
+        log.debug('PLUGIN MIDDLEWARE: {}'.format(url))
         dirs, files = run_plugin(url, wait=True)
         if not files:
             raise Exception('No data returned from plugin')
 
-        path = unquote_plus(files[0])
-        split = path.split('|')
-        data_path = split[0]
+        data = json.loads(unquote_plus(files[0]))
+        with open(real_path, 'rb') as f:
+            response.stream.content = f.read()
 
-        if len(split) > 1:
-            self._plugin_headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
+        response.headers.update(data.get('headers', {}))
+        if ADDON_DEV:
+            shutil.copy(real_path, real_path+'.out')
 
-        with open(data_path, 'rb') as f:
-            data = f.read().decode('utf8')
-
-        if not ADDON_DEV:
-            remove_file(data_path)
-
-        return data
+        remove_file(real_path)
 
     def do_GET(self):
-        url = self._get_url()
-
-        log.debug('GET IN: {}'.format(url))
+        url = self._get_url('GET')
         response = self._proxy_request('GET', url)
 
         if self._session.get('redirecting') or not self._session.get('type') or not self._session.get('manifest') or int(response.headers.get('content-length', 0)) > 1000000:
@@ -333,7 +327,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             start = time.time()
 
         data = response.stream.content.decode('utf8')
-        data = self._manifest_middleware(data)
 
         ## SUPPORT NEW DOLBY FORMAT https://github.com/xbmc/inputstream.adaptive/pull/466
         data = data.replace('tag:dolby.com,2014:dash:audio_channel_configuration:2011', 'urn:dolby:dash:audio_channel_configuration:2011')
@@ -858,7 +851,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 f.write(_m3u8)
 
         if is_master:
-            m3u8 = self._manifest_middleware(m3u8)
             m3u8 = self._parse_m3u8_master(m3u8, response.url)
         else:
             m3u8 = self._parse_m3u8_sub(m3u8, response.url)
@@ -952,11 +944,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 response.headers['location'] = urljoin(url, response.headers['location'])
 
             self._session['redirecting'] = True
-            if url == self._session.get('manifest'):
-                self._session['manifest'] = response.headers['location']
-            if url == self._session.get('license_url'):
-                self._session['license_url'] = response.headers['location']
-
+            self._update_urls(url, response.headers['location'])
             response.headers['location'] = PROXY_PATH + response.headers['location']
             response.stream.content = b''
 
@@ -965,12 +953,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             ## we handle cookies in the requests session
             response.headers.pop('set-cookie')
 
+        self._middleware(url, response)
+
         return response
 
     def _output_headers(self, response):
         self.send_response(response.status_code)
 
-        response.headers.update(self._plugin_headers)
         for d in list(response.headers.items()):
             self.send_header(d[0], d[1])
 
@@ -986,14 +975,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 break
 
     def do_HEAD(self):
-        url = self._get_url()
-        log.debug('HEAD IN: {}'.format(url))
+        url = self._get_url('HEAD')
         response = self._proxy_request('HEAD', url)
         self._output_response(response)
 
     def do_POST(self):
-        url = self._get_url()
-        log.debug('POST IN: {}'.format(url))
+        url = self._get_url('POST')
         response = self._proxy_request('POST', url)
 
         if response.status_code in (406,) and url == self._session.get('license_url') and not xbmc.getCondVisibility('System.Platform.Android') and gui.yes_no(_.WV_FAILED):
