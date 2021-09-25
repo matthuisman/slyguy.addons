@@ -147,7 +147,7 @@ class API(object):
 
                 return {
                     'uniqueDeviceId': hash_6('{}{}'.format(int(time.time()), device_name), length=16),
-                    'name': device_name, 
+                    'name': device_name,
                     'type': 'Android',
                 }
 
@@ -262,7 +262,7 @@ class API(object):
 
         return sorted(channels, key=lambda x: x.get('sorting', x['localizeNumber']))
 
-    def license_request(self, channel_id, challenge):
+    def license_request(self, channel_id):
         self._create_session()
 
         app_version = self._app_version()
@@ -293,7 +293,7 @@ class API(object):
         data = self._session.post('proxy/channelStream', data=payload, headers=self._auth_headers).json()
         if data.get('error'):
             raise APIError(data['error']['message'])
-        
+
         if 'newAuthToken' in data['result']:
             self._set_auth(data['result']['newAuthToken'])
 
