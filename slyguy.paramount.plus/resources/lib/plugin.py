@@ -10,6 +10,7 @@ from slyguy.monitor import monitor
 from slyguy.util import replace_kids
 from slyguy.drm import is_wv_secure
 from slyguy.log import log
+from slyguy.constants import MIDDLEWARE_PLUGIN
 
 from .language import _
 from .api import API
@@ -618,7 +619,7 @@ def play(video_id, **kwargs):
     url, license_url, token, data = api.play(video_id)
 
     item = _parse_item(data)
-    item.proxy_data['middleware'] = {url: plugin.url_for(mpd_request)}
+    item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     headers = {
         'authorization': 'Bearer {}'.format(token),
