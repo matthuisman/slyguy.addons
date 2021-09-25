@@ -66,15 +66,48 @@ def _lang_allowed(lang, lang_list):
 
     return False
 
-def convert_sub(response):
+def middleware_regex(response, pattern, **kwargs):
+    data = response.stream.content.decode('utf8')
+    match = re.search(pattern, data)
+    if match:
+        response.stream.content = match.group(1).encode('utf8')
+
+def middleware_convert_sub(response, **kwargs):
     data = response.stream.content.decode('utf8')
     reader = detect_format(data)
-    data = WebVTTWriter().write(reader().read(data))
-    response.stream.content = data.encode('utf8')
-    response.headers['content-type'] = 'text/vtt'
+    if reader:
+        data = WebVTTWriter().write(reader().read(data))
+        response.stream.content = data.encode('utf8')
+        response.headers['content-type'] = 'text/vtt'
+
+def middleware_plugin(response, url, **kwargs):
+    path = 'special://temp/proxy.middleware'
+    real_path = xbmc.translatePath(path)
+    with open(real_path, 'wb') as f:
+        f.write(response.stream.content)
+
+    if ADDON_DEV:
+        shutil.copy(real_path, real_path+'.in')
+
+    url = add_url_args(url, _path=path)
+    dirs, files = run_plugin(url, wait=True)
+    if not files:
+        raise Exception('No data returned from plugin')
+
+    data = json.loads(unquote_plus(files[0]))
+    with open(real_path, 'rb') as f:
+        response.stream.content = f.read()
+
+    response.headers.update(data.get('headers', {}))
+    if ADDON_DEV:
+        shutil.copy(real_path, real_path+'.out')
+
+    remove_file(real_path)
 
 middlewares = {
-    'convert_sub': convert_sub,
+    MIDDLEWARE_CONVERT_SUB: middleware_convert_sub,
+    MIDDLEWARE_REGEX: middleware_regex,
+    MIDDLEWARE_PLUGIN: middleware_plugin,
 }
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -151,35 +184,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         if url not in self._session.get('middleware', {}):
             return
 
-        url = self._session['middleware'][url]
-        if url in middlewares:
-            log.debug('MIDDLEWARE: {}'.format(url))
-            return middlewares[url](response)
+        middleware = self._session['middleware'][url]
+        _type = middleware.pop('type')
+        if _type not in middlewares:
+            return
 
-        path = 'special://temp/proxy.middleware'
-        real_path = xbmc.translatePath(path)
-        with open(real_path, 'wb') as f:
-            f.write(response.stream.content)
-
-        if ADDON_DEV:
-            shutil.copy(real_path, real_path+'.in')
-
-        url = add_url_args(url, _path=path)
-
-        log.debug('PLUGIN MIDDLEWARE: {}'.format(url))
-        dirs, files = run_plugin(url, wait=True)
-        if not files:
-            raise Exception('No data returned from plugin')
-
-        data = json.loads(unquote_plus(files[0]))
-        with open(real_path, 'rb') as f:
-            response.stream.content = f.read()
-
-        response.headers.update(data.get('headers', {}))
-        if ADDON_DEV:
-            shutil.copy(real_path, real_path+'.out')
-
-        remove_file(real_path)
+        log.debug('MIDDLEWARE: {}'.format(_type))
+        return middlewares[_type](response, **middleware)
 
     def do_GET(self):
         url = self._get_url('GET')
