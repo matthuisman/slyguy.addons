@@ -4,6 +4,7 @@ from xml.sax.saxutils import escape
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
+from slyguy.constants import MIDDLEWARE_REGEX
 
 from .api import API
 from .language import _
@@ -73,14 +74,6 @@ def license_request(channel_id, **kwargs):
     return {'url': url, 'headers': headers}
 
 @plugin.route()
-@plugin.plugin_middleware()
-def license_middleware(_data, _path, **kwargs):
-    _data = _data.decode('utf8')
-    _data = _data.split('</LICENSE>')[0].split('<LICENSE>')[1]
-    with open(_path, 'wb') as f:
-        f.write(_data.encode('utf8'))
-
-@plugin.route()
 @plugin.login_required()
 def play(channel_id, **kwargs):
     url = api.play(channel_id)
@@ -93,7 +86,7 @@ def play(channel_id, **kwargs):
         headers = HEADERS,
         proxy_data = {
             'default_language': settings.get('default_language'),
-            'middleware': {license_path: plugin.url_for(license_middleware)},
+            'middleware': {license_path: {'type': MIDDLEWARE_REGEX, 'pattern': '<LICENSE>(.*?)</LICENSE>'}},
         },
     )
 
