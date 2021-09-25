@@ -9,11 +9,12 @@ from xml.dom.minidom import parseString
 from functools import cmp_to_key
 
 import arrow
+from requests import ConnectionError
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
 from kodi_six import xbmc
-from requests import ConnectionError
+from pycaption import detect_format, WebVTTWriter
 
 from slyguy import settings, gui, inputstream
 from slyguy.log import log
@@ -64,6 +65,17 @@ def _lang_allowed(lang, lang_list):
             return True
 
     return False
+
+def convert_sub(response):
+    data = response.stream.content.decode('utf8')
+    reader = detect_format(data)
+    data = WebVTTWriter().write(reader().read(data))
+    response.stream.content = data.encode('utf8')
+    response.headers['content-type'] = 'text/vtt'
+
+middlewares = {
+    'convert_sub': convert_sub,
+}
 
 class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
@@ -140,6 +152,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
 
         url = self._session['middleware'][url]
+        if url in middlewares:
+            log.debug('MIDDLEWARE: {}'.format(url))
+            return middlewares[url](response)
 
         path = 'special://temp/proxy.middleware'
         real_path = xbmc.translatePath(path)

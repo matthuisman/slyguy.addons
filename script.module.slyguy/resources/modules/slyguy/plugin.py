@@ -7,7 +7,6 @@ import json
 from functools import wraps
 from six.moves.urllib_parse import quote_plus
 
-from pycaption import detect_format, WebVTTWriter
 from kodi_six import xbmc, xbmcplugin
 from six.moves.urllib.parse import quote
 
@@ -340,17 +339,6 @@ def _settings(**kwargs):
     _close()
     settings.open()
     gui.refresh()
-
-@route(ROUTE_WEBVTT)
-@plugin_middleware()
-def _webvtt(_data, _path, **kwargs):
-    data = _data.decode('utf8')
-    reader = detect_format(data)
-    data = WebVTTWriter().write(reader().read(data))
-    with open(_path, 'wb') as f:
-        f.write(data.encode('utf8'))
-
-    return {'headers': {'content-type': 'text/vtt'}}
 
 @route(ROUTE_RESET)
 def _reset(**kwargs):
