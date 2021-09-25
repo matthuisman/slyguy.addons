@@ -184,7 +184,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         if url not in self._session.get('middleware', {}):
             return
 
-        middleware = self._session['middleware'][url]
+        middleware = self._session['middleware'][url].copy()
+
         _type = middleware.pop('type')
         if _type not in middlewares:
             return
