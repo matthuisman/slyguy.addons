@@ -116,7 +116,12 @@ class API(object):
         if live:
             params['videoType'] = 'live'
 
-        data = self._session.get('https://videoservice.swm.digital/playback', params=params).json()
+        headers = {
+            'X-USE-AUTHENTICATION': 'UseTokenAuthentication',
+            'Authorization': 'Bearer {}'.format(DEFAULT_TOKEN),
+        }
+
+        data = self._session.get('https://videoservice.swm.digital/playback', params=params, headers=headers).json()
         if 'media' not in data:
             raise APIError(data[0]['error_code'])
 
