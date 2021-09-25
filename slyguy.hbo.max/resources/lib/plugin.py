@@ -118,6 +118,9 @@ def _process_rows(rows, slug):
             )
 
         elif row['id'].startswith('urn:hbo:tray') and row['items']:
+            if 'header' not in row:
+                continue
+
             item = plugin.Item(
                 label = row['header']['label'],
                 path = plugin.url_for(page, slug=slug, label=row['header']['label'], tab=row['id']),
