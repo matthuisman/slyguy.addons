@@ -5,7 +5,7 @@ from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.session import Session
 from slyguy.util import replace_kids
-from slyguy.constants import ADDON_PROFILE
+from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN
 from slyguy.drm import is_wv_secure
 from slyguy.log import log
 
@@ -546,7 +546,7 @@ def play(slug, **kwargs):
 
     if 'drm' in data:
         item.inputstream = inputstream.Widevine(license_key=data['drm']['licenseUrl'])
-        item.proxy_data['middleware'] = {data['url']: plugin.url_for(mpd_request)}
+        item.proxy_data['middleware'] = {data['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     if settings.getBool('sync_playback', False):
         marker = api.markers([edit['playbackMarkerId'],])
