@@ -16,7 +16,7 @@ class Language(BaseLanguage):
     H265                  = 30014
     ENABLE_4K             = 30015
     DOLBY_VISION          = 30016
-    ACCESSIBILITY         = 30017
+
     DOLBY_DIGITAL         = 30018
     FEATURED              = 30019
     SERIES                = 30020

@@ -57,9 +57,6 @@ msgctxt "#30016"
 msgid "Dolby Vision"
 msgstr "Dolby Vision"
 
-msgctxt "#30017"
-msgid "Accessibility Audio"
-msgstr "Áudio acessível"
 
 msgctxt "#30018"
 msgid "Dolby Digital (AC-3)"

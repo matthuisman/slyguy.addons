@@ -445,7 +445,6 @@ def mpd_request(_data, _path, **kwargs):
     enable_ac3 = settings.getBool('ac3_enabled', False)
     enable_ec3 = settings.getBool('ec3_enabled', False)
     enable_atmos = settings.getBool('atmos_enabled', False)
-    enable_accessibility = settings.getBool('accessibility_enabled', False)
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
         if not enable_accessibility and adap_set.getElementsByTagName('Accessibility'):
