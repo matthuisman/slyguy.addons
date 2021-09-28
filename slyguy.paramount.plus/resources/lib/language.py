@@ -18,7 +18,7 @@ class Language(BaseLanguage):
     H265                 = 30020
     ENABLE_4K            = 30021
     DOLBY_VISION         = 30022
-    ACCESSIBILITY        = 30023
+
     EC3_ENABLED          = 30024
     AC3_ENABLED          = 30025
     PARTNER_LOGIN        = 30026

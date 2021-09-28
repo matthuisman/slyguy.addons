@@ -78,9 +78,6 @@ msgctxt "#30022"
 msgid "Dolby Vision"
 msgstr ""
 
-msgctxt "#30023"
-msgid "Accessibility Audio"
-msgstr ""
 
 msgctxt "#30024"
 msgid "Dolby Digital Plus (EC-3)"

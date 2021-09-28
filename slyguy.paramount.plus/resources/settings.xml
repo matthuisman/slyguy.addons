@@ -14,7 +14,7 @@
         <setting label="30025" type="bool" id="ac3_enabled" default="false"/>
         <setting label="30024" type="bool" id="ec3_enabled" default="false"/>
             <setting label="30028" type="bool" id="atmos_enabled" default="false" enable="eq(-1,true)"/>
-        <setting label="30023" type="bool" id="accessibility_enabled" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 32090]" id="audio_description" type="bool" default="false"/>
         <setting label="30020" type="bool" id="h265" default="false"/>
         <setting label="30021" type="bool" id="4k_enabled" default="true"/>
         <setting label="30022" type="bool" id="dolby_vision" default="false"/>
