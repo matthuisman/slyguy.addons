@@ -394,6 +394,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         default_language = self._session.get('default_language', '')
         original_language = self._session.get('original_language', '')
+        audio_description = self._session.get('audio_description', True)
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
 
         for period_index, period in enumerate(root.getElementsByTagName('Period')):
@@ -552,7 +553,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                     language = adap_set.getAttribute('lang')
                     if not _lang_allowed(language.lower().strip(), subs_whitelist):
                         adap_set.parentNode.removeChild(adap_set)
+                        log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
         ################
+
+        ## Remove audio_description
+        if not audio_description:
+            for row in audio_sets:
+                for elem in row[1].getElementsByTagName('Accessibility'):
+                    if elem.getAttribute('schemeIdUri') == 'urn:tva:metadata:cs:AudioPurposeCS:2007':
+                        row[2].removeChild(row[1])
+                        log.debug('Removed audio description adapt set: {}'.format(row[1].getAttribute('id')))
+                        break
+        ############
 
         ## Convert BaseURLS
         base_url_parents = []
@@ -688,7 +700,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         return '\n'.join(lines)
 
-    def _parse_m3u8_master(self, m3u8, url):
+    def _parse_m3u8_master(self, m3u8, manifest_url):
         def _process_media(line):
             attribs = {}
 
@@ -838,6 +850,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             if default_subtitle:
                 attribs['DEFAULT'] = 'YES' if lang.startswith(default_subtitle) else 'NO'
+
+            # if 'URI' in attribs:
+            #     full_url = urljoin(manifest_url, attribs['URI'])
+            #     self._session['middleware'][full_url] = {'type': MIDDLEWARE_CONVERT_SUB}
+            #     attribs['URI'] = full_url
 
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
