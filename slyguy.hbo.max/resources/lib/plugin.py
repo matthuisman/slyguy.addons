@@ -541,11 +541,13 @@ def play(slug, **kwargs):
         path = data['url'],
         inputstream = inputstream.MPD(),
         headers = headers,
-        proxy_data = {
-            'default_language': data['defaultAudioSelection']['language'],
-            'original_language': data['originalAudioLanguage'],
-        },
     )
+
+    if 'defaultAudioSelection' in data:
+        item.proxy_data['default_language'] = data['defaultAudioSelection']['language']
+
+    if 'originalAudioLanguage' in data:
+        item.proxy_data['original_language'] = data['originalAudioLanguage']
 
     if 'drm' in data:
         item.inputstream = inputstream.Widevine(license_key=data['drm']['licenseUrl'])
