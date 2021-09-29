@@ -447,10 +447,6 @@ def mpd_request(_data, _path, **kwargs):
     enable_atmos = settings.getBool('atmos_enabled', False)
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not enable_accessibility and adap_set.getElementsByTagName('Accessibility'):
-            adap_set.parentNode.removeChild(adap_set)
-            continue
-
         if int(adap_set.getAttribute('maxHeight') or 0) >= 720:
             if is_wv_secure():
                 for elem in adap_set.getElementsByTagName('ContentProtection'):
