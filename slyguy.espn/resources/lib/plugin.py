@@ -74,9 +74,9 @@ def live(**kwargs):
         for cat in row.get('catalog', []):
             catalog[cat['type']] = cat['name']
 
-        subtitle = '{} - {}'.format(catalog.get('sport' ,''), catalog.get('league', '')).strip().strip('-').strip()
+        subtitle = u'{} - {}'.format(catalog.get('sport' ,''), catalog.get('league', '')).strip().strip('-').strip()
         if subtitle:
-            subtitle = '({})'.format(subtitle)
+            subtitle = u'({})'.format(subtitle)
 
         if row.get('eventId'):
             events.append(row['eventId'])
