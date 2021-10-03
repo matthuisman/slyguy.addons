@@ -1,11 +1,11 @@
 import uuid
 from time import time
-import xml.etree.ElementTree as ET
+from xml.dom.minidom import parseString
 
 from slyguy import userdata, mem_cache, settings
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import strip_namespaces, hash_6, get_system_arch
+from slyguy.util import hash_6, get_system_arch
 from slyguy.log import log
 
 from .language import _
@@ -287,8 +287,6 @@ class API(object):
         if 'pid' not in video_data:
             raise APIError('Check your subscription is valid')
 
-        #target=n6_Kpu3b3pKr for icarly s01e01
-
         params = {
             #'formats': 'mpeg-dash',
             'Tracking': 'true',
@@ -299,16 +297,18 @@ class API(object):
         url = self._config.get_link_platform_url(video_data['cmsAccountId'], video_data['pid'])
         resp = self._session.get(url, params=params)
 
-        root = ET.fromstring(resp.text)
-        strip_namespaces(root)
+        root = parseString(resp.content)
 
-        if root.find("./body/seq/ref/param[@name='exception']") != None:
-            error_msg = root.find("./body/seq/ref").attrib.get('abstract')
+        videos = root.getElementsByTagName('video')
+        if not videos:
+            error_msg = ''
+            for ref in root.getElementsByTagName('ref'):
+                error_msg = ref.getAttribute('abstract')
+                if error_msg:
+                    break
             raise APIError(_(error_msg))
 
-        ref = root.find(".//video")
-        url = ref.attrib['src']
-
+        url = videos[0].getAttribute('src')
         params = {'contentId': video_id}
         data = self._session.get('/v3.0/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
 
