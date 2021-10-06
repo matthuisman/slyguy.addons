@@ -687,13 +687,6 @@ def process_news():
 
     try:
         news = json.loads(news)
-        _time = time.time()
-
-        if _time > news.get('timestamp', _time) + NEWS_MAX_TIME:
-            log.debug('news is too old')
-            settings.common_settings.set('_news', '')
-            return
-
         if news.get('show_in') and ADDON_ID.lower() not in [x.lower() for x in news['show_in'].split(',')]:
             return
 
