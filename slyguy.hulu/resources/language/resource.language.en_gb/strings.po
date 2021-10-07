@@ -1,0 +1,149 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Device ID"
+msgstr ""
+
+msgctxt "#30001"
+msgid "{name} [KIDS]"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Enter PIN"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Live"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Latitude"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Longitude"
+msgstr ""
+
+msgctxt "#30006"
+msgid "H265"
+msgstr ""
+
+msgctxt "#30007"
+msgid "EC3"
+msgstr ""
+
+msgctxt "#30008"
+msgid "4K"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Secondary Audio"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Hulu Sync Playback"
+msgstr ""
+
+msgctxt "#30011"
+msgid "My Stuff"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Hulu My Stuff"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Keep Watching"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Remove from My Stuff"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Add to My Stuff"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Added to My Stuff"
+msgstr ""
+
+msgctxt "#30017"
+msgid "{label} [Coming Soon]"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Home"
+msgstr ""
+
+msgctxt "#30019"
+msgid "TV Shows"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Sports"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Hubs"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Hide Locked Content"
+msgstr ""
+
+msgctxt "#30024"
+msgid "{label} [COLOR red][B][Locked][/B][/COLOR]"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Your auth token has expired\n"
+"Try logging out and logging in again"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Hide Upcoming Content"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""
