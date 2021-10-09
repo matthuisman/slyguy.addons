@@ -81,7 +81,7 @@ class Session(RawSession):
         json_text = GzipFile(fileobj=BytesIO(resp.content)).read()
         return json.loads(json_text)
 
-    def request(self, method, url, timeout=None, attempts=None, verify=None, error_msg=None, retry_not_ok=False, retry_delay=1000, **kwargs):
+    def request(self, method, url, timeout=None, attempts=None, verify=None, error_msg=None, retry_not_ok=False, retry_delay=1000, log_url=None, **kwargs):
         method = method.upper()
 
         if not url.startswith('http'):
@@ -104,7 +104,7 @@ class Session(RawSession):
             if self.before_request:
                 self.before_request()
 
-            log('{}{} {}'.format(attempt, method, url))
+            log('{}{} {}'.format(attempt, method, log_url or url))
 
             try:
                 resp = super(Session, self).request(method, url, **kwargs)

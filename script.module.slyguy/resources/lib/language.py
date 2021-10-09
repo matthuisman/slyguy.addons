@@ -21,5 +21,8 @@ class Language(BaseLanguage):
     LOG_ERRORS        = 30017
     UPLOAD_LOG        = 30018
     CHECK_LOG         = 30019
+    DONOR_ID          = 30020
+    SHOW_NEWS         = 30021
+    RAPID_UPDATES     = 30022
 
 _ = Language()

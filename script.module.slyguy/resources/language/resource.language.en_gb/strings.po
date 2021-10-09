@@ -100,6 +100,18 @@ msgctxt "#30019"
 msgid "Check Kodi log for SlyGuy errors"
 msgstr ""
 
+msgctxt "#30020"
+msgid "Donor ID (Restart Kodi after changing)"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Show News"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Rapid Updates"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

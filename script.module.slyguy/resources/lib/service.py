@@ -6,6 +6,7 @@ from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.drm import set_drm_level
+from slyguy.donor import check_donor
 
 from .proxy import Proxy
 from .player import Player
@@ -47,16 +48,28 @@ def start():
         log.error('Failed to start proxy server')
         log.exception(e)
 
+    is_donor = False
+    try:
+        is_donor = check_donor()
+    except Exception as e:
+        log.error('Failed to check donor')
+        log.exception(e)
+
+    if is_donor:
+        log.debug('Welcome SlyGuy donor!')
+
     ## Inital wait on boot
     monitor.waitForAbort(5)
 
     try:
         while not monitor.abortRequested():
-            try: _check_news()
-            except Exception as e: log.exception(e)
+            if not is_donor or settings.getBool('show_news'):
+                try: _check_news()
+                except Exception as e: log.exception(e)
 
-            try: check_updates()
-            except Exception as e: log.exception(e)
+            if is_donor and settings.getBool('rapid_updates'):
+                try: check_updates()
+                except Exception as e: log.exception(e)
 
             if monitor.waitForAbort(60):
                 break
