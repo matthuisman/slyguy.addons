@@ -12,7 +12,8 @@ msgstr "Passwort"
 msgctxt "#30003"
 msgid "API request failed\n"
 "Server Error: {msg}"
-msgstr ""
+msgstr "API Anfrage fehlgeschlagen\n"
+"Server Fehler: {msg}"
 
 msgctxt "#30004"
 msgid "Movies"
@@ -25,6 +26,10 @@ msgstr "Serien"
 msgctxt "#30006"
 msgid "Originals"
 msgstr "Originals"
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "Alle Details"
 
 msgctxt "#30010"
 msgid "Suggested"
@@ -45,7 +50,8 @@ msgstr "Extras"
 msgctxt "#30014"
 msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
 "You may experience playback issues with your current version."
-msgstr ""
+msgstr "Die vollständige Unterstützung von Kodi {kodi_ver} setzt mindestens Version {ver_required} des Addons Inputstream Adaptive voraus.\n"
+"Mit der derzeitig installierten Version kann es zu Problemen bei der Wiedergabe kommen."
 
 msgctxt "#30015"
 msgid "Dolby Vision / 4K"
@@ -53,7 +59,7 @@ msgstr "Dolby Vision / 4K"
 
 msgctxt "#30016"
 msgid "Sync with Disney+"
-msgstr ""
+msgstr "Mit Dinsney+ synchronisieren"
 
 msgctxt "#30018"
 msgid "HDR10 / 4K"
@@ -65,77 +71,91 @@ msgstr "H.265"
 
 msgctxt "#30020"
 msgid "Skip Credits"
-msgstr ""
+msgstr "Abspanne überspringen"
 
 msgctxt "#30021"
 msgid "Play Next Episode"
-msgstr ""
+msgstr "Nächste Folge abspielen"
 
 msgctxt "#30022"
 msgid "Play Next Recommended Movie"
-msgstr ""
+msgstr "Nächsten empfohlenen Film abspielen"
 
 msgctxt "#30023"
 msgid "Play without Intro"
-msgstr ""
+msgstr "Ohne Vorspann abspielen"
 
 msgctxt "#30024"
 msgid "Skip Intros"
-msgstr ""
+msgstr "Vorspanne überspringen"
 
 msgctxt "#30025"
 msgid "Play from Start"
-msgstr ""
+msgstr "Von Anfang an abspielen"
 
 msgctxt "#30026"
 msgid "Watchlist"
-msgstr ""
+msgstr "Meine Liste"
 
 msgctxt "#30027"
 msgid "Add to Watchlist"
-msgstr ""
+msgstr "Meiner Liste hinzufügen"
 
 msgctxt "#30028"
 msgid "Remove from Watchlist"
-msgstr ""
+msgstr "Von meiner Liste entfernen"
 
 msgctxt "#30029"
 msgid "Added to Watchlist"
-msgstr ""
+msgstr "Meiner Liste hinzugefügt"
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "Gib Deine Profil-PIN ein"
 
 msgctxt "#30041"
 msgid "Play with Intro"
-msgstr ""
+msgstr "Mit Vorspann abspielen"
 
 msgctxt "#30042"
 msgid "Continue Watching"
-msgstr ""
+msgstr "Weiterschauen"
 
 msgctxt "#30043"
 msgid "You are not entitled to access this content.\n"
 "Check your subscription is valid."
-msgstr ""
+msgstr "Sie können auf den Inhalt nicht zugreifen\n"
+"Bitte überprüfen Sie Ihr Abonnement"
 
 msgctxt "#30044"
 msgid "Your login details are in-correct.\n"
 "Please check them and try again."
+msgstr "Ihre Zugangsdaten sind inkorrekt\n"
+"Bitte versuchen Sie es erneut"
+
+msgctxt "#30045"
+msgid "{label} [B](Demnächst)[/B]"
+msgstr ""
+
+msgctxt "#30046"
+msgid "Falsche PIN"
 msgstr ""
 
 msgctxt "#30048"
 msgid "From {time:0>8}"
-msgstr ""
+msgstr "Ab {time:0>8}"
 
 msgctxt "#30049"
 msgid "{label} [B](Available {date})[/B]"
-msgstr ""
+msgstr "{label} [B](Verfügbar {date}[/B]"
 
 msgctxt "#30050"
-msgid "D/MM/YYYY"
-msgstr ""
+msgid "DD/MM/YYYY"
+msgstr "DD.MM.YYYY"
 
 msgctxt "#30051"
 msgid "Could not find stream data for this content"
-msgstr ""
+msgstr "Es konnte kein Stream für diesen Inhalt gefunden werden"
 
 msgctxt "#30052"
 msgid "Dolby Atmos"
@@ -143,11 +163,11 @@ msgstr ""
 
 msgctxt "#30053"
 msgid "Profile Settings"
-msgstr ""
+msgstr "Profil Einstellungen"
 
 msgctxt "#30054"
 msgid "Continue Watching"
-msgstr ""
+msgstr "Weiterschauen"
 
 ## COMMON SETTINGS ##
 
