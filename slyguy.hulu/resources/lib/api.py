@@ -334,23 +334,31 @@ class API(object):
         #id = 'EAB::f9f2384a-4e3a-4777-b718-d970c8023805::61673018::140889333' # american horror stories - normal 4k
         # https://www.reddit.com/r/Hulu/comments/omj8a3/american_horror_stories_not_actually_in_4k/
 
+        entity = self.entities([id])[0]
+        bundle = entity['bundle']
+        is_live = bundle['content_type'] == 'LIVE'
+
         vid_types = [{'type':'H264','width':3840,'height':2160,'framerate':60,'level':'4.2','profile':'HIGH'}]
         if settings.getBool('h265'):
             width, height = (3840, 2160) if settings.getBool('4k') else (1920, 1080)
             vid_types.append({'type':'H265','width':width,'height':height,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
 
-        aud_types = [{'type':'AAC'}]
-        if settings.getBool('ec3'):
-            aud_types.append({'type':'EC3'})
+        #IA doesnt seem to like multi-audio sets on live using $Time$ so need to only choose one audio type
+        if '5.1' in bundle['av_features'] and settings.getBool('ec3'):
+            aud_types = [{'type':'EC3'}]
+        else:
+            aud_types = [{'type':'AAC'}]
 
         secondary_audio = settings.getBool('secondary_audio', False)
         patch_updates = True #needed for live to work
+        multi_cdns = True
         live_segment_delay = 3
 
         payload = {
             'content_eab_id': id,
             'play_intent': 'resume', #live, resume (gives resume position), restart (doesnt give resume position)
             'unencrypted': True,
+            'all_cdn': multi_cdns,
             'ignore_kids_block': True,
             'device_identifier': self._get_serial(),
             'deejay_device_id': DEEJAY_DEVICE_ID,
@@ -369,12 +377,11 @@ class API(object):
                 'video': {'codecs':{'values':vid_types, 'selection_mode':'ALL'}},
                 'audio': {'codecs':{'values':aud_types, 'selection_mode':'ALL'}},
                 'drm': {'values':[{'type':'WIDEVINE', 'version':'MODULAR', 'security_level': 'L1'}], 'selection_mode':'ALL'},
-                'manifest': {'type':'DASH', 'https':True, 'multiple_cdns':False, 'patch_updates':patch_updates, 'hulu_types':False, 'live_dai':False, 'multiple_periods':False, 'xlink':False, 'secondary_audio':secondary_audio, 'live_fragment_delay':live_segment_delay},
+                'manifest': {'type':'DASH', 'https':True, 'multiple_cdns':multi_cdns, 'patch_updates':patch_updates, 'hulu_types':False, 'live_dai':False, 'multiple_periods':False, 'xlink':False, 'secondary_audio':secondary_audio, 'live_fragment_delay':live_segment_delay},
                 'segments': {'values':[{'type':'FMP4','encryption':{'mode':'CENC','type':'CENC'},'https':True}], 'selection_mode':'ONE'}
             },
             # 'interface_version': '1.12.1',
             # 'channel_id': '',
-            # 'all_cdn': True,
             # 'device_model': 'SHIELD Android TV',
             # 'app_version': app_version,
             # 'kv': key_id,
