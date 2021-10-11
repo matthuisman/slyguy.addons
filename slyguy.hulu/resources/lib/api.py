@@ -334,7 +334,11 @@ class API(object):
         #id = 'EAB::f9f2384a-4e3a-4777-b718-d970c8023805::61673018::140889333' # american horror stories - normal 4k
         # https://www.reddit.com/r/Hulu/comments/omj8a3/american_horror_stories_not_actually_in_4k/
 
-        entity = self.entities([id])[0]
+        entities = self.entities([id])
+        if not entities:
+            raise APIError('Failed to find this entity: {}'.format(id))
+
+        entity = entities[0]
         bundle = entity['bundle']
         is_live = bundle['content_type'] == 'LIVE'
 

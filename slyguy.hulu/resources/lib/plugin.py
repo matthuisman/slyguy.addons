@@ -434,6 +434,9 @@ def play_channel(channel_id, **kwargs):
         raise PluginError('Couldnt find program for this channel')
 
     current = epg_data[channel_id][0]
+    if current['availabilityState'] != 'available':
+        raise PluginError("There's nothing on at this time.")
+
     return _play(current['eab'], **kwargs)
 
 @plugin.route()
