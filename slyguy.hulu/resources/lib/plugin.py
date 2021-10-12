@@ -254,17 +254,23 @@ def _parse_view(row, my_stuff, sync, state):
         return item
 
     elif metrics['target_type'] == 'movie':
-        match = re.search(" \(([0-9]{4})\)$", headline)
         year = None
-        if match:
-            year = int(match.group(1))
-            headline = headline.replace(match.group(0), "").strip()
+        if 'premiere_date' in entity:
+            year = entity['premiere_date'][0:4]
+        else:
+            match = re.search(" \(([0-9]{4})\)$", headline)
+            if match:
+                year = int(match.group(1))
+
+        if year:
+            headline = headline.replace('({})'.format(year), "").strip()
 
         item = plugin.Item(
             label = headline,
             info = {
                 'plot': plot,
                 'year': year,
+                'genre': entity.get('genre_names', []),
                 'mediatype': 'movie',
             },
             art = _view_art(row['visuals']['artwork']),
