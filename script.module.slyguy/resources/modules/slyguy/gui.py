@@ -266,6 +266,22 @@ class Item(object):
                 self.info.pop('episode', None)
                 self.info.pop('tvshowtitle', None)
 
+                year = self.info.get('year') or ''
+                aired = self.info.get('aired') or ''
+                premiered = self.info.get('premiered') or ''
+
+                if not aired and premiered:
+                    self.info['aired'] = aired = premiered
+
+                if year and not aired:
+                    self.info['aired'] = aired = '{}-01-01'.format(year)
+
+                if not premiered and aired:
+                    self.info['premiered'] = premiered = aired
+
+                if not year and len(aired) >= 4:
+                    self.info['year'] = year = aired[0:4]
+
             li.setInfo('video', self.info)
 
         if self.specialsort:
