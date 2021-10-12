@@ -35,7 +35,7 @@ def home(**kwargs):
         folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
         # folder.add_item(label=_(_.TV, _bold=True), path=plugin.url_for(hub, slug='tv'))
-        # folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(hub, slug='movies'))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(hub, slug='movies'))
         # folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(hub, slug='sports'))
         # folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(hub, slug='hubs'))
 
@@ -45,7 +45,7 @@ def home(**kwargs):
         # if settings.getBool('sync_playback', False):
         #     folder.add_item(label=_(_.KEEP_WATCHING, _bold=True), path=plugin.url_for(keep_watching))
 
-        #folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -64,6 +64,10 @@ def hub(slug, **kwargs):
     data = api.hub(slug)
     folder = plugin.Folder(data['name'])
     for row in data['components']:
+        ## needs work
+        if row['name'] in ('Live Now', 'Upcoming'):
+            continue
+
         if row['_type'] == 'collection':
             folder.add_item(
                 label = row['name'],
@@ -107,7 +111,7 @@ def my_stuff(**kwargs):
 
 @plugin.route()
 def hub_collection(slug, id, **kwargs):
-    data = api.hub_collection(slug, id)
+    data = api.view_collection(slug, id)
     folder = plugin.Folder(data['name'])
     items = _process_rows(data['items'])
     folder.add_items(items)
@@ -130,17 +134,18 @@ def _process_rows(rows, slug=None):
                 continue
 
             if _type == 'series':
-                id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
-                row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
-                if my_stuff:
-                    eab_ids.append(row['personalization']['eab'])
-                to_process.append(row)
+                pass
+                # id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
+                # row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
+                # if my_stuff:
+                #     eab_ids.append(row['personalization']['eab'])
+                # to_process.append(row)
 
             elif _type in ('movie', 'episode'):
                 eab_ids.append(row['personalization']['eab'])
                 to_process.append(row)
 
-        states = api.states(eab_ids)
+        #states = api.states(eab_ids)
 
     items = []
     for row in to_process:
@@ -153,25 +158,26 @@ def _process_rows(rows, slug=None):
             ))
 
         if row['_type'] == 'series':
-            item = plugin.Item(
-                label = row['name'],
-                info = {
-                    'plot': row['description'],
-                    'year': row['premiere_date'][0:4],
-                    'mediatype': 'tvshow',
-                },
-                art = {'thumb': _image(row['artwork']['program.tile']['path']), 'fanart': _image(row['artwork']['detail.horizontal.hero']['path'], 'fanart')},
-                path = plugin.url_for(series, id=row['id']),
-            )
+            continue
+            # item = plugin.Item(
+            #     label = row['name'],
+            #     info = {
+            #         'plot': row['description'],
+            #         'year': row['premiere_date'][0:4],
+            #         'mediatype': 'tvshow',
+            #     },
+            #     art = {'thumb': _image(row['artwork']['program.tile']['path']), 'fanart': _image(row['artwork']['detail.horizontal.hero']['path'], 'fanart')},
+            #     path = plugin.url_for(series, id=row['id']),
+            # )
 
-            if my_stuff:
-                item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
+            # if my_stuff:
+            #     item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
 
-            items.append(item)
+            # items.append(item)
 
         elif row['_type'] == 'movie':
             label = row['name']
-            
+
             # action_type = row['reco_info']['watch_later_result']['actions'][0]['action_type']
             # if action_type != 'playback':
             #     label = _(_.COMING_SOON, label=label)
@@ -189,8 +195,8 @@ def _process_rows(rows, slug=None):
                 playable = True,
             )
 
-            if my_stuff:
-                item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
+            # if my_stuff:
+            #     item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
 
             items.append(item)
 
@@ -198,6 +204,23 @@ def _process_rows(rows, slug=None):
             items.append(_parse_view(row, my_stuff, sync, state))
 
     return items
+
+def _view_art(artwork):
+    art = {'thumb': None, 'fanart': None}
+    thumbs = ['vertical_tile', 'horizontal_tile', 'horizontal']
+    fanarts = ['horizontal']
+    for key in thumbs:
+        if key in artwork:
+            art['thumb'] = _image(artwork[key]['image']['path'])
+            if key in fanarts:
+                fanarts.remove(key)
+            break
+    for key in fanarts:
+        if key in artwork:
+            art['fanart'] = _image(artwork[key]['image']['path'], 'fanart')
+            break
+
+    return art
 
 def _parse_view(row, my_stuff, sync, state):
     metrics = row['metrics_info']
@@ -223,12 +246,12 @@ def _parse_view(row, my_stuff, sync, state):
                 'plot': plot,
                 'mediatype': 'tvshow',
             },
-            art = {'thumb': _image(row['visuals']['artwork']['horizontal']['image']['path']) if 'horizontal' in row['visuals']['artwork'] else None},
+            art = _view_art(row['visuals']['artwork']),
             path = plugin.url_for(series, id=metrics['target_id']),
         )
 
-        if my_stuff:
-            item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=headline))),]
+        # if my_stuff:
+        #     item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=headline))),]
 
         return item
 
@@ -238,7 +261,7 @@ def _parse_view(row, my_stuff, sync, state):
         if match:
             year = int(match.group(1))
             headline = headline.replace(match.group(0), "").strip()
- 
+
         item = plugin.Item(
             label = headline,
             info = {
@@ -246,7 +269,7 @@ def _parse_view(row, my_stuff, sync, state):
                 'year': year,
                 'mediatype': 'movie',
             },
-            art = {'thumb': _image(row['visuals']['artwork']['horizontal']['image']['path']) if 'horizontal' in row['visuals']['artwork'] else None},
+            art = _view_art(row['visuals']['artwork']),
             path = _get_play_path(row['personalization']['eab']),
             resume_from = 1 if sync and state.get('progress_percentage') and not state.get('is_completed') else None,
             playable = True,
@@ -255,19 +278,20 @@ def _parse_view(row, my_stuff, sync, state):
         if 'upsell' in row['actions']:
             item.label = _(_.LOCKED, label=item.label)
         elif 'playback' not in row['actions']:
-            today = arrow.now().format("DDDD")
-            start_date = arrow.get(entity['availability']['start_date']).to('local')
-            if start_date.format("DDDD") == today:
-                _str = ' [COLOR orange][TODAY {}][/COLOR]'
-                _format = 'h:mm A'
-            else:
-                _str = ' [COLOR orange][{}][/COLOR]'
-                _format = 'MMM D, h:mm A'
-            item.label += _str.format(start_date.format(_format))
+            item.label += ' (UPCOMING)'
+            # today = arrow.now().format("DDDD")
+            # start_date = arrow.get(entity['availability']['start_date']).to('local')
+            # if start_date.format("DDDD") == today:
+            #     _str = ' [COLOR orange][TODAY {}][/COLOR]'
+            #     _format = 'h:mm A'
+            # else:
+            #     _str = ' [COLOR orange][{}][/COLOR]'
+            #     _format = 'MMM D, h:mm A'
+            # item.label += _str.format(start_date.format(_format))
             item.path = _get_play_path(row['personalization']['eab'], _is_live=True)
 
-        if my_stuff:
-            item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=headline))),]
+        # if my_stuff:
+        #     item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=headline))),]
 
         return item
 

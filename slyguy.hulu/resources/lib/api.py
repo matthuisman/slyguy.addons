@@ -97,7 +97,7 @@ class API(object):
             'limit': 64,
             'keywords': query,
             'type': 'entity',
-            'include_offsite': 'true',
+            'include_offsite': 'false',
         }
         params.update(self._lat_long())
 
@@ -120,20 +120,20 @@ class API(object):
         self._check_errors(data)
         return data
 
-    def hub_collection(self, slug, id, limit=50, page=1):
-        self._refresh_token()
+    # def hub_collection(self, slug, id, limit=50, page=1):
+    #     self._refresh_token()
 
-        params = {
-            'limit': limit,
-            'offset': (page-1)*limit,
-            'schema': 1,
-            # 'device_info': 'android:4.32.0:compass-mvp:site-map',
-        }
-        params.update(self._lat_long())
+    #     params = {
+    #         'limit': limit,
+    #         'offset': (page-1)*limit,
+    #         'schema': 1,
+    #         # 'device_info': 'android:4.32.0:compass-mvp:site-map',
+    #     }
+    #     params.update(self._lat_long())
 
-        data = self._session.get('https://discover.hulu.com/content/v5/hubs/{}/collections/{}'.format(slug, id), params=params).json()
-        self._check_errors(data)
-        return data
+    #     data = self._session.get('https://discover.hulu.com/content/v5/view/{}/collections/{}'.format(slug, id), params=params).json()
+    #     self._check_errors(data)
+    #     return data
 
     def view_collection(self, slug, id, limit=50, page=1):
         self._refresh_token()
@@ -335,34 +335,36 @@ class API(object):
         # https://www.reddit.com/r/Hulu/comments/omj8a3/american_horror_stories_not_actually_in_4k/
 
         entities = self.entities([id])
-        if not entities:
+        if not entities or 'bundle' not in entities[0]:
             raise APIError('Failed to find this entity: {}'.format(id))
 
-        entity = entities[0]
-        bundle = entity['bundle']
+        bundle = entities[0]['bundle']
         is_live = bundle['content_type'] == 'LIVE'
+        av_features = bundle.get('av_features', [])
 
         vid_types = [{'type':'H264','width':3840,'height':2160,'framerate':60,'level':'4.2','profile':'HIGH'}]
         if settings.getBool('h265'):
             width, height = (3840, 2160) if settings.getBool('4k') else (1920, 1080)
             vid_types.append({'type':'H265','width':width,'height':height,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
 
-        #IA doesnt seem to like multi-audio sets on live using $Time$ so need to only choose one audio type
-        if '5.1' in bundle['av_features'] and settings.getBool('ec3'):
-            aud_types = [{'type':'EC3'}]
-        else:
-            aud_types = [{'type':'AAC'}]
+        aud_types = [{'type':'AAC'}]
+        if settings.getBool('ec3'):
+            if is_live:
+                #IA doesnt seem to like multi-audio sets on live using $Time$ so need to only choose one audio type
+                if '5.1' in av_features:
+                    aud_types = [{'type':'EC3'}]
+            else:
+                aud_types.append({'type':'EC3'})
 
         secondary_audio = settings.getBool('secondary_audio', False)
         patch_updates = True #needed for live to work
-        multi_cdns = True
         live_segment_delay = 3
 
         payload = {
             'content_eab_id': id,
             'play_intent': 'resume', #live, resume (gives resume position), restart (doesnt give resume position)
             'unencrypted': True,
-            'all_cdn': multi_cdns,
+            'all_cdn': False,
             'ignore_kids_block': True,
             'device_identifier': self._get_serial(),
             'deejay_device_id': DEEJAY_DEVICE_ID,
@@ -381,7 +383,7 @@ class API(object):
                 'video': {'codecs':{'values':vid_types, 'selection_mode':'ALL'}},
                 'audio': {'codecs':{'values':aud_types, 'selection_mode':'ALL'}},
                 'drm': {'values':[{'type':'WIDEVINE', 'version':'MODULAR', 'security_level': 'L1'}], 'selection_mode':'ALL'},
-                'manifest': {'type':'DASH', 'https':True, 'multiple_cdns':multi_cdns, 'patch_updates':patch_updates, 'hulu_types':False, 'live_dai':False, 'multiple_periods':False, 'xlink':False, 'secondary_audio':secondary_audio, 'live_fragment_delay':live_segment_delay},
+                'manifest': {'type':'DASH', 'https':True, 'multiple_cdns':False, 'patch_updates':patch_updates, 'hulu_types':False, 'live_dai':False, 'multiple_periods':False, 'xlink':False, 'secondary_audio':secondary_audio, 'live_fragment_delay':live_segment_delay},
                 'segments': {'values':[{'type':'FMP4','encryption':{'mode':'CENC','type':'CENC'},'https':True}], 'selection_mode':'ONE'}
             },
             # 'interface_version': '1.12.1',
