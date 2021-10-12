@@ -3,7 +3,7 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="30012" type="bool" id="my_stuff" default="true"/>
-        <setting label="30010" type="bool" id="sync_playback" default="true"/>
+        <setting label="30010" type="bool" id="sync_playback" default="false"/>
         <setting label="30023" type="bool" id="hide_locked" default="true"/>
         <setting label="30026" type="bool" id="hide_upcoming" default="false"/>
         <setting label="30004" type="text" id="lat" default=""/>

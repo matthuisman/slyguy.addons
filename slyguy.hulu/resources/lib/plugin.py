@@ -123,29 +123,27 @@ def _process_rows(rows, slug=None):
     hide_locked = settings.getBool('hide_locked', True)
     hide_upcoming = settings.getBool('hide_upcoming', True)
 
-    states = {}
+    eab_ids = []
     to_process = []
-    if sync or my_stuff:
-        eab_ids = []
-        for row in rows:
-            _type = row['metrics_info']['target_type'] if row['_type'] == 'view' else row['_type']
-            actions = row.get('actions', {})
-            if (hide_locked and 'upsell' in actions) or (hide_upcoming and 'upsell' not in actions and 'playback' not in actions):
-                continue
+    for row in rows:
+        _type = row['metrics_info']['target_type'] if row['_type'] == 'view' else row['_type']
+        actions = row.get('actions', {})
+        if (hide_locked and 'upsell' in actions) or (hide_upcoming and 'upsell' not in actions and 'playback' not in actions):
+            continue
 
-            if _type == 'series':
-                pass
-                # id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
-                # row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
-                # if my_stuff:
-                #     eab_ids.append(row['personalization']['eab'])
-                # to_process.append(row)
+        if _type == 'series':
+            pass
+            # id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
+            # row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
+            # if my_stuff:
+            #     eab_ids.append(row['personalization']['eab'])
+            # to_process.append(row)
 
-            elif _type in ('movie', 'episode'):
-                eab_ids.append(row['personalization']['eab'])
-                to_process.append(row)
+        elif _type in ('movie', 'episode'):
+            eab_ids.append(row['personalization']['eab'])
+            to_process.append(row)
 
-        #states = api.states(eab_ids)
+    states = api.states(eab_ids) if (sync or my_stuff) else {}
 
     items = []
     for row in to_process:
