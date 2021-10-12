@@ -1,4 +1,3 @@
-import time
 import re
 import json
 import codecs
@@ -161,7 +160,7 @@ def _process_rows(rows, slug=None):
             #     label = row['name'],
             #     info = {
             #         'plot': row['description'],
-            #         'year': row['premiere_date'][0:4],
+            #         'aired': row['premiere_date'],
             #         'mediatype': 'tvshow',
             #     },
             #     art = {'thumb': _image(row['artwork']['program.tile']['path']), 'fanart': _image(row['artwork']['detail.horizontal.hero']['path'], 'fanart')},
@@ -184,7 +183,7 @@ def _process_rows(rows, slug=None):
                 label = label,
                 info = {
                     'plot': row['description'],
-                    'year': row['premiere_date'][0:4],
+                    'aired': row['premiere_date'],
                     'mediatype': 'movie',
                 },
                 art = {'thumb': _image(row['artwork']['program.tile']['path']), 'fanart': _image(row['artwork']['detail.horizontal.hero']['path'], 'fanart')},
@@ -270,6 +269,7 @@ def _parse_view(row, my_stuff, sync, state):
             info = {
                 'plot': plot,
                 'year': year,
+                'aired': entity.get('premiere_date'),
                 'genre': entity.get('genre_names', []),
                 'mediatype': 'movie',
             },
