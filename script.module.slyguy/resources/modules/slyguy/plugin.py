@@ -623,7 +623,7 @@ class Folder(object):
         if self.content == 'AUTO':
             self.content = 'videos'
 
-            if not settings.getBool('video_folder_content', True) and item_types:
+            if not settings.common_settings.getBool('video_folder_content', False) and item_types:
                 type_map = {
                     'movie': 'movies',
                     'tvshow': 'tvshows',
@@ -641,7 +641,7 @@ class Folder(object):
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)
 
         if not self.sort_methods:
-            self.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL]
+            self.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_VIDEO_YEAR, xbmcplugin.SORT_METHOD_DATEADDED, xbmcplugin.SORT_METHOD_PLAYCOUNT]
             if not ep_sort:
                 self.sort_methods.pop(0)
 

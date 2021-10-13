@@ -78,6 +78,14 @@ msgctxt "#30022"
 msgid "Rapid Updates"
 msgstr "Schnelle Aktualisierungen"
 
+msgctxt "#30023"
+msgid "Video view for all content"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Folders for TV Show and Seasons"
+msgstr "Ordner für TV Sendungen und Staffeln"
+
 ## COMMON ##
 
 msgctxt "#32000"
@@ -663,10 +671,6 @@ msgctxt "#32119"
 msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr "Inputstream Adaptive wird mit apt installiert"
 
-msgctxt "#32120"
-msgid "Folders for TV Show and Seasons"
-msgstr "Ordner für TV Sendungen und Staffeln"
-
 msgctxt "#32121"
 msgid "Default Subtitle"
 msgstr "Standard Untertitel"
@@ -706,10 +710,6 @@ msgstr "Suche entfernen"
 msgctxt "#32128"
 msgid "SlyGuy News"
 msgstr "SlyGuy Nachrichten"
-
-msgctxt "#32129"
-msgid "Video view for all content"
-msgstr ""
 
 msgctxt "#32130"
 msgid "Play from live"

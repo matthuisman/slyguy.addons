@@ -258,7 +258,7 @@ class Item(object):
                 self.info['title'] = self.label
 
         if self.info:
-            if self.info.get('mediatype') in ('tvshow','season') and settings.getBool('show_series_folders', True):
+            if self.info.get('mediatype') in ('tvshow','season') and settings.common_settings.getBool('show_series_folders', False):
                 self.info.pop('mediatype')
 
             if self.info.get('mediatype') == 'movie':
@@ -266,21 +266,25 @@ class Item(object):
                 self.info.pop('episode', None)
                 self.info.pop('tvshowtitle', None)
 
-                year = self.info.get('year') or ''
-                aired = self.info.get('aired') or ''
-                premiered = self.info.get('premiered') or ''
+            year = self.info.get('year') or ''
+            aired = self.info.get('aired') or ''
+            premiered = self.info.get('premiered') or ''
+            date_added = self.info.get('dateadded') or ''
 
-                if not aired and premiered:
-                    self.info['aired'] = aired = premiered
+            if not aired and premiered:
+                self.info['aired'] = aired = premiered
 
-                if year and not aired:
-                    self.info['aired'] = aired = '{}-01-01'.format(year)
+            if year and not aired:
+                self.info['aired'] = aired = '{}-01-01'.format(year)
 
-                if not premiered and aired:
-                    self.info['premiered'] = premiered = aired
+            if not premiered and aired:
+                self.info['premiered'] = premiered = aired
 
-                if not year and len(aired) >= 4:
-                    self.info['year'] = year = aired[0:4]
+            if not year and len(aired) >= 4:
+                self.info['year'] = year = aired[0:4]
+
+            if not date_added and aired:
+                self.info['dateadded'] = date_added = '{} 12:00:00'.format(aired)
 
             li.setInfo('video', self.info)
 

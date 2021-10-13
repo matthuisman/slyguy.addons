@@ -24,5 +24,7 @@ class Language(BaseLanguage):
     DONOR_ID          = 30020
     SHOW_NEWS         = 30021
     RAPID_UPDATES     = 30022
+    MOVIE_FOLDERS     = 30023
+    SHOW_FOLDERS      = 30024
 
 _ = Language()

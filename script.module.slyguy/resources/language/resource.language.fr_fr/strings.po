@@ -18,6 +18,14 @@ msgctxt "#30001"
 msgid "SlyGuy News"
 msgstr ""
 
+msgctxt "#30023"
+msgid "Video view for all content"
+msgstr "Forcer les types de vue vidéo pour tous les contenus"
+
+msgctxt "#30024"
+msgid "Folders for TV Show and Seasons"
+msgstr "Afficher un icône dossier pour les séries et les saisons"
+
 ## COMMON ##
 
 msgctxt "#32000"
@@ -525,10 +533,6 @@ msgctxt "#32119"
 msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr ""
 
-msgctxt "#32120"
-msgid "Folders for TV Show and Seasons"
-msgstr "Afficher un icône dossier pour les séries et les saisons"
-
 msgctxt "#32122"
 msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"
 msgstr ""
@@ -560,10 +564,6 @@ msgstr "Supprimer cette recherche"
 msgctxt "#32128"
 msgid "SlyGuy News"
 msgstr ""
-
-msgctxt "#32129"
-msgid "Video view for all content"
-msgstr "Forcer les types de vue vidéo pour tous les contenus"
 
 msgctxt "#32130"
 msgid "Play from live"
