@@ -28,12 +28,12 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
-        # folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(hub, slug='home'))
+        folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(hub, slug='home'))
 
         #if api.has_live_tv():
         folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
-        # folder.add_item(label=_(_.TV, _bold=True), path=plugin.url_for(hub, slug='tv'))
+        folder.add_item(label=_(_.TV, _bold=True), path=plugin.url_for(hub, slug='tv'))
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(hub, slug='movies'))
         # folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(hub, slug='sports'))
         # folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(hub, slug='hubs'))
@@ -64,7 +64,7 @@ def hub(slug, **kwargs):
     folder = plugin.Folder(data['name'])
     for row in data['components']:
         ## needs work
-        if row['name'] in ('Live Now', 'Upcoming'):
+        if 'live' in row['name'].lower() or row['name'] in ('Upcoming', 'Keep Watching'):
             continue
 
         if row['_type'] == 'collection':
@@ -127,19 +127,24 @@ def _process_rows(rows, slug=None):
     for row in rows:
         _type = row['metrics_info']['target_type'] if row['_type'] == 'view' else row['_type']
         actions = row.get('actions', {})
-        if (hide_locked and 'upsell' in actions) or (hide_upcoming and 'upsell' not in actions and 'playback' not in actions):
+        if (hide_locked and 'upsell' in actions):
             continue
 
         if _type == 'series':
-            pass
-            # id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
-            # row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
-            # if my_stuff:
-            #     eab_ids.append(row['personalization']['eab'])
-            # to_process.append(row)
+            id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
+            row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
+            if my_stuff:
+                eab_ids.append(row['personalization']['eab'])
+            to_process.append(row)
 
         elif _type in ('movie', 'episode'):
+            if (hide_upcoming and 'upsell' not in actions and 'playback' not in actions):
+                continue
+
             eab_ids.append(row['personalization']['eab'])
+            to_process.append(row)
+
+        elif _type == 'network':
             to_process.append(row)
 
     states = api.states(eab_ids) if (sync or my_stuff) else {}
@@ -155,22 +160,23 @@ def _process_rows(rows, slug=None):
             ))
 
         if row['_type'] == 'series':
-            continue
-            # item = plugin.Item(
-            #     label = row['name'],
-            #     info = {
-            #         'plot': row['description'],
-            #         'aired': row['premiere_date'],
-            #         'mediatype': 'tvshow',
-            #     },
-            #     art = {'thumb': _image(row['artwork']['program.tile']['path']), 'fanart': _image(row['artwork']['detail.horizontal.hero']['path'], 'fanart')},
-            #     path = plugin.url_for(series, id=row['id']),
-            # )
+            raise
+
+            item = plugin.Item(
+                label = row['name'],
+                info = {
+                    'plot': row['description'],
+                    'aired': row['premiere_date'],
+                    'mediatype': 'tvshow',
+                },
+                art = {'thumb': _image(row['artwork']['program.tile']['path']), 'fanart': _image(row['artwork']['detail.horizontal.hero']['path'], 'fanart')},
+                path = plugin.url_for(series, id=row['id']),
+            )
 
             # if my_stuff:
             #     item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
 
-            # items.append(item)
+            items.append(item)
 
         elif row['_type'] == 'movie':
             label = row['name']
@@ -178,6 +184,8 @@ def _process_rows(rows, slug=None):
             # action_type = row['reco_info']['watch_later_result']['actions'][0]['action_type']
             # if action_type != 'playback':
             #     label = _(_.COMING_SOON, label=label)
+
+            raise
 
             item = plugin.Item(
                 label = label,
@@ -202,18 +210,35 @@ def _process_rows(rows, slug=None):
 
     return items
 
+def _entity_art(artwork):
+    art = {'thumb': None, 'fanart': None}
+    thumbs = ['program.vertical.tile', 'program.tile', 'title.treatment.horizontal', 'video.horizontal.hero']
+    fanarts = ['detail.horizontal.wide', 'detail.horizontal.hero']
+
+    for key in thumbs:
+        if key in artwork:
+            art['thumb'] = _image(artwork[key]['path'])
+            break
+
+    for key in fanarts:
+        if key in artwork:
+            art['fanart'] = _image(artwork[key]['path'], 'fanart')
+            break
+
+    return art
+
 def _view_art(artwork):
     art = {'thumb': None, 'fanart': None}
     thumbs = ['vertical_tile', 'horizontal_tile', 'horizontal']
-    fanarts = ['horizontal']
+    fanarts = ['horizontal', 'horizontal_video']
+
     for key in thumbs:
-        if key in artwork:
+        if key in artwork and artwork[key]['artwork_type'] == 'display_image':
             art['thumb'] = _image(artwork[key]['image']['path'])
-            if key in fanarts:
-                fanarts.remove(key)
             break
+
     for key in fanarts:
-        if key in artwork:
+        if key in artwork and artwork[key]['artwork_type'] == 'display_image':
             art['fanart'] = _image(artwork[key]['image']['path'], 'fanart')
             break
 
@@ -223,6 +248,11 @@ def _parse_view(row, my_stuff, sync, state):
     metrics = row['metrics_info']
     visuals = row['visuals']
     entity = row['entity_metadata']
+
+    try:
+        bundle = row['actions']['playback']['bundle']
+    except:
+        bundle = {}
 
     try:
         headline = row['visuals']['headline']['text']
@@ -236,11 +266,30 @@ def _parse_view(row, my_stuff, sync, state):
         except:
             plot = row['visuals']['body']
 
-    if metrics['target_type'] == 'series':
+    if metrics['target_type'] == 'network':
+        pass
+        # item = plugin.Item(
+        #     label = headline,
+        #     info = {
+        #         'plot': plot,
+        #         'aired': entity.get('premiere_date'),
+        #         'genre': entity.get('genre_names', []),
+        #     },
+        #     art = _view_art(row['visuals']['artwork']),
+        #     path = _get_play_path(row['personalization']['eab'], is_live=True),
+        #     playable = True,
+        # )
+
+        # return item
+
+    elif metrics['target_type'] == 'series':
         item = plugin.Item(
             label = headline,
             info = {
-                'plot': plot,
+                'plot': entity.get('series_description') or plot,
+                'aired': entity.get('premiere_date'),
+                'genre': entity.get('genre_names', []),
+                'mpaa': entity['rating'].get('code'),
                 'mediatype': 'tvshow',
             },
             art = _view_art(row['visuals']['artwork']),
@@ -269,8 +318,10 @@ def _parse_view(row, my_stuff, sync, state):
             info = {
                 'plot': plot,
                 'year': year,
+                'duration': bundle.get('duration'),
                 'aired': entity.get('premiere_date'),
                 'genre': entity.get('genre_names', []),
+                'mpaa': entity['rating'].get('code'),
                 'mediatype': 'movie',
             },
             art = _view_art(row['visuals']['artwork']),
@@ -307,7 +358,68 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 def series(id, **kwargs):
-    pass
+    data = api.series(id)
+    folder = plugin.Folder(data['details']['entity']['name'])
+
+    series = []
+    for row in data['components']:
+        for item in row['items']:
+            if 'series_grouping_metadata' in item:
+                series.append(int(item['series_grouping_metadata']['season_number']))
+
+    for season in sorted(series):
+        folder.add_item(
+            label = 'Season {}'.format(season),
+            info = {
+                'plot': data['details']['entity']['description'],
+                'mpaa': data['details']['entity']['rating'].get('code'),
+                'tvshowtitle': data['details']['entity']['name'],
+                'season': season,
+                'mediatype': 'season',
+            },
+            art = _entity_art(data['details']['entity']['artwork']),
+            path = plugin.url_for(episodes, id=id, season=season),
+        )
+
+    return folder
+
+@plugin.route()
+def episodes(id, season, **kwargs):
+    data = api.episodes(id, season)
+
+    if data['items']:
+        art = _entity_art(data['items'][0]['series_artwork'])
+        folder = plugin.Folder(data['items'][0]['series_name'], fanart=art['fanart'])
+    else:
+        folder = plugin.Folder(data['name'])
+
+    now = arrow.now()
+    for row in data['items']:
+        label = row['name']
+
+        start_date = arrow.get(row['bundle']['availability']['start_date'])
+        if start_date > now:
+            label += ' (UPCOMING)'
+
+        folder.add_item(
+            label = label,
+            info = {
+                'plot': row['description'],
+                'season': int(row['season']),
+                'episode': int(row['number']),
+                'aired': row.get('premiere_date'),
+                'duration': row.get('duration'),
+                'tvshowtitle': row['series_name'],
+                'mpaa': row['rating'].get('code'),
+                'genre': row.get('genre_names', []),
+                'mediatype': 'episode',
+            },
+            art = _entity_art(row['artwork']),
+            path = plugin.url_for(play, eab_id=row['bundle']['eab_id']),
+            playable = True,
+        )
+
+    return folder
 
 def _image(url, _type=None):
     if _type == 'live':
@@ -472,6 +584,15 @@ def play_channel(channel_id, **kwargs):
 def play(eab_id, **kwargs):
     return _play(eab_id, **kwargs)
 
+@plugin.route()
+@plugin.login_required()
+def catchup(id, **kwargs):
+    data = api.deeplink(id)
+    if 'vod_items' not in data['details']:
+        raise PluginError("Sorry, this content isn't currently available on catchup")
+
+    return _play(data['details']['vod_items']['focus']['entity']['bundle']['eab_id'])
+
 def _play(eab_id, **kwargs):
     is_live = ROUTE_LIVE_TAG in kwargs
 
@@ -532,13 +653,11 @@ def logout(**kwargs):
 @plugin.merge()
 @plugin.login_required()
 def playlist(output, **kwargs):
-    channels = api.channels()
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U')
 
         for channel in api.channels():
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" catchup="vod" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=channel['id'], name=channel['name'], logo=_image(channel['logoUrl'], 'live'), url=plugin.url_for(play_channel, channel_id=channel['id'], _is_live=True),
             ))
 
@@ -603,7 +722,15 @@ def epg(output, **kwargs):
                     desc = u'<desc>{}</desc>'.format(escape(desc)) if desc else ''
                     category = u'<category>{}</category>'.format(escape(category)) if category else ''
 
-                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}{desc}{date}{category}{new}</programme>'.format(
-                        id=channel_id, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg.get('headline','')), subtitle=subtitle, episode=episode, icon=icon, desc=desc, date=date, category=category, new=new))
+                    # below doesnt work for episodes as it just links to series and plays the first ep
+                    # also some content doesnt have vod availabe
+                    # if detail:
+                    #     catchup_url = plugin.url_for(catchup, id=detail['id'])
+                    #     catchup_id = ' catchup-id="{}"'.format(escape(catchup_url))
+                    # else:
+                    catchup_id = ''
+
+                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"{catchup_id}><title>{title}</title>{subtitle}{icon}{episode}{desc}{date}{category}{new}</programme>'.format(
+                        id=channel_id, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), catchup_id=catchup_id, title=escape(epg.get('headline','')), subtitle=subtitle, episode=episode, icon=icon, desc=desc, date=date, category=category, new=new))
 
         f.write(u'</tv>')

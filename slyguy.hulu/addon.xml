@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.0.9">
+<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.0.10">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -8,14 +8,14 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <description lang="en">Watch movies, new TV shows, Hulu Originals, and more with Hulu
-[B]Work in progress - many features missing[/B]
+[B]Work in progress - some features missing[/B]
 
 Subscription required.</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>Initial Movies support</news>
+    <news>Initial Tv Shows support</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

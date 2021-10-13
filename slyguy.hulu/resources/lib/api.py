@@ -75,6 +75,27 @@ class API(object):
         log.debug('Serial: {}'.format(serial))
         return serial
 
+    def deeplink(self, id):
+        params = {
+            'id': id,
+            'namespace': 'entity',
+            'schema': 1,
+        }
+
+        data = self._session.get('https://discover.hulu.com/content/v5/deeplink/browse', params=params).json()
+        self._check_errors(data)
+
+        params = {
+            'schema': 1,
+            'limit': 99,
+            #'device_info': 'android:4.32.0:compass-mvp:site-map',
+        }
+        params.update(self._lat_long())
+
+        data = self._session.get(data['href'], params=params).json()
+        self._check_errors(data)
+        return data
+
     def entities(self, eab_ids):
         self._refresh_token()
 
@@ -97,13 +118,19 @@ class API(object):
             'limit': 64,
             'keywords': query,
             'type': 'entity',
-            'include_offsite': 'false',
+            'include_offsite': 'true',
         }
         params.update(self._lat_long())
 
         data = self._session.get('https://discover.hulu.com/content/v5/search/entity', params=params).json()
         self._check_errors(data)
         return data['groups'][0]['results']
+
+    def series(self, id):
+        return self.hub('series/{}'.format(id), limit=999)
+
+    def episodes(self, id, season):
+        return self.hub('series/{}/season/{}'.format(id, season), limit=999)
 
     def hub(self, slug, limit=100, page=1):
         self._refresh_token()
