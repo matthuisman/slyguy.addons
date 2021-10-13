@@ -1,14 +1,17 @@
 HEADERS = {
-    'User-Agent': 'okhttp/3.4.1', #mpd returns lower video quality for desktop useragents
+    'User-Agent': 'okhttp/3.4.1',
 }
 
-CLIENT_ID   = 'dc09de02-de71-4181-9006-2754dc5d3ed3'
-PRODUCT_ID  = 'c53b19ce-62c0-441e-ad29-ecba2dcdb199'
+CLIENT_ID = 'dc09de02-de71-4181-9006-2754dc5d3ed3'
+PRODUCT_ID = 'c53b19ce-62c0-441e-ad29-ecba2dcdb199'
 PLATFORM_ID = '32faad53-5e7b-4cc0-9f33-000092e85950'
 DEVICE_TYPE = 'Web'
 
 DEFAULT_COUNTRY = 'ZA'
 DEFAULT_PACKAGE = 'PREMIUM'
+EPG_URLS = {
+    'ZA': 'https://i.mjh.nz/DStv/za.xml.gz',
+}
 
 UUID_NAMESPACE = '122e1611-0232-4336-bf43-e054c8ecd0d5'
 DEVICE_REGISTER = 'https://ssl.dstv.com/api/lean-back-otp/device/registration'
