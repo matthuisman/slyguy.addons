@@ -282,7 +282,7 @@ class DeviceLogin(object):
     @property
     def device_id(self):
         return self._device_id
-    
+
     @property
     def code(self):
         return self._code

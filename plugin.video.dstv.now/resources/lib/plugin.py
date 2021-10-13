@@ -3,12 +3,12 @@ import threading
 from xml.sax.saxutils import escape
 
 import arrow
-from kodi_six import xbmc
 from six.moves import queue
 
 from slyguy import plugin, gui, userdata, inputstream, signals, settings
 from slyguy.session import Session
 from slyguy.log import log
+from slyguy.monitor import monitor
 from slyguy.util import gzip_extract
 
 from .api import API
@@ -267,7 +267,6 @@ def login(**kwargs):
     gui.refresh()
 
 def _device_link():
-    monitor = xbmc.Monitor()
     timeout = 600
 
     with api.device_login() as login_progress:
