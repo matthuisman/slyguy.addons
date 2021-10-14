@@ -29,5 +29,10 @@ class Language(BaseLanguage):
     EXPIRED_TOKEN    = 30025
     HIDE_UPCOMING    = 30026
     UPCOMING         = 30027
+    NO_LISTINGS      = 30028
+    NO_ENTITY        = 30029
+    NO_DEVICE_CODE   = 30030
+    PROFILE_ERROR    = 30031
+    SEASON_NUM       = 30032
 
 _ = Language()

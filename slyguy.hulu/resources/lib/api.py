@@ -123,7 +123,7 @@ class API(object):
             'offset': (page-1)*limit,
             'schema': 1,
             'bowie_context': 'all',
-            # 'device_info': 'android:4.32.0:compass-mvp:site-map',
+            #'device_info': 'android:4.32.0:compass-mvp:site-map',
         }
         params.update(self._lat_long())
 
@@ -159,7 +159,7 @@ class API(object):
             'schema': 1,
             'eab_ids': ",".join(eab_ids),
             'bowie_context': 'all',
-            # 'device_info': 'android:4.32.0:compass-mvp:site-map',
+            #'device_info': 'android:4.32.0:compass-mvp:site-map',
         }
         params.update(self._lat_long())
 
@@ -237,7 +237,7 @@ class API(object):
 
         data = self._session.post('https://auth.hulu.com/v1/device/code/register', data=payload).json()
         if 'code' not in data:
-            raise APIError('Failed to get blah')
+            raise APIError(_.NO_DEVICE_CODE)
 
         return data['code'], serial
 
@@ -305,9 +305,9 @@ class API(object):
         data = self._session.post('https://auth.hulu.com/v2/device/profiles/switch', data=payload, headers={'Authorization': None}).json()
         self._check_errors(data)
         self._set_auth(data['data'])
-        if userdata.get('profile_id') != profile_id:
-            raise APIError('Failed to set profile')
         mem_cache.empty()
+        if userdata.get('profile_id') != profile_id:
+            raise APIError(_.PROFILE_ERROR)
 
     def update_progress(self, eab_id, position):
         self._refresh_token()
@@ -336,7 +336,7 @@ class API(object):
         #id = 'EAB::572e65d0-a5de-4baa-bbff-a489bf9e8498::1128409451::144270058' #live channel
         #id = 'EAB::c097d476-149c-44ee-b7de-4b11e610a052::61649804::132682060' #handmaid tale - 4k HDR
         #id = 'EAB::f9f2384a-4e3a-4777-b718-d970c8023805::61673018::140889333' # american horror stories - normal 4k
-        # https://www.reddit.com/r/Hulu/comments/omj8a3/american_horror_stories_not_actually_in_4k/
+        #https://www.reddit.com/r/Hulu/comments/omj8a3/american_horror_stories_not_actually_in_4k/
 
         if 'content_type' in bundle:
             is_live = bundle['content_type'] == 'LIVE'

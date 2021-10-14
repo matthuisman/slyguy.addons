@@ -114,6 +114,26 @@ msgctxt "#30027"
 msgid "{label} [COLOR orange][B][Upcoming][/B][/COLOR]"
 msgstr ""
 
+msgctxt "#30028"
+msgid "There's nothing on at this time"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Failed to find entity: {entity}"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Failed to get device code"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Failed to set profile"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Season {season}"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
