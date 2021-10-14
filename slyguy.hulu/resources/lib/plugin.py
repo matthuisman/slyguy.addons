@@ -36,7 +36,7 @@ def home(**kwargs):
 
         folder.add_item(label=_(_.TV, _bold=True), path=_hub_path('tv'))
         folder.add_item(label=_(_.MOVIES, _bold=True), path=_hub_path('movies'))
-        #folder.add_item(label=_(_.SPORTS, _bold=True), path=_hub_path('sports'))
+        folder.add_item(label=_(_.SPORTS, _bold=True), path=_hub_path('sports'))
         folder.add_item(label=_(_.HUBS, _bold=True), path=_hub_path('hubs'))
 
         if settings.getBool('my_stuff', False):
@@ -69,14 +69,17 @@ def hub(slug, page=1, **kwargs):
 
     if 'components' in data:
         for row in data['components']:
-            ## needs work
-            if 'live' in row['name'].lower() or row['name'] in ('Sports', 'Teams'):
+            ## TODO
+            if 'live' in row['name'].lower() or row['name'] in ('Upcoming'):
                 continue
 
             if row['personalization']['bowie_context'] in ('recordings'):
                 continue
 
             if row['_type'] == 'collection':
+                if not row['items']:
+                    continue
+
                 folder.add_item(
                     label = row['name'],
                     path = _hub_path(row['href']),
@@ -100,7 +103,6 @@ def _process_rows(rows, slug=None):
     sync = settings.getBool('sync_playback', False)
     hide_locked = settings.getBool('hide_locked', True)
     hide_upcoming = settings.getBool('hide_upcoming', True)
-    now = arrow.now()
 
     eab_ids = []
     to_process = []
@@ -117,25 +119,27 @@ def _process_rows(rows, slug=None):
         if 'upsell' in actions:
             row['locked'] = True
 
-        if 'reco_info' in row:
-            if _type in ('movie', 'episode', 'sports_episode'):
+        if _type in ('movie', 'episode', 'sports_episode'):
+            try:
                 if not row['reco_info']['watch_later_result']['actions']:
                     row['locked'] = True
+                
+                ## TODO
+                elif row['reco_info']['watch_later_result']['actions'][0]['action_entity']['bundle']['bundle_type'] == 'LIVE':
+                    continue
+            except:
+                pass
 
         if hide_locked and row['locked']:
             continue
 
-        if _type == 'series':
-            id = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
-            row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(id)
+        row['id'] = row['metrics_info']['target_id'] if row['_type'] == 'view' else row['id']
+        if _type in ('series', 'network', 'sports_team'):
+            row['personalization']['eab'] = 'EAB::{}::NULL::NULL'.format(row['id'])
             eab_ids.append(row['personalization']['eab'])
             to_process.append(row)
 
         elif _type in ('movie', 'episode', 'sports_episode'):
-            eab_ids.append(row['personalization']['eab'])
-            to_process.append(row)
-
-        elif _type in ('network', 'sports_team'):
             eab_ids.append(row['personalization']['eab'])
             to_process.append(row)
 
@@ -152,18 +156,35 @@ def _process_rows(rows, slug=None):
         if row['upcoming'] and hide_upcoming:
             continue
 
-        if row['_type'] == 'collection':
-            raise Exception('To do collection')
-
-        elif row['_type'] == 'network':
-            label = row['name']
-            if row['locked']:
-                label = _(_.LOCKED, label=label)
-            elif row['upcoming']:
-                label = _(_.UPCOMING, label=label)
-
+        if row['_type'] in ('episode', 'sports_episode'):
             item = plugin.Item(
-                label = label,
+                label = row['name'],
+                info = {
+                    'plot': row.get('description'),
+                    'season': int(row.get('season', 0)),
+                    'episode': int(row.get('number', 0)),
+                    'aired': row.get('premiere_date'),
+                    'duration': row.get('duration'),
+                    'tvshowtitle': row['series_name'],
+                    'mpaa': row.get('rating', {}).get('code'),
+                    'genre': row.get('genre_names', []),
+                    'playcount': 1 if sync and state.get('is_completed') else None,
+                    'mediatype': 'episode',
+                },
+                art = _entity_art(row['artwork']),
+                resume_from = 1 if sync and state.get('progress_percentage') and not state.get('is_completed') else None,
+                path = _get_play_path(row['personalization']['eab']),
+                playable = True,
+            )
+
+            if my_stuff:
+                item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
+
+            items.append(item)
+
+        elif row['_type'] in ('sports_team', 'network'):
+            item = plugin.Item(
+                label = row['name'],
                 info = {
                     'plot': row.get('description'),
                 },
@@ -256,7 +277,7 @@ def _parse_view(row, my_stuff, sync, state):
         except:
             plot = row['visuals']['body']
 
-    if metrics['target_type'] == 'network':
+    if metrics['target_type'] in ('network', 'sports_team'):
         label = headline = re.sub(" \(([0-9]{4})\)$", '', headline)
         if row['locked']:
             label = _(_.LOCKED, label=label)
@@ -355,8 +376,8 @@ def add_bookmark(eab_id, title, **kwargs):
 
 def _entity_art(artwork):
     art = {'thumb': None, 'fanart': None}
-    thumbs = ['program.vertical.tile', 'program.tile', 'title.treatment.horizontal', 'video.horizontal.hero', 'network.tile']
-    fanarts = ['detail.horizontal.wide', 'detail.horizontal.hero', 'network.tile']
+    thumbs = ['program.vertical.tile', 'program.tile', 'title.treatment.horizontal', 'video.horizontal.hero', 'network.tile', 'team.tile']
+    fanarts = ['detail.horizontal.wide', 'detail.horizontal.hero', 'network.tile', 'team.tile']
 
     for key in thumbs:
         if key in artwork:
@@ -649,6 +670,7 @@ def _play(id, **kwargs):
         raise PluginError('Failed to find this entity: {}'.format(id))
 
     entity = entities[0]
+    eab_id = entity['bundle']['eab_id']
     data = api.play(entity['bundle'])
 
     item = plugin.Item(
@@ -778,6 +800,7 @@ def epg(output, **kwargs):
                     desc = u'<desc>{}</desc>'.format(escape(desc)) if desc else ''
                     category = u'<category>{}</category>'.format(escape(category)) if category else ''
 
+                    # TODO
                     # below doesnt work for episodes as it just links to series and plays the first ep
                     # also some content doesnt have vod availabe
                     # if detail:

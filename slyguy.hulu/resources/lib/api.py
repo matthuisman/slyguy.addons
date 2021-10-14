@@ -122,7 +122,7 @@ class API(object):
             'limit': limit,
             'offset': (page-1)*limit,
             'schema': 1,
-            'bowie_context': 'browse',
+            'bowie_context': 'all',
             # 'device_info': 'android:4.32.0:compass-mvp:site-map',
         }
         params.update(self._lat_long())
@@ -141,7 +141,7 @@ class API(object):
             'keywords': query,
             'type': 'entity',
             'include_offsite': 'true',
-            'bowie_context': 'browse',
+            'bowie_context': 'all',
         }
         params.update(self._lat_long())
 
@@ -158,7 +158,7 @@ class API(object):
         params = {
             'schema': 1,
             'eab_ids': ",".join(eab_ids),
-            'bowie_context': 'browse',
+            'bowie_context': 'all',
             # 'device_info': 'android:4.32.0:compass-mvp:site-map',
         }
         params.update(self._lat_long())
@@ -176,7 +176,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'bowie_context': 'browse',
+            'bowie_context': 'all',
         }
         params.update(self._lat_long())
 
