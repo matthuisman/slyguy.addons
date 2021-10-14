@@ -208,17 +208,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._parse_m3u8(response)
 
             elif self._session.get('type') == 'mpd' and url == self._session['manifest']:
-                self._parse_dash(response)
                 self._session['manifest'] = None  # unset manifest url so isn't parsed again
+                self._parse_dash(response)
         except Exception as e:
             log.exception(e)
 
-            if type(e) != Exit and url == self._session['manifest']:
+            if type(e) == Exit:
+                response.status_code = 500
+                response.stream.content = str(e).encode('utf-8')
+                failed_playback()
+            else:
                 gui.error(_.QUALITY_PARSE_ERROR)
-
-            response.status_code = 500
-            response.stream.content = str(e).encode('utf-8')
-            failed_playback()
 
         self._output_response(response)
 
@@ -344,25 +344,25 @@ class RequestHandler(BaseHTTPRequestHandler):
             return None
 
     def _parse_dash(self, response):
-        if ADDON_DEV:
-            root = parseString(response.stream.content)
-            mpd = root.toprettyxml(encoding='utf-8')
-            mpd = b"\n".join([ll.rstrip() for ll in mpd.splitlines() if ll.strip()])
-            with open(xbmc.translatePath('special://temp/in.mpd'), 'wb') as f:
-                f.write(mpd)
-
-            start = time.time()
-
         data = response.stream.content.decode('utf8')
 
         ## SUPPORT NEW DOLBY FORMAT https://github.com/xbmc/inputstream.adaptive/pull/466
         data = data.replace('tag:dolby.com,2014:dash:audio_channel_configuration:2011', 'urn:dolby:dash:audio_channel_configuration:2011')
         ## SUPPORT EC-3 CHANNEL COUNT https://github.com/xbmc/inputstream.adaptive/pull/618
         data = data.replace('urn:mpeg:mpegB:cicp:ChannelConfiguration', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
+        data = data.replace('dvb:', '') #showmax mpd has dvb: namespace without declaration
 
         root = parseString(data.encode('utf8'))
-        mpd = root.getElementsByTagName("MPD")[0]
 
+        if ADDON_DEV:
+            pretty = root.toprettyxml(encoding='utf-8')
+            pretty = b"\n".join([ll.rstrip() for ll in pretty.splitlines() if ll.strip()])
+            with open(xbmc.translatePath('special://temp/in.mpd'), 'wb') as f:
+                f.write(pretty)
+
+            start = time.time()
+
+        mpd = root.getElementsByTagName("MPD")[0]
         mpd_attribs = list(mpd.attributes.keys())
 
         ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
