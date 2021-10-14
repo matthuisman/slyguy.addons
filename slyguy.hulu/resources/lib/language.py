@@ -28,5 +28,6 @@ class Language(BaseLanguage):
     LOCKED           = 30024
     EXPIRED_TOKEN    = 30025
     HIDE_UPCOMING    = 30026
+    UPCOMING         = 30027
 
 _ = Language()

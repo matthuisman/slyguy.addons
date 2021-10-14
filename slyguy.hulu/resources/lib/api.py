@@ -109,6 +109,28 @@ class API(object):
         self._check_errors(data)
         return data['items']
 
+    def series(self, id, **kwargs):
+        return self.hub('series/{}'.format(id), limit=999, **kwargs)
+
+    def episodes(self, id, season, **kwargs):
+        return self.hub('series/{}/season/{}'.format(id, season), limit=999, **kwargs)
+
+    def hub(self, slug, limit=100, page=1):
+        self._refresh_token()
+
+        params = {
+            'limit': limit,
+            'offset': (page-1)*limit,
+            'schema': 1,
+            'bowie_context': 'browse',
+            # 'device_info': 'android:4.32.0:compass-mvp:site-map',
+        }
+        params.update(self._lat_long())
+
+        data = self._session.get('https://discover.hulu.com/content/v5/hubs/{}'.format(slug), params=params).json()
+        self._check_errors(data)
+        return data
+
     def search(self, query):
         self._refresh_token()
 
@@ -119,63 +141,13 @@ class API(object):
             'keywords': query,
             'type': 'entity',
             'include_offsite': 'true',
+            'bowie_context': 'browse',
         }
         params.update(self._lat_long())
 
         data = self._session.get('https://discover.hulu.com/content/v5/search/entity', params=params).json()
         self._check_errors(data)
         return data['groups'][0]['results']
-
-    def series(self, id):
-        return self.hub('series/{}'.format(id), limit=999)
-
-    def episodes(self, id, season):
-        return self.hub('series/{}/season/{}'.format(id, season), limit=999)
-
-    def hub(self, slug, limit=100, page=1):
-        self._refresh_token()
-
-        params = {
-            'limit': limit,
-            'offset': (page-1)*limit,
-            'schema': 1,
-            # 'device_info': 'android:4.32.0:compass-mvp:site-map',
-        }
-        params.update(self._lat_long())
-
-        data = self._session.get('https://discover.hulu.com/content/v5/hubs/{}'.format(slug), params=params).json()
-        self._check_errors(data)
-        return data
-
-    # def hub_collection(self, slug, id, limit=50, page=1):
-    #     self._refresh_token()
-
-    #     params = {
-    #         'limit': limit,
-    #         'offset': (page-1)*limit,
-    #         'schema': 1,
-    #         # 'device_info': 'android:4.32.0:compass-mvp:site-map',
-    #     }
-    #     params.update(self._lat_long())
-
-    #     data = self._session.get('https://discover.hulu.com/content/v5/view/{}/collections/{}'.format(slug, id), params=params).json()
-    #     self._check_errors(data)
-    #     return data
-
-    def view_collection(self, slug, id, limit=50, page=1):
-        self._refresh_token()
-
-        params = {
-            'limit': limit,
-            'offset': (page-1)*limit,
-            'schema': 1,
-            # 'device_info': 'android:4.32.0:compass-mvp:site-map',
-        }
-        params.update(self._lat_long())
-
-        data = self._session.get('https://discover.hulu.com/content/v5/view_hubs/{}/collections/{}'.format(slug, id), params=params).json()
-        self._check_errors(data)
-        return data
 
     def states(self, eab_ids):
         if not eab_ids:
@@ -186,7 +158,7 @@ class API(object):
         params = {
             'schema': 1,
             'eab_ids': ",".join(eab_ids),
-            'bowie_context': 'my_stuff',
+            'bowie_context': 'browse',
             # 'device_info': 'android:4.32.0:compass-mvp:site-map',
         }
         params.update(self._lat_long())
@@ -203,7 +175,12 @@ class API(object):
     def channels(self):
         self._refresh_token()
 
-        data = self._session.get('https://guide.hulu.com/guide/views', params=self._lat_long()).json()
+        params = {
+            'bowie_context': 'browse',
+        }
+        params.update(self._lat_long())
+
+        data = self._session.get('https://guide.hulu.com/guide/views', params=params).json()
         for row in data['views']:
             if row['id'] == 'hulu:guide:all-channels':
                 return row['details']['channels']
@@ -354,19 +331,18 @@ class API(object):
         }
         return self._session.post('https://client.hulu.com/user/v1/bookmarks', json=payload).ok
 
-    def play(self, id):
+    def play(self, bundle):
         self._refresh_token()
         #id = 'EAB::572e65d0-a5de-4baa-bbff-a489bf9e8498::1128409451::144270058' #live channel
         #id = 'EAB::c097d476-149c-44ee-b7de-4b11e610a052::61649804::132682060' #handmaid tale - 4k HDR
         #id = 'EAB::f9f2384a-4e3a-4777-b718-d970c8023805::61673018::140889333' # american horror stories - normal 4k
         # https://www.reddit.com/r/Hulu/comments/omj8a3/american_horror_stories_not_actually_in_4k/
 
-        entities = self.entities([id])
-        if not entities or 'bundle' not in entities[0]:
-            raise APIError('Failed to find this entity: {}'.format(id))
+        if 'content_type' in bundle:
+            is_live = bundle['content_type'] == 'LIVE'
+        else:
+            is_live = bundle.get('bundle_type') != 'VOD'
 
-        bundle = entities[0]['bundle']
-        is_live = bundle['content_type'] == 'LIVE'
         av_features = bundle.get('av_features', [])
 
         vid_types = [{'type':'H264','width':3840,'height':2160,'framerate':60,'level':'4.2','profile':'HIGH'}]
@@ -388,7 +364,7 @@ class API(object):
         live_segment_delay = 3
 
         payload = {
-            'content_eab_id': id,
+            'content_eab_id': bundle['eab_id'],
             'play_intent': 'resume', #live, resume (gives resume position), restart (doesnt give resume position)
             'unencrypted': True,
             'all_cdn': False,

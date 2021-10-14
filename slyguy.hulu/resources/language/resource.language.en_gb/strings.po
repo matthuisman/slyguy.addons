@@ -110,6 +110,10 @@ msgctxt "#30026"
 msgid "Hide Upcoming Content"
 msgstr ""
 
+msgctxt "#30027"
+msgid "{label} [COLOR orange][B][Upcoming][/B][/COLOR]"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
