@@ -196,19 +196,20 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         url = self._get_url('GET')
         response = self._proxy_request('GET', url)
+        manifest = self._session.get('manifest')
 
-        if self._session.get('redirecting') or not self._session.get('type') or not self._session.get('manifest') or int(response.headers.get('content-length', 0)) > 1000000:
+        if self._session.get('redirecting') or not self._session.get('type') or not manifest or int(response.headers.get('content-length', 0)) > 1000000:
             self._output_response(response)
             return
 
         parse = urlparse(self.path.lower())
 
         try:
-            if self._session.get('type') == 'm3u8' and (url == self._session['manifest'] or parse.path.endswith('.m3u') or parse.path.endswith('.m3u8')):
+            if self._session.get('type') == 'm3u8' and (url == manifest or parse.path.endswith('.m3u') or parse.path.endswith('.m3u8')):
                 self._parse_m3u8(response)
 
-            elif self._session.get('type') == 'mpd' and url == self._session['manifest']:
-                self._session['manifest'] = None  # unset manifest url so isn't parsed again
+            elif self._session.get('type') == 'mpd' and url == manifest:
+                self._session['manifest'] = None  #unset manifest url so isn't parsed again
                 self._parse_dash(response)
         except Exception as e:
             log.exception(e)
@@ -217,7 +218,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 response.status_code = 500
                 response.stream.content = str(e).encode('utf-8')
                 failed_playback()
-            else:
+            elif url == manifest:
                 gui.error(_.QUALITY_PARSE_ERROR)
 
         self._output_response(response)

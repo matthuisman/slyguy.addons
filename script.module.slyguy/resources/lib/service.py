@@ -63,12 +63,11 @@ def start():
 
     try:
         while not monitor.abortRequested():
+            try: check_updates()
+            except Exception as e: log.exception(e)
+
             if not is_donor or settings.getBool('show_news'):
                 try: _check_news()
-                except Exception as e: log.exception(e)
-
-            if is_donor and settings.getBool('rapid_updates'):
-                try: check_updates()
                 except Exception as e: log.exception(e)
 
             if monitor.waitForAbort(60):

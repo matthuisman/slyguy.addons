@@ -9,7 +9,6 @@
         <setting label="32140" type="lsep"/>
         <setting label="30020" type="text" id="donor_id"/>
         <setting label="30021" type="bool" id="show_news" default="true" enable="Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
-        <setting label="30022" type="bool" id="rapid_updates" default="true" enable="Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32139]">

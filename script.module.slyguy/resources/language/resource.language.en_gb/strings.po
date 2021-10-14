@@ -108,9 +108,6 @@ msgctxt "#30021"
 msgid "Show News"
 msgstr ""
 
-msgctxt "#30022"
-msgid "Rapid Updates"
-msgstr ""
 
 msgctxt "#30023"
 msgid "Video view for all content"
