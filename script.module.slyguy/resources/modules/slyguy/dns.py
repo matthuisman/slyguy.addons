@@ -7,11 +7,14 @@ from .log import log
 from .mem_cache import cached
 from .constants import ADDON_PROFILE, ADDON_ID, COMMON_ADDON
 
-def get_dns_rewrites():
+def get_dns_rewrites(dns_rewrites=None):
     rewrites = _load_rewrites(ADDON_PROFILE)
 
     if COMMON_ADDON.getAddonInfo('id') != ADDON_ID:
         rewrites.extend(_load_rewrites(COMMON_ADDON.getAddonInfo('profile')))
+
+    if dns_rewrites:
+        rewrites.extend(dns_rewrites)
 
     if rewrites:
         log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
@@ -58,7 +61,6 @@ def _load_rewrites(directory):
 
         _process_lines(text.split('\n'))
     except Exception as e:
-        raise
         log.debug('DNS Rewrites Failed: {}'.format(file_path))
         log.exception(e)
 

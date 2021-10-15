@@ -182,7 +182,7 @@ class Item(object):
     def __init__(self, id=None, label='', path=None, playable=False, info=None, context=None,
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
             video=None, audio=None, subtitles=None, use_proxy=True, specialsort=None, custom=None, proxy_data=None,
-            resume_from=None, force_resume=False):
+            resume_from=None, force_resume=False, dns_rewrites=None):
 
         self.id          = id
         self.label       = label
@@ -199,6 +199,7 @@ class Item(object):
         self.playable    = playable
         self.inputstream = inputstream
         self.proxy_data  = proxy_data or {}
+        self.dns_rewrites = dns_rewrites or {}
         self.mimetype    = None
         self._is_folder  = is_folder
         self.specialsort = specialsort #bottom, top
@@ -441,7 +442,7 @@ class Item(object):
                 'quality': QUALITY_DISABLED,
                 'middleware': {},
                 'type': None,
-                'dns_rewrites': get_dns_rewrites(),
+                'dns_rewrites': get_dns_rewrites(self.dns_rewrites),
             }
 
             if mimetype == 'application/vnd.apple.mpegurl':
