@@ -150,6 +150,7 @@ def _process_rows(rows, slug=None):
 
     items = []
     for row in to_process:
+        my_stuff_context = my_stuff
         state = states.get(row['personalization']['eab'], {})
         row['upcoming'] = state.get('is_upcoming', False)
 
@@ -167,11 +168,15 @@ def _process_rows(rows, slug=None):
         elif row['upcoming']:
             label = _(_.UPCOMING, label=label)
 
+        premiere_date = row.get('premiere_date')
+        try: premiere_date = arrow.get(premiere_date).to('local').format('YYYY-MM-DD')
+        except: pass
+
         item = plugin.Item(
             label = label,
             info = {
                 'plot': row.get('description'),
-                'aired': row.get('premiere_date'),
+                'aired': premiere_date,
                 'duration': row.get('duration'),
                 'mpaa': row.get('rating', {}).get('code'),
                 'genre': row.get('genre_names', []),
@@ -191,6 +196,7 @@ def _process_rows(rows, slug=None):
             })
             item.playable = True
             item.path = _get_play_path(row['personalization']['eab'])
+            my_stuff_context = False
 
         elif row['_type'] == 'series':
             item.info.update({
@@ -209,7 +215,7 @@ def _process_rows(rows, slug=None):
         else:
             continue
 
-        if my_stuff:
+        if my_stuff_context:
             item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
 
         if item.playable:
@@ -281,16 +287,32 @@ def _parse_view(row, my_stuff, sync, state):
 
     return item
 
-# def _upcoming_label():
-#     today = arrow.now().format("DDDD")
-#     start_date = arrow.get(entity['availability']['start_date']).to('local')
-#     if start_date.format("DDDD") == today:
-#         _str = ' [COLOR orange][TODAY {}][/COLOR]'
-#         _format = 'h:mm A'
-#     else:
-#         _str = ' [COLOR orange][{}][/COLOR]'
-#         _format = 'MMM D, h:mm A'
-#     item.label += _str.format(start_date.format(_format))
+@plugin.route()
+def series(id, **kwargs):
+    data = api.series(id)
+    folder = plugin.Folder(data['details']['entity']['name'])
+
+    series = []
+    for row in data['components']:
+        for item in row['items']:
+            if 'series_grouping_metadata' in item:
+                series.append(int(item['series_grouping_metadata']['season_number']))
+
+    for season in sorted(series):
+        folder.add_item(
+            label = _(_.SEASON_NUM, season=season),
+            info = {
+                'plot': data['details']['entity']['description'],
+                'mpaa': data['details']['entity']['rating'].get('code'),
+                'tvshowtitle': data['details']['entity']['name'],
+                'season': season,
+                'mediatype': 'season',
+            },
+            art = _entity_art(data['details']['entity']['artwork']),
+            path = plugin.url_for(episodes, id=id, season=season),
+        )
+
+    return folder
 
 @plugin.route()
 def remove_bookmark(eab_id, **kwargs):
@@ -344,74 +366,16 @@ def search(query, page, **kwargs):
     return _process_rows(rows), False
 
 @plugin.route()
-def series(id, **kwargs):
-    data = api.series(id)
-    folder = plugin.Folder(data['details']['entity']['name'])
-
-    series = []
-    for row in data['components']:
-        for item in row['items']:
-            if 'series_grouping_metadata' in item:
-                series.append(int(item['series_grouping_metadata']['season_number']))
-
-    for season in sorted(series):
-        folder.add_item(
-            label = _(_.SEASON_NUM, season=season),
-            info = {
-                'plot': data['details']['entity']['description'],
-                'mpaa': data['details']['entity']['rating'].get('code'),
-                'tvshowtitle': data['details']['entity']['name'],
-                'season': season,
-                'mediatype': 'season',
-            },
-            art = _entity_art(data['details']['entity']['artwork']),
-            path = plugin.url_for(episodes, id=id, season=season),
-        )
-
-    return folder
-
-@plugin.route()
 def episodes(id, season, **kwargs):
     data = api.episodes(id, season)
 
-    sync = settings.getBool('sync_playback', False)
-    hide_upcoming = settings.getBool('hide_upcoming', True)
+    if not data['items']:
+        return plugin.Folder(data['name'])
 
-    if data['items']:
-        art = _entity_art(data['items'][0]['series_artwork'])
-        folder = plugin.Folder(data['items'][0]['series_name'], fanart=art['fanart'])
-    else:
-        folder = plugin.Folder(data['name'])
-
-    eab_ids = [row['bundle']['eab_id'] for row in data['items']]
-    states = api.states(eab_ids)
-
-    for row in data['items']:
-        state = states.get(row['bundle']['eab_id']) or {}
-        row['upcoming'] = state.get('is_upcoming', False)
-        if row['upcoming'] and hide_upcoming:
-            continue
-
-        folder.add_item(
-            label = row['name'],
-            info = {
-                'plot': row['description'],
-                'season': int(row.get('season', 0)),
-                'episode': int(row.get('number', 0)),
-                'tvshowtitle': row.get('series_name'),
-                'aired': row.get('premiere_date'),
-                'duration': row.get('duration'),
-                'mpaa': row.get('rating', {}).get('code'),
-                'genre': row.get('genre_names', []),
-                'playcount': 1 if sync and state.get('is_completed') else None,
-                'mediatype': 'episode',
-            },
-            art = _entity_art(row['artwork']),
-            resume_from = 1 if sync and state.get('progress_percentage') and not state.get('is_completed') else None,
-            path = _get_play_path(row['bundle']['eab_id']),
-            playable = True,
-        )
-
+    art = _entity_art(data['items'][0]['series_artwork'])
+    folder = plugin.Folder(data['items'][0]['series_name'], fanart=art['fanart'])
+    items = _process_rows(data['items'])
+    folder.add_items(items)
     return folder
 
 def _image(url, _type=None):
@@ -719,3 +683,14 @@ def epg(output, **kwargs):
                         id=channel_id, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg.get('headline','')), subtitle=subtitle, episode=episode, icon=icon, desc=desc, date=date, category=category, new=new))
 
         f.write(u'</tv>')
+
+# def _upcoming_label():
+#     today = arrow.now().format("DDDD")
+#     start_date = arrow.get(entity['availability']['start_date']).to('local')
+#     if start_date.format("DDDD") == today:
+#         _str = ' [COLOR orange][TODAY {}][/COLOR]'
+#         _format = 'h:mm A'
+#     else:
+#         _str = ' [COLOR orange][{}][/COLOR]'
+#         _format = 'MMM D, h:mm A'
+#     item.label += _str.format(start_date.format(_format))
