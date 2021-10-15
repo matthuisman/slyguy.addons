@@ -34,5 +34,6 @@ class Language(BaseLanguage):
     NO_DEVICE_CODE   = 30030
     PROFILE_ERROR    = 30031
     SEASON_NUM       = 30032
+    KIDS             = 30033
 
 _ = Language()

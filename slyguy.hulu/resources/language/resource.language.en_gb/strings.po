@@ -134,6 +134,10 @@ msgctxt "#30032"
 msgid "Season {season}"
 msgstr ""
 
+msgctxt "#30033"
+msgid "Kids"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

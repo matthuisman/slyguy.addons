@@ -29,16 +29,18 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
-        folder.add_item(label=_(_.HOME, _bold=True), path=_hub_path('home'))
+        if not userdata.get('is_kids', False):
+            folder.add_item(label=_(_.HOME, _bold=True), path=_hub_path('home'))
 
-        if api.has_live_tv():
-            folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
+            if api.has_live_tv():
+                folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
-        folder.add_item(label=_(_.TV, _bold=True), path=_hub_path('tv'))
-        folder.add_item(label=_(_.MOVIES, _bold=True), path=_hub_path('movies'))
-        folder.add_item(label=_(_.SPORTS, _bold=True), path=_hub_path('sports'))
-        folder.add_item(label=_(_.HUBS, _bold=True), path=_hub_path('hubs'))
+            folder.add_item(label=_(_.TV, _bold=True), path=_hub_path('tv'))
+            folder.add_item(label=_(_.MOVIES, _bold=True), path=_hub_path('movies'))
+            folder.add_item(label=_(_.SPORTS, _bold=True), path=_hub_path('sports'))
+            folder.add_item(label=_(_.HUBS, _bold=True), path=_hub_path('hubs'))
 
+        folder.add_item(label=_(_.KIDS, _bold=True), path=_hub_path('kids'))
         if settings.getBool('my_stuff', False):
             folder.add_item(label=_(_.MY_STUFF, _bold=True), path=_hub_path('watch-later'))
 
@@ -487,6 +489,7 @@ def _select_profile():
         options.append(plugin.Item(label=_(_.KIDS_PROFILE, name=profile['name']) if profile['is_kids'] else profile['name']))
         if profile['id'] == userdata.get('profile_id'):
             default = index
+            userdata.set('is_kids', profile['is_kids'])
 
     index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=False)
     if index < 0:
@@ -502,6 +505,7 @@ def _set_profile(profile, pin_enabled=False):
     api.set_profile(profile['id'], pin=pin)
     if settings.getBool('kid_lockdown', False) and profile['is_kids']:
         userdata.set('kid_lockdown', True)
+    userdata.set('is_kids', profile['is_kids'])
 
     userdata.set('profile_name', profile['name'])
     gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'])

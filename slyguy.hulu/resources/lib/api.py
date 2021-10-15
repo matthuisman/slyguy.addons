@@ -368,7 +368,7 @@ class API(object):
             'play_intent': 'resume', #live, resume (gives resume position), restart (doesnt give resume position)
             'unencrypted': True,
             'all_cdn': False,
-            'ignore_kids_block': True,
+            'ignore_kids_block': False,
             'device_identifier': self._get_serial(),
             'deejay_device_id': DEEJAY_DEVICE_ID,
             'version': DEEJAY_KEY_VERSION,
