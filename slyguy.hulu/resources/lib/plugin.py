@@ -659,7 +659,7 @@ def playlist(output, **kwargs):
         f.write(u'#EXTM3U')
 
         for channel in api.channels():
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" catchup="vod" tvg-logo="{logo}",{name}\n{url}'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=channel['id'], name=channel['name'], logo=_image(channel['logoUrl'], 'live'), url=plugin.url_for(play_channel, channel_id=channel['id'], _is_live=True),
             ))
 
@@ -724,16 +724,7 @@ def epg(output, **kwargs):
                     desc = u'<desc>{}</desc>'.format(escape(desc)) if desc else ''
                     category = u'<category>{}</category>'.format(escape(category)) if category else ''
 
-                    # TODO
-                    # below doesnt work for episodes as it just links to series and plays the first ep
-                    # also some content doesnt have vod availabe
-                    # if detail:
-                    #     catchup_url = plugin.url_for(play, id=detail['id'])
-                    #     catchup_id = ' catchup-id="{}"'.format(escape(catchup_url))
-                    # else:
-                    catchup_id = ''
-
-                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"{catchup_id}><title>{title}</title>{subtitle}{icon}{episode}{desc}{date}{category}{new}</programme>'.format(
-                        id=channel_id, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), catchup_id=catchup_id, title=escape(epg.get('headline','')), subtitle=subtitle, episode=episode, icon=icon, desc=desc, date=date, category=category, new=new))
+                    f.write(u'<programme channel="{id}" start="{start}" stop="{stop}"><title>{title}</title>{subtitle}{icon}{episode}{desc}{date}{category}{new}</programme>'.format(
+                        id=channel_id, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg.get('headline','')), subtitle=subtitle, episode=episode, icon=icon, desc=desc, date=date, category=category, new=new))
 
         f.write(u'</tv>')
