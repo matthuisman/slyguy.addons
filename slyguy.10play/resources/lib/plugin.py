@@ -300,6 +300,7 @@ def play_channel(id, **kwargs):
         path = url,
         headers = HEADERS,
         inputstream = inputstream.HLS(live=True, force=True),
+        dns_rewrites = [('pubads.g.doubleclick.net', '142.250.70.226'),], #to bypass adblockers
     )
 
 @plugin.route()

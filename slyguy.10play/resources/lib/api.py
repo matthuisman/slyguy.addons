@@ -84,7 +84,6 @@ class API(object):
     def play_channel(self, id):
         channels = self.live_channels()
 
-        stream_key = None
         for row in channels:
             if row['channel']['id'] == id:
                 return 'https://pubads.g.doubleclick.net/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
