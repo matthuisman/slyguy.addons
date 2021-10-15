@@ -5,8 +5,8 @@ class Language(BaseLanguage):
     KIDS_PROFILE     = 30001
     ENTER_PIN        = 30002
     LIVE             = 30003
-    LATITUDE         = 30004
-    LONGITUDE        = 30005
+    LAT_LONG         = 30004
+
     H265             = 30006
     EC3              = 30007
     ENABLE_4K        = 30008

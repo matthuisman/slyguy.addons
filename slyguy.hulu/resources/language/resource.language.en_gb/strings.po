@@ -18,12 +18,9 @@ msgid "Live"
 msgstr ""
 
 msgctxt "#30004"
-msgid "Latitude"
+msgid "Latitude,Longitude"
 msgstr ""
 
-msgctxt "#30005"
-msgid "Longitude"
-msgstr ""
 
 msgctxt "#30006"
 msgid "H265"

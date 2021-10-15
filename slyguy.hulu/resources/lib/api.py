@@ -242,13 +242,11 @@ class API(object):
         return data['code'], serial
 
     def _lat_long(self):
-        latitude = settings.getFloat('lat')
-        longitude = settings.getFloat('long')
-
-        if latitude is not None and longitude is not None:
-            return {'lat': '{:.7f}'.format(latitude), 'long': '{:.7f}'.format(longitude)}
-
-        return {}
+        try:
+            latitude, longitude = settings.get('lat_long').strip().split(',')
+            return {'lat': '{:.7f}'.format(float(latitude)), 'long': '{:.7f}'.format(float(longitude))}
+        except:
+            return {}
 
     def login_device(self, code, serial):
         payload = {
