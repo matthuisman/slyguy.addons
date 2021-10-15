@@ -186,7 +186,7 @@ def _process_rows(rows, slug=None):
             item.info.update({
                 'season': int(row.get('season', 0)),
                 'episode': int(row.get('number', 0)),
-                'tvshowtitle': row['series_name'],
+                'tvshowtitle': row.get('series_name'),
                 'mediatype': 'episode',
             })
             item.playable = True
@@ -374,7 +374,6 @@ def series(id, **kwargs):
 def episodes(id, season, **kwargs):
     data = api.episodes(id, season)
 
-    now = arrow.now()
     sync = settings.getBool('sync_playback', False)
     hide_upcoming = settings.getBool('hide_upcoming', True)
 
@@ -384,33 +383,25 @@ def episodes(id, season, **kwargs):
     else:
         folder = plugin.Folder(data['name'])
 
-    eab_ids = []
-    to_process = []
+    eab_ids = [row['bundle']['eab_id'] for row in data['items']]
+    states = api.states(eab_ids)
+
     for row in data['items']:
-        start_date = arrow.get(row['bundle']['availability']['start_date'])
-        if start_date > now:
-            if hide_upcoming:
-                continue
-            else:
-                row['name'] = _(_.UPCOMING, label=row['name'])
-
-        eab_ids.append(row['bundle']['eab_id'])
-        to_process.append(row)
-
-    states = api.states(eab_ids) if sync else {}
-    for row in to_process:
         state = states.get(row['bundle']['eab_id']) or {}
+        row['upcoming'] = state.get('is_upcoming', False)
+        if row['upcoming'] and hide_upcoming:
+            continue
 
         folder.add_item(
             label = row['name'],
             info = {
                 'plot': row['description'],
-                'season': int(row['season']),
-                'episode': int(row['number']),
+                'season': int(row.get('season', 0)),
+                'episode': int(row.get('number', 0)),
+                'tvshowtitle': row.get('series_name'),
                 'aired': row.get('premiere_date'),
                 'duration': row.get('duration'),
-                'tvshowtitle': row['series_name'],
-                'mpaa': row['rating'].get('code'),
+                'mpaa': row.get('rating', {}).get('code'),
                 'genre': row.get('genre_names', []),
                 'playcount': 1 if sync and state.get('is_completed') else None,
                 'mediatype': 'episode',
