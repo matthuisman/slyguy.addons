@@ -138,6 +138,14 @@ msgctxt "#30033"
 msgid "Kids"
 msgstr ""
 
+msgctxt "#30034"
+msgid "Hide Kids"
+msgstr ""
+
+msgctxt "#30035"
+msgid "Hide Live"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

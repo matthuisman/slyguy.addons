@@ -35,5 +35,7 @@ class Language(BaseLanguage):
     PROFILE_ERROR    = 30031
     SEASON_NUM       = 30032
     KIDS             = 30033
+    HIDE_KIDS        = 30034
+    HIDE_LIVE        = 30035
 
 _ = Language()

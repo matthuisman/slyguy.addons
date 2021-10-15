@@ -32,7 +32,7 @@ def home(**kwargs):
         if not userdata.get('is_kids', False):
             folder.add_item(label=_(_.HOME, _bold=True), path=_hub_path('home'))
 
-            if api.has_live_tv():
+            if not settings.getBool('hide_live', False):
                 folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
             folder.add_item(label=_(_.TV, _bold=True), path=_hub_path('tv'))
@@ -40,7 +40,9 @@ def home(**kwargs):
             folder.add_item(label=_(_.SPORTS, _bold=True), path=_hub_path('sports'))
             folder.add_item(label=_(_.HUBS, _bold=True), path=_hub_path('hubs'))
 
-        folder.add_item(label=_(_.KIDS, _bold=True), path=_hub_path('kids'))
+        if not settings.getBool('hide_kids', False) or userdata.get('is_kids', False):
+            folder.add_item(label=_(_.KIDS, _bold=True), path=_hub_path('kids'))
+
         if settings.getBool('my_stuff', False):
             folder.add_item(label=_(_.MY_STUFF, _bold=True), path=_hub_path('watch-later'))
 

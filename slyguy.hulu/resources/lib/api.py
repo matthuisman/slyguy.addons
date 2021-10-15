@@ -273,13 +273,6 @@ class API(object):
         self._check_errors(data)
         return data['data']
 
-    def has_live_tv(self):
-        try:
-            return CURIOSITY in self._user_data()['subscription']['package_ids']
-        except Exception as e:
-            log.exception(e)
-            return False
-
     @mem_cache.cached(60*10)
     def _user_data(self):
         self._refresh_token()

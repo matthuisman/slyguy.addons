@@ -6,6 +6,8 @@
         <setting label="30010" type="bool" id="sync_playback" default="false"/>
         <setting label="30023" type="bool" id="hide_locked" default="true"/>
         <setting label="30026" type="bool" id="hide_upcoming" default="false"/>
+        <setting label="30034" type="bool" id="hide_kids" default="false"/>
+        <setting label="30035" type="bool" id="hide_live" default="false"/>
         <setting label="30004" type="text" id="lat" default=""/>
         <setting label="30005" type="text" id="long" default=""/>
         <setting label="30000" type="text" id="device_id" default="{mac_address}"/>
