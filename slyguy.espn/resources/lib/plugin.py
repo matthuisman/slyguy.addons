@@ -112,7 +112,7 @@ def _process_events(rows):
         )
 
         if 'direct' not in streams[0]['authTypes']:
-            item.context = ((_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))),)
+            item.context.append((_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))))
 
         items.append(item)
 
