@@ -24,7 +24,8 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(account), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
+        folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(events, label=_.LIVE, bucket_id=LIVE_BUCKET_ID))
+        folder.add_item(label=_(_.UPCOMING, _bold=True), path=plugin.url_for(events, label=_.UPCOMING, bucket_id=UPCOMING_BUCKET_ID))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -36,9 +37,14 @@ def index(**kwargs):
     return folder
 
 @plugin.route()
-def live(**kwargs):
-    folder = plugin.Folder(_.LIVE)
+def events(label, bucket_id, **kwargs):
+    folder = plugin.Folder(label)
+    data = api.bucket(bucket_id)
+    items = _process_events(data['buckets'][0]['contents'])
+    folder.add_items(items)
+    return folder
 
+def _process_events(rows):
     avail_auth = []
     if api.provider.logged_in:
         avail_auth.append('mvpd')
@@ -46,22 +52,18 @@ def live(**kwargs):
         avail_auth.append('direct')
 
     hidden = userdata.get('hidden', [])
-    show_upcoming = settings.getBool('show_upcoming', False)
     show_scores = settings.getBool('show_live_scores', False)
     now = arrow.now()
 
-    data = api.bucket(LIVE_BUCKET_ID)
+    items = []
     events = []
-    for row in data['buckets'][0]['contents']:
+    for row in rows:
         if row['id'] in events or row.get('eventId') in events:
-            continue
-
-        if row['status'] != 'live' and not show_upcoming:
             continue
 
         streams = []
         for stream in row['streams']:
-            if stream['source']['id'] in hidden:
+            if 'direct' not in stream['authTypes'] and stream['source']['id'] in hidden:
                 continue
 
             if any(x in stream['authTypes'] for x in avail_auth):
@@ -74,20 +76,15 @@ def live(**kwargs):
         for cat in row.get('catalog', []):
             catalog[cat['type']] = cat['name']
 
-        subtitle = u'{} - {}'.format(catalog.get('sport' ,''), catalog.get('league', '')).strip().strip('-').strip()
-        if subtitle:
-            subtitle = u'({})'.format(subtitle)
-
-        if row.get('eventId'):
-            events.append(row['eventId'])
-        events.append(row['id'])
-
         start = arrow.get(row['utc']).to('local')
-        plot = row['subtitle']
-        label = u'{name} {subtitle} '.format(name=row['name'], subtitle=subtitle).strip()
+        sport = u'{} - {}'.format(catalog.get('sport' ,''), catalog.get('league', '')).strip().strip('-').strip()
+        if sport:
+            sport = u'({})'.format(sport)
+        label = u'{name} {sport} '.format(name=row['name'], sport=sport).strip()
         if row['status'] != 'live':
             label = u'{} [B][{}][/B]'.format(label, start.format('h:mm A'))
 
+        plot = row['subtitle']
         if start < now:
             plot += '\n' + _(_.STARTED, time=start.format('h:mma'))
         else:
@@ -100,7 +97,11 @@ def live(**kwargs):
         else:
             path = plugin.url_for(play, content_id=row['id'], _is_live=True)
 
-        folder.add_item(
+        if row.get('eventId'):
+            events.append(row['eventId'])
+        events.append(row['id'])
+
+        item = plugin.Item(
             label = label,
             info = {
                 'plot': plot,
@@ -108,10 +109,14 @@ def live(**kwargs):
             art = {'thumb': row['imageHref']},
             playable = True,
             path = path,
-            context = ((_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))),),
         )
 
-    return folder
+        if 'direct' not in streams[0]['authTypes']:
+            item.context = ((_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))),)
+
+        items.append(item)
+
+    return items
 
 @plugin.route()
 def hide_channel(id, **kwargs):
@@ -242,27 +247,42 @@ def _select_stream(event_id):
     hidden = userdata.get('hidden', [])
     alt_lang = settings.getBool('alt_languages', True)
 
+    groups = []
     for group in api.picker(event_id):
         if not alt_lang and group['name'].lower().startswith('watch in'):
             continue
 
+        streams = []
         for row in group.get('contents', []):
             if not row.get('streams'):
                 continue
 
             stream = row['streams'][0]
-            if stream['source']['id'] in hidden:
+            if 'direct' not in stream['authTypes'] and stream['source']['id'] in hidden:
                 continue
             if not any(x in stream['authTypes'] for x in avail_auth):
                 continue
 
-            options.append(row['name'])
-            values.append(row['id'])
+            streams.append(stream)
 
-    if not values:
+        if streams:
+            groups.append([group['name'], streams])
+
+    if not groups:
         raise PluginError(_.NO_SOURCE)
 
-    elif len(values) == 1:
+    if len(groups) > 1:
+        index = gui.context_menu([x[0] for x in groups])
+        if index < 0:
+            return
+        groups = [groups[index]]
+
+    for index, row in enumerate(groups):
+        for stream in row[1]:
+            options.append(stream['name'])
+            values.append(stream['id'])
+
+    if len(values) == 1:
         return values[0]
 
     index = gui.context_menu(options)

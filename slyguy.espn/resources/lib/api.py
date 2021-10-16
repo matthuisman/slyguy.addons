@@ -44,6 +44,9 @@ class API(object):
     def bucket(self, bucket_id):
         params = {
             'bucketId': bucket_id,
+            'authNetworks': 'espn1,espn2,espnu,espnews,espndeportes,sec,longhorn,buzzerbeater,goalline,espn3,espnclassic,acc,accextra,espnvod,secplus',
+            'authStates': 'mvpd_login',
+            'entitlements': 'ESPN_PLUS',
         }
         return self._session.get('/bucket', params=params).json()['page']
 
