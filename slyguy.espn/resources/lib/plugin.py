@@ -53,11 +53,12 @@ def _process_events(rows):
 
     hidden = userdata.get('hidden', [])
     show_scores = settings.getBool('show_live_scores', False)
-    now = arrow.now()
+    whitelist = [x.lower().strip() for x in settings.get('sport_whitelist').split(',') if x.strip()]
+    now = arrow.now().to('local')
 
     items = []
     events = []
-    for row in rows:
+    for row in sorted(rows, key=lambda x: x['utc']):
         if row['id'] in events or row.get('eventId') in events:
             continue
 
@@ -76,19 +77,35 @@ def _process_events(rows):
         for cat in row.get('catalog', []):
             catalog[cat['type']] = cat['name']
 
-        start = arrow.get(row['utc']).to('local')
+        if whitelist:
+            allow = False
+            for allowed in whitelist:
+                if allowed in catalog.get('sport','').lower().strip() or allowed in catalog.get('league','').lower().strip():
+                    allow = True
+                    break
+
+            if not allow:
+                continue
+
         sport = u'{} - {}'.format(catalog.get('sport' ,''), catalog.get('league', '')).strip().strip('-').strip()
         if sport:
             sport = u'({})'.format(sport)
         label = u'{name} {sport} '.format(name=row['name'], sport=sport).strip()
+
+        start = arrow.get(row['utc']).to('local')
+        if start.format('DDDD') == now.format('DDDD'):
+            starts = start.format('h:mm A')
+        else:
+            starts = start.format('MMM Do h:mm A')
+
         if row['status'] != 'live':
-            label = u'{} [B][{}][/B]'.format(label, start.format('h:mm A'))
+            label += u' [B][{}][/B]'.format(starts)
 
         plot = row['subtitle']
         if start < now:
-            plot += '\n' + _(_.STARTED, time=start.format('h:mma'))
+            plot += '\n' + _(_.STARTED, time=starts)
         else:
-            plot += '\n' + _(_.STARTS, time=start.format('h:mma'))
+            plot += '\n' + _(_.STARTS, time=starts)
 
         if row.get('eventId'):
             path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
@@ -112,7 +129,7 @@ def _process_events(rows):
         )
 
         if 'direct' not in streams[0]['authTypes']:
-            item.context.append((_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))))
+            item.context = [(_.HIDE_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(hide_channel, id=streams[0]['source']['id']))),]
 
         items.append(item)
 

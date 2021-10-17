@@ -3,6 +3,7 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30016" type="bool" id="show_live_scores" default="false"/>
         <setting label="30017" type="bool" id="alt_languages" default="false"/>
+        <setting label="30020" type="text" id="sport_whitelist" default=""/>
         <setting label="30012" type="action" action="RunPlugin(plugin://$ID/?_=clear_hidden)"/>
     </category>
 

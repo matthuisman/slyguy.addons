@@ -84,6 +84,10 @@ msgctxt "#30019"
 msgid "Started {time}"
 msgstr ""
 
+msgctxt "#30020"
+msgid "Event Whitelist"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

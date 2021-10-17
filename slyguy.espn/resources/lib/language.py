@@ -21,5 +21,6 @@ class Language(BaseLanguage):
     HIDE_ALT_LAN       = 30017
     STARTS             = 30018
     STARTED            = 30019
+    EVENT_WHITELIST    = 30020
 
 _ = Language()
