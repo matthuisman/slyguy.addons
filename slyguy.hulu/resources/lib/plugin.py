@@ -107,6 +107,7 @@ def _process_rows(rows, slug=None):
     sync = settings.getBool('sync_playback', False)
     hide_locked = settings.getBool('hide_locked', True)
     hide_upcoming = settings.getBool('hide_upcoming', True)
+    now = arrow.now().to('local')
 
     eab_ids = []
     to_process = []
@@ -123,16 +124,11 @@ def _process_rows(rows, slug=None):
         if 'upsell' in actions:
             row['locked'] = True
 
-        if _type in ('movie', 'episode', 'sports_episode'):
+        if 'bundle' not in row:
             try:
-                if not row['reco_info']['watch_later_result']['actions']:
-                    row['locked'] = True
-                
-                ## TODO
-                elif row['reco_info']['watch_later_result']['actions'][0]['action_entity']['bundle']['bundle_type'] == 'LIVE':
-                    continue
+                row['bundle'] = row['reco_info']['watch_later_result']['actions'][0]['action_entity']['bundle']
             except:
-                pass
+                row['bundle'] = {}
 
         if hide_locked and row['locked']:
             continue
@@ -161,6 +157,10 @@ def _process_rows(rows, slug=None):
         if row['upcoming'] and hide_upcoming:
             continue
 
+        ## TODO
+        if not row['upcoming'] and row['bundle'].get('bundle_type') == 'LIVE':
+            continue
+
         if row['_type'] == 'view':
             item = _parse_view(row, my_stuff, sync, state)
             items.append(item)
@@ -170,7 +170,17 @@ def _process_rows(rows, slug=None):
         if row['locked']:
             label = _(_.LOCKED, label=label)
         elif row['upcoming']:
-            label = _(_.UPCOMING, label=label)
+            try:
+                start_date = arrow.get(row['bundle']['availability']['start_date']).to('local')
+                if start_date.format("DDDD") == now.format("DDDD"):
+                    _str = ' [COLOR orange][{}][/COLOR]'
+                    _format = 'h:mm A'
+                else:
+                    _str = ' [COLOR orange][{}][/COLOR]'
+                    _format = 'MMM D, h:mm A'
+                label += _str.format(start_date.format(_format))
+            except:
+                label = _(_.UPCOMING, label=label)
 
         premiere_date = row.get('premiere_date')
         try: premiere_date = arrow.get(premiere_date).to('local').format('YYYY-MM-DD')
@@ -230,6 +240,7 @@ def _process_rows(rows, slug=None):
 
     return items
 
+## ONLY USED IN SEARCH RESULTS
 def _parse_view(row, my_stuff, sync, state):
     metrics = row['metrics_info']
     entity = row['entity_metadata']
@@ -279,7 +290,7 @@ def _parse_view(row, my_stuff, sync, state):
         item.playable = True
         item.path = _get_play_path(row['personalization']['eab'])
 
-    else: 
+    else:
         return None
 
     if my_stuff:
@@ -689,14 +700,3 @@ def epg(output, **kwargs):
                         id=channel_id, start=start.format('YYYYMMDDHHmmss Z'), stop=stop.format('YYYYMMDDHHmmss Z'), title=escape(epg.get('headline','')), subtitle=subtitle, episode=episode, icon=icon, desc=desc, date=date, category=category, new=new))
 
         f.write(u'</tv>')
-
-# def _upcoming_label():
-#     today = arrow.now().format("DDDD")
-#     start_date = arrow.get(entity['availability']['start_date']).to('local')
-#     if start_date.format("DDDD") == today:
-#         _str = ' [COLOR orange][TODAY {}][/COLOR]'
-#         _format = 'h:mm A'
-#     else:
-#         _str = ' [COLOR orange][{}][/COLOR]'
-#         _format = 'MMM D, h:mm A'
-#     item.label += _str.format(start_date.format(_format))
