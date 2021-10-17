@@ -77,10 +77,12 @@ def _process_events(rows):
         for cat in row.get('catalog', []):
             catalog[cat['type']] = cat['name']
 
-        if whitelist:
+        sport = catalog.get('sport','').strip()
+        league = catalog.get('league','').strip()
+        if whitelist and (sport or league):
             allow = False
             for allowed in whitelist:
-                if allowed in catalog.get('sport','').lower().strip() or allowed in catalog.get('league','').lower().strip():
+                if allowed in sport.lower() or allowed in league.lower():
                     allow = True
                     break
 
