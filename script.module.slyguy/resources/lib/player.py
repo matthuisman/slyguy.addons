@@ -102,10 +102,6 @@ class Player(xbmc.Player):
 
             self._play_skips.append(skip)
 
-        ## Workaround for suspect IA bug: https://github.com/xbmc/inputstream.adaptive/issues/821
-        if int(self.getTime()) < 0:
-            self.seekTime(0)
-
         callback = get_kodi_string('_slyguy_play_callback')
         if callback:
             set_kodi_string('_slyguy_play_callback')
