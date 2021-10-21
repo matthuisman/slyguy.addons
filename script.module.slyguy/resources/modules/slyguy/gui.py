@@ -326,6 +326,7 @@ class Item(object):
             li.addContextMenuItems(self.context)
 
         if self.resume_from is not None:
+            # Setting this on Kodi 18 or below removes all list item data (fixed in 19)
             self.properties['ResumeTime'] = self.resume_from
             self.properties['TotalTime'] = self.resume_from
 

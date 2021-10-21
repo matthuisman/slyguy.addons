@@ -535,23 +535,22 @@ class Item(gui.Item):
         li = self.get_li()
         handle = _handle()
 
+        play_data = {
+            'playing_file': self.path,
+            'next': {'time': 0, 'next_file': None},
+            'skips': self.play_skips or [],
+            'callback': {'type': 'interval', 'interval': 0, 'callback': None},
+        }
+
         if self.play_next:
-            data = {'playing_file': self.path, 'time': 0, 'next_file': None, 'show_dialog': True}
-            data.update(self.play_next)
-
-            if data['next_file']:
-                data['next_file'] = router.add_url_args(data['next_file'], _play=1)
-
-            set_kodi_string('_slyguy_play_next', json.dumps(data))
-
-        if self.play_skips:
-            data = {'playing_file': self.path, 'skips': self.play_skips}
-            set_kodi_string('_slyguy_play_skips', json.dumps(data))
+            play_data['next'].update(self.play_next)
+            if play_data['next']['next_file']:
+                play_data['next']['next_file'] = router.add_url_args(play_data['next']['next_file'], _play=1)
 
         if self.callback:
-            data = {'type': 'interval', 'playing_file': self.path, 'interval': 0, 'callback': None}
-            data.update(self.callback)
-            set_kodi_string('_slyguy_play_callback', json.dumps(data))
+            play_data['callback'].update(self.callback)
+
+        set_kodi_string('_slyguy_play_data', json.dumps(play_data))
 
         if handle > 0:
             xbmcplugin.setResolvedUrl(handle, True, li)
