@@ -9,10 +9,6 @@ msgctxt "#30002"
 msgid "Password"
 msgstr ""
 
-msgctxt "#30003"
-msgid "Device Link"
-msgstr ""
-
 msgctxt "#30004"
 msgid "Email / Password"
 msgstr ""

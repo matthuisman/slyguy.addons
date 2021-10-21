@@ -6,7 +6,6 @@ from xml.sax.saxutils import escape
 import arrow
 from kodi_six import xbmc
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.exceptions import PluginError
 
 from .api import API
 from .language import _
@@ -26,8 +25,8 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True),    path=plugin.url_for(live_channels))
-        folder.add_item(label=_(_.CATCH_UP, _bold=True),         path=plugin.url_for(catch_up))
+        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live_channels))
+        folder.add_item(label=_(_.CATCH_UP, _bold=True), path=plugin.url_for(catch_up))
         # folder.add_item(label=_(_.MATCH_HIGHLIGHTS, _bold=True), path=plugin.url_for(catch_up, catalog_id='Match_Highlights', title=_.MATCH_HIGHLIGHTS))
         # folder.add_item(label=_(_.INTERVIEWS, _bold=True),       path=plugin.url_for(catch_up, catalog_id='Interviews', title=_.INTERVIEWS))
         # folder.add_item(label=_(_.SPECIALS, _bold=True),         path=plugin.url_for(catch_up, catalog_id='Specials', title=_.SPECIALS))
@@ -43,12 +42,13 @@ def home(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    if gui.yes_no(_.LOGIN_WITH, yeslabel=_.DEVICE_LINK, nolabel=_.EMAIL_PASSWORD):
-        result = _device_link()
-    else:
-        result = _email_password()
+    options = [
+        [_.DEVICE_CODE, _device_code],
+        [_.EMAIL_PASSWORD, _email_password],
+    ]
 
-    if not result:
+    index = gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
         return
 
     gui.refresh()
@@ -68,14 +68,14 @@ def _email_password():
 
     return True
 
-def _device_link():
-    start   = time.time()
-    data    = api.device_code()
+def _device_code():
+    start = time.time()
+    data = api.device_code()
     monitor = xbmc.Monitor()
 
     #qr_code_url = data['ImagePath']
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, code=data['Code']), heading=_.DEVICE_LINK) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=data['Code']), heading=_.DEVICE_CODE) as progress:
         while (time.time() - start) < data['ExpireDate']:
             for i in range(5):
                 if progress.iscanceled() or monitor.waitForAbort(1):
@@ -96,9 +96,9 @@ def live_channels(**kwargs):
     for row in api.live_channels():
         folder.add_item(
             label = row['Name'],
-            art   = {'thumb': _get_logo(row['Logo'])},
-            info  = {'plot': row.get('Description')},
-            path  = plugin.url_for(play, channel_id=row['Id'], _is_live=True),
+            art = {'thumb': _get_logo(row['Logo'])},
+            info = {'plot': row.get('Description')},
+            path = plugin.url_for(play, channel_id=row['Id'], _is_live=True),
             playable = True,
         )
 
@@ -122,9 +122,9 @@ def catch_up(catalog_id='CATCHUP', title=_.CATCH_UP, **kwargs):
 
         folder.add_item(
             label = row['Name'],
-            art   = {'fanart': fanart, 'thumb': art},
-            info  = {'plot': row['Program']['Description']},
-            path  = plugin.url_for(play, vod_id=row['Id']),
+            art = {'fanart': fanart, 'thumb': art},
+            info = {'plot': row['Program']['Description']},
+            path = plugin.url_for(play, vod_id=row['Id']),
             playable = True,
         )
 
@@ -138,8 +138,8 @@ def play(channel_id=None, vod_id=None, **kwargs):
     _headers = {}
     _headers.update(HEADERS)
     _headers.update({
-        'Authorization':   asset['DrmToken'],
-        'X-CB-Ticket':     asset['DrmTicket'],
+        'Authorization': asset['DrmToken'],
+        'X-CB-Ticket': asset['DrmTicket'],
         'X-ErDRM-Message': asset['DrmTicket'],
     })
 
