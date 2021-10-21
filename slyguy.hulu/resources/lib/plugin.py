@@ -602,10 +602,6 @@ def _play(id, **kwargs):
             'callback': plugin.url_for(update_progress, eab_id=eab_id),
         }
 
-    ## Workaround for suspect IA bug: https://github.com/xbmc/inputstream.adaptive/issues/821
-    if not item.resume_from:
-        item.resume_from = 1
-
     return item
 
 @plugin.route()
