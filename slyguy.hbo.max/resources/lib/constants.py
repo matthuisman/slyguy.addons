@@ -1,6 +1,6 @@
 DEVICE_MODEL = 'androidtv'
 
-VERSION = '50.49.0.0'
+VERSION = '100.35.0.280'
 
 HEADERS = {
     'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 8.1.0; SHIELD Android TV Build/LMY47D)',

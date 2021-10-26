@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.6.3">
+<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.6.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix subtitles</news>
+    <news>Improve subtitles</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

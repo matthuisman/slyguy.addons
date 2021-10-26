@@ -594,15 +594,20 @@ def play(slug, **kwargs):
                     item.play_next['next_file'] = 'urn:hbo:feature:' + slug.split(':')[3]
                     break
 
-    # base_url = data['url'].rsplit('/', 1)[0]
+    base_url = data['url'].rsplit('/', 1)[0]
     for row in data.get('textTracks', []):
         if 'url' not in row:
-            continue
-            # row['url'] = '{base_url}/t/sub/{language}_{type}.xml'.format(base_url=base_url, language=row['language'], type='forced' if row['type'].lower() == 'forced' else 'sub')
-            # log.debug('Generated subtitle url: {}'.format(row['url']))
-            # sometimes they end with sub and other times sdh
+            if row['type'].lower() == 'closedcaptions':
+                _type = 'sdh'
+            elif row['type'].lower() == 'forced':
+                _type = 'forced'
+            else:
+                _type = 'sub'
 
-        item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': row['type'].lower() == 'forced'})
+            row['url'] = '{base_url}/t/sub/{language}_{type}.xml'.format(base_url=base_url, language=row['language'], type=_type)
+            log.debug('Generated subtitle url: {}'.format(row['url']))
+
+        item.subtitles.append({'url':row['url'], 'language':row['language'], 'forced': _type == 'forced', 'impaired': _type == 'sdh'})
 
     if settings.getBool('sync_playback', False):
         item.callback = {
