@@ -516,9 +516,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         for elem in audio_sets:
             elem[2].appendChild(elem[1])
 
+        overwrite_subs = self._session.get('subtitles') or []
+
         ## Insert subtitles
-        if adap_parent:
-            for idx, subtitle in enumerate(self._session.get('subtitles') or []):
+        if overwrite_subs and adap_parent:
+            # remove all built-in subs
+            for adap_set in root.getElementsByTagName('AdaptationSet'):
+                if adap_set.getAttribute('contentType') == 'text':
+                    adap_set.parentNode.removeChild(adap_set)
+
+            # add our subs
+            for idx, subtitle in enumerate(overwrite_subs):
                 elem = root.createElement('AdaptationSet')
                 elem.setAttribute('contentType', 'text')
                 elem.setAttribute('mimeType', subtitle[0])
@@ -526,7 +534,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 elem.setAttribute('id', 'caption_{}'.format(idx))
                 #elem.setAttribute('original', 'true')
                 #elem.setAttribute('default', 'true')
-                #elem.setAttribute('impaired', 'true')
+
+                if subtitle[4] == 'impaired':
+                    elem.setAttribute('impaired', 'true')
 
                 if subtitle[3] == 'forced':
                     elem.setAttribute('forced', 'true')

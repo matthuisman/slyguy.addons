@@ -389,7 +389,7 @@ class Item(object):
         else:
             self.inputstream = None
 
-        def make_sub(url, language='unk', mimetype='', forced=False):
+        def make_sub(url, language='unk', mimetype='', forced=False, impaired=False):
             if not url.lower().startswith('http') and not url.lower().startswith('plugin://'):
                 return url
 
@@ -400,7 +400,7 @@ class Item(object):
                     proxy_data['middleware'][url] = {'type': MIDDLEWARE_CONVERT_SUB}
                     mimetype = 'text/vtt'
 
-                proxy_data['subtitles'].append([mimetype, language, url, 'forced' if forced else None])
+                proxy_data['subtitles'].append([mimetype, language, url, 'forced' if forced else None, 'impaired' if impaired else None])
                 return None
 
             ## only srt or webvtt (text/) supported
