@@ -520,11 +520,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         ## Insert subtitles
         if overwrite_subs and adap_parent:
-            # remove all built-in subs
-            for adap_set in root.getElementsByTagName('AdaptationSet'):
-                if adap_set.getAttribute('contentType') == 'text':
-                    adap_set.parentNode.removeChild(adap_set)
-
             # add our subs
             for idx, subtitle in enumerate(overwrite_subs):
                 elem = root.createElement('AdaptationSet')
