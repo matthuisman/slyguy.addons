@@ -22,7 +22,7 @@ from .language import _
 @plugin.route()
 def play_channel(slug, **kwargs):
     channel = Channel.get_by_id(slug)
-    split   = channel.url.split('|')
+    split = channel.url.split('|')
 
     headers = {
         'user-agent': DEFAULT_USERAGENT,
@@ -37,19 +37,19 @@ def play_channel(slug, **kwargs):
             headers[key.lower()] = _headers[key]
 
     item = plugin.Item(
-        label      = channel.name,
-        art        = {'thumb': channel.logo},
-        path       = split[0],
+        label = channel.name,
+        art = {'thumb': channel.logo},
+        path = split[0],
         properties = channel.properties,
-        headers    = headers,
-        playable   = True,
+        headers = headers,
+        playable = True,
     )
 
     if channel.radio:
         item.use_proxy = False
 
     manifest_type = channel.properties.get('inputstream.adaptive.manifest_type', '')
-    license_type  = channel.properties.get('inputstream.adaptive.license_type', '')
+    license_type = channel.properties.get('inputstream.adaptive.license_type', '')
 
     if license_type.lower() == 'com.widevine.alpha':
         inputstream.Widevine().check()
