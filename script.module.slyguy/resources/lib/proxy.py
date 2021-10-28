@@ -557,14 +557,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 adap_parent.appendChild(elem)
         ##################
 
-        ## REMOVE SUBS
-        if subs_whitelist:
-            for adap_set in root.getElementsByTagName('AdaptationSet'):
-                if adap_set.getAttribute('contentType') == 'text':
-                    language = adap_set.getAttribute('lang')
-                    if not _lang_allowed(language.lower().strip(), subs_whitelist):
-                        adap_set.parentNode.removeChild(adap_set)
-                        log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
+        ## Fix up languages
+        for adap_set in root.getElementsByTagName('AdaptationSet'):
+            language = adap_set.getAttribute('lang')
+            _language = self._fix_language(language)
+            if _language:
+                adap_set.setAttribute('lang', _language)
+
+            if subs_whitelist and adap_set.getAttribute('contentType') == 'text':
+                if not _lang_allowed(language.lower().strip(), subs_whitelist):
+                    adap_set.parentNode.removeChild(adap_set)
+                    log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
         ################
 
         ## Remove audio_description
@@ -669,6 +672,16 @@ class RequestHandler(BaseHTTPRequestHandler):
             mpd = root.toxml(encoding='utf-8')
 
         response.stream.content = mpd
+
+    def _fix_language(self, language=None):
+        if not language:
+            return None
+
+        split = language.split('-')
+        if len(split) > 1 and split[1].lower() == split[0].lower():
+            return split[0]
+
+        return language
 
     def _parse_m3u8_sub(self, m3u8, url):
         lines = []
@@ -825,15 +838,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             if default_language:
                 attribs['DEFAULT'] = 'YES' if lang.startswith(default_language) else 'NO'
 
-            # FIX es-ES > es / fr-FR > fr languages #
-            split = attribs.get('LANGUAGE','').split('-')
-            if len(split) > 1 and split[1].lower() == split[0].lower():
-                attribs['LANGUAGE'] = split[0]
-            #############
+            attribs['LANGUAGE'] = self._fix_language(attribs.get('LANGUAGE',''))
 
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
-                new_line += u'{}="{}",'.format(key, attribs[key])
+                if attribs[key] is not None:
+                    new_line += u'{}="{}",'.format(key, attribs[key])
             new_lines.append(new_line)
 
         if not found_default_subs:
@@ -862,14 +872,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             if default_subtitle:
                 attribs['DEFAULT'] = 'YES' if lang.startswith(default_subtitle) else 'NO'
 
-            # if 'URI' in attribs:
-            #     full_url = urljoin(manifest_url, attribs['URI'])
-            #     self._session['middleware'][full_url] = {'type': MIDDLEWARE_CONVERT_SUB}
-            #     attribs['URI'] = full_url
+            attribs['LANGUAGE'] = self._fix_language(attribs.get('LANGUAGE',''))
 
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
-                new_line += u'{}="{}",'.format(key, attribs[key])
+                if attribs[key] is not None:
+                    new_line += u'{}="{}",'.format(key, attribs[key])
             new_lines.append(new_line)
 
         selected = self._quality_select(streams)
