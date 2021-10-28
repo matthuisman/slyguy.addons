@@ -220,25 +220,26 @@ class Item(object):
     def is_folder(self, value):
         self._is_folder = value
 
-    def get_url_headers(self):
-        headers = {}
-        for key in self.headers:
-            headers[key.lower()] = self.headers[key]
-
-        if 'connection-timeout' not in headers:
-            headers['connection-timeout'] = settings.getInt('http_timeout', 30)
-
-        if 'verifypeer' not in headers and not settings.getBool('verify_ssl', True):
-            headers['verifypeer'] = 'false'
-
+    def get_url_headers(self, headers=None, cookies=None):
         string = ''
-        for key in self.headers:
-            string += u'{0}={1}&'.format(key, quote(u'{}'.format(self.headers[key]).encode('utf8')))
+        if headers:
+            _headers = {}
+            for key in headers:
+                _headers[key.lower()] = headers[key]
 
-        if self.cookies:
+            if 'connection-timeout' not in _headers:
+                headers['connection-timeout'] = settings.getInt('http_timeout', 30)
+
+            if 'verifypeer' not in _headers and not settings.getBool('verify_ssl', True):
+                headers['verifypeer'] = 'false'
+
+            for key in headers:
+                string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
+
+        if cookies:
             string += 'Cookie='
-            for key in self.cookies:
-                string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(self.cookies[key]).encode('utf8')))
+            for key in cookies:
+                string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
 
         return string.strip('&')
 
@@ -337,7 +338,7 @@ class Item(object):
         for key in self.properties:
             li.setProperty(key, u'{}'.format(self.properties[key]))
 
-        headers = self.get_url_headers()
+        headers = self.get_url_headers(self.headers, self.cookies)
         mimetype = self.mimetype
 
         def get_url(url):
@@ -367,7 +368,7 @@ class Item(object):
                 license_url = self.inputstream.license_key
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}&{headers}|{challenge}|{response}'.format(
                     url = get_url(self.inputstream.license_key),
-                    headers = headers,
+                    headers = self.get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers,
                     content_type = self.inputstream.content_type,
                     challenge = self.inputstream.challenge,
                     response = self.inputstream.response,
