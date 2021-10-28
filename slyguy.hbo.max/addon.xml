@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.6.5">
+<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.6.6">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
