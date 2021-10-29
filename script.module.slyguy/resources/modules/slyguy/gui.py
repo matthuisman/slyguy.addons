@@ -223,24 +223,17 @@ class Item(object):
     def get_url_headers(self, headers=None, cookies=None):
         string = ''
         if headers:
-            headers = headers.copy()
-            lower_keys = [x.lower() for x in headers]
-
-            if 'connection-timeout' not in lower_keys:
-                headers['connection-timeout'] = str(settings.getInt('http_timeout', 30))
-
-            if 'verifypeer' not in lower_keys and not settings.getBool('verify_ssl', True):
-                headers['verifypeer'] = 'false'
-
             for key in headers:
                 string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
+            string = string.strip('&')
 
         if cookies:
             string += 'Cookie='
             for key in cookies:
                 string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
+            string = string.strip()
 
-        return string.strip('&')
+        return string
 
     def get_li(self):
         proxy_path = settings.common_settings.get('_proxy_path')
@@ -436,7 +429,6 @@ class Item(object):
                 'audio_description': settings.getBool('audio_description', True),
                 'subs_forced': settings.getBool('subs_forced', True),
                 'subs_non_forced': settings.getBool('subs_non_forced', True),
-                'verify_ssl': settings.getBool('verify_ssl', True),
                 'subtitles': [],
                 'path_subs': {},
                 'addon_id': ADDON_ID,

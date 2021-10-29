@@ -62,9 +62,9 @@ class Session(RawSession):
         self._headers = headers or {}
         self._cookies_key = cookies_key
         self._base_url = base_url
-        self._timeout = settings.getInt('http_timeout', 30) if timeout is None else timeout
-        self._attempts = settings.getInt('http_retries', 2) if attempts is None else attempts
-        self._verify = settings.getBool('verify_ssl', True) if verify is None else verify
+        self._timeout = settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout
+        self._attempts = settings.common_settings.getInt('http_retries', 2) if attempts is None else attempts
+        self._verify = settings.common_settings.getBool('verify_ssl', True) if verify is None else verify
         self.before_request = None
         self.after_request = None
 
