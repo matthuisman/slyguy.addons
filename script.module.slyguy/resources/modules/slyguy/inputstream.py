@@ -91,8 +91,9 @@ class HLS(InputstreamItem):
         self.live  = live
 
     def do_check(self):
-        hls_live = settings.common_settings.getBool('use_ia_hls_live', True)
-        hls_vod = settings.common_settings.getBool('use_ia_hls_vod', True)
+        legacy = settings.getBool('use_ia_hls', False)
+        hls_live = settings.getBool('use_ia_hls_live', legacy)
+        hls_vod = settings.getBool('use_ia_hls_vod', legacy)
         return (self.force or (self.live and hls_live) or (not self.live and hls_vod)) and require_version(self.minversion, required=self.force)
 
 class MPD(InputstreamItem):
