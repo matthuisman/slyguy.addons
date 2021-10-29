@@ -80,21 +80,13 @@ class API(object):
             'id': id,
             'namespace': 'entity',
             'schema': 1,
-        }
-
-        data = self._session.get('https://discover.hulu.com/content/v5/deeplink/browse', params=params).json()
-        self._check_errors(data)
-
-        params = {
-            'schema': 1,
-            'limit': 99,
             #'device_info': 'android:4.32.0:compass-mvp:site-map',
         }
         params.update(self._lat_long())
 
-        data = self._session.get(data['href'], params=params).json()
+        data = self._session.get('https://discover.hulu.com/content/v5/deeplink/playback', params=params).json()
         self._check_errors(data)
-        return data
+        return data.get('eab_id')
 
     def entities(self, eab_ids):
         self._refresh_token()

@@ -556,12 +556,12 @@ def play(id, **kwargs):
 def _play(id, **kwargs):
     entities = []
     if '::' not in id or id.endswith('::NULL'):
-        data = api.deeplink(id.replace('EAB::', '').split(':')[0])
-        if 'vod_items' in data['details']:
-            entities = [data['details']['vod_items']['focus']['entity']]
-    else:
-        entities = api.entities([id])
+        result = api.deeplink(id.replace('EAB::', '').split(':')[0])
+        if not result:
+            raise PluginError(_(_.NO_ENTITY, entity=id))
+        id = result
 
+    entities = api.entities([id])
     if not entities or 'bundle' not in entities[0]:
         raise PluginError(_(_.NO_ENTITY, entity=id))
 
