@@ -225,15 +225,13 @@ class Item(object):
         if headers:
             for key in headers:
                 string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
-            string = string.strip('&')
 
         if cookies:
             string += 'Cookie='
             for key in cookies:
                 string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
-            string = string.strip()
 
-        return string
+        return string.strip().strip('&')
 
     def get_li(self):
         proxy_path = settings.common_settings.get('_proxy_path')
