@@ -223,14 +223,13 @@ class Item(object):
     def get_url_headers(self, headers=None, cookies=None):
         string = ''
         if headers:
-            _headers = {}
-            for key in headers:
-                _headers[key.lower()] = headers[key]
+            headers = headers.copy()
+            lower_keys = [x.lower() for x in headers]
 
-            if 'connection-timeout' not in _headers:
-                headers['connection-timeout'] = settings.getInt('http_timeout', 30)
+            if 'connection-timeout' not in lower_keys:
+                headers['connection-timeout'] = str(settings.getInt('http_timeout', 30))
 
-            if 'verifypeer' not in _headers and not settings.getBool('verify_ssl', True):
+            if 'verifypeer' not in lower_keys and not settings.getBool('verify_ssl', True):
                 headers['verifypeer'] = 'false'
 
             for key in headers:
