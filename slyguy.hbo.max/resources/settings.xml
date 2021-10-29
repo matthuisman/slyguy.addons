@@ -26,6 +26,10 @@
         <setting label="30016" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
         <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
         <!-- <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/> -->
+
+        <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
