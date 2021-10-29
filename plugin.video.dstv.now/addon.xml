@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.dstv.now" name="DStv Now" provider-name="SlyGuy" version="0.15.5">
+<addon id="plugin.video.dstv.now" name="DStv Now" provider-name="SlyGuy" version="0.15.6">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
