@@ -261,9 +261,10 @@ def series(slug, season=None, **kwargs):
 
         for row in data['seasons']:
             folder.add_item(
-                label = row['titles']['full'],
+                label = _(_.SEASON, number=row['seasonNumber']),
                 info = {
                     'plot': row['summaries']['short'],
+                    'season': row['seasonNumber'],
                     'mediatype': 'season',
                 },
                 art = {'thumb': _image(data['images'].get('tileburnedin'))},

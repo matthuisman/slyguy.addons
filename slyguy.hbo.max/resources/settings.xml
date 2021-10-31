@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="$ADDON[script.module.slyguy 32034]">
+    <category label="$ADDON[script.module.slyguy 32139]">
         <setting label="30003" type="text" id="device_id" default="{mac_address}"/>
         <!-- <setting label="30011" type="bool" id="skip_intros" default="false"/> -->
         <setting label="30013" type="bool" id="skip_credits" default="true"/>
         <setting label="30010" type="bool" id="play_next_episode" default="true"/>
         <setting label="30012" type="bool" id="play_next_movie" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="30032" type="bool" id="sync_watchlist" default="true"/>
         <setting label="30033" type="bool" id="sync_playback" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -29,16 +31,10 @@
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="false"/>
-        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
-        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32044]" id="http_timeout" type="number" default="30"/>
-        <setting label="$ADDON[script.module.slyguy 32045]" id="http_retries" type="number" default="2"/>
-        <setting label="$ADDON[script.module.slyguy 32046]" id="chunksize"    type="number" default="4096"/>
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
 
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>

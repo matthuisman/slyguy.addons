@@ -11,7 +11,7 @@ from slyguy.log import log
 from slyguy.util import get_system_arch
 
 from .constants import *
-from .language import _
+from .language import Language, _
 
 class APIError(Error):
     pass
@@ -57,7 +57,7 @@ class API(object):
             return 'https://oauth{globalUserSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
 
         elif name == 'gateway':
-            return 'https://gateway{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
+            return 'https://gateway.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
         elif name == 'comet':
             return 'https://comet{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
@@ -124,7 +124,7 @@ class API(object):
 
         payload = {
             'contract': 'hadron:1.1.2.0',
-            'preferredLanguages': ['en-us'],
+            'preferredLanguages': [self._get_language(), 'en-US'],
         }
 
         data = self._session.post(CONFIG_URL, json=payload).json()
@@ -287,15 +287,21 @@ class API(object):
 
         return headwaiter.rstrip(',')
 
+    def _get_language(self):
+        return xbmc.getLanguage(xbmc.ISO_639_1, True)
+
     def express_content(self, slug, tab=None):
         self._refresh_token()
 
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
         }
+        params = {
+            'language': self._get_language(),
+        }
 
-        params = self._flighted_features()['express-content']['config']['expressContentParams']
-        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, params)), headers=headers).json()
+        query = self._flighted_features()['express-content']['config']['expressContentParams']
+        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, query)), params=params, headers=headers).json()
         self._check_errors(data)
 
         _data = {}
@@ -309,6 +315,7 @@ class API(object):
 
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
+            'accept-language': self._get_language(),
         }
 
         data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
