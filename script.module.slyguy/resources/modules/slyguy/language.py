@@ -191,6 +191,7 @@ class BaseLanguage(object):
     DONATIONS                   = 32138
     LOOK_AND_FEEL               = 32139
     DONATE_HEADER               = 32140
+    SEASON                      = 32141
 
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021

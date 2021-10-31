@@ -718,3 +718,7 @@ msgstr ""
 msgctxt "#32140"
 msgid "Donate at [B]www.matthuisman.nz/donate[/B]"
 msgstr ""
+
+msgctxt "#32141"
+msgid "Season {number}"
+msgstr ""
