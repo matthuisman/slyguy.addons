@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
-"Last-Translator: matthuisman\n"
+"Last-Translator: espinosaivan\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -16,173 +16,178 @@ msgstr ""
 
 msgctxt "#30003"
 msgid "Device ID"
-msgstr ""
+msgstr "ID de Dispositivo"
 
 msgctxt "#30004"
 msgid "API request failed\n"
 "Server Error: {msg}"
-msgstr ""
+msgstr "Fallo petición API\n"
+"Error de Servidor: {msg}"
 
 msgctxt "#30005"
 msgid "Go to Series"
-msgstr ""
+msgstr "Ir a Series"
 
 msgctxt "#30006"
 msgid "Unable to find a video for this content\n"
 "Check your subscription is valid and your IP is in correct region"
-msgstr ""
+msgstr "Imposible encontrar un video para este contenido\n"
+"Verifica que tu subscripción es válida y tu IP es de la región correcta"
 
 msgctxt "#30007"
 msgid "Dolby Digital Plus (EC-3)"
-msgstr ""
+msgstr "Dolby Digital Plus (EC-3)"
 
 msgctxt "#30009"
 msgid "Playback language"
-msgstr ""
+msgstr "Idioma de reproducción"
 
 msgctxt "#30010"
 msgid "Play Next Episode"
-msgstr ""
+msgstr "Reproducir Episodio Siguiente"
 
 msgctxt "#30011"
 msgid "Skip Intros"
-msgstr ""
+msgstr "Saltar Introducción"
 
 msgctxt "#30012"
 msgid "Play Next Recommended Movie"
-msgstr ""
+msgstr "Reproducir Siguiente Película Recomendada"
 
 msgctxt "#30013"
 msgid "Skip Credits"
-msgstr ""
+msgstr "Saltar Creditos"
 
 msgctxt "#30014"
 msgid "H.265"
-msgstr ""
+msgstr "H.265"
 
 msgctxt "#30015"
 msgid "4K"
-msgstr ""
+msgstr "4K"
 
 msgctxt "#30016"
 msgid "Dolby Vision"
-msgstr ""
+msgstr "Dolby Vision"
 
 
 
 msgctxt "#30018"
 msgid "Dolby Digital (AC-3)"
-msgstr ""
+msgstr "Dolby Digital (AC-3)"
 
 msgctxt "#30019"
 msgid "Featured"
-msgstr ""
+msgstr "Novedades"
 
 msgctxt "#30020"
 msgid "Series"
-msgstr ""
+msgstr "Series"
 
 msgctxt "#30021"
 msgid "Movies"
-msgstr ""
+msgstr "Películas"
 
 msgctxt "#30022"
 msgid "Originals"
-msgstr ""
+msgstr "Originals"
 
 msgctxt "#30023"
 msgid "Just Added"
-msgstr ""
+msgstr "Añadidos recientemente"
 
 msgctxt "#30024"
 msgid "Last Chance"
-msgstr ""
+msgstr "Última oportunidad"
 
 msgctxt "#30025"
 msgid "Coming Soon"
-msgstr ""
+msgstr "Próximamente"
 
 msgctxt "#30026"
 msgid "Trending Now"
-msgstr ""
+msgstr "Tendencias ahora"
 
 msgctxt "#30027"
 msgid "No data returned\n"
 "Usually caused if your IP is out of region\n"
 "or HBO Max is blocking your VPN"
-msgstr ""
+msgstr "No se recibieron datos\n"
+"Normalmente causado si tu IP no es de tu región\n"
+"o HBO Max bloquea tu VPN"
 
 msgctxt "#30028"
 msgid "HBO Max has detected your out of region\n"
 "Check your IP is in correct region"
-msgstr ""
+msgstr "HBO Max ha detectado que no estas en tu región\n"
+"Verifica que tu IP es de la región correcta"
 
 msgctxt "#30029"
 msgid "Full Details"
-msgstr ""
+msgstr "Detalles Completos"
 
 msgctxt "#30030"
 msgid "Extras"
-msgstr ""
+msgstr "Extras"
 
 msgctxt "#30031"
 msgid "Dolby Atmos"
-msgstr ""
+msgstr "Dolby Atmos"
 
 msgctxt "#30032"
 msgid "HBO Max My List"
-msgstr ""
+msgstr "HBO Max Mi Lista"
 
 msgctxt "#30033"
 msgid "HBO Max Sync Playback"
-msgstr ""
+msgstr "HBO Max Syncronizar Reproducción"
 
 msgctxt "#30034"
 msgid "My List"
-msgstr ""
+msgstr "Mi Lista"
 
 msgctxt "#30035"
 msgid "Continue Watching"
-msgstr ""
+msgstr "Continuar viendo"
 
 msgctxt "#30036"
 msgid "Added to My List"
-msgstr ""
+msgstr "Añadido a Mi Lista"
 
 msgctxt "#30037"
 msgid "Add to My List"
-msgstr ""
+msgstr "Añadir a Mi Lista"
 
 msgctxt "#30038"
 msgid "Remove from My List"
-msgstr ""
+msgstr "Eliminar de Mi Lista"
 
 msgctxt "#30039"
 msgid "Default Playback language"
-msgstr ""
+msgstr "Idioma de Reproducción por Defecto"
 
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
 msgid "Ask"
-msgstr ""
+msgstr "Preguntar"
 
 msgctxt "#32043"
 msgid "Best"
-msgstr ""
+msgstr "Mejor"
 
 msgctxt "#32060"
 msgid "Lowest"
-msgstr ""
+msgstr "Mínima"
 
 msgctxt "#32048"
 msgid "Bypass"
-msgstr ""
+msgstr "Bypass"
 
 msgctxt "#32054"
 msgid "Custom"
-msgstr ""
+msgstr "Personalizada"
 
 msgctxt "#32073"
 msgid "Disabled"
-msgstr ""
+msgstr "Desactivada"
