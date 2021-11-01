@@ -1,0 +1,89 @@
+# Translation file for slyguy.pluto.tv.provider
+# Addon Name: Pluto TV
+# Addon id: slyguy.pluto.tv.provider
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator:ivan.espinosa\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "Live TV"
+msgstr "TV en directo"
+
+msgctxt "#30001"
+msgid "Show Channel Numbers"
+msgstr "Mostrar números de canal"
+
+msgctxt "#30002"
+msgid "Region"
+msgstr "Región"
+
+msgctxt "#30003"
+msgid "All"
+msgstr "Todo"
+
+msgctxt "#30004"
+msgid "Show Mini EPG"
+msgstr "Mostrar Mini EPG"
+
+msgctxt "#30005"
+msgid "Select Regions to Merge"
+msgstr "Seleccionar Regiones para Combinar"
+
+msgctxt "#30006"
+msgid "{count} Channels"
+msgstr "Canales {count}"
+
+msgctxt "#30007"
+msgid "Show Adverts"
+msgstr "Mostrar Anuncios"
+
+msgctxt "#30008"
+msgid "No regions selected to be merged"
+msgstr "No hay seleccionadas regiones para combinar"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Preguntar"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "La mejor"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Mínima"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Bypass"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Personalizado"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Desactivado"
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr "Preguntar"
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr "En directo"
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr "Desde el Principio"
