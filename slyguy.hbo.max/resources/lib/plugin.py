@@ -5,7 +5,7 @@ from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.session import Session
 from slyguy.util import replace_kids
-from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN
+from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
 from slyguy.log import log
 
@@ -44,7 +44,7 @@ def index(**kwargs):
             folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
 
         if settings.getBool('bookmarks', True):
-            folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
         if not userdata.get('kid_lockdown', False):
             profile = userdata.get('profile', {})
@@ -59,6 +59,19 @@ def index(**kwargs):
 def _process_rows(rows, slug):
     items = []
     sync_watchlist = settings.getBool('sync_watchlist', False)
+    sync_playback = settings.getBool('sync_playback', False)
+
+    markers = {}
+    if sync_playback:
+        ids = []
+        for row in rows:
+            viewable = row.get('viewable') or ''
+            if viewable:
+                ids.append(viewable.split(':')[-1])
+
+        if ids:
+            for row in api.markers(ids):
+                markers[row['id']] = [row['position'], row['runtime']]
 
     for row in rows:
         viewable = row.get('viewable') or ''
@@ -72,7 +85,7 @@ def _process_rows(rows, slug):
         if content_type in ('FEATURE', 'EXTRA'):
             item = plugin.Item(
                 label = row['titles']['full'],
-                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart': _image(row['images'].get('tile'), size='1920x1080')},
                 info = {
                     'duration': row['duration'],
                     'mediatype': 'movie' if content_type == 'FEATURE' else 'video',
@@ -84,11 +97,17 @@ def _process_rows(rows, slug):
                 playable = True,
                 path = _get_play_path(viewable),
             )
+            if viewable in markers:
+                if float(markers[viewable][0]) / markers[viewable][1] > (WATCHED_PERCENT / 100.0):
+                    item.info['playcount'] = 1
+                    item.resume_from = 0
+                else:
+                    item.resume_from = markers[viewable][0]
 
         elif content_type == 'SERIES':
             item = plugin.Item(
                 label = row['titles']['full'],
-                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart': _image(row['images'].get('tile'), size='1920x1080')},
                 context = ((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, slug=viewable))),),
                 info = {'mediatype': 'tvshow'},
                 path = plugin.url_for(series, slug=viewable),
@@ -97,7 +116,7 @@ def _process_rows(rows, slug):
         elif content_type in ('SERIES_EPISODE', 'MINISERIES_EPISODE'):
             item = plugin.Item(
                 label = row['titles']['full'],
-                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart':  _image(row['images'].get('tile'), size='1920x1080')},
+                art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart': _image(row['images'].get('tile'), size='1920x1080')},
                 info = {
                     'duration': row['duration'],
                     'tvshowtitle': row['seriesTitles']['full'],
@@ -109,6 +128,13 @@ def _process_rows(rows, slug):
                 playable = True,
                 path = _get_play_path(viewable),
             )
+
+            if viewable in markers:
+                if float(markers[viewable][0]) / markers[viewable][1] > (WATCHED_PERCENT / 100.0):
+                    item.info['playcount'] = 1
+                    item.resume_from = 0
+                else:
+                    item.resume_from = markers[viewable][0]
 
         elif row['id'].startswith('urn:hbo:themed-tray') and row['items']:
             item = plugin.Item(
@@ -186,12 +212,24 @@ def continue_watching(**kwargs):
 def extras(slug, **kwargs):
     content = api.express_content(slug)
     folder = plugin.Folder(_.EXTRAS, fanart=_image(content['images'].get('tile'), size='1920x1080'))
+    sync_playback = settings.getBool('sync_playback', False)
+
+    markers = {}
+    if sync_playback:
+        ids = []
+        for row in content['extras']:
+            if row.get('playbackMarkerId'):
+                ids.append(row['playbackMarkerId'])
+
+        if ids:
+            for row in api.markers(ids):
+                markers[row['id']] = [row['position'], row['runtime']]
 
     for row in content['extras']:
-        if row['extraType'] != 'code':
+        if not row.get('playbackMarkerId'):
             continue
 
-        folder.add_item(
+        item = plugin.Item(
             label = row['titles']['full'],
             art = {'thumb': _image(row['images'].get('tileburnedin')),},
             info = {
@@ -202,6 +240,15 @@ def extras(slug, **kwargs):
             playable = True,
             path = _get_play_path(row['id']),
         )
+
+        if row['id'] in markers:
+            if float(markers[row['id']][0]) / markers[row['id']][1] > (WATCHED_PERCENT / 100.0):
+                item.info['playcount'] = 1
+                item.resume_from = 0
+            else:
+                item.resume_from = markers[row['id']][0]
+
+        folder.add_items(item)
 
     return folder
 
@@ -215,7 +262,7 @@ def full_details(slug, **kwargs):
 
         item = plugin.Item(
             label = data['titles']['full'],
-            art = {'thumb': _image(data['images'].get('tileburnedin')), 'fanart':_image(data['images'].get('tile'), size='1920x1080')},
+            art = {'thumb': _image(data['images'].get('tileburnedin')), 'fanart': _image(data['images'].get('tile'), size='1920x1080')},
             info = {
                 'plot': data['summaries']['full'],
                 'year': year,
@@ -228,7 +275,7 @@ def full_details(slug, **kwargs):
     elif ':feature' in slug:
         item = plugin.Item(
             label = data['titles']['full'],
-            art   = {'thumb': _image(data['images'].get('tileburnedin')), 'fanart':_image(data['images'].get('tile'), size='1920x1080')},
+            art   = {'thumb': _image(data['images'].get('tileburnedin')), 'fanart': _image(data['images'].get('tile'), size='1920x1080')},
             info  = {
                 'plot': data['summaries']['full'],
                 'duration': data['duration'],
@@ -255,6 +302,7 @@ def page(slug, label, tab=None, **kwargs):
 def series(slug, season=None, **kwargs):
     data = api.express_content(slug, tab=season)
     sync_watchlist = settings.getBool('sync_watchlist', False)
+    sync_playback = settings.getBool('sync_playback', False)
 
     if len(data['seasons']) > 1:
         folder = plugin.Folder(data['titles']['full'], fanart=_image(data['images'].get('tile'), size='1920x1080'))
@@ -274,6 +322,16 @@ def series(slug, season=None, **kwargs):
         folder = plugin.Folder(data['titles']['full'], fanart=_image(data['images'].get('tile'), size='1920x1080'),
             sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED])
 
+        markers = {}
+        if sync_playback:
+            ids = []
+            for row in data['episodes']:
+                ids.append(row['id'].split(':')[-1])
+
+            if ids:
+                for row in api.markers(ids):
+                    markers[row['id']] = [row['position'], row['runtime']]
+
         for row in data['episodes']:
             item = plugin.Item(
                 label = row['titles']['full'],
@@ -286,11 +344,18 @@ def series(slug, season=None, **kwargs):
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
                     'mediatype': 'episode',
                 },
-                path = _get_play_path(row['id']),
                 playable = True,
+                path = _get_play_path(row['id']),
             )
             if sync_watchlist:
                 item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['id'], title=item.label, icon=item.art.get('thumb'))))))
+
+            if row['id'] in markers:
+                if float(markers[row['id']][0]) / markers[row['id']][1] > (WATCHED_PERCENT / 100.0):
+                    item.info['playcount'] = 1
+                    item.resume_from = 0
+                else:
+                    item.resume_from = markers[row['id']][0]
 
             folder.add_items(item)
 
@@ -550,9 +615,10 @@ def play(slug, **kwargs):
     else:
         item.headers = headers
 
-    if settings.getBool('sync_playback', False):
+    if settings.getBool('sync_playback', False) and not kwargs.get(ROUTE_RESUME_TAG):
         marker = api.markers([edit['playbackMarkerId'],])
-        if marker and marker['position'] < edit.get('creditsStartTime', edit['duration']-10):
+
+        if marker and float(marker['position']) / marker['runtime'] <= (WATCHED_PERCENT / 100.0):
             item.resume_from = plugin.resume_from(marker['position'])
             if item.resume_from == -1:
                 return

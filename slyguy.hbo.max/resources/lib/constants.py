@@ -19,3 +19,4 @@ GUEST_AUTH = 'https://oauth.api.hbo.com/auth/tokens'
 UPLOAD_AVATAR = '/accounts/user-images/profile/{image_id}?format=png&size=320x320&authorization=Bearer {token}'
 CHARACTER_AVATAR = '/images/{image_id}/avatar?size=320x320'
 DEVICE_CODE_URL = 'https://hbomax.com/tvsignin'
+WATCHED_PERCENT = 95
