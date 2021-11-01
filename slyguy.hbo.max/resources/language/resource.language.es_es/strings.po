@@ -48,7 +48,7 @@ msgstr "Reproducir Episodio Siguiente"
 
 msgctxt "#30011"
 msgid "Skip Intros"
-msgstr "Saltar Introducción"
+msgstr "Saltar Introducciones"
 
 msgctxt "#30012"
 msgid "Play Next Recommended Movie"
@@ -70,15 +70,13 @@ msgctxt "#30016"
 msgid "Dolby Vision"
 msgstr "Dolby Vision"
 
-
-
 msgctxt "#30018"
 msgid "Dolby Digital (AC-3)"
 msgstr "Dolby Digital (AC-3)"
 
 msgctxt "#30019"
 msgid "Featured"
-msgstr "Novedades"
+msgstr "Destacados"
 
 msgctxt "#30020"
 msgid "Series"
@@ -174,7 +172,7 @@ msgstr "Preguntar"
 
 msgctxt "#32043"
 msgid "Best"
-msgstr "Mejor"
+msgstr "La Mejor"
 
 msgctxt "#32060"
 msgid "Lowest"
