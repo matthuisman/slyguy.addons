@@ -48,7 +48,7 @@ msgstr "{name} [Atmos]"
 
 msgctxt "#30005"
 msgid "Proxy Enabled (Required for some addons and features)"
-msgstr "Proxy Habilitado (Requerido por algunos addons y características"
+msgstr "Proxy Habilitado (Requerido por algunos addons y características)"
 
 msgctxt "#30006"
 msgid "Persist Cache"
@@ -117,7 +117,7 @@ msgstr "Mostrar Novedades"
 
 msgctxt "#30023"
 msgid "Video view for all content"
-msgstr "Ver Video para todo el contenido"
+msgstr "Vista Video para todo el contenido"
 
 msgctxt "#30024"
 msgid "Folders for TV Show and Seasons"
@@ -141,7 +141,7 @@ msgstr "Estas seguro que quieres reiniciar este add-on?\n"
 
 msgctxt "#32003"
 msgid "Reset Complete"
-msgstr "Reinicio Completado"
+msgstr "Reset Completado"
 
 msgctxt "#32004"
 msgid "Removed {delete_count} Cached Item"
@@ -185,7 +185,7 @@ msgstr "ARM 64bit no soporta reproducción Widevine\n"
 
 msgctxt "#32012"
 msgid "{system} {arch} Kodi v{kodi_version}\ndoes not yet support Widevine playback"
-msgstr "{system} {arch} Kodi v{kodi_version}\ntodavía no sopoerta reproducción Widevine"
+msgstr "{system} {arch} Kodi v{kodi_version}\ntodavía no soporta reproducción Widevine"
 
 msgctxt "#32013"
 msgid "Could not find a media source from Brightcove\n"
@@ -258,7 +258,7 @@ msgstr "Estas seguro que quieres cerrar sesión?"
 msgctxt "#32028"
 msgid "Failed to login.\n"
 "Check your details are correct and try again."
-msgstr "Fallo de inicio de sesión"
+msgstr "Fallo de inicio de sesión.\n"
 "Verifica que los datos son correctos e inténtalo de nuevo"
 
 msgctxt "#32029"
@@ -323,7 +323,7 @@ msgstr "Nuevo add-on no encontrado.\n"
 
 msgctxt "#32043"
 msgid "Best"
-msgstr "Mejor"
+msgstr "La Mejor"
 
 msgctxt "#32044"
 msgid "HTTP Timeout (seconds)"
@@ -371,7 +371,7 @@ msgctxt "#32053"
 msgid "This manifest contains multiple base urls\n"
 "Support for this will hopefully be introduced in Kodi 19\n"
 "There is a chance this content may not play"
-msgstr "Éste manifiesto contiene multiples urls base"
+msgstr "Éste manifiesto contiene multiples urls base\n"
 "El soporte para ésto ojalá sea introducida en Kodi 19\n"
 "Hay una posibilidad de que éste contenido no se reproduzca"
 
@@ -451,7 +451,7 @@ msgstr "Versiones Widevine CDM Disponibles"
 
 msgctxt "#32071"
 msgid "{label} (Unknown)"
-msgstr ""
+msgstr "{label} (Unknown)"
 
 msgctxt "#32072"
 msgid "Default Audio"
@@ -576,7 +576,7 @@ msgstr "{label} (Used)"
 
 msgctxt "#32100"
 msgid "Kid friendly interface with only content suitable for kids."
-msgstr "Interface adaptado a niños con contenido solamente apropiado para niños"
+msgstr "Interface adaptado a niños con contenido solamente apropiado para niños."
 
 msgctxt "#32101"
 msgid "Kids Profile?"
@@ -584,7 +584,7 @@ msgstr "Perfil de Niños?"
 
 msgctxt "#32102"
 msgid "Profile Name"
-msgstr "Nombre de Perfili"
+msgstr "Nombre de Perfil"
 
 msgctxt "#32103"
 msgid "{name} is already being used"
@@ -619,7 +619,7 @@ msgid "Failed to fetch JSON data\n"
 "Make sure your IP address is allowed (not geo-blocked)\n"
 "Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
 msgstr "Fallo al buscar datos JSON\n"
-"Asegurate que tu IP tiene permiso permiso (no geo-bloqueado)\n"
+"Asegurate que tu IP tiene permiso (no geo-bloqueado)\n"
 "Intenta acceder a este contenido por otra via (app oficial / sitio web) para verificar si es un problema con el add-on de Kodi"
 
 
@@ -689,7 +689,7 @@ msgctxt "#32124"
 msgid "Widevine license request failed\n"
 "Usual cause is Google revoking older Widevine versions\n"
 "Select Yes to check for new Widevine versions"
-msgstr "Fallo de petición de licencia Widevine"
+msgstr "Fallo de petición de licencia Widevine\n"
 "Normalmente esta causado porque Google cancela versiones antiguas\n"
 "Selecciona Si para buscar nuevas versiones Widevine"
 
