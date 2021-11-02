@@ -11,7 +11,7 @@ from slyguy.log import log
 from slyguy.util import get_system_arch
 
 from .constants import *
-from .language import _
+from .language import Language, _
 
 class APIError(Error):
     pass
@@ -57,7 +57,7 @@ class API(object):
             return 'https://oauth{globalUserSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
 
         elif name == 'gateway':
-            return 'https://gateway{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
+            return 'https://gateway.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
         elif name == 'comet':
             return 'https://comet{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
@@ -120,11 +120,11 @@ class API(object):
 
     @mem_cache.cached(60*30)
     def _client_config(self):
-        serial = self._guest_login()
+        self._guest_login()
 
         payload = {
             'contract': 'hadron:1.1.2.0',
-            'preferredLanguages': ['en-us'],
+            'preferredLanguages': [DEFAULT_LANGUAGE],
         }
 
         data = self._session.post(CONFIG_URL, json=payload).json()
@@ -162,6 +162,7 @@ class API(object):
         }
 
         self._oauth_token(payload)
+        mem_cache.empty()
 
     def device_login(self, serial, code):
         payload = {
@@ -281,21 +282,43 @@ class API(object):
         return data
 
     def _headwaiter(self):
+        config = self._client_config()
+
         headwaiter = ''
-        for key in sorted(self._client_config()['payloadValues']):
-            headwaiter += '{}:{},'.format(key, self._client_config()['payloadValues'][key])
+        for key in sorted(config['payloadValues']):
+            headwaiter += '{}:{},'.format(key, config['payloadValues'][key])
 
         return headwaiter.rstrip(',')
+
+    @mem_cache.cached(60*30)
+    def _get_language(self):
+        try:
+            kodi_lang = xbmc.getLanguage(xbmc.ISO_639_1, True).lower().strip()
+            available = self._session.get(self.url('gateway', '/sessions/v1/enabledLanguages')).json()
+            for row in available:
+                if row['code'].lower().strip() == kodi_lang:
+                    log.debug('Language match found: {}'.format(row['code']))
+                    return row['code']
+
+            return available[0]['code']
+        except:
+            log.debug('Failed to get language')
+
+        return DEFAULT_LANGUAGE
 
     def express_content(self, slug, tab=None):
         self._refresh_token()
 
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
+            'accept-language': self._get_language(),
+        }
+        params = {
+            'language': self._get_language(),
         }
 
-        params = self._flighted_features()['express-content']['config']['expressContentParams']
-        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, params)), headers=headers).json()
+        query = self._flighted_features()['express-content']['config']['expressContentParams']
+        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, query)), params=params, headers=headers).json()
         self._check_errors(data)
 
         _data = {}
@@ -309,6 +332,7 @@ class API(object):
 
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
+            'accept-language': self._get_language(),
         }
 
         data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
