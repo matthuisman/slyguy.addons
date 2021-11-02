@@ -97,6 +97,14 @@ def progressbg(message='', heading=None, percent=0):
     return dialog
 
 @contextmanager
+def busy():
+    xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
+    try:
+        yield
+    finally:
+        xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
+
+@contextmanager
 def progress(message='', heading=None, percent=0, background=False):
     dialog = Progress(message=message, heading=heading, percent=percent, background=background)
 

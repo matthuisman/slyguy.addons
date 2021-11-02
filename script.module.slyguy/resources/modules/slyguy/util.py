@@ -703,3 +703,32 @@ def strip_html_tags(text):
 def chunked(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
+
+def lang_allowed(lang, lang_list):
+    if not lang_list:
+        return True
+
+    lang = fix_language(lang)
+    if not lang:
+        return False
+
+    for _lang in lang_list:
+        _lang = fix_language(_lang)
+        if not _lang:
+            continue
+
+        if lang.startswith(_lang):
+            return True
+
+    return False
+
+def fix_language(language=None):
+    if not language:
+        return None
+
+    language = language.lower().strip()
+    split = language.split('-')
+    if len(split) > 1 and split[1].lower() == split[0].lower():
+        return split[0]
+
+    return language
