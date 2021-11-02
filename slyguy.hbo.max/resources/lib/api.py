@@ -120,11 +120,11 @@ class API(object):
 
     @mem_cache.cached(60*30)
     def _client_config(self):
-        serial = self._guest_login()
+        self._guest_login()
 
         payload = {
             'contract': 'hadron:1.1.2.0',
-            'preferredLanguages': [self._get_language(), 'en-US'],
+            'preferredLanguages': [DEFAULT_LANGUAGE],
         }
 
         data = self._session.post(CONFIG_URL, json=payload).json()
@@ -162,6 +162,7 @@ class API(object):
         }
 
         self._oauth_token(payload)
+        mem_cache.empty()
 
     def device_login(self, serial, code):
         payload = {
@@ -281,20 +282,36 @@ class API(object):
         return data
 
     def _headwaiter(self):
+        config = self._client_config()
+
         headwaiter = ''
-        for key in sorted(self._client_config()['payloadValues']):
-            headwaiter += '{}:{},'.format(key, self._client_config()['payloadValues'][key])
+        for key in sorted(config['payloadValues']):
+            headwaiter += '{}:{},'.format(key, config['payloadValues'][key])
 
         return headwaiter.rstrip(',')
 
+    @mem_cache.cached(60*30)
     def _get_language(self):
-        return xbmc.getLanguage(xbmc.ISO_639_1, True)
+        try:
+            kodi_lang = xbmc.getLanguage(xbmc.ISO_639_1, True).lower().strip()
+            available = self._session.get(self.url('gateway', '/sessions/v1/enabledLanguages')).json()
+            for row in available:
+                if row['code'].lower().strip() == kodi_lang:
+                    log.debug('Language match found: {}'.format(row['code']))
+                    return row['code']
+
+            return available[0]['code']
+        except:
+            log.debug('Failed to get language')
+
+        return DEFAULT_LANGUAGE
 
     def express_content(self, slug, tab=None):
         self._refresh_token()
 
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
+            'accept-language': self._get_language(),
         }
         params = {
             'language': self._get_language(),

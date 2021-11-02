@@ -172,9 +172,9 @@ def _process_rows(rows, slug):
 
         if row.get('viewable'):
             if slug == 'watchlist':
-                item.context.insert(0, ((_.REMOVE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(remove_watchlist, slug=row['viewable'])))))
+                item.context.append(((_.REMOVE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(remove_watchlist, slug=row['viewable'])))))
             elif sync_watchlist:
-                item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['viewable'], title=item.label, icon=item.art.get('thumb'))))))
+                item.context.append(((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['viewable'], title=item.label, icon=item.art.get('thumb'))))))
 
         items.append(item)
 

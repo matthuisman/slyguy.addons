@@ -8,7 +8,6 @@ HEADERS = {
     'X-Hbo-Client-Version': 'Hadron/{0} android/{0} (SHIELD/8.1.0)'.format(VERSION),
     'X-Hbo-Device-Os-Version': '8.1.0',
     'Accept': 'application/vnd.hbo.v9.full+json',
-    'Accept-Language': 'en-us',
 }
 
 UUID_NAMESPACE = '124f1611-0232-4336-be43-e054c8ecd0d5'
@@ -20,3 +19,4 @@ UPLOAD_AVATAR = '/accounts/user-images/profile/{image_id}?format=png&size=320x32
 CHARACTER_AVATAR = '/images/{image_id}/avatar?size=320x320'
 DEVICE_CODE_URL = 'https://hbomax.com/tvsignin'
 WATCHED_PERCENT = 95
+DEFAULT_LANGUAGE = 'en-US'
