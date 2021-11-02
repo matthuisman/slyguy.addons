@@ -306,7 +306,7 @@ class API(object):
             log.debug('Selected language: {}'.format(language))
             return language
 
-        log.debub('Using default language: {}'.format(DEFAULT_LANGUAGE))
+        log.debug('Using default language: {}'.format(DEFAULT_LANGUAGE))
         return DEFAULT_LANGUAGE
 
     def express_content(self, slug, tab=None):
