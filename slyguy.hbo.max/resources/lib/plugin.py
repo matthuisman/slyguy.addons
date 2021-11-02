@@ -2,7 +2,7 @@ import os
 from xml.dom.minidom import parseString
 
 from kodi_six import xbmc, xbmcplugin
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream, settings, mem_cache
 from slyguy.session import Session
 from slyguy.util import replace_kids
 from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG
@@ -179,6 +179,29 @@ def _process_rows(rows, slug):
         items.append(item)
 
     return items
+
+@plugin.route()
+def select_language(**kwargs):
+    with gui.busy():
+        available = api.get_languages()
+        language = userdata.get('language')
+        available.insert(0, {'code': 'auto', 'endonym': _.AUTO})
+
+        default = 0
+        options = []
+        for index, row in enumerate(available):
+            options.append(row['endonym'])
+            if row['code'] == language:
+                default = index
+
+    index = gui.select(_.LANGUAGE, options=options, preselect=default)
+    if index < 0:
+        return
+
+    selected = available[index]
+    mem_cache.delete('language')
+    userdata.set('language', selected['code'])
+    gui.notification(selected['endonym'], heading=_.LANGUAGE)
 
 @plugin.route()
 def watchlist(**kwargs):

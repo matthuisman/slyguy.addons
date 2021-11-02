@@ -8,6 +8,7 @@
         <setting label="30012" type="bool" id="play_next_movie" default="false"/>
         <setting label="30032" type="bool" id="sync_watchlist" default="true"/>
         <setting label="30033" type="bool" id="sync_playback" default="false"/>
+        <setting label="304" type="action" action="RunPlugin(plugin://$ID/?_=select_language)" option="close"/>
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>

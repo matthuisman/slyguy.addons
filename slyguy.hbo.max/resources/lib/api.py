@@ -1,14 +1,13 @@
 import uuid
 from time import time
 
-import arrow
 from kodi_six import xbmc
 
 from slyguy import userdata, settings, mem_cache, gui
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
-from slyguy.util import get_system_arch
+from slyguy.util import get_system_arch, lang_allowed
 
 from .constants import *
 from .language import Language, _
@@ -290,20 +289,24 @@ class API(object):
 
         return headwaiter.rstrip(',')
 
-    @mem_cache.cached(60*30)
+    def get_languages(self):
+        return [x for x in self._session.get(self.url('gateway', '/sessions/v1/enabledLanguages')).json() if x.get('disabledForCurrentRegion') != True]
+
+    @mem_cache.cached(60*30, key='language')
     def _get_language(self):
-        try:
-            kodi_lang = xbmc.getLanguage(xbmc.ISO_639_1, True).lower().strip()
-            available = self._session.get(self.url('gateway', '/sessions/v1/enabledLanguages')).json()
-            for row in available:
-                if row['code'].lower().strip() == kodi_lang:
-                    log.debug('Language match found: {}'.format(row['code']))
-                    return row['code']
+        language = userdata.get('language', 'auto')
+        if language == 'auto':
+            language = xbmc.getLanguage(xbmc.ISO_639_1, True).replace('no-', 'nb-')
+            log.debug('Using Kodi language: {}'.format(language))
 
-            return available[0]['code']
-        except:
-            log.debug('Failed to get language')
+        available = [x['code'] for x in self.get_languages()]
+        log.debug('Available languages: {}'.format(available))
 
+        if lang_allowed(language, available):
+            log.debug('Selected language: {}'.format(language))
+            return language
+
+        log.debub('Using default language: {}'.format(DEFAULT_LANGUAGE))
         return DEFAULT_LANGUAGE
 
     def express_content(self, slug, tab=None):
