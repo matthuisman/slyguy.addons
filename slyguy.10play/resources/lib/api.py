@@ -79,7 +79,12 @@ class API(object):
     def play(self, id):
         data = self.videos([id])[0]
         url = self._session.head(data['HLSURL'], allow_redirects=True).url
-        return url.replace(',150,',',300,150,')
+
+        new_url = url.replace(',150,',',300,150,')
+        if self._session.head(new_url).ok:
+            return new_url
+
+        return url
 
     def play_channel(self, id):
         channels = self.live_channels()
