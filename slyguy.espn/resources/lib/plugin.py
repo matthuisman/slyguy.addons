@@ -40,8 +40,11 @@ def index(**kwargs):
 def events(label, bucket_id, **kwargs):
     folder = plugin.Folder(label)
     data = api.bucket(bucket_id)
-    items = _process_events(data['buckets'][0]['contents'])
-    folder.add_items(items)
+
+    if data.get('buckets'):
+        items = _process_events(data['buckets'][0]['contents'])
+        folder.add_items(items)
+
     return folder
 
 def _process_events(rows):
