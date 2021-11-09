@@ -3,7 +3,6 @@ from slyguy.language import BaseLanguage
 class Language(BaseLanguage):
     HOME              = 30000
     LAT               = 30001
-    LONG              = 30002
 
     LIVE_TV           = 30004
 

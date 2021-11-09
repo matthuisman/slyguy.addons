@@ -34,14 +34,13 @@ class API(object):
                 log.debug('Failed to get market id from lat long. Default to Sydney')
                 return SYDNEY_MARKET_ID
 
-        latitude = settings.getFloat('lat')
-        longitude = settings.getFloat('long')
-
-        if latitude is not None and longitude is not None:
-            market_id = lat_long(latitude, longitude)
-        else:
+        try:
+            latitude, longitude = settings.get('lat_long').strip().split(',')
+            market_id = lat_long(float(latitude), float(longitude))
+        except:
             market_id = auto()
 
+        log.debug('Market ID: {}'.format(market_id))
         return market_id
 
     def nav(self):
