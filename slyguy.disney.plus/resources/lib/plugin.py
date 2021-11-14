@@ -147,7 +147,6 @@ def collection(slug, content_class, label=None, **kwargs):
     folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_get_art(data.get('image', []).get('fanart')))
 
     for row in data['containers']:
-        _type = row.get('type')
         _set = row.get('set')
         _style = row.get('style')
         ref_type = _set['refType'] if _set['type'] == 'SetRef' else _set['type']
@@ -160,15 +159,14 @@ def collection(slug, content_class, label=None, **kwargs):
         if not set_id:
             return None
 
-        if slug == 'home' and _style in ('brandSix', 'ContinueWatchingSet', 'hero', 'WatchlistSet'):
+        if slug == 'home' and (_style in ('brandSix', 'hero') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
             continue
 
-        if _style == 'BecauseYouSet':
-            continue
-            # data = api.set_by_id(set_id, _style, page_size=0)
-            # if not data['meta']['hits']:
-            #     continue
-            # title = _get_text(data['text'], 'title', 'set')
+        if ref_type == 'BecauseYouSet':
+            data = api.set_by_id(set_id, ref_type, page_size=0)
+            if not data['meta']['hits']:
+                continue
+            title = _get_text(data['text'], 'title', 'set')
         else:
             title = _get_text(_set['text'], 'title', 'set')
 
