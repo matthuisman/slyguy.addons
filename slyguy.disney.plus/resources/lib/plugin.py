@@ -519,6 +519,28 @@ def play(content_id=None, family_id=None, **kwargs):
     if not video:
         raise PluginError(_.NO_VIDEO_FOUND)
 
+    versions = video['mediaMetadata']['facets']
+
+    has_imax = False
+    for row in versions:
+        if row['activeAspectRatio'] == 1.9:
+            has_imax = True
+
+    if has_imax:
+        deault_ratio = settings.getEnum('default_ratio', RATIO_TYPES, default=RATIO_IMAX)
+
+        if deault_ratio == RATIO_ASK:
+            index = gui.context_menu([_.IMAX, _.WIDESCREEN])
+            if index == -1:
+                return
+            imax = True if index == 0 else False
+        else:
+            imax = True if deault_ratio == RATIO_IMAX else False
+
+        profile = api.profile()[0]
+        if imax != profile['attributes']['playbackSettings']['preferImaxEnhancedVersion']:
+            api.set_imax(imax)
+
     playback_url = video['mediaMetadata']['playbackUrls'][0]['href']
     playback_data = api.playback_data(playback_url, ia.wv_secure)
     media_stream = playback_data['stream']['complete'][0]['url']

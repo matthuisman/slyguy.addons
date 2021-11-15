@@ -47,6 +47,10 @@ msgctxt "#30008"
 msgid "Hubs"
 msgstr ""
 
+msgctxt "#30009"
+msgid "IMAX"
+msgstr ""
+
 msgctxt "#30010"
 msgid "Suggested"
 msgstr ""
@@ -98,6 +102,10 @@ msgstr ""
 
 msgctxt "#30022"
 msgid "Play Next Recommended Movie"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Default Ratio"
 msgstr ""
 
 msgctxt "#30024"

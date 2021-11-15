@@ -20,3 +20,8 @@ HEADERS = {
     'x-bamsdk-version': '6.1.0',
     'Accept-Encoding': 'gzip',
 }
+
+RATIO_ASK = 0
+RATIO_IMAX = 1
+RATIO_WIDESCREEN = 2
+RATIO_TYPES = [RATIO_ASK, RATIO_IMAX, RATIO_WIDESCREEN]

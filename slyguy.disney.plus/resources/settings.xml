@@ -16,6 +16,8 @@
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
+        <setting label="30023" id="default_ratio" type="enum" default="1" lvalues="32055|30009|21377"/>
+
         <setting label="30019" type="bool" id="h265" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
             <setting label="30052" type="bool" id="dolby_atmos" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-1,true)"/>
             <setting label="30018" type="bool" id="hdr10" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)" enable="eq(-2,true)+eq(1,false)"/>

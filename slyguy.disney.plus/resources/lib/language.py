@@ -9,7 +9,7 @@ class Language(BaseLanguage):
     ORIGINALS                = 30006
     FULL_DETAILS             = 30007
     HUBS                     = 30008
-
+    IMAX                     = 30009
     SUGGESTED                = 30010
     FEATURED                 = 30011
     SEASON                   = 30012
@@ -23,7 +23,7 @@ class Language(BaseLanguage):
     SKIP_CREDITS             = 30020
     PLAY_NEXT_EPISODE        = 30021
     PLAY_NEXT_MOVIE          = 30022
-
+    DEFAULT_RATIO            = 30023
     SKIP_INTROS              = 30024
     PLAY_FROM_START          = 30025
     WATCHLIST                = 30026
@@ -45,5 +45,7 @@ class Language(BaseLanguage):
     DOLBY_ATMOS              = 30052
     PROFILE_SETTINGS         = 30053
     CONTINUE_WATCHING        = 30054
+
+    WIDESCREEN               = 21377
 
 _ = Language()
