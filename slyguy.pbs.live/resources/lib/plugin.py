@@ -1,7 +1,7 @@
 import codecs
 
 import arrow
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, inputstream, settings
 from slyguy.session import Session
 from slyguy.mem_cache import cached
 
@@ -143,8 +143,12 @@ def play(callsign, **kwargs):
         path = station['url'],
         art = {'thumb': station['logo']},
         headers = app_data['headers'],
-        inputstream = inputstream.HLS(live=True),
     )
+
+    if station.get('license'):
+        item.inputstream = inputstream.Widevine(license_key=station['license'])
+    else:
+        item.inputstream = inputstream.HLS(live=True)
 
     return item
 
