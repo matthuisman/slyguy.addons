@@ -33,7 +33,7 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
-        if config.has_featured():
+        if config.has_home():
             folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
 
         folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
@@ -70,24 +70,18 @@ def login(**kwargs):
         raise PluginError(_.OUT_OF_REGION)
 
     api.new_session(config)
-    device_link = config.has_device_link()
-    mvpd = config.has_mvpd()
 
-    options = []
+    options = [[_.EMAIL_PASSWORD, _email_password]]
 
     if config.has_device_link():
         options.append([_.DEVICE_CODE, _device_code])
-
     if config.has_mvpd():
         options.append([_.PARTNER_LOGIN, _partner_login])
-
-    options.append([_.EMAIL_PASSWORD, _email_password])
 
     index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
     if index == -1 or not options[index][1]():
         return
 
-    config.save()
     if config.has_profiles():
         _select_profile()
 
@@ -186,11 +180,37 @@ def _select_profile():
     gui.notification(_.PROFILE_ACTIVATED, heading=userdata.get('profile_name'), icon=config.image(userdata.get('profile_img')))
 
 @plugin.route()
-def featured(slug=None, **kwargs):
+def featured(slug=None, homegroup=None, **kwargs):
+    if homegroup:
+        data = api.homegroup(homegroup)
+        folder = plugin.Folder(data['title'])
+
+        for row in data.get('shows', []):
+            folder.add_item(
+                label = row['showTitle'],
+                info = {
+                    'plot': row.get('about'),
+                    'mediatype': 'tvshow',
+                },
+                art = _show_art(row['showAssets']),
+                path = plugin.url_for(show, show_id=row['showId']),
+            )
+
+        return folder
+
     folder = plugin.Folder(_.FEATURED)
 
     for row in api.featured():
         if slug is None:
+            if not row['apiParams'].get('name'):
+                if row['model'] == 'homeShowGroup':
+                    for row in api.carousel(row['apiBaseUrl'], params=row['apiParams'])['homeShowGroupSections']:
+                        folder.add_item(
+                            label = row['title'],
+                            path = plugin.url_for(featured, homegroup=row['id']),
+                        )
+                continue
+
             if row['apiParams']['name'] in ('Keep+Watching', 'My+List', 'On+Now'): # TO DO
                 continue
 
@@ -200,15 +220,16 @@ def featured(slug=None, **kwargs):
             )
             continue
 
-        if slug != row['apiParams']['name']:
+        if slug != row['apiParams'].get('name'):
             continue
 
-        for row in api.carousel(row['apiBaseUrl'], params=row['apiParams']):
+        folder.title = row['title']
+        for row in api.carousel(row['apiBaseUrl'], params=row['apiParams'])['carousel']:
             if row.get('showId'):
                 folder.add_item(
                     label = row['showTitle'],
                     info = {
-                        'plot': row['about'],
+                        'plot': row.get('about'),
                         'mediatype': 'tvshow',
                     },
                     art = _show_art(row['showAssets']),
@@ -432,8 +453,6 @@ def season(show_id, section, season, **kwargs):
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
-
-    now = arrow.utcnow()
 
     for row in api.live_channels():
         if not row['currentListing']:
@@ -720,10 +739,8 @@ def playlist(output, **kwargs):
 @plugin.route()
 @plugin.merge()
 def epg(output, **kwargs):
-    channels = api.live_channels()
     now = arrow.now()
     until = now.shift(days=settings.getInt('epg_days', 3))
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 

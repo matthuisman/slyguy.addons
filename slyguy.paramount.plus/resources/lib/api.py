@@ -184,7 +184,15 @@ class API(object):
             if type(params[key]) is list:
                 params[key] = ','.join(params[key])
 
-        return self._session.get('/v3.0/androidphone{}'.format(url), params=self._params(params)).json()['carousel']
+        return self._session.get('/v3.0/androidphone{}'.format(url), params=self._params(params)).json()
+
+    @mem_cache.cached(60*10)
+    def homegroup(self, id):
+        self._refresh_token()
+        params = {
+            'start': 0,
+        }
+        return self._session.get('/v3.0/androidphone/homeshowgroup/{}.json'.format(id), params=self._params(params)).json()['homeShowGroupSection']
 
     @mem_cache.cached(60*10)
     def featured(self):

@@ -1,4 +1,5 @@
 from slyguy import userdata
+from slyguy.constants import ADDON_VERSION
 from slyguy.session import Session
 from slyguy.log import log
 
@@ -28,7 +29,8 @@ class Config(object):
     def init(self, fresh=False):
         if not fresh:
             self._config = userdata.get('config') or {}
-            return self._config
+            if not self._config or self._config.get('version') == ADDON_VERSION:
+                return self._config
 
         self.clear()
         for region in REGIONS:
@@ -36,6 +38,9 @@ class Config(object):
             if config:
                 self._config = config
                 break
+
+        if self._config:
+            self.save()
 
         return self._config
 
@@ -102,9 +107,8 @@ class Config(object):
     def has_profiles(self):
         return self._config['profiles']
 
-    def has_featured(self):
-        #todo
-        return self.region == REGION_US
+    def has_home(self):
+        return self._config['home']
 
     def has_movies(self):
         return self._config['movies']
@@ -131,7 +135,7 @@ class Config(object):
         userdata.set('config', self._config)
 
     def load_config(self, region):
-        resp = Session().get(CONFIG[region]['base_url']+'/apps-api/v2.0/androidtv/app/status.json', params={'at': CONFIG[region]['at_token']}, headers=self.headers)
+        resp = Session().get(CONFIG[region]['base_url']+'/apps-api/v2.0/androidphone/app/status.json', params={'at': CONFIG[region]['at_token']}, headers=self.headers)
         if not resp.ok:
             return None
 
@@ -143,11 +147,13 @@ class Config(object):
             return None
 
         config = {
+            'version': ADDON_VERSION,
             'region': region,
             'country': app_version['clientRegion'],
             'mvpd': app_version['clientRegion'] in app_config.get('mvpd_enabled_countries', []),
             'live_tv': app_config.get('livetv_disabled') != 'false',
             'feed_id': app_config.get('live_tv_national_feed_content_id'),
+            'home': True if region == REGION_US else app_config.get('homepage_configurator_enabled') == 'true',
             'movies': True if region == REGION_US else app_config.get('movies_enabled') == 'true',
             'movies_trending': True if region == REGION_US else app_config.get('movies_trending_enabled') == 'true',
             'movie_genres': True if region == REGION_US else app_config.get('movies_genres_enabled') == 'true',
