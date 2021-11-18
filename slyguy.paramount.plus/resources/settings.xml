@@ -18,11 +18,9 @@
         <setting label="30020" type="bool" id="h265" default="false"/>
         <setting label="30021" type="bool" id="4k_enabled" default="true"/>
         <setting label="30022" type="bool" id="dolby_vision" default="false"/>
-        <!-- <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/> -->
-        <!-- <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/> -->
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
     </category>
 
@@ -32,8 +30,6 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
-        <setting label="$ADDON[script.module.slyguy 32129]" id="video_folder_content" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>

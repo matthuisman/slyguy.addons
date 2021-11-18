@@ -44,11 +44,11 @@ def home(**kwargs):
         if config.has_live_tv():
             folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
-        if config.has_brands():
-            folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
+        # if config.has_brands():
+        #     folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
 
-        if config.has_news():
-            folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
+        # if config.has_news():
+        #     folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(news))
 
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
@@ -109,8 +109,6 @@ def _partner_login():
     code, url = mpvd.code(provider)
     start = time.time()
     max_time = 600
-    last_check = start
-
     thread = mpvd.wait_login(code)
 
     with gui.progress(_(_.DEVICE_LINK_STEPS, url=url, code=code), heading=_.PARTNER_LOGIN) as progress:
@@ -274,8 +272,6 @@ def movies(genre=None, title=None, page=1, **kwargs):
     else:
         data = api.movies(genre=genre, num_results=num_results, page=page)
 
-    folder.title += ' ({})'.format(data['numFound'])
-
     for row in data['movies']:
         data = row['movieContent']
         folder.add_item(
@@ -318,7 +314,7 @@ def shows(group_id=None, **kwargs):
 
     data = api.show_group(group_id)
 
-    folder = plugin.Folder(data['title'] + ' ({})'.format(data['totalShowGroupCount']))
+    folder = plugin.Folder(data['title'])
     items = _process_shows(data['showGroupItems'])
     folder.add_items(items)
 
@@ -328,16 +324,11 @@ def _process_shows(rows):
     items = []
 
     for row in rows:
-        plot = _(_.EPISODE_COUNT, count=row['episodeVideoCount']['totalEpisodes'])
-        # if row['episodeVideoCount']['totalClips']:
-        #     plot += '\n'+ _(_.CLIPS_COUNT, count=row['episodeVideoCount']['totalClips'])
-
         item = plugin.Item(
             label = row['title'],
             info = {
                 'genre': row['category'],
                 'mediatype': 'tvshow',
-                'plot': plot,
             },
             art = _show_art(row['showAssets']),
             path = plugin.url_for(show, show_id=row['showId']),
@@ -348,13 +339,36 @@ def _process_shows(rows):
     return items
 
 @plugin.route()
-def show(show_id, **kwargs):
-    show = api.show(show_id)
-    art = _show_art(show['showAssets'])
+def show(show_id, config=None, **kwargs):
+    _show = api.show(show_id)
+    art = _show_art(_show['showAssets'])
 
-    folder = plugin.Folder(show['show']['results'][0]['title'], thumb=art.get('thumb'), fanart=art.get('fanart'))
+    folder = plugin.Folder(_show['show']['results'][0]['title'], thumb=art.get('thumb'), fanart=art.get('fanart'))
 
-    plot = show['show']['results'][0]['about'] + '\n\n'
+    plot = _show['show']['results'][0]['about'] + '\n\n'
+
+    if not config:
+        options = []
+        for row in api.show_menu(show_id):
+            if row.get('videoConfigUniqueName') and row.get('hasResultsFromVideoConfig'):
+                options.append(row)
+
+        if len(options) == 1 and options[0]['page_type'] == 'hero_video':
+            config = options[0]['videoConfigUniqueName']
+        else:
+            for row in options:
+                folder.add_item(
+                    label = row['title'],
+                    path = plugin.url_for(show, show_id=show_id, config=row['videoConfigUniqueName'])
+                )
+
+            return folder
+
+    config = api.show_config(show_id, config)
+    if not config.get('display_seasons'):
+        items = _show_episodes(_show, config['sectionId'])
+        folder.add_items(items)
+        return folder
 
     clip_count = 0
     for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
@@ -365,32 +379,25 @@ def show(show_id, **kwargs):
         folder.add_item(
             label = _(_.SEASON, season=row['seasonNum']),
             info = {
-                'plot': plot + _(_.EPISODE_COUNT, count=row['totalCount']),
+                'plot': plot,
                 'mediatype': 'season',
-                'tvshowtitle': show['show']['results'][0]['title'],
+                'tvshowtitle': _show['show']['results'][0]['title'],
             },
-            path = plugin.url_for(season, show_id=show_id, season=row['seasonNum']),
+            path = plugin.url_for(season, show_id=show_id, section=config['sectionId'], season=row['seasonNum']),
         )
 
     # if clip_count:
     #     folder.add_item(
     #         label = _.CLIPS,
-    #         info = {
-    #             'plot': plot + _(_.CLIPS_COUNT, count=clip_count),
-    #         }
     #     )
 
     return folder
 
-@plugin.route()
-def season(show_id, season, **kwargs):
-    show = api.show(show_id)
-    art = _show_art(show['showAssets'])
+def _show_episodes(_show, section, season=None):
+    items = []
 
-    folder = plugin.Folder(show['show']['results'][0]['title'], fanart=art.get('fanart'))
-
-    for row in api.episodes(show_id, season):
-        folder.add_item(
+    for row in api.episodes(section, season):
+        item = plugin.Item(
             label = row['label'].strip() or row['title'].strip(),
             info = {
                 'aired': row['_airDateISO'],
@@ -401,12 +408,24 @@ def season(show_id, season, **kwargs):
                 'duration': row['duration'],
                 'genre': row['topLevelCategory'],
                 'mediatype': 'episode',
-                'tvshowtitle': show['show']['results'][0]['title'],
+                'tvshowtitle': _show['show']['results'][0]['title'],
             },
             art = {'thumb': config.thumbnail(row['thumbnail'])},
             path = plugin.url_for(play, video_id=row['contentId']),
             playable = True,
         )
+        items.append(item)
+
+    return items
+
+@plugin.route()
+def season(show_id, section, season, **kwargs):
+    _show = api.show(show_id)
+    art = _show_art(_show['showAssets'])
+
+    folder = plugin.Folder(_show['show']['results'][0]['title'], fanart=art.get('fanart'))
+    items = _show_episodes(_show, section, season)
+    folder.add_items(items)
 
     return folder
 

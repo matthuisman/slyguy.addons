@@ -34,13 +34,7 @@ msgctxt "#30011"
 msgid "Shows"
 msgstr ""
 
-msgctxt "#30012"
-msgid "[B]{count} Episodes[/B]"
-msgstr ""
 
-msgctxt "#30013"
-msgid "[B]{count} Clips[/B]"
-msgstr ""
 
 msgctxt "#30014"
 msgid "Season {season}"

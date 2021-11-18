@@ -7,8 +7,7 @@ class Language(BaseLanguage):
     DEVICE_ID            = 30008
     OUT_OF_REGION        = 30009
     SHOWS                = 30011
-    EPISODE_COUNT        = 30012
-    CLIPS_COUNT          = 30013
+
     SEASON               = 30014
     CLIPS                = 30015
     MOVIES               = 30016

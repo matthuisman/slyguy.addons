@@ -11,13 +11,11 @@ CONFIG = {
         'base_url': 'https://www.paramountplus.com',
         'at_token': 'ABCqWNNSwhIqINWIIAG+DFzcFUvF8/vcN6cNyXFFfNzWAIvXuoVgX+fK4naOC7V8MLI=',
         'device_link': True,
-        'episodes_section': 'DEFAULT_APPS_FULL_EPISODES',
     },
     REGION_INTL: {
         'base_url': 'https://www.intl.paramountplus.com',
         'at_token': 'ABAS/G30Pp6tJuNOlZ1OEE6Rf5goS0KjICkGkBVIapVuxemiiASyWVfW4v7SUeAkogc=',
         'device_link': False,
-        'episodes_section': 'INTL_SHOW_LANDING',
     }
 }
 
