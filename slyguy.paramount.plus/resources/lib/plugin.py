@@ -360,6 +360,24 @@ def _process_shows(rows):
     return items
 
 @plugin.route()
+def related_shows(show_id, **kwargs):
+    _show = api.show(show_id)
+    folder = plugin.Folder(_show['show']['results'][0]['title'])
+
+    for row in api.related_shows(show_id):
+        folder.add_item(
+            label = row['relatedShowTitle'],
+            info = {
+                'plot': row.get('relatedShowAboutCopy'),
+                'mediatype': 'tvshow',
+            },
+            art = _show_art(row['showAssets']),
+            path = plugin.url_for(show, show_id=row['relatedShowId']),
+        )
+
+    return folder
+
+@plugin.route()
 def show(show_id, config=None, **kwargs):
     _show = api.show(show_id)
     art = _show_art(_show['showAssets'])
@@ -369,25 +387,46 @@ def show(show_id, config=None, **kwargs):
     plot = _show['show']['results'][0]['about'] + '\n\n'
 
     if not config:
-        options = []
         for row in api.show_menu(show_id):
             if row.get('videoConfigUniqueName') and row.get('hasResultsFromVideoConfig'):
-                options.append(row)
+                if row['title'] == 'Episodes':
+                    config = api.show_config(show_id, row['videoConfigUniqueName'])
+                    if config.get('display_seasons'):
+                        clip_count = 0
+                        for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
+                            clip_count += row['clipsCount']
+                            if not row['totalCount']:
+                                continue
 
-        if len(options) == 1 and options[0]['page_type'] == 'hero_video':
-            config = options[0]['videoConfigUniqueName']
-        else:
-            for row in options:
+                            folder.add_item(
+                                label = _(_.SEASON, season=row['seasonNum']),
+                                info = {
+                                    'plot': plot,
+                                    'mediatype': 'season',
+                                    'tvshowtitle': _show['show']['results'][0]['title'],
+                                },
+                                path = plugin.url_for(season, show_id=show_id, section=config['sectionId'], season=row['seasonNum']),
+                            )
+                        continue
+
                 folder.add_item(
                     label = row['title'],
-                    path = plugin.url_for(show, show_id=show_id, config=row['videoConfigUniqueName'])
+                    path = plugin.url_for(show, show_id=show_id, config=row['videoConfigUniqueName']),
+                    specialsort = 'bottom',
                 )
 
-            return folder
+            elif row['page_type'] == 'related_shows':
+                folder.add_item(
+                    label = row['title'],
+                    path = plugin.url_for(related_shows, show_id=show_id),
+                    specialsort = 'bottom',
+                )
+    
+        return folder
 
     config = api.show_config(show_id, config)
     if not config.get('display_seasons'):
-        items = _show_episodes(_show, config['sectionId'])
+        items = _show_episodes(_show, config['sectionId'], ignore_eps=True)
         folder.add_items(items)
         return folder
 
@@ -414,21 +453,21 @@ def show(show_id, config=None, **kwargs):
 
     return folder
 
-def _show_episodes(_show, section, season=None):
+def _show_episodes(_show, section, season=None, ignore_eps=False):
     items = []
 
-    for row in api.episodes(section, season):
+    for row in sorted(api.episodes(section, season), key=lambda x: arrow.get(x['_airDateISO']), reverse=True):
         item = plugin.Item(
             label = row['label'].strip() or row['title'].strip(),
             info = {
                 'aired': row['_airDateISO'],
                 'dateadded': row['_pubDateISO'],
                 'plot': row['shortDescription'],
-                'season': row['seasonNum'],
-                'episode': row['episodeNum'],
+                'season': None if ignore_eps else row['seasonNum'],
+                'episode': None if ignore_eps else row['episodeNum'],
                 'duration': row['duration'],
                 'genre': row['topLevelCategory'],
-                'mediatype': 'episode',
+                'mediatype': 'video' if ignore_eps else 'episode',
                 'tvshowtitle': _show['show']['results'][0]['title'],
             },
             art = {'thumb': config.thumbnail(row['thumbnail'])},

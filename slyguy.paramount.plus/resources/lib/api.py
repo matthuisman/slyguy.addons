@@ -255,6 +255,11 @@ class API(object):
         return self._session.get('/v3.0/androidphone/shows/{}/menu.json'.format(show_id), params=self._params()).json()['showMenu'][0].get('links', [])
 
     @mem_cache.cached(60*10)
+    def related_shows(self, show_id):
+        self._refresh_token()
+        return self._session.get('/v2.0/androidphone/shows/{}/related/shows.json'.format(show_id), params=self._params()).json()['relatedShows']
+
+    @mem_cache.cached(60*10)
     def show_config(self, show_id, config):
         self._refresh_token()
         params = {
