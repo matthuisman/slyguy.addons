@@ -60,6 +60,13 @@ def play_channel(slug, **kwargs):
     if channel.radio:
         item.use_proxy = False
 
+    if manifest_type.lower() == 'mpd':
+        item.mimetype = 'application/dash+xml'
+    elif manifest_type.lower() == 'hls':
+        item.mimetype = 'application/vnd.apple.mpegurl'
+    elif manifest_type.lower() == 'ism':
+        item.mimetype = 'application/vnd.ms-sstr+xml'
+
     ## To do: support other IA Add-ons here (eg. ffmpeg.direct)
     if license_type.lower() == 'com.widevine.alpha':
         inputstream.Widevine().check()
