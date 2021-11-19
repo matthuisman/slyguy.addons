@@ -3,6 +3,7 @@ from slyguy.language import BaseLanguage
 class Language(BaseLanguage):
     LIVE_TV              = 30002
     LOCAL_CHANNEL_IP     = 30003
+    LIVE                 = 30004
 
     DEVICE_ID            = 30008
     OUT_OF_REGION        = 30009

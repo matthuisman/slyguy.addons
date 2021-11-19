@@ -22,6 +22,10 @@ msgctxt "#30003"
 msgid "Local Channel IP Address"
 msgstr ""
 
+msgctxt "#30004"
+msgid "{label} [LIVE]"
+msgstr ""
+
 msgctxt "#30008"
 msgid "Device ID"
 msgstr ""

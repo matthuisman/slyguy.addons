@@ -421,7 +421,7 @@ def show(show_id, config=None, **kwargs):
                     path = plugin.url_for(related_shows, show_id=show_id),
                     specialsort = 'bottom',
                 )
-    
+
         return folder
 
     config = api.show_config(show_id, config)
@@ -457,6 +457,8 @@ def _show_episodes(_show, section, season=None, ignore_eps=False):
     items = []
 
     for row in sorted(api.episodes(section, season), key=lambda x: arrow.get(x['_airDateISO']), reverse=True):
+        is_live = row.get('isLive', False)
+
         item = plugin.Item(
             label = row['label'].strip() or row['title'].strip(),
             info = {
@@ -465,15 +467,19 @@ def _show_episodes(_show, section, season=None, ignore_eps=False):
                 'plot': row['shortDescription'],
                 'season': None if ignore_eps else row['seasonNum'],
                 'episode': None if ignore_eps else row['episodeNum'],
-                'duration': row['duration'],
+                'duration': None if is_live else row['duration'] ,
                 'genre': row['topLevelCategory'],
                 'mediatype': 'video' if ignore_eps else 'episode',
                 'tvshowtitle': _show['show']['results'][0]['title'],
             },
             art = {'thumb': config.thumbnail(row['thumbnail'])},
-            path = plugin.url_for(play, video_id=row['contentId']),
+            path = plugin.url_for(play, video_id=row['contentId'], _is_live=is_live),
             playable = True,
         )
+
+        if is_live:
+            item.label = _(_.LIVE, label=item.label)
+
         items.append(item)
 
     return items
@@ -691,19 +697,17 @@ def play(video_id, **kwargs):
     url, license_url, token, data = api.play(video_id)
 
     item = _parse_item(data)
-    item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
+    item.path = url
 
-    headers = {
-        'authorization': 'Bearer {}'.format(token),
-    }
-
-    item.update(
-        path = url,
-        headers = headers,
-        inputstream = inputstream.Widevine(
-            license_key = license_url,
-        ),
-    )
+    if data.get('assetType') == 'DASH_LIVE':
+        if url.lower().endswith('.m3u8') or url.lower().endswith('.m3u'):
+            item.inputstream = inputstream.HLS(live=data.get('isLive', False))
+        else:
+            item.inputstream = inputstream.MPD()
+    else:
+        item.inputstream = inputstream.Widevine(license_key=license_url)
+        item.headers['authorization'] = 'Bearer {}'.format(token)
+        item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     return item
 
