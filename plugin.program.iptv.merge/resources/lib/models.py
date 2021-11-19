@@ -14,6 +14,7 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 from slyguy import database, gui, settings, plugin, inputstream
 from slyguy.exceptions import Error
 from slyguy.util import hash_6, get_addon, kodi_rpc, run_plugin
+from slyguy.constants import KODI_VERSION, IA_ADDON_ID
 from slyguy.log import log
 
 from .constants import *
@@ -36,6 +37,17 @@ def play_channel(slug, **kwargs):
 
             headers[key.lower()] = _headers[key]
 
+    manifest_type = channel.properties.get('inputstream.adaptive.manifest_type', '')
+    license_type = channel.properties.get('inputstream.adaptive.license_type', '')
+    if manifest_type:
+        ia_addon = channel.properties.get('inputstream') or channel.properties.get('inputstreamaddon') or IA_ADDON_ID
+        channel.properties.pop('inputstream', None)
+        channel.properties.pop('inputstreamaddon', None)
+        if KODI_VERSION < 19:
+            channel.properties['inputstreamaddon'] = ia_addon
+        else:
+            channel.properties['inputstream'] = ia_addon
+
     item = plugin.Item(
         label = channel.name,
         art = {'thumb': channel.logo},
@@ -48,9 +60,7 @@ def play_channel(slug, **kwargs):
     if channel.radio:
         item.use_proxy = False
 
-    manifest_type = channel.properties.get('inputstream.adaptive.manifest_type', '')
-    license_type = channel.properties.get('inputstream.adaptive.license_type', '')
-
+    ## To do: support other IA Add-ons here (eg. ffmpeg.direct)
     if license_type.lower() == 'com.widevine.alpha':
         inputstream.Widevine().check()
 
