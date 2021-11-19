@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.paramount.plus" name="Paramount+" provider-name="SlyGuy" version="0.3.3">
+<addon id="slyguy.paramount.plus" name="Paramount+" provider-name="SlyGuy" version="0.3.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>

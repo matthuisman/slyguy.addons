@@ -388,7 +388,7 @@ def show(show_id, config=None, **kwargs):
 
     if not config:
         for row in api.show_menu(show_id):
-            if row.get('videoConfigUniqueName') and row.get('hasResultsFromVideoConfig'):
+            if row.get('videoConfigUniqueName'): #and row.get('hasResultsFromVideoConfig'):
                 if row['title'] == 'Episodes':
                     config = api.show_config(show_id, row['videoConfigUniqueName'])
                     if config.get('display_seasons'):

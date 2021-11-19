@@ -245,21 +245,21 @@ class API(object):
         return self._session.get('/v2.0/androidphone/shows/group/{}.json'.format(group_id), params=self._params(params)).json()['group']
 
     @mem_cache.cached(60*10)
-    def show(self, show_id):
+    def related_shows(self, show_id):
         self._refresh_token()
-        return self._session.get('/v3.0/androidphone/shows/{}.json'.format(show_id), params=self._params()).json()
+        return self._session.get('/v2.0/androidphone/shows/{}/related/shows.json'.format(show_id), params=self._params()).json()['relatedShows']
 
-    @mem_cache.cached(60*10)
+    @mem_cache.cached(60*5)
     def show_menu(self, show_id):
         self._refresh_token()
         return self._session.get('/v3.0/androidphone/shows/{}/menu.json'.format(show_id), params=self._params()).json()['showMenu'][0].get('links', [])
 
     @mem_cache.cached(60*10)
-    def related_shows(self, show_id):
+    def show(self, show_id):
         self._refresh_token()
-        return self._session.get('/v2.0/androidphone/shows/{}/related/shows.json'.format(show_id), params=self._params()).json()['relatedShows']
+        return self._session.get('/v3.0/androidphone/shows/{}.json'.format(show_id), params=self._params()).json()
 
-    @mem_cache.cached(60*10)
+    @mem_cache.cached(60*5)
     def show_config(self, show_id, config):
         self._refresh_token()
         params = {
@@ -269,7 +269,11 @@ class API(object):
         }
         return self._session.get('/v2.0/androidphone/shows/{}/videos/config/{}.json'.format(show_id, config), params=self._params(params)).json()['videoSectionMetadata'][0]
 
-    @mem_cache.cached(60*10)
+    @mem_cache.cached(60*5)
+    def seasons(self, show_id):
+        self._refresh_token()
+        return self._session.get('/v3.0/androidphone/shows/{}/video/season/availability.json'.format(show_id), params=self._params()).json()['video_available_season']['itemList']
+
     def episodes(self, section, season=None):
         self._refresh_token()
 
@@ -285,11 +289,6 @@ class API(object):
             })
 
         return self._session.get('/v2.0/androidphone/videos/section/{}.json'.format(section), params=self._params(params)).json()['sectionItems']['itemList']
-
-    @mem_cache.cached(60*10)
-    def seasons(self, show_id):
-        self._refresh_token()
-        return self._session.get('/v3.0/androidphone/shows/{}/video/season/availability.json'.format(show_id), params=self._params()).json()['video_available_season']['itemList']
 
     @mem_cache.cached(60*10)
     def search(self, query):
