@@ -110,7 +110,7 @@ class API(object):
             'fields[user]': 'title,image_100x100,name,access_token',
         }
 
-        r = self._session.post('auth/udemy-auth/login/', params=params, data=data)
+        r = self._session.post('auth/udemy-auth/login/3.0/', params=params, data=data)
         try:
             data = r.json()
         except:

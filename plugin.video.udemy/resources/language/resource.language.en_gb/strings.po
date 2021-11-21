@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Kodi Addons\n"
-"Report-Msgid-Bugs-To: https://github.com/matthuisman/plugin.video.udemy\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
 "Last-Translator: matthuisman\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
