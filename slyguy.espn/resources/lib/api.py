@@ -41,6 +41,10 @@ class API(object):
     def provider(self):
         return self._provider
 
+    def home(self):
+        params = {}
+        return self._session.get('https://watch-cdn.product.api.espn.com/api/product/v3/watchespn/web/home', params=params).json()['page']
+
     def bucket(self, bucket_id):
         params = {
             'bucketId': bucket_id,

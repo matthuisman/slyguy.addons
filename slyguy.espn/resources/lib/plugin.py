@@ -6,7 +6,6 @@ from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
 from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_LIVE_TAG
 
-from .constants import *
 from .language import _
 from .api import API
 
@@ -24,8 +23,8 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(account), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(events, label=_.LIVE, bucket_id=LIVE_BUCKET_ID))
-        folder.add_item(label=_(_.UPCOMING, _bold=True), path=plugin.url_for(events, label=_.UPCOMING, bucket_id=UPCOMING_BUCKET_ID))
+        folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
+        folder.add_item(label=_(_.UPCOMING, _bold=True), path=plugin.url_for(upcoming))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -37,13 +36,23 @@ def index(**kwargs):
     return folder
 
 @plugin.route()
-def events(label, bucket_id, **kwargs):
-    folder = plugin.Folder(label)
-    data = api.bucket(bucket_id)
+def live(**kwargs):
+    return _events(_.LIVE, 'also live')
 
-    if data.get('buckets'):
-        items = _process_events(data['buckets'][0]['contents'])
-        folder.add_items(items)
+@plugin.route()
+def upcoming(**kwargs):
+    return _events(_.UPCOMING, 'upcoming')
+
+def _events(label, name):
+    folder = plugin.Folder(label)
+
+    for row in api.home()['buckets']:
+        if row['name'].lower() == name:
+            if row['metadata']['displayCount'] != row['metadata']['totalCount']:
+                row['contents'] = api.bucket(row['id'])['buckets'][0]['contents']
+
+            items = _process_events(row['contents'])
+            folder.add_items(items)
 
     return folder
 
