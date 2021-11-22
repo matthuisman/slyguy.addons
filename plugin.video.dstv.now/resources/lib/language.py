@@ -16,5 +16,6 @@ class Language(BaseLanguage):
     REFRESH_TOKEN_ERROR = 30012
     CHANNEL_NOT_FOUND   = 30013
     FLATTEN_SEASONS     = 30014
+    USE_CACHED_ZA       = 30015
 
 _ = Language()

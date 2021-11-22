@@ -15,8 +15,8 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32081]">
-        <setting label="$ADDON[script.module.slyguy 32082]" type="bool" id="force_scraper" default="false" visible="false"/>
-        <setting label="$ADDON[script.module.slyguy 32080]" type="slider" id="epg_days" default="3" range="1,1,7" option="int"/>
+        <setting label="30015" type="bool" id="use_cached_za" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32080]" type="slider" id="epg_days" default="3" range="1,1,7" option="int" visible="eq(-1,false)"/>
         <setting label="$ADDON[script.module.slyguy 32079]" type="action" action="RunPlugin(plugin://$ID/?_=_setup_merge)" option="close"/>
     </category>
 

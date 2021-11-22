@@ -13,7 +13,7 @@ from slyguy.util import gzip_extract
 
 from .api import API
 from .language import _
-from .constants import DEFAULT_COUNTRY, EPG_URLS
+from .constants import ZA_EPG_URL
 
 api = API()
 
@@ -376,18 +376,15 @@ def playlist(output, **kwargs):
 @plugin.route()
 @plugin.merge()
 def epg(output, **kwargs):
-    country = userdata.get('country', DEFAULT_COUNTRY)
-    epg_url = EPG_URLS.get(country)
-
-    if epg_url:
+    if settings.getBool('use_cached_za', True):
         try:
-            Session().chunked_dl(epg_url, output)
-            if epg_url.endswith('.gz'):
+            Session().chunked_dl(ZA_EPG_URL, output)
+            if ZA_EPG_URL.endswith('.gz'):
                 gzip_extract(output)
             return True
         except Exception as e:
             log.exception(e)
-            log.debug('Failed to get remote epg: {}. Fall back to scraping'.format(epg_url))
+            log.debug('Failed to get remote epg: {}. Fall back to scraping'.format(ZA_EPG_URL))
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')

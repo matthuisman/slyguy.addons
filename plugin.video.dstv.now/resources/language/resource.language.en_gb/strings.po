@@ -68,6 +68,10 @@ msgctxt "#30014"
 msgid "Flatten Single Seasons"
 msgstr ""
 
+msgctxt "#30015"
+msgid "Use online cached ZA EPG"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

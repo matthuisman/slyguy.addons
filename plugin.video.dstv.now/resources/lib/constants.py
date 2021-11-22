@@ -9,9 +9,7 @@ DEVICE_TYPE = 'Web'
 
 DEFAULT_COUNTRY = 'ZA'
 DEFAULT_PACKAGE = 'PREMIUM'
-EPG_URLS = {
-    'ZA': 'https://i.mjh.nz/DStv/za.xml.gz',
-}
+ZA_EPG_URL = 'https://i.mjh.nz/DStv/za.xml.gz'
 
 UUID_NAMESPACE = '122e1611-0232-4336-bf43-e054c8ecd0d5'
 DEVICE_REGISTER = 'https://ssl.dstv.com/api/lean-back-otp/device/registration'
