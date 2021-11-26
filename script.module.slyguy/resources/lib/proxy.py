@@ -384,21 +384,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         adap_parent = None
 
         audio_description = self._session.get('audio_description', True)
+        original_language = self._session.get('original_language', '')
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
-        original_language = self._session.get('original_language', '')
-        default_language = self._session.get('default_language', '').lower().strip()
-        default_subtitle = self._session.get('default_subtitle', '').lower().strip()
-
-        if default_language == 'original':
-            default_language = original_language
-
-        if default_subtitle == 'original':
-            default_subtitle = original_language
+        default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
+        default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
 
         if audio_whitelist:
             audio_whitelist.append(original_language)
-            audio_whitelist.append(default_language)
+            audio_whitelist.extend(default_languages)
+
+        if subs_whitelist:
+            subs_whitelist.extend(default_subtitles)
 
         for period_index, period in enumerate(root.getElementsByTagName('Period')):
             rep_index = 0
@@ -431,9 +428,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                         is_trick = True
 
                     if 'audio' in attribs.get('mimeType', ''):
-                        if lang_allowed(attribs.get('lang'), [default_language]):
-                            adap_set.setAttribute('default', 'true')
-
                         if lang_allowed(attribs.get('lang'), [original_language]):
                             adap_set.setAttribute('original', 'true')
 
@@ -560,23 +554,41 @@ class RequestHandler(BaseHTTPRequestHandler):
         ##################
 
         ## Fix up languages
+        subs = []
+        audios = []
+
+        def set_default_laguage(defaults, rows):
+            found = False
+            for default in defaults:
+                default = original_language if default == 'original' else default
+
+                for row in rows:
+                    if lang_allowed(row[0], [default]):
+                        row[1].setAttribute('default', 'true')
+                        found = True
+
+                if found:
+                    break
+
         for adap_set in root.getElementsByTagName('AdaptationSet'):
             language = adap_set.getAttribute('lang')
             if language:
                 adap_set.setAttribute('lang', fix_language(language))
 
             if adap_set.getAttribute('contentType') == 'audio':
+                audios.append([language, adap_set])
                 if not lang_allowed(language, audio_whitelist):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed audio adapt set: {}'.format(adap_set.getAttribute('id')))
 
             if adap_set.getAttribute('contentType') == 'text':
-                if lang_allowed(language, [default_subtitle]):
-                    adap_set.setAttribute('default', 'true')
-
+                subs.append([language, adap_set])
                 if not lang_allowed(language, subs_whitelist):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
+
+        set_default_laguage(default_subtitles, subs)
+        set_default_laguage(default_languages, audios)
         ################
 
         ## Remove audio_description

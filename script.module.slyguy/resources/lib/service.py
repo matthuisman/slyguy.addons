@@ -1,7 +1,7 @@
 import json
 from time import time
 
-from slyguy import settings
+from slyguy import settings, signals
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
@@ -29,6 +29,10 @@ def _check_news():
 
     settings.set('_last_news_id', news['id'])
     settings.set('_news', json.dumps(news))
+
+@signals.on(signals.ON_SETTINGS_CHANGE)
+def settings_changed():
+    log.debug('Shared Service: Settings Changed')
 
 def start():
     log.debug('Shared Service: Started')

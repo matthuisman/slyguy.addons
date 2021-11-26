@@ -69,8 +69,10 @@ def setBool(key, value=True):
 def get(key, default=''):
     return ADDON.getSetting(key) or default
 
-def set(key, value=''):
-    ADDON.setSetting(key, str(value))
+def set(key, value='', addon=None):
+    signals.skip_next(signals.ON_SETTINGS_CHANGE)
+    addon = addon or ADDON
+    addon.setSetting(key, str(value))
 
 class Settings(object):
     def __init__(self, _addon=None):
@@ -134,7 +136,7 @@ class Settings(object):
         return self._addon.getSetting(key) or default
 
     def set(self, key, value=''):
-        self._addon.setSetting(key, str(value))
+        set(key, value, addon=self._addon)
 
 def check_corrupt(addon):
     if addon.getAddonInfo('id') != ADDON_ID:
@@ -144,7 +146,7 @@ def check_corrupt(addon):
     if fresh == 'false':
         return
 
-    addon.setSetting('_fresh', 'false')
+    set('_fresh', 'false', addon=addon)
     addon = xbmcaddon.Addon(addon.getAddonInfo('id'))
 
     if addon.getSetting('_fresh') != 'false':
@@ -152,6 +154,6 @@ def check_corrupt(addon):
         log.debug('Removing corrupt settings.xml: {}'.format(file_path))
         remove_file(file_path)
         addon = xbmcaddon.Addon(addon.getAddonInfo('id'))
-        addon.setSetting('_fresh', 'false')
+        set('_fresh', 'false', addon=addon)
 
 common_settings = Settings(COMMON_ADDON)
