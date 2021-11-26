@@ -195,7 +195,7 @@ class Merger(object):
                 path = gdrivedl(path, file_path)
             else:
                 log.debug('Downloading: {} > {}'.format(path, file_path))
-                resp = Session().chunked_dl(path, file_path)
+                path = Session().chunked_dl(path, file_path).url
 
         elif not xbmcvfs.exists(path):
             raise Error(_(_.LOCAL_PATH_MISSING, path=path))
