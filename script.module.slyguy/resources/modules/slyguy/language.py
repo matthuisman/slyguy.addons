@@ -192,6 +192,7 @@ class BaseLanguage(object):
     LOOK_AND_FEEL               = 32139
     DONATE_HEADER               = 32140
     SEASON                      = 32141
+    IA_LINUX_MISSING            = 32142
 
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022

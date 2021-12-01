@@ -67,6 +67,11 @@ def middleware_convert_sub(response, **kwargs):
     reader = detect_format(data)
     if reader:
         data = WebVTTWriter().write(reader().read(data))
+        if ADDON_DEV:
+            path = 'special://temp/convert_sub.middleware'
+            real_path = xbmc.translatePath(path)
+            with open(real_path, 'wb') as f:
+                f.write(data.encode('utf8'))
         response.stream.content = data.encode('utf8')
         response.headers['content-type'] = 'text/vtt'
 
