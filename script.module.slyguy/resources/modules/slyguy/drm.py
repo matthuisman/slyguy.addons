@@ -1,5 +1,7 @@
 import re
 
+from kodi_six import xbmc
+
 from . import settings
 from .log import log
 from .constants import KODI_VERSION
@@ -54,7 +56,7 @@ def set_drm_level():
                 import xbmcdrm
                 crypto = xbmcdrm.CryptoSession(WV_UUID, 'AES/CBC/NoPadding', 'HmacSHA256')
 
-                if not wv_level:
+                if not wv_level and xbmc.getCondVisibility('System.Platform.Android'):
                     wv_level = crypto.GetPropertyString('securityLevel')
                     if wv_level:
                         wv_level = int(wv_level.lower().lstrip('l'))
