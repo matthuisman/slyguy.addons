@@ -98,7 +98,11 @@ class API(object):
             'channelId': id,
         }
 
-        return self._session.get('/playbackAuthenticated', params=params).json()
+        data = self._session.get('/playbackAuthenticated', params=params).json()
+        if 'url' not in data:
+            raise APIError(data.get('errorMessage'))
+
+        return data
 
     def epg(self, id=None, date=None):
         self._refresh_token()
