@@ -159,7 +159,7 @@ def media(title, filterby, term, page=1, **kwargs):
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE),
+            label = _(_.NEXT_PAGE, page=page+1),
             path = plugin.url_for(media, title=title, filterby=filterby, term=term, page=page+1),
         )
 
@@ -184,7 +184,7 @@ def collections(page=1, **kwargs):
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE),
+            label = _(_.NEXT_PAGE, page=page+1),
             path = plugin.url_for(collections, page=page+1),
         )
 
@@ -264,7 +264,7 @@ def watchlist(page=1, **kwargs):
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE),
+            label = _(_.NEXT_PAGE, page=page+1),
             path = plugin.url_for(watchlist, page=page+1),
         )
 
@@ -302,7 +302,7 @@ def watching(page=1, **kwargs):
 
     if total_pages > page:
         folder.add_item(
-            label = _(_.NEXT_PAGE),
+            label = _(_.NEXT_PAGE, page=page+1),
             path = plugin.url_for(watchlist, page=page+1),
         )
 
