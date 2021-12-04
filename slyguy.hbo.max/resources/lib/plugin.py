@@ -535,7 +535,36 @@ def mpd_request(_data, _path, **kwargs):
     enable_ec3 = settings.getBool('ec3_enabled', False)
     enable_atmos = settings.getBool('atmos_enabled', False)
 
+    def fix_sub(adap_set):
+        lang = adap_set.getAttribute('lang')
+        _type = 'sub'
+        for elem in adap_set.getElementsByTagName('Role'):
+            if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011':
+                value = elem.getAttribute('value')
+                if value == 'caption':
+                    _type = 'sdh'
+                elif value == 'forced-subtitle':
+                    _type = 'forced'
+                break
+
+        for repr in adap_set.getElementsByTagName('Representation'):
+            segments = repr.getElementsByTagName('SegmentTemplate')
+            if not segments:
+                continue
+
+            for seg in segments:
+                repr.removeChild(seg)
+
+            elem = root.createElement('BaseURL')
+            elem2 = root.createTextNode('t/sub/{lang}_{type}.vtt'.format(lang=lang, type=_type))
+            elem.appendChild(elem2)
+            repr.appendChild(elem)
+
     for adap_set in root.getElementsByTagName('AdaptationSet'):
+        if adap_set.getAttribute('contentType') == 'text':
+            fix_sub(adap_set)
+            continue
+
         if int(adap_set.getAttribute('maxHeight') or 0) >= 720:
             if is_wv_secure():
                 for elem in adap_set.getElementsByTagName('ContentProtection'):
@@ -626,6 +655,8 @@ def play(slug, **kwargs):
         inputstream = inputstream.MPD(),
     )
 
+    item.proxy_data['middleware'] = {data['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
+
     if 'defaultAudioSelection' in data:
         item.proxy_data['default_language'] = data['defaultAudioSelection']['language']
 
@@ -634,7 +665,6 @@ def play(slug, **kwargs):
 
     if 'drm' in data:
         item.inputstream = inputstream.Widevine(license_key=data['drm']['licenseUrl'], license_headers=headers)
-        item.proxy_data['middleware'] = {data['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
     else:
         item.headers = headers
 
@@ -684,6 +714,18 @@ def play(slug, **kwargs):
                 if ':feature' in slug:
                     item.play_next['next_file'] = 'urn:hbo:feature:' + slug.split(':')[3]
                     break
+
+    # for row in data.get('textTracks', []):
+    #     if row['type'].lower() == 'closedcaptions':
+    #         _type = 'sdh'
+    #     elif row['type'].lower() == 'forced':
+    #         _type = 'forced'
+    #     else:
+    #         _type = 'sub'
+
+    #     row['url'] = 't/sub/{language}_{type}.vtt'.format(language=row['language'], type=_type)
+    #     log.debug('Generated subtitle url: {}'.format(row['url']))
+    #     item.subtitles.append({'url': row['url'], 'language': row['language'], 'forced': _type == 'forced', 'impaired': _type == 'sdh', 'mimetype': 'text/vtt'})
 
     if settings.getBool('sync_playback', False):
         item.callback = {
