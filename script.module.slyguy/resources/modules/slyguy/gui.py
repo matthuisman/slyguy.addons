@@ -389,7 +389,7 @@ class Item(object):
             self.inputstream = None
 
         def make_sub(url, language='unk', mimetype='', forced=False, impaired=False):
-            if not url.lower().startswith('http') and not url.lower().startswith('plugin://'):
+            if os.path.exists(xbmc.translatePath(url)):
                 return url
 
             ## using dash, we can embed subs
