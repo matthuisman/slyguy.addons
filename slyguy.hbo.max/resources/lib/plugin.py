@@ -525,15 +525,16 @@ def mpd_request(_data, _path, **kwargs):
     data = data.replace('_:default_KID', 'cenc:default_KID')
     data = data.replace('<pssh', '<cenc:pssh')
     data = data.replace('</pssh>', '</cenc:pssh>')
+    wv_secure = is_wv_secure()
 
     root = parseString(data.encode('utf8'))
 
-    dolby_vison = settings.getBool('dolby_vision', False)
-    enable_4k = settings.getBool('4k_enabled', True)
-    h265 = enable_4k or settings.getBool('h265', False)
+    dolby_vison = wv_secure and settings.getBool('dolby_vision', False)
+    enable_4k = wv_secure and settings.getBool('4k_enabled', True)
+    h265 = settings.getBool('h265', False)
     enable_ac3 = settings.getBool('ac3_enabled', False)
     enable_ec3 = settings.getBool('ec3_enabled', False)
-    enable_atmos = settings.getBool('atmos_enabled', False)
+    enable_atmos = enable_ec3 and settings.getBool('atmos_enabled', False)
 
     def fix_sub(adap_set):
         lang = adap_set.getAttribute('lang')
@@ -566,7 +567,7 @@ def mpd_request(_data, _path, **kwargs):
             continue
 
         if int(adap_set.getAttribute('maxHeight') or 0) >= 720:
-            if is_wv_secure():
+            if wv_secure:
                 for elem in adap_set.getElementsByTagName('ContentProtection'):
                     if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
                         elem.setAttribute('xmlns:widevine', 'urn:mpeg:widevine:2013')
