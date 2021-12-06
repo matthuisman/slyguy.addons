@@ -435,6 +435,7 @@ class Item(object):
                 'audio_description': settings.getBool('audio_description', True),
                 'subs_forced': settings.getBool('subs_forced', True),
                 'subs_non_forced': settings.getBool('subs_non_forced', True),
+                'remove_framerate': True,
                 'subtitles': [],
                 'path_subs': {},
                 'addon_id': ADDON_ID,

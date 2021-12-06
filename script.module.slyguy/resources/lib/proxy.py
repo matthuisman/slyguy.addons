@@ -50,6 +50,7 @@ CODECS = [
 ]
 
 CODEC_RANKING = ['MPEG-4', 'H.264', 'H.265', 'HDR', 'H.265 Dolby Vision']
+ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
 PROXY_GLOBAL = {
     'last_qualities': [],
@@ -389,6 +390,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         adap_parent = None
 
         audio_description = self._session.get('audio_description', True)
+        remove_framerate = self._session.get('remove_framerate', False)
         original_language = self._session.get('original_language', '')
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
@@ -419,11 +421,15 @@ class RequestHandler(BaseHTTPRequestHandler):
                     adap_set.appendChild(stream)
                     #######
 
-                    for key in adap_set.attributes.keys():
+                    for key in list(adap_set.attributes.keys()):
                         attribs[key] = adap_set.getAttribute(key)
+                        if remove_framerate and key == 'frameRate':
+                            adap_set.removeAttribute(key)
 
-                    for key in stream.attributes.keys():
+                    for key in list(stream.attributes.keys()):
                         attribs[key] = stream.getAttribute(key)
+                        if remove_framerate and key == 'frameRate':
+                            stream.removeAttribute(key)
 
                     bandwidth = 0
                     if 'bandwidth' in attribs:
@@ -741,11 +747,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         return '\n'.join(lines)
 
     def _parse_m3u8_master(self, m3u8, manifest_url):
-        def _process_media(line):
+        def _remove_quotes(string):
+            quotes = ('"', "'")
+            if string and string[0] in quotes and string[-1] in quotes:
+                return string[1:-1]
+            return string
+
+        def _process_media(line, prefix):
             attribs = {}
 
-            for key, value in re.findall('([\w-]+)="?([^",]*)[",$]?', line):
-                attribs[key.upper()] = value.strip()
+            for row in ATTRIBUTELISTPATTERN.split(line.replace(prefix+':', ''))[1::2]:
+                name, value = row.split('=', 1)
+                attribs[name.upper()] = value.strip()
 
             return attribs
 
@@ -754,6 +767,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         subs_forced = self._session.get('subs_forced', True)
         subs_non_forced = self._session.get('subs_non_forced', True)
         audio_description = self._session.get('audio_description', True)
+        remove_framerate = self._session.get('remove_framerate', False)
         original_language = self._session.get('original_language', '').lower().strip()
         default_language = self._session.get('default_language', '').lower().strip()
         default_subtitle = self._session.get('default_subtitle', '').lower().strip()
@@ -780,7 +794,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 continue
 
             if line.startswith('#EXT-X-MEDIA'):
-                attribs = _process_media(line)
+                attribs = _process_media(line, '#EXT-X-MEDIA')
                 if not attribs:
                     continue
 
@@ -805,9 +819,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 stream_inf = line
 
             elif stream_inf and not line.startswith('#'):
-                attribs = _process_media(stream_inf)
+                attribs = _process_media(stream_inf, '#EXT-X-STREAM-INF')
 
-                codecs = [x for x in attribs.get('CODECS', '').split(',') if x]
+                codecs = [x for x in _remove_quotes(attribs.get('CODECS', '')).split(',') if x]
                 bandwidth = int(attribs.get('BANDWIDTH') or 0)
                 resolution = attribs.get('RESOLUTION', '')
                 frame_rate = attribs.get('FRAME-RATE', '')
@@ -818,7 +832,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 stream = {'bandwidth': int(bandwidth), 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video)}
                 all_streams.append(stream)
-                video.append([stream_inf, line])
+                video.append([attribs, line])
 
                 if stream['url'] not in urls and stream_inf not in metas:
                     streams.append(stream)
@@ -865,7 +879,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
                 if attribs[key] is not None:
-                    new_line += u'{}="{}",'.format(key, attribs[key])
+                    new_line += u'{}={},'.format(key, attribs[key])
             new_lines.append(new_line)
 
         if not found_default_subs:
@@ -899,7 +913,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
                 if attribs[key] is not None:
-                    new_line += u'{}="{}",'.format(key, attribs[key])
+                    new_line += u'{}={},'.format(key, attribs[key])
             new_lines.append(new_line)
 
         selected = self._quality_select(streams)
@@ -911,7 +925,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                     adjust += 1
 
         for stream in video:
-            new_lines.extend(stream)
+            attribs = stream[0]
+
+            if remove_framerate:
+                attribs.pop('FRAME-RATE', None)
+
+            new_line = '#EXT-X-STREAM-INF:'
+            for key in attribs:
+                if attribs[key] is not None:
+                    new_line += u'{}={},'.format(key, attribs[key])
+
+            new_lines.append(new_line)
+            new_lines.append(stream[1])
 
         return '\n'.join(new_lines)
 
