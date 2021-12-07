@@ -758,7 +758,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             for row in ATTRIBUTELISTPATTERN.split(line.replace(prefix+':', ''))[1::2]:
                 name, value = row.split('=', 1)
-                attribs[name.upper()] = value.strip()
+                attribs[name.upper()] = _remove_quotes(value.strip()) if prefix == '#EXT-X-MEDIA' else value.strip()
 
             return attribs
 
@@ -821,7 +821,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             elif stream_inf and not line.startswith('#'):
                 attribs = _process_media(stream_inf, '#EXT-X-STREAM-INF')
 
-                codecs = [x for x in _remove_quotes(attribs.get('CODECS', '')).split(',') if x]
+                codecs = [x for x in attribs.get('CODECS', '').split(',') if x]
                 bandwidth = int(attribs.get('BANDWIDTH') or 0)
                 resolution = attribs.get('RESOLUTION', '')
                 frame_rate = attribs.get('FRAME-RATE', '')
@@ -879,8 +879,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
                 if attribs[key] is not None:
-                    new_line += u'{}={},'.format(key, attribs[key])
-            new_lines.append(new_line)
+                    new_line += u'{}="{}",'.format(key, attribs[key])
+            new_lines.append(new_line.rstrip(','))
 
         if not found_default_subs:
             default_subtitle = None
@@ -913,8 +913,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
                 if attribs[key] is not None:
-                    new_line += u'{}={},'.format(key, attribs[key])
-            new_lines.append(new_line)
+                    new_line += u'{}="{}",'.format(key, attribs[key])
+            new_lines.append(new_line.rstrip(','))
 
         selected = self._quality_select(streams)
         if selected:
@@ -934,8 +934,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             for key in attribs:
                 if attribs[key] is not None:
                     new_line += u'{}={},'.format(key, attribs[key])
-
-            new_lines.append(new_line)
+            new_lines.append(new_line.rstrip(','))
             new_lines.append(stream[1])
 
         return '\n'.join(new_lines)
