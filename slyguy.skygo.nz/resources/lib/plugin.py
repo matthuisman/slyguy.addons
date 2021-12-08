@@ -277,8 +277,8 @@ def _play(asset_id, is_linear=False, is_live=False):
     url, license = api.play(asset_id, is_linear=is_linear)
 
     item = plugin.Item(
-        path        = url,
-        headers     = HEADERS,
+        path = url,
+        headers = HEADERS,
         inputstream = inputstream.Widevine(
             license_key = license,
         ),
@@ -293,9 +293,9 @@ def _play(asset_id, is_linear=False, is_live=False):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in api.channels():
-            f.write(u'#EXTINF:-1 tvg-id="sky.{id}" tvg-chno="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="sky.{id}" tvg-chno="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
                         id=row['number'], channel=row['number'], name=row['title'], logo=row['tileImage']['uri'],
-                            path=plugin.url_for(play_linear, asset_id=row['id'], _is_live=True)))
+                            url=plugin.url_for(play_linear, asset_id=row['id'], _is_live=True)))

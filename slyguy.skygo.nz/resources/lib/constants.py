@@ -5,3 +5,4 @@ HEADERS = {
 
 CLIENT_ID = 'dXhXjmK9G90mOX3B02R1kV7gsC4bp8yx'
 GRAPH_URL = 'https://api.skyone.co.nz/exp/graph'
+EPG_URL = 'https://i.mjh.nz/SkyGo/epg.xml.gz'
