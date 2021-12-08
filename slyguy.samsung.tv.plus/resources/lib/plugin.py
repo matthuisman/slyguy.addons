@@ -223,7 +223,7 @@ def playlist(output, **kwargs):
         raise PluginError(_.NO_REGIONS)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="https://i.mjh.nz/SamsungTVPlus/all.xml.gz"')
 
         added = []
         for code in regions:

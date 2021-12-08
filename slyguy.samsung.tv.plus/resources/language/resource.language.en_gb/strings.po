@@ -7,7 +7,7 @@ msgstr ""
 
 msgctxt "#30001"
 msgid "Show Channel Numbers"
-msgstr "
+msgstr ""
 
 msgctxt "#30002"
 msgid "Region"
