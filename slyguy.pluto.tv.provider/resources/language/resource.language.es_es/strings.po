@@ -1,4 +1,4 @@
-# Translation file for slyguy.pluto.tv.provider
+# Translation file
 # Addon Name: Pluto TV
 # Addon id: slyguy.pluto.tv.provider
 # Addon Provider: SlyGuy
@@ -35,7 +35,7 @@ msgid "Show Mini EPG"
 msgstr "Mostrar Mini EPG"
 
 msgctxt "#30005"
-msgid "Select Regions to Merge"
+msgid "Select Regions for merge"
 msgstr "Seleccionar Regiones para Combinar"
 
 msgctxt "#30006"
@@ -43,12 +43,36 @@ msgid "{count} Channels"
 msgstr "Canales {count}"
 
 msgctxt "#30007"
-msgid "Show Adverts"
-msgstr "Mostrar Anuncios"
-
-msgctxt "#30008"
 msgid "No regions selected to be merged"
 msgstr "No hay seleccionadas regiones para combinar"
+
+msgctxt "#30008"
+msgid "My Channels"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Add to My Channels"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Remove from My Channels"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Added to My Channels"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Show Groups"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Show Countries"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Show Adverts"
+msgstr "Mostrar Anuncios"
 
 ## COMMON SETTINGS ##
 

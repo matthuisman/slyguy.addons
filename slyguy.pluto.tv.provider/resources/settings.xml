@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30007" id="show_adverts" type="bool" default="false"/>
-        <setting label="30004" id="show_mini_epg" type="bool" default="true"/>
+        <setting label="30014" id="show_adverts" type="bool" default="false"/>
+        <setting label="30013" id="show_countries" type="bool" default="true"/>
+        <setting label="30012" id="show_groups" type="bool" default="true"/>
         <setting label="30001" id="show_chno" type="bool" default="true"/>
+        <setting label="30004" id="show_epg" type="bool" default="true"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -21,8 +23,9 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32129]" id="video_folder_content" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32120]" id="show_series_folders" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32044]" id="http_timeout" type="number" default="30"/>
