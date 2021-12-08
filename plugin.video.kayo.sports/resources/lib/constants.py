@@ -7,6 +7,7 @@ SPORT_LOGO = 'https://resources.kayosports.com.au/production/sport-logos/1x1/{}.
 IMG_URL = 'https://vmndims.kayosports.com.au/api/v2/img/{}'
 LICENSE_URL = 'https://drm.streamotion.com.au/licenseServer/widevine/v1/streamotion/license'
 LIVE_DATA_URL = 'https://i.mjh.nz/Kayo/app.json'
+EPG_URL = 'https://i.mjh.nz/Kayo/epg.xml.gz'
 CLIENT_ID = 'a0n14xap7jreEXPfLo9F6JLpRp3Xeh2l'
 
 FORMAT_HLS_TS = 'hls-ts'

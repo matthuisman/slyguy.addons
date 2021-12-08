@@ -1,5 +1,4 @@
 import codecs
-import random
 import time
 
 import arrow
@@ -7,11 +6,10 @@ from kodi_six import xbmc
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
-from slyguy.session import Session
 from slyguy.exceptions import PluginError
 from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG
 
-from .api import API, APIError
+from .api import API
 from .language import _
 from .constants import *
 
@@ -550,11 +548,11 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="https://i.mjh.nz/Kayo/epg.xml.gz"\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in _live_channels():
             asset = row['asset']
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=asset['id'], channel=row['chno'] or '', logo=_get_image(asset, 'video', 'thumb'),
-                    name=asset['title'], path=plugin.url_for(play, id=asset['id'], play_type=PLAY_FROM_START, _is_live=True)))
+                    name=asset['title'], url=plugin.url_for(play, id=asset['id'], play_type=PLAY_FROM_START, _is_live=True)))
