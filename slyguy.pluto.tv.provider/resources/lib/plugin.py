@@ -210,8 +210,10 @@ def playlist(output, **kwargs):
     if not regions:
         raise Exception(_.NO_REGIONS)
 
+    epg_urls = [EPG_URL.format(code=code) for code in regions]
+
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="https://i.mjh.nz/PlutoTV/all.xml.gz"')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(','.join(epg_urls)))
 
         for code in regions:
             region = data['regions'][code]
