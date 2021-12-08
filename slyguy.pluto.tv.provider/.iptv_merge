@@ -1,5 +1,4 @@
 {
     "playlist": "plugin://$ID/?_=playlist&output=$FILE",
-    "epg": "https://i.mjh.nz/PlutoTV/all.xml.gz",
     "configure": "plugin://$ID/?_=configure_merge"
 }
