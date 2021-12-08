@@ -87,7 +87,7 @@ def _process_channels(channels, group=ALL, region=ALL):
 
         plot = u'[B]{} - {}[/B]\n'.format(channel['region'], channel['group'])
         if not epg_count:
-            plot += channel['description']
+            plot += channel.get('description', '')
         else:
             count = 0
             for index, row in enumerate(channel.get('programs', [])):
@@ -198,6 +198,9 @@ def search(query, page, **kwargs):
 
     return _process_channels(results), False
 
+def _get_url(channel):
+    return channel['url']
+
 @plugin.route()
 def play(id, **kwargs):
     data = _app_data()
@@ -205,11 +208,11 @@ def play(id, **kwargs):
 
     return plugin.Item(
         label = channel['name'],
-        info = {'plot': channel['description']},
+        info = {'plot': channel.get('description')},
         art = {'thumb': channel['logo']},
         inputstream = inputstream.HLS(live=True),
         headers = data['headers'],
-        path = channel['url'],
+        path = _get_url(channel),
     )
 
 @plugin.route()
