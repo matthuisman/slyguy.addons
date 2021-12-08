@@ -140,7 +140,8 @@ class Merger(object):
         self.tmp_file = os.path.join(self.working_path, 'iptv_merge_tmp')
         self._playlist_epgs = []
 
-    def _call_addon_method(self, plugin_url):
+    def _call_addon_method(self, plugin_url, file_path):
+        plugin_url = plugin_url.replace('$FILE', file_path).replace('%24FILE', file_path)
         dirs, files = run_plugin(plugin_url, wait=True)
 
         try:
@@ -177,24 +178,14 @@ class Merger(object):
             iptv_manager.process_path(path, file_path)
             return
 
-        template_tags = {
-            '$ID': addon_id,
-            '$FILE': file_path,
-            '$IP': xbmc.getIPAddress(),
-        }
-
-        if type(path) is not list:
-            path = [path]
-
-        for path in path:
-            for tag in template_tags:
-                path = path.replace(tag, template_tags[tag])
-
+        for path in [path] if type(path) is not list else path:
+            path = path.replace('$ID', addon_id).replace('%24ID', addon_id)
+            path = path.replace('$IP', xbmc.getIPAddress()).replace('%24IP', xbmc.getIPAddress())
             self._process_path(path.strip(), archive_type, file_path)
 
     def _process_path(self, path, archive_type, file_path):
         if path.lower().startswith('plugin://'):
-            self._call_addon_method(path)
+            self._call_addon_method(path, file_path)
             return
 
         if path.lower().startswith('http://') or path.lower().startswith('https://'):
