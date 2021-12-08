@@ -3,7 +3,6 @@ import codecs
 import arrow
 from slyguy import plugin, inputstream, mem_cache, settings, userdata, gui
 from slyguy.session import Session
-from slyguy.util import gzip_extract
 from slyguy.exceptions import PluginError
 
 from .language import _
@@ -61,6 +60,7 @@ def _app_data():
         data['regions'][key]['sort'] = 2
         for id in data['regions'][key]['channels']:
             all_channels['channels'][id] = data['regions'][key]['channels'][id]
+            data['regions'][key]['channels'][id]['epg'] = key
             data['regions'][key]['channels'][id]['region'] = data['regions'][key]['name']
             if id in favourites:
                 my_channels['channels'][id] = data['regions'][key]['channels'][id]
@@ -218,28 +218,40 @@ def playlist(output, **kwargs):
     data = _app_data()
     regions = userdata.get('merge_regions', [])
     regions = [x for x in regions if x in data['regions']]
-
     if not regions:
         raise PluginError(_.NO_REGIONS)
 
+    _added = []
+    _channels = []
+    _epgs = []
+    for code in regions:
+        region = data['regions'][code]
+        channels = region['channels']
+        for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
+            if id in _added:
+                continue
+
+            _added.append(id)
+
+            channel = channels[id]
+            channel['id'] = id
+            if channel['epg'] not in _epgs:
+                _epgs.append(channel['epg'])
+
+            _channels.append(channel)
+
+    if len(_epgs) > 2:
+        epg_urls = [EPG_URL.format(code=ALL)]
+    else:
+        epg_urls = [EPG_URL.format(code=code) for code in _epgs]
+
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="https://i.mjh.nz/SamsungTVPlus/all.xml.gz"')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(','.join(epg_urls)))
 
-        added = []
-        for code in regions:
-            region = data['regions'][code]
-            channels = region['channels']
-
-            for id in sorted(channels.keys(), key=lambda x: channels[x]['chno']):
-                if id in added:
-                    continue
-
-                added.append(id)
-                channel = channels[id]
-
-                f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{group}",{name}\n{url}'.format(
-                    id=id, chno=channel['chno'], name=channel['name'], logo=channel['logo'], group=channel['group'], url=plugin.url_for(play, id=id, _is_live=True),
-                ))
+        for channel in _channels:
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-name="{name}" tvg-logo="{logo}" group-title="{group}",{name}\n{url}'.format(
+                id=channel['id'], chno=channel['chno'], name=channel['name'], logo=channel['logo'], group=channel['group'], url=plugin.url_for(play, id=channel['id'], _is_live=True),
+            ))
 
 @plugin.route()
 def configure_merge(**kwargs):
