@@ -550,7 +550,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="https://i.mjh.nz/Kayo/epg.xml.gz"\n')
 
         for row in _live_channels():
             asset = row['asset']

@@ -1,5 +1,3 @@
 {
-    "version":  3,
-    "playlist": "plugin://$ID/?_=playlist&output=$FILE",
-    "epg":      "https://i.mjh.nz/Kayo/epg.xml.gz"
+    "playlist": "plugin://$ID/?_=playlist&output=$FILE"
 }
