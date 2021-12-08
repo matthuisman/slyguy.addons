@@ -166,7 +166,10 @@ class Merger(object):
         addon, data = merge_info(addon_id, merging=True)
 
         if method_name not in data:
-            raise Error('{} could not be found for {}'.format(method_name, addon_id))
+            if method_name == 'epg':
+                raise Error('EPG is now provided by the Playlist. You can remove this EPG source')
+            else:
+                raise Error('{} could not be found for {}'.format(method_name, addon_id))
 
         path = data[method_name]
 
