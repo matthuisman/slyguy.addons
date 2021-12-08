@@ -143,53 +143,58 @@ class Merger(object):
     def _call_addon_method(self, plugin_url):
         dirs, files = run_plugin(plugin_url, wait=True)
 
-        if not files:
-            raise AddonError('Plugin method failed')
+        try:
+            result, msg = int(files[0][0]), unquote_plus(files[0][1:])
+        except:
+            return
 
-        result, msg = int(files[0][0]), unquote_plus(files[0][1:])
         if not result:
             raise AddonError(msg)
 
     def _process_source(self, source, method_name, file_path):
         remove_file(file_path)
 
-        path         = source.path.strip()
-        source_type  = source.source_type
+        path = source.path.strip()
+        source_type = source.source_type
         archive_type = source.archive_type
 
-        if source_type == Source.TYPE_ADDON:
-            addon_id = path
-            addon, data = merge_info(addon_id, merging=True)
+        if source_type != Source.TYPE_ADDON:
+            self._process_path(path, archive_type, file_path)
+            return
 
-            if method_name not in data:
-                raise Error('{} could not be found for {}'.format(method_name, addon_id))
+        addon_id = path
+        addon, data = merge_info(addon_id, merging=True)
 
-            path = data[method_name]
+        if method_name not in data:
+            raise Error('{} could not be found for {}'.format(method_name, addon_id))
 
-            if data['type'] == TYPE_IPTV_MANAGER:
-                iptv_manager.process_path(path, file_path)
-                return
+        path = data[method_name]
 
-            template_tags = {
-                '$ID': addon_id,
-                '$FILE': file_path,
-                '$IP': xbmc.getIPAddress(),
-            }
+        if data['type'] == TYPE_IPTV_MANAGER:
+            iptv_manager.process_path(path, file_path)
+            return
 
+        template_tags = {
+            '$ID': addon_id,
+            '$FILE': file_path,
+            '$IP': xbmc.getIPAddress(),
+        }
+
+        if type(path) is not list:
+            path = [path]
+
+        for path in path:
             for tag in template_tags:
                 path = path.replace(tag, template_tags[tag])
 
-            path = path.strip()
-            if path.lower().startswith('plugin://'):
-                self._call_addon_method(path)
-                return
+            self._process_path(path.strip(), archive_type, file_path)
 
-            if path.lower().startswith('http://') or path.lower().startswith('https://'):
-                source_type = Source.TYPE_URL
-            else:
-                source_type = Source.TYPE_FILE
+    def _process_path(self, path, archive_type, file_path):
+        if path.lower().startswith('plugin://'):
+            self._call_addon_method(path)
+            return
 
-        if source_type == Source.TYPE_URL and (path.lower().startswith('http://') or path.lower().startswith('https://')):
+        if path.lower().startswith('http://') or path.lower().startswith('https://'):
             if 'drive.google.com' in path.lower():
                 log.debug('Gdrive Downloading: {} > {}'.format(path, file_path))
                 path = gdrivedl(path, file_path)
