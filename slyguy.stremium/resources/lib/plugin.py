@@ -235,7 +235,7 @@ def playlist(output, **kwargs):
 
     providers = _providers(api.channels())
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(plugin.url_for(epg, output='$FILE')))
 
         added = []
         for key in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'].lower())):
