@@ -5,11 +5,10 @@ from kodi_six import xbmcplugin
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
-from slyguy.exceptions import PluginError
 
 from .api import API
 from .language import _
-from .constants import IMG_URL, TYPE_LIVE, TYPE_VOD, LIVE_SITEID, VOD_SITEID, ASSET_TVSHOW, ASSET_MOVIE, ASSET_BOTH, HEADERS, EPG_EVENTS_COUNT
+from .constants import *
 
 api = API()
 
@@ -463,12 +462,12 @@ def playlist(output, **kwargs):
             genres[channel['channelCode']] = genre['title']
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for elem in sorted(data['liveChannel'], key=lambda e: e['order']):
             if entitlements and elem['channelCode'] not in entitlements:
                 continue
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" group-title="{group}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" group-title="{group}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=elem['channelCode'], channel=elem['channelId'], logo=_image('{id}:{site_id}:CHANNEL:IMAGE'.format(id=elem['id'], site_id=LIVE_SITEID), fragment=elem['title']),
-                name=elem['title'], group=genres.get(elem['channelCode'], ''), path=plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True)))
+                name=elem['title'], group=genres.get(elem['channelCode'], ''), url=plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True)))
