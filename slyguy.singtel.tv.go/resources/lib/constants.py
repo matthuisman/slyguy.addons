@@ -3,9 +3,10 @@ HEADERS = {
     'x-forwarded-for': '219.75.27.16',
 }
 
-API_URL  = 'https://miotvapp.singtel.com/mioTVGO6.0{}'
+API_URL = 'https://miotvapp.singtel.com/mioTVGO6.0{}'
 DATA_URL = 'https://sifvideostore.s3.amazonaws.com/mioTVGO/JsonData/Common/common.json.gz'
-APP_KEY  = 'gF0f9mwL3Tyyn8oqeJypDTQ6vA4='
+APP_KEY = 'gF0f9mwL3Tyyn8oqeJypDTQ6vA4='
+EPG_URL = 'https://i.mjh.nz/Singtel/epg.xml.gz'
 
 APP_DEVICE = 'Mob'
 APP_MODE = 'wifi'

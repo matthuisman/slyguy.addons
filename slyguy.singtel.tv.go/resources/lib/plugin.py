@@ -37,9 +37,9 @@ def live_tv(**kwargs):
 
     for row in api.channels():
         folder.add_item(
-            label    = str(row['chanelNumber']) + ' | ' + row['name'],
-            art      = {'thumb': row['channelIcon']},
-            path     = plugin.url_for(play, channel_id=row['id'], call_letter=row['shortName'], _is_live=True),
+            label = str(row['chanelNumber']) + ' | ' + row['name'],
+            art = {'thumb': row['channelIcon']},
+            path = plugin.url_for(play, channel_id=row['id'], call_letter=row['shortName'], _is_live=True),
             playable = True
         )
 
@@ -72,10 +72,10 @@ def play(channel_id, call_letter, **kwargs):
     data = api.play(channel_id, call_letter)
 
     item = plugin.Item(
-        path        = data['url'],
-        headers     = {'X-AxDRM-Message': data['DRMToken']},
+        path = data['url'],
+        headers = {'X-AxDRM-Message': data['DRMToken']},
         inputstream = inputstream.Widevine(
-            license_key  = '{}?KID={}'.format(data['LicenseURL'], data['KeyID']),
+            license_key = '{}?KID={}'.format(data['LicenseURL'], data['KeyID']),
         ),
     )
 
@@ -86,9 +86,9 @@ def play(channel_id, call_letter, **kwargs):
 @plugin.login_required()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in api.channels():
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" tvg-logo="{logo}" group-title="{group}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" tvg-logo="{logo}" group-title="{group}",{name}\n{url}'.format(
                         id=row['id'], channel=row['chanelNumber'], name=row['name'], logo=row['channelIcon'], group=row['channelGenre'],
-                        path=plugin.url_for(play, channel_id=row['id'], call_letter=row['shortName'], _is_live=True)))
+                        url=plugin.url_for(play, channel_id=row['id'], call_letter=row['shortName'], _is_live=True)))
