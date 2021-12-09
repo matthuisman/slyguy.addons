@@ -85,7 +85,7 @@ def _process_channels(channels, group=ALL, region=ALL):
 
         plot = u'[B]{}[/B]\n'.format(' / '.join(channel['groups']))
         if not epg_count:
-            plot += channel['description'] or ''
+            plot += channel.get('description') or ''
         else:
             count = 0
             for index, row in enumerate(channel.get('programs', [])):
@@ -202,7 +202,7 @@ def playlist(output, **kwargs):
         regions = [ALL]
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         added = []
         for code in regions:
