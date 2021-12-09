@@ -770,14 +770,15 @@ def logout(**kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(plugin.url_for(epg, output='$FILE')))
 
         for row in api.live_channels():
             if not row['currentListing'] or row['streamType'] == 'mpx_live':
                 continue
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                id=row['slug'], name=row['channelName'], logo=config.image(row['filePathLogoSelected']), path=plugin.url_for(play_channel, slug=row['slug'], _is_live=True)))
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
+                id=row['slug'], name=row['channelName'], logo=config.image(row['filePathLogoSelected']),
+                    url=plugin.url_for(play_channel, slug=row['slug'], _is_live=True)))
 
 @plugin.route()
 @plugin.merge()
