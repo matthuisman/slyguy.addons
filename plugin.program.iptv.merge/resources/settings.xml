@@ -10,13 +10,17 @@
         <setting label="30004" id="restart_pvr" type="bool" default="true"/>
         <setting label="30079" id="http_api" type="bool" default="false"/>
         <setting label="30080" id="http_force_merge" type="bool" default="true" visible="eq(-1,true)"/>
-        <setting label="30005" id="page_size" type="number" default="200"/>
         <setting label="30070" id="start_ch_no" type="number" default="1"/>
-        <setting label="30077" id="ask_to_add" type="bool" default="true"/>
         <setting label="30081" id="remove_epg_orphans" type="bool" default="true"/>
         <setting label="Disable Groups" id="disable_groups" type="bool" default="false"/>
         <setting label="30078" id="group_order" type="text" default="" enable="eq(-1,false)"/>
         <setting label="30006" type="action" action="RunPlugin(plugin://$ID/?_=setup)"/>
+    </category>
+
+    <category label="$ADDON[script.module.slyguy 32139]">
+        <setting label="30005" id="page_size" type="number" default="200"/>
+        <setting label="30077" id="ask_to_add" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="false" visible="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -26,15 +30,10 @@
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="false" enable="eq(-3,true)"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
-        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
-        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32044]" id="http_timeout" type="number" default="30"/>
-        <setting label="$ADDON[script.module.slyguy 32045]" id="http_retries" type="number" default="2"/>
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
 
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
