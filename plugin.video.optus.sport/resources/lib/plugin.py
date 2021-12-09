@@ -7,7 +7,7 @@ from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLA
 
 from .api import API
 from .language import _
-from .constants import HEADERS, DEFAULT_IMG, LINEAR_ID
+from .constants import *
 
 api = API()
 
@@ -161,11 +161,11 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in api.editorial(LINEAR_ID):
             if row.get('type') != 'linear-channel':
                 continue
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                id=row['channel']['id'], logo=row.get('imageUrl') or DEFAULT_IMG, name=row['title'], path=plugin.url_for(play, asset=row['id'], _is_live=True)))
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{url}'.format(
+                id=row['channel']['id'], logo=row.get('imageUrl') or DEFAULT_IMG, name=row['title'], url=plugin.url_for(play, asset=row['id'], _is_live=True)))
