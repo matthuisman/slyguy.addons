@@ -75,21 +75,15 @@ def get_region():
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    region   = get_region()
+    region = get_region()
     channels = get_channels(region)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL.format(region=region)))
 
         for slug in sorted(channels, key=lambda k: (channels[k].get('network', ''), channels[k].get('name', ''))):
             channel = channels[slug]
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
-                    path=plugin.url_for(play, slug=slug, _is_live=True)))
-
-@plugin.route()
-@plugin.merge()
-def epg(output, **kwargs):
-    session.chunked_dl(EPG_URL.format(region=get_region()), output)
-    gzip_extract(output)
+                    url=plugin.url_for(play, slug=slug, _is_live=True)))

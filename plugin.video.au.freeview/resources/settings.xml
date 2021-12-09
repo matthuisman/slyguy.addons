@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30000" id="region_index" type="enum" default="0" lvalues="30001|30002|30003|30004|30005|30006|30007|30008" />
+        <setting label="30000" id="region_index" type="enum" default="0" lvalues="30001|30002|30003|30004|30005|30006|30007|30008"/>
+    </category>
+
+    <category label="$ADDON[script.module.slyguy 32139]">
+        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -10,7 +14,6 @@
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
-        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32081]">
@@ -19,12 +22,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
-        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32044]" id="http_timeout" type="number" default="30"/>
-        <setting label="$ADDON[script.module.slyguy 32045]" id="http_retries" type="number" default="2"/>
-        <setting label="$ADDON[script.module.slyguy 32046]" id="chunksize"    type="number" default="4096"/>
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
 
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
