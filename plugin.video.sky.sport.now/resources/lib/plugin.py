@@ -7,7 +7,7 @@ from slyguy.exceptions import PluginError
 
 from .api import API
 from .language import _
-from .constants import WIDEVINE_URL, MEDIA_CHANNEL, MEDIA_VIDEO, THUMB_URL, HEADERS
+from .constants import *
 
 api = API()
 
@@ -167,7 +167,7 @@ def play(media_id, media_type, start=None, duration=None, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in api.channels():
             thumb = THUMB_URL.format('channels/{id}_landscape.png'.format(id=row['id']))
@@ -175,5 +175,5 @@ def playlist(output, **kwargs):
             catchup = plugin.url_for(play, media_id=row['id'], media_type=MEDIA_CHANNEL, start='{utc}', duration='{duration}')
             catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}" catchup="default" catchup-days="1" catchup-source="{catchup}",{name}\n{path}\n'.format(
-                id=row['id'], logo=thumb, name=row['name'], path=plugin.url_for(play, media_id=row['id'], media_type=MEDIA_CHANNEL, _is_live=True), catchup=catchup))
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}" catchup="default" catchup-days="1" catchup-source="{catchup}",{name}\n{url}'.format(
+                id=row['id'], logo=thumb, name=row['name'], url=plugin.url_for(play, media_id=row['id'], media_type=MEDIA_CHANNEL, _is_live=True), catchup=catchup))

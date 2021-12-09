@@ -7,7 +7,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from .language import _
-from .constants import API_URL, HEADERS, EPG_URL
+from .constants import *
 
 class APIError(Error):
     pass
@@ -76,7 +76,7 @@ class API(object):
     def schedule(self, date):
         schedule = []
 
-        data = self._session.get(EPG_URL.format(date=date.format('YYYY/MM/DD'))).json()
+        data = self._session.get(SCHEDULE_URL.format(date=date.format('YYYY/MM/DD'))).json()
         for channel in data:
             for event in channel['items']:
                 start     = arrow.get(event['su'])
