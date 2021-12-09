@@ -6,10 +6,8 @@ import arrow
 from six.moves import queue
 
 from slyguy import plugin, gui, userdata, inputstream, signals, settings
-from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
-from slyguy.util import gzip_extract
 
 from .api import API
 from .language import _
@@ -361,31 +359,22 @@ def play_channel(id, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = api.channels()
+    epg_url = ZA_EPG_URL if settings.getBool('use_cached_za', True) else plugin.url_for(epg, output='$FILE')
 
     with codecs.open(output, 'w', encoding='utf-8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(epg_url))
 
         for row in data:
             genres = row.get('genres', [])
             genres = ';'.join(genres) if genres else ''
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" tvg-name="{name}" group-title="{group}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" tvg-name="{name}" group-title="{group}" tvg-logo="{logo}",{name}\n{url}'.format(
                         id=row['id'], channel=row['number'], name=row['name'], logo=row['channelLogoPaths'].get('XLARGE', ''),
-                            group=genres, path=plugin.url_for(play_channel, id=row['id'], _is_live=True)))
+                            group=genres, url=plugin.url_for(play_channel, id=row['id'], _is_live=True)))
 
 @plugin.route()
 @plugin.merge()
 def epg(output, **kwargs):
-    if settings.getBool('use_cached_za', True):
-        try:
-            Session().chunked_dl(ZA_EPG_URL, output)
-            if ZA_EPG_URL.endswith('.gz'):
-                gzip_extract(output)
-            return True
-        except Exception as e:
-            log.exception(e)
-            log.debug('Failed to get remote epg: {}. Fall back to scraping'.format(ZA_EPG_URL))
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
