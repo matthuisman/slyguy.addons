@@ -5,6 +5,7 @@ HEADERS = {
 AVATAR_URL = 'https://resources.streamotion.com.au/production/binge/profile/avatar-{avatar_id:02d}.png?imwidth=400'
 LICENSE_URL = 'https://drm.streamotion.com.au/licenseServer/widevine/v1/streamotion/license'
 LIVE_DATA_URL = 'https://i.mjh.nz/Binge/app.json'
+EPG_URL = 'https://i.mjh.nz/Binge/epg.xml.gz'
 CLIENT_ID = 'QQdtPlVtx1h9BkO09BDM2OrFi5vTPCty'
 UDID = 'bc1e95db-723d-48fc-8012-effa322bdbc8'
 

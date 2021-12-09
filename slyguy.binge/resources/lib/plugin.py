@@ -1,5 +1,4 @@
 import codecs
-import random
 import time
 import re
 
@@ -7,7 +6,6 @@ import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.monitor import monitor
-from slyguy.session import Session
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
@@ -598,9 +596,9 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in _live_channels():
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=row['playback']['info']['assetId'], channel=row['chno'] or '', logo=row['contentDisplay']['images']['tile'].replace('${WIDTH}', str(768)),
-                    name=row['playback']['info']['title'], path=plugin.url_for(play, id=row['playback']['info']['assetId'], play_type=PLAY_FROM_START, _is_live=True)))
+                    name=row['playback']['info']['title'], url=plugin.url_for(play, id=row['playback']['info']['assetId'], play_type=PLAY_FROM_START, _is_live=True)))
