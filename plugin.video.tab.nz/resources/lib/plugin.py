@@ -1,13 +1,10 @@
-import os
 import codecs
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.constants import ADDON_PATH
-from slyguy.log import log
 
-from .api import API, APIError
+from .api import API
 from .language import _
-from .constants import HEADERS
+from .constants import *
 
 api = API()
 
@@ -102,7 +99,7 @@ def live_events(**kwargs):
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    playlist = u'''#EXTM3U
+    playlist = u'''#EXTM3U x-tvg-url="{EPG_URL}"
 #EXTINF:-1 tvg-id="tv.trackside1" tvg-logo="https://i.mjh.nz/.images/tv.trackside1.png",TAB Trackside 1
 {TS1_PATH}
 #EXTINF:-1 tvg-id="tv.trackside2" tvg-logo="https://i.mjh.nz/.images/tv.trackside2.png",TAB Trackside 2
@@ -110,8 +107,9 @@ def playlist(output, **kwargs):
 #EXTINF:-1 tvg-id="radio.or.28" tvg-logo="https://i.mjh.nz/.images/radio.or.28.png" radio="true",TAB Trackside Radio
 {TSRADIO_PATH}
 '''.format(
-        TS1_PATH     = plugin.url_for(play, type='channel', id='TS1', _is_live=True),
-        TS2_PATH     = plugin.url_for(play, type='channel', id='TS2', _is_live=True),
+        EPG_URL = EPG_URL,
+        TS1_PATH = plugin.url_for(play, type='channel', id='TS1', _is_live=True),
+        TS2_PATH = plugin.url_for(play, type='channel', id='TS2', _is_live=True),
         TSRADIO_PATH = plugin.url_for(play, type='channel', id='TSR', _is_live=True),
     )
 

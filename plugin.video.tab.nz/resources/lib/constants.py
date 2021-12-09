@@ -3,3 +3,5 @@ HEADERS = {
     'Origin': 'https://www.tab.co.nz',
     'Referer': 'https://www.tab.co.nz/',
 }
+
+EPG_URL = 'https://i.mjh.nz/nz/epg.xml.gz'
