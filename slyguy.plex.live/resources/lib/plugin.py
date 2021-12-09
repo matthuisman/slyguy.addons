@@ -166,7 +166,7 @@ def playlist(output, **kwargs):
 
     added = []
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for code in regions:
             region = data['regions'][code]
