@@ -105,7 +105,7 @@ def playlist(output, **kwargs):
     channels = api.channels()
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(plugin.url_for(epg, output='FILE')))
 
         for row in channels:
             if not api.logged_in and not row['isFta']:
@@ -133,7 +133,7 @@ def epg(output, **kwargs):
             ids.append(row['idChannel'])
 
         start = arrow.utcnow().shift(hours=-12)
-        end   = arrow.utcnow().shift(days=settings.getInt('epg_days', 3))
+        end = arrow.utcnow().shift(days=settings.getInt('epg_days', 3))
         chunksize = 5
 
         def chunks(lst, n):
