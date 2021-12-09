@@ -158,12 +158,12 @@ def playlist(output, **kwargs):
     all_stations = _app_data()['channels']
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for callsign in all_stations:
             station = all_stations[callsign]
             if not station['url']:
                 continue
 
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{path}\n'.format(
-                        id=callsign, name=station['name'], logo=station['logo'], path=plugin.url_for(play, callsign=callsign, _is_live=True)))
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{url}'.format(
+                        id=callsign, name=station['name'], logo=station['logo'], url=plugin.url_for(play, callsign=callsign, _is_live=True)))
