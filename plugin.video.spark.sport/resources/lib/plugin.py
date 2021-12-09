@@ -6,7 +6,7 @@ from slyguy.constants import *
 
 from .api import API
 from .language import _
-from .constants import IMG_URL
+from .constants import *
 
 api = API()
 
@@ -227,9 +227,9 @@ def playlist(output, **kwargs):
     channels = api.live_channels()
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U\n')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for channel in channels:
-            f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{path}\n'.format(
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=channel['id'], name=channel['name'], logo=IMG_URL.format(channel['pictureID']),
-                    path=plugin.url_for(play, id=channel['id'], _is_live=True)))
+                    url=plugin.url_for(play, id=channel['id'], _is_live=True)))
