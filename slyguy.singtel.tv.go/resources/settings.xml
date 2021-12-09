@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="$ADDON[script.module.slyguy 32034]">
+    <category label="$ADDON[script.module.slyguy 32139]">
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
     </category>
 
