@@ -8,7 +8,7 @@ import xml.parsers.expat
 from kodi_six import xbmc, xbmcvfs
 from six.moves.urllib.parse import unquote_plus
 
-from slyguy import settings, database, gui, router
+from slyguy import settings, database, gui
 from slyguy.log import log
 from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, safe_copy
 from slyguy.session import Session
@@ -194,7 +194,8 @@ class Merger(object):
                 path = gdrivedl(path, file_path)
             else:
                 log.debug('Downloading: {} > {}'.format(path, file_path))
-                path = Session().chunked_dl(path, file_path).url
+                resp = Session().chunked_dl(path, file_path)
+                path = resp.url
 
         elif not xbmcvfs.exists(path):
             raise Error(_(_.LOCAL_PATH_MISSING, path=path))
@@ -202,7 +203,18 @@ class Merger(object):
             safe_copy(path, file_path)
 
         if archive_type == Source.ARCHIVE_AUTO:
-            archive_type = Source.auto_archive_type(path)
+            try:
+                with open(file_path, 'rb') as f:
+                    data = f.read(6)
+                    if data == b'\xfd\x37\x7a\x58\x5a\00':
+                        archive_type = Source.ARCHIVE_XZ
+                        log.debug('Detected XZ archive')
+                    elif data[0:2] == b'\x1f\x8b':
+                        archive_type = Source.ARCHIVE_GZIP
+                        log.debug('Detected gz archive')
+            except Exception as e:
+                log.debug('Failed to detect file type')
+                log.exception(e)
 
         if archive_type == Source.ARCHIVE_GZIP:
             gzip_extract(file_path)

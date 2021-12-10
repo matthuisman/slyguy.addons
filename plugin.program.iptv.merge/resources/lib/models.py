@@ -249,16 +249,6 @@ class Source(database.Model):
 
         return True
 
-    @staticmethod
-    def auto_archive_type(path):
-        archive_extensions = {
-            '.gz': Source.ARCHIVE_GZIP,
-            '.xz': Source.ARCHIVE_XZ,
-        }
-
-        name, ext = os.path.splitext(path.lower())
-        return archive_extensions.get(ext, Source.ARCHIVE_NONE)
-
     def select_archive_type(self):
         values = [self.ARCHIVE_AUTO, self.ARCHIVE_GZIP, self.ARCHIVE_XZ, self.ARCHIVE_NONE]
         labels = [_.ARCHIVE_AUTO, _.GZIP, _.XZ, _.ARCHIVE_NONE]
