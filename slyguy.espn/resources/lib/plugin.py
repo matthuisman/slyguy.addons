@@ -37,7 +37,7 @@ def index(**kwargs):
 
 @plugin.route()
 def live(**kwargs):
-    return _events(_.LIVE, 'also live')
+    return _events(_.LIVE, 'live')
 
 @plugin.route()
 def upcoming(**kwargs):
