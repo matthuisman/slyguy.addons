@@ -8,13 +8,11 @@ from functools import wraps
 from six.moves.urllib_parse import quote_plus
 
 from kodi_six import xbmc, xbmcplugin
-from six.moves.urllib.parse import quote
 
 from . import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache
 from .constants import *
 from .log import log
 from .language import _
-from .session import Session
 from .exceptions import Error, PluginError, FailedPlayback
 from .util import set_kodi_string, get_addon, remove_file, user_country
 
@@ -63,10 +61,13 @@ def route(url=None):
         def decorated_function(*args, **kwargs):
             item = f(*args, **kwargs)
 
-            pattern = kwargs.get(ROUTE_AUTOPLAY_TAG, None)
+            autoplay = kwargs.get(ROUTE_AUTOPLAY_TAG, None)
+            autofolder = kwargs.get(ROUTE_AUTOFOLDER_TAG, None)
 
-            if pattern is not None and isinstance(item, Folder):
-                _autoplay(item, pattern)
+            if autoplay is not None and isinstance(item, Folder):
+                _autoplay(item, autoplay, playable=True)
+            elif autofolder is not None and isinstance(item, Folder):
+                _autoplay(item, autofolder, playable=False)
             elif isinstance(item, Folder):
                 item.display()
             elif isinstance(item, Item):
@@ -401,7 +402,7 @@ def failed_playback():
         xbmc.PlayList(xbmc.PLAYLIST_MUSIC).clear()
         xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
 
-def _autoplay(folder, pattern):
+def _autoplay(folder, pattern, playable=True):
     choose = 'pick'
 
     if '#' in pattern:
@@ -413,11 +414,11 @@ def _autoplay(folder, pattern):
             if choose != 'random':
                 choose = 'pick'
 
-    log.debug('Auto Play: "{}" item that label matches "{}"'.format(choose, pattern))
+    log.debug('Auto {}: "{}" item that label matches "{}"'.format('Play' if playable == True else 'Select', choose, pattern))
 
     matches = []
     for item in folder.items:
-        if not item or not item.playable:
+        if not item or item.playable != playable:
             continue
 
         if re.search(pattern, item.label, re.IGNORECASE):

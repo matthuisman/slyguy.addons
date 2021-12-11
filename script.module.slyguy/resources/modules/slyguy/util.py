@@ -310,7 +310,7 @@ def xz_extract(in_path, chunksize=CHUNK_SIZE, raise_error=True):
 
     import lzma
 
-    log.debug('Gzip Extracting: {}'.format(in_path))
+    log.debug('XZ Extracting: {}'.format(in_path))
     out_path = in_path + '_extract'
 
     try:
