@@ -34,6 +34,7 @@ class API(object):
         app_version = self._session.get(APP_VERSION_URL).text.strip()
 
         payload = {
+            "BuildNo": "9999",
             "ClientVersion": app_version,
             "DeviceBrand": "Nvidia",
             "DeviceFirmwareVersion": "27",
@@ -45,10 +46,14 @@ class API(object):
             "MacAddress": "00:00:00:00:00:00",
         }
 
-        token = self._session.post('/api/configuration/appconfig', json=payload).json()['Data']['AccessToken']
-        self._session.cookies.update({TOKEN_COOKIE_KEY: token})
+        data = self._session.post('/api/configuration/appconfig', json=payload).json()
+        if not data['Data']:
+            raise APIError(data['Message']['Title'])
+
+        self._session.cookies.update({TOKEN_COOKIE_KEY: data['Data']['AccessToken']})
 
     def device_code(self):
+        self.logout()
         self.require_token()
         return self._session.post('/api/account/generateauthcode').json()['Data']
 
@@ -58,7 +63,7 @@ class API(object):
         payload = {
             'AuthCode': code,
         }
-        
+
         data = self._session.post('/api/account/loginwithauthcode', json=payload).json()['Data']
         if not data:
             return
@@ -70,6 +75,7 @@ class API(object):
         return True
 
     def login(self, username, password):
+        self.logout()
         self.require_token()
 
         payload = {
