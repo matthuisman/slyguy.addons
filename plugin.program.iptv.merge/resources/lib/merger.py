@@ -172,13 +172,16 @@ class Merger(object):
             else:
                 raise Error('{} could not be found for {}'.format(method_name, addon_id))
 
-        path = data[method_name]
+        paths = data[method_name]
 
         if data['type'] == TYPE_IPTV_MANAGER:
-            iptv_manager.process_path(path, file_path)
+            iptv_manager.process_path(paths, file_path)
             return
 
-        for path in [path] if type(path) is not list else path:
+        if type(paths) is not list:
+            paths = [paths]
+
+        for path in paths:
             path = path.replace('$ID', addon_id).replace('%24ID', addon_id)
             path = path.replace('$IP', xbmc.getIPAddress()).replace('%24IP', xbmc.getIPAddress())
             self._process_path(path.strip(), archive_type, file_path)

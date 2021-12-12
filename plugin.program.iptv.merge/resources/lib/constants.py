@@ -14,7 +14,10 @@ DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
 INTEGRATIONS = {
     'plugin.video.jiotv': {
         'min_version': '2.0.14',
-        'playlist': ['plugin://$ID/resources/lib/main/m3ugen/?notify=no', 'special://profile/addon_data/$ID/playlist.m3u'],
+        'playlist': 'special://profile/addon_data/$ID/playlist.m3u',
+        'settings': {
+            'm3ugen': 'true',
+        },
     },
     'plugin.video.iptvsimple.addons': {
         'min_version': '0.0.7',
