@@ -37,17 +37,28 @@ def index(**kwargs):
 
 @plugin.route()
 def live(**kwargs):
-    return _events(_.LIVE, 'live')
+    return _events(_.LIVE, ['also live', 'live'])
 
 @plugin.route()
 def upcoming(**kwargs):
-    return _events(_.UPCOMING, 'upcoming')
+    return _events(_.UPCOMING, ['upcoming',])
 
-def _events(label, name):
+def _events(label, needles):
     folder = plugin.Folder(label)
 
-    for row in api.home()['buckets']:
-        if row['name'].lower() == name:
+    rows = api.home()['buckets']
+    haystack = [row['name'].lower() for row in rows]
+
+    found = None
+    for needle in needles:
+        if needle.lower() in haystack:
+            found = needle
+
+    if not found:
+        return folder
+
+    for row in rows:
+        if row['name'].lower() == found:
             if row['metadata']['displayCount'] != row['metadata']['totalCount']:
                 row['contents'] = api.bucket(row['id'])['buckets'][0]['contents']
 
