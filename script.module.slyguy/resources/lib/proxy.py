@@ -1003,7 +1003,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             return response
 
-        debug = self._session.get('debug_all') or self._session.get('debug_{}'.format(method.lower()))
+        debug = ADDON_DEV or self._session.get('debug_all') or self._session.get('debug_{}'.format(method.lower()))
         if self._post_data and debug:
             with open(xbmc.translatePath('special://temp/{}-request.txt').format(method.lower()), 'wb') as f:
                 f.write(self._post_data)

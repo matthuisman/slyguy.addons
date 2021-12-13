@@ -359,6 +359,9 @@ class Item(object):
             if self.inputstream.license_type:
                 li.setProperty('{}.license_type'.format(self.inputstream.addon_id), self.inputstream.license_type)
 
+            if self.inputstream.server_certificate:
+                li.setProperty('{}.server_certificate'.format(self.inputstream.addon_id), self.inputstream.server_certificate)
+
             if headers:
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
 
@@ -460,7 +463,9 @@ class Item(object):
             if self.subtitles:
                 subs = []
                 for sub in self.subtitles:
-                    if type(sub) == list:
+                    if type(sub) == str:
+                        sub = make_sub(sub)
+                    elif type(sub) == list:
                         sub = make_sub(*sub)
                     else:
                         sub = make_sub(**sub)

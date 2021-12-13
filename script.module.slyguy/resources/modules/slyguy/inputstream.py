@@ -41,6 +41,7 @@ class InputstreamItem(object):
     response      = None
     properties    = None
     minversion    = None
+    server_certificate = None
 
     def __init__(self, minversion=None, properties=None):
         if minversion:
@@ -96,7 +97,7 @@ class Playready(InputstreamItem):
 class Widevine(InputstreamItem):
     license_type = 'com.widevine.alpha'
 
-    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', license_data=None, license_headers=None, wv_secure=False, **kwargs):
+    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', server_certificate=None, license_data=None, license_headers=None, wv_secure=False, **kwargs):
         super(Widevine, self).__init__(**kwargs)
         self.license_key = license_key
         self.content_type = content_type
@@ -104,6 +105,7 @@ class Widevine(InputstreamItem):
         self.response = response
         self.manifest_type = manifest_type
         self.mimetype = mimetype
+        self.server_certificate = server_certificate
         self.license_data = license_data
         self.wv_secure = wv_secure
         self.license_headers = license_headers
