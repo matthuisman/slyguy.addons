@@ -7,6 +7,7 @@ from xml.sax.saxutils import escape
 from kodi_six import xbmc
 from six.moves.urllib.parse import parse_qsl, urlparse, urlencode, urlunparse
 
+from slyguy.log import log
 from slyguy.constants import CHUNK_SIZE, KODI_VERSION
 
 def process_path(path, file_path):
@@ -100,54 +101,63 @@ def _write_epg(file_path, data):
         for channel_id in data['epg']:
             f.write(u'<channel id="{}"></channel>'.format(escape(channel_id)))
             for item in data['epg'][channel_id]:
-                title = item.get('title') or ''
-                if KODI_VERSION < 19 and item.get('stream'):
-                    title = u'{} [COLOR green]\u2022[/COLOR][COLOR vod="{}"][/COLOR]'.format(title, item.get('stream'))
+                try:
+                    if not item.get('title') or not item.get('start') or not item.get('stop'):
+                        log.debug('IPTV Manager - Skipping item as missing data: {}'.format(item))
+                        continue
 
-                f.write(u'<programme start="{start}" stop="{stop}" channel="{channel}"{vod}><title>{title}</title>'.format(
-                    start = arrow.get(item.get('start')).format('YYYYMMDDHHmmss Z'),
-                    stop = arrow.get(item.get('stop')).format('YYYYMMDDHHmmss Z'),
-                    channel = escape(channel_id),
-                    vod = ' catchup-id="{}"'.format(escape(item['stream'])) if item.get('stream') else '',
-                    title = escape(title),
-                ))
+                    title = item['title']
+                    if KODI_VERSION < 19 and item.get('stream'):
+                        title = u'{} [COLOR green]\u2022[/COLOR][COLOR vod="{}"][/COLOR]'.format(title, item['stream'])
 
-                if item.get('subtitle'):
-                    f.write(u'<sub-title>{}</sub-title>'.format(escape(item['subtitle'])))
-                if item.get('description'):
-                    f.write(u'<desc>{}</desc>'.format(escape(item['description'])))
-                if item.get('date'):
-                    f.write(u'<date>{}</date>'.format(escape(item['date'])))
-                if item.get('image'):
-                    f.write(u'<icon src="{}"/>'.format(escape(item['image'])))
-                if item.get('episode'):
-                    f.write(u'<episode-num system="onscreen">{}</episode-num>'.format(escape(item['episode'])))
+                    f.write(u'<programme start="{start}" stop="{stop}" channel="{channel}"{vod}><title>{title}</title>'.format(
+                        start = arrow.get(item['start']).format('YYYYMMDDHHmmss Z'),
+                        stop = arrow.get(item['stop']).format('YYYYMMDDHHmmss Z'),
+                        channel = escape(channel_id),
+                        vod = ' catchup-id="{}"'.format(escape(item['stream'])) if item.get('stream') else '',
+                        title = escape(title),
+                    ))
 
-                if item.get('genre'):
-                    if not isinstance(item['genre'], list):
-                        item['genre'] = [item['genre']]
+                    if item.get('subtitle'):
+                        f.write(u'<sub-title>{}</sub-title>'.format(escape(item['subtitle'])))
+                    if item.get('description'):
+                        f.write(u'<desc>{}</desc>'.format(escape(item['description'])))
+                    if item.get('date'):
+                        f.write(u'<date>{}</date>'.format(escape(item['date'])))
+                    if item.get('image'):
+                        f.write(u'<icon src="{}"/>'.format(escape(item['image'])))
+                    if item.get('episode'):
+                        f.write(u'<episode-num system="onscreen">{}</episode-num>'.format(escape(item['episode'])))
 
-                    for genre in item['genre']:
-                        f.write(u'<category>{}</category>'.format(escape(genre)))
+                    if item.get('genre'):
+                        if not isinstance(item['genre'], list):
+                            item['genre'] = [item['genre']]
 
-                if item.get('credits'):
-                    f.write(u'<credits>')
-                    for credit in item['credits']:
-                        if not credit.get('type') or not credit.get('name'):
-                            continue
+                        for genre in item['genre']:
+                            f.write(u'<category>{}</category>'.format(escape(genre)))
 
-                        if credit['type'] in ('actor', 'presenter', 'commentator', 'guest'):
-                            elem = u'<actor role="{role}">{name}</actor>' if credit.get('role') else u'<actor>{}</actor>'
-                        elif credit['type'] in ('director', 'producer'):
-                            elem = u'<director>{name}</director>'
-                        elif credit['type'] in ('writer', 'adapter', 'composer', 'editor'):
-                            elem = u'<writer>{name}</writer>'
-                        else:
-                            continue
+                    if item.get('credits'):
+                        f.write(u'<credits>')
+                        for credit in item['credits']:
+                            if not credit.get('type') or not credit.get('name'):
+                                continue
 
-                        f.write(elem.format(**credit))
+                            if credit['type'] in ('actor', 'presenter', 'commentator', 'guest'):
+                                elem = u'<actor role="{role}">{name}</actor>' if credit.get('role') else u'<actor>{}</actor>'
+                            elif credit['type'] in ('director', 'producer'):
+                                elem = u'<director>{name}</director>'
+                            elif credit['type'] in ('writer', 'adapter', 'composer', 'editor'):
+                                elem = u'<writer>{name}</writer>'
+                            else:
+                                continue
 
-                f.write('</programme>')
+                            f.write(elem.format(**credit))
+
+                    f.write('</programme>')
+                except Exception as e:
+                    # When we encounter an error, log an error, but don't error out for the other programs
+                    log.debug('IPTV Manager - Could not parse item: {}'.format(item))
+                    log.exception(e)
 
         f.write(u'</tv>')
 
@@ -169,5 +179,5 @@ def _write_playlist(file_path, channels):
                 f.write(u' radio="true"')
             f.write(u' catchup="vod",{name}\n'.format(**channel))
             for key in channel.get('kodiprops', {}):
-                f.write(u'#KODIPROP:{key}={value}\n'.format(key=key, value=channe['kodiprops'][key]))
+                f.write(u'#KODIPROP:{key}={value}\n'.format(key=key, value=channel['kodiprops'][key]))
             f.write(u'{stream}\n\n'.format(**channel))
