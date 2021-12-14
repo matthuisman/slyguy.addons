@@ -27,8 +27,10 @@ def json_override(func, error_msg):
 orig_getaddrinfo = socket.getaddrinfo
 
 class RawSession(requests.Session):
-    def __init__(self):
+    def __init__(self, verify=None, timeout=None):
         super(RawSession, self).__init__()
+        self._timeout = settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout
+        self._verify = settings.common_settings.getBool('verify_ssl', True) if verify is None else verify
         self._dns_rewrites = []
         self._rewrite_cache = {}
         socket.getaddrinfo = lambda *args, **kwargs: self._getaddrinfoPreferIPv4(*args, **kwargs)
@@ -55,16 +57,21 @@ class RawSession(requests.Session):
             log.debug('Fallback to ipv6 addrinfo')
             return orig_getaddrinfo(host, port, socket.AF_INET6, _type, proto, flags)
 
+    def request(self, method, url, **kwargs):
+        if 'verify' not in kwargs:
+            kwargs['verify'] = self._verify
+        if 'timeout' not in kwargs:
+            kwargs['timeout'] = self._timeout
+        return super(RawSession, self).request(method, url, **kwargs)
+
 class Session(RawSession):
     def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None):
-        super(Session, self).__init__()
+        super(Session, self).__init__(verify, timeout)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key
         self._base_url = base_url
-        self._timeout = settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout
         self._attempts = settings.common_settings.getInt('http_retries', 2) if attempts is None else attempts
-        self._verify = settings.common_settings.getBool('verify_ssl', True) if verify is None else verify
         self.before_request = None
         self.after_request = None
 
@@ -87,12 +94,13 @@ class Session(RawSession):
         if not url.startswith('http'):
             url = self._base_url.format(url)
 
-        timeout = self._timeout if timeout is None else timeout
         attempts = self._attempts if attempts is None else attempts
-        kwargs['verify'] = self._verify if verify is None else verify
 
         if timeout is not None:
             kwargs['timeout'] = timeout
+
+        if verify is not None:
+            kwargs['verify'] = verify
 
         #url = PROXY_PATH + url
 
