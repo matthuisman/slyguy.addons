@@ -100,7 +100,7 @@ def _write_epg(file_path, data):
         for channel_id in data['epg']:
             f.write(u'<channel id="{}"></channel>'.format(escape(channel_id)))
             for item in data['epg'][channel_id]:
-                title = item.get('title', '')
+                title = item.get('title') or ''
                 if KODI_VERSION < 19 and item.get('stream'):
                     title = u'{} [COLOR green]\u2022[/COLOR][COLOR vod="{}"][/COLOR]'.format(title, item.get('stream'))
 
