@@ -102,10 +102,11 @@ class API(object):
         params = {
             'type': 'dash',
             'drm': 'widevine',
+            'yspSdk': 'true',
             'watchMode': 'startover' if from_start else 'live',
         }
 
-        r = self._session.get('/playback/generalPlayback/mobile/users/{user_id}/assets/{asset_id}'.format(user_id=userdata.get('user_id'), asset_id=asset), params=params)
+        r = self._session.get('/playback/generalPlayback/web/users/{user_id}/assets/{asset_id}'.format(user_id=userdata.get('user_id'), asset_id=asset), params=params)
 
         if not r.ok:
             if r.status_code == 403:
