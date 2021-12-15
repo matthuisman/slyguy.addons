@@ -294,7 +294,11 @@ def movies(genre=None, title=None, page=1, **kwargs):
         data = api.movies(genre=genre, num_results=num_results, page=page)
 
     for row in data['movies']:
-        data = row['movieContent']
+        data = row.get('movieContent')
+        if not data:
+            #Skip movies that dont have a playable video
+            continue
+
         folder.add_item(
             label = data['label'].strip() or data['title'].strip(),
             info = {
@@ -564,8 +568,11 @@ def search(query, page, **kwargs):
             ))
 
         elif row['term_type'] == 'movie':
-            data = row['videoList']['itemList'][0]
+            if not row['videoList']['itemList']:
+                #Skip movies that dont have a playable video
+                continue
 
+            data = row['videoList']['itemList'][0]
             try: aired = str(arrow.get(data['_airDate'], 'MM/DD/YY'))
             except: aired = None
 
