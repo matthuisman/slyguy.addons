@@ -102,7 +102,7 @@ class API(object):
         params = {
             'type': 'dash',
             'drm': 'widevine',
-            'yspSdk': 'true',
+            'yspSdk': 'false',
             'watchMode': 'startover' if from_start else 'live',
         }
 
