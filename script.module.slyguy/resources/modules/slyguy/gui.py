@@ -359,6 +359,9 @@ class Item(object):
             if self.inputstream.license_type:
                 li.setProperty('{}.license_type'.format(self.inputstream.addon_id), self.inputstream.license_type)
 
+            if self.inputstream.flags:
+                li.setProperty('{}.license_flags'.format(self.inputstream.addon_id), self.inputstream.flags)
+
             if self.inputstream.server_certificate:
                 li.setProperty('{}.server_certificate'.format(self.inputstream.addon_id), self.inputstream.server_certificate)
 
