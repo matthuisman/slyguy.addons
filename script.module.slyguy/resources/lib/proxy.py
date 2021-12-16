@@ -562,9 +562,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Fix up languages
         subs = []
         audios = []
-        has_default_audio = False
-        has_default_subs = False
-
         for adap_set in root.getElementsByTagName('AdaptationSet'):
             language = adap_set.getAttribute('lang')
             if not language:
@@ -583,10 +580,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     adap_set.setAttribute('original', 'true')
 
                 default = adap_set.getAttribute('default')
-                if default_languages and default:
+                if default == 'true':
+                    default_languages.append(language)
                     adap_set.removeAttribute('default')
-                elif default == 'true':
-                    has_default_audio = True
 
                 audios.append([language, adap_set])
 
@@ -597,10 +593,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     continue
 
                 default = adap_set.getAttribute('default')
-                if default_subtitles and default:
+                if default == 'true':
+                    default_subtitles.append(language)
                     adap_set.removeAttribute('default')
-                elif default == 'true':
-                    has_default_subs = True
 
                 subs.append([language, adap_set])
 
@@ -608,6 +603,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             found = False
             for default in defaults:
                 default = original_language if default == 'original' else default
+                if not default:
+                    continue
 
                 for row in rows:
                     if lang_allowed(row[0], [default]):
@@ -617,13 +614,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if found:
                     break
 
-        if not has_default_audio:
-            #fallback to original if default languages not found
-            default_languages.append('original')
-            set_default_laguage(default_languages, audios)
-
-        if not has_default_subs:
-            set_default_laguage(default_subtitles, subs)
+        #fallback to original if default languages not found
+        default_languages.append('original')
+        set_default_laguage(default_languages, audios)
+        set_default_laguage(default_subtitles, subs)
         ################
 
         ## Remove audio_description
@@ -809,8 +803,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         subs = []
         video = []
         new_lines = []
-        has_default_audio = False
-        has_default_subs = False
 
         for line in m3u8.splitlines():
             if not line.strip():
@@ -825,17 +817,15 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 if attribs.get('TYPE') == 'AUDIO' and lang_allowed(attribs['LANGUAGE'], audio_whitelist):
                     audios.append(attribs)
-                    if default_languages:
+                    if attribs.get('DEFAULT') == 'YES':
                         attribs['DEFAULT'] = 'NO'
-                    elif attribs.get('DEFAULT') == 'YES':
-                        has_default_audio = True
+                        default_languages.append(attribs['LANGUAGE'])
 
                 elif attribs.get('TYPE') == 'SUBTITLES' and lang_allowed(attribs['LANGUAGE'], subs_whitelist):
                     subs.append(attribs)
-                    if default_subtitles:
+                    if attribs.get('DEFAULT') == 'YES':
                         attribs['DEFAULT'] = 'NO'
-                    elif attribs.get('DEFAULT') == 'YES':
-                        has_default_subs = True
+                        default_subtitles.append(attribs['LANGUAGE'])
 
             elif line.startswith('#EXT-X-STREAM-INF'):
                 stream_inf = line
@@ -880,13 +870,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if found:
                     break
 
-        if not has_default_audio:
-            #fallback to original if default languages not found
-            default_languages.append('original')
-            set_default_laguage(default_languages, audios)
-
-        if not has_default_subs:
-            set_default_laguage(default_subtitles, subs)
+        #fallback to original if default languages not found
+        default_languages.append('original')
+        set_default_laguage(default_languages, audios)
+        set_default_laguage(default_subtitles, subs)
 
         for attribs in audios:
             if not audio_description and attribs.get('CHARACTERISTICS','').lower() == 'public.accessibility.describes-video':
