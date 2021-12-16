@@ -113,30 +113,32 @@ class API(object):
 
         return token
 
-    def browse(self):
+    def browse(self, page=1, per_page=100):
         params = {
             'product': 'https://api.vhx.tv/products/70302',
-            'per_page': 100,
+            'per_page': per_page,
+            'page': page,
         }
 
         return self._session.get('https://api.vhx.tv/browse', params=params, headers={'Authorization': 'Bearer {}'.format(self._vhx_token())}).json()
 
-    def search(self, query, page=1):
+    def collection(self, id, page=1, per_page=100):
         params = {
-            'query': query,
-            'product': 'https://api.vhx.tv/products/70302',
-            'page': 1,
-            'per_page': 100,
-        }
-
-        return self._session.get('https://api.vhx.tv/collections', params=params, headers={'Authorization': 'Bearer {}'.format(self._vhx_token())}).json()
-
-    def collection(self, id):
-        params = {
-            'per_page': 100,
+            'page': page,
+            'per_page': per_page,
         }
 
         return self._session.get('https://api.vhx.tv/collections/{}/items'.format(id), params=params, headers={'Authorization': 'Bearer {}'.format(self._vhx_token())}).json()
+
+    def search(self, query, page=1, per_page=100):
+        params = {
+            'query': query,
+            'product': 'https://api.vhx.tv/products/70302',
+            'page': page,
+            'per_page': per_page,
+        }
+
+        return self._session.get('https://api.vhx.tv/collections', params=params, headers={'Authorization': 'Bearer {}'.format(self._vhx_token())}).json()
 
     def logout(self, site_logout=True):
         if site_logout:

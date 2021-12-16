@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.shine.tv" name="Shine TV" provider-name="SlyGuy" version="0.0.2">
+<addon id="slyguy.shine.tv" name="Shine TV" provider-name="SlyGuy" version="0.0.3">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Add Bookmarks</news>
+    <news>Improve search. Simplify settings. fix some content</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
