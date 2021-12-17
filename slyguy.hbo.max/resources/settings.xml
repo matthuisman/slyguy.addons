@@ -18,19 +18,21 @@
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
-        <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
-        <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
-            <setting label="30031" type="bool" id="atmos_enabled" default="false" visible="eq(-1,true)"/>
-        <setting label="$ADDON[script.module.slyguy 32090]" id="audio_description" type="bool" default="false"/>
-        <setting label="30039" type="text" id="playback_language" default="en"/>
-        <setting label="30014" type="bool" id="h265" default="false"/>
-        <setting label="30015" type="bool" id="4k_enabled" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
-        <setting label="30016" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
-
         <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32086]" id="audio_whitelist" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32087]" id="subs_whitelist" type="text" default=""/>
+        <setting label="$ADDON[script.module.slyguy 32090]" id="audio_description" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32088]" id="subs_forced" type="bool" default="true" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32089]" id="subs_non_forced" type="bool" default="true" visible="false"/>
+
+        <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
+        <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
+            <setting label="30031" type="bool" id="atmos_enabled" default="false" visible="eq(-1,true)"/>
+        <setting label="30039" type="text" id="playback_language" default="en"/>
+        <setting label="30014" type="bool" id="h265" default="false"/>
+        <setting label="30015" type="bool" id="4k_enabled" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
+        <setting label="30016" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="false"/>
