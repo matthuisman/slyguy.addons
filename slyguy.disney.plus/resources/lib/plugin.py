@@ -196,7 +196,6 @@ def sets(set_id, set_type, page=1, **kwargs):
 
     return folder
 
-
 def _process_rows(rows, content_class=None):
     sync_enabled = settings.getBool('sync_playback', True)
     watchlist_enabled = settings.getBool('sync_watchlist', True)
