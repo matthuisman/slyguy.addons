@@ -106,7 +106,7 @@ class API(object):
             'watchMode': 'startover' if from_start else 'live',
         }
 
-        r = self._session.get('/playback/generalPlayback/web/users/{user_id}/assets/{asset_id}'.format(user_id=userdata.get('user_id'), asset_id=asset), params=params)
+        r = self._session.get('/playback/generalPlayback/ctv/users/{user_id}/assets/{asset_id}'.format(user_id=userdata.get('user_id'), asset_id=asset), params=params)
 
         if not r.ok:
             if r.status_code == 403:
@@ -124,6 +124,9 @@ class API(object):
 
         if not stream:
             raise APIError(_.NO_STREAM)
+
+        # 50fps hack
+        stream['url'] = stream['url'].replace('/dash/plain/', '/dash/scte/')
 
         return stream
 

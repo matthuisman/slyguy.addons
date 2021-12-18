@@ -1,7 +1,7 @@
 from .language import _
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
+    'User-Agent': 'okhttp/4.2.2',
     'Origin': 'https://sport.optus.com.au',
     'Referer': 'https://sport.optus.com.au',
 }
