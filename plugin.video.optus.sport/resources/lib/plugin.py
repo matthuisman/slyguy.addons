@@ -138,13 +138,22 @@ def logout(**kwargs):
 def mpd_request(_data, _path, **kwargs):
     _data = _data.decode('utf8')
 
-    to_add = r'''\1\n      <Representation id="4" width="960" height="540" frameRate="50/1" bandwidth="3000000" codecs="avc1.4D401F"/>
-      <Representation id="6" width="1280" height="720" frameRate="50/1" bandwidth="5699968" codecs="avc1.640020"/>
-      <Representation id="5" width="640" height="360" frameRate="50/1" bandwidth="2499968" codecs="avc1.4D401F"/>
-      <Representation id="7" width="480" height="270" frameRate="50/1" bandwidth="1000000" codecs="avc1.4D401F"/>
-      <Representation id="1" width="480" height="270" frameRate="50/1" bandwidth="600000" codecs="avc1.4D401E"/>'''
-
-    _data = re.sub('(<Representation id="12".*?>)', to_add, _data, 1)
+    ## 50FPS OS1 HACK
+    if 'id="12" width="1280"' in _data:
+        to_add = r'''\1\n      <Representation id="4" width="960" height="540" frameRate="50/1" bandwidth="3000000" codecs="avc1.4D401F"/>
+        <Representation id="6" width="1280" height="720" frameRate="50/1" bandwidth="5699968" codecs="avc1.640020"/>
+        <Representation id="5" width="640" height="360" frameRate="50/1" bandwidth="2499968" codecs="avc1.4D401F"/>
+        <Representation id="7" width="480" height="270" frameRate="50/1" bandwidth="1000000" codecs="avc1.4D401F"/>
+        <Representation id="1" width="480" height="270" frameRate="50/1" bandwidth="600000" codecs="avc1.4D401E"/>'''
+        _data = re.sub('(<Representation id="12" width="1280".*?>)', to_add, _data, 1)
+    ## 50FPS OS2 HACK
+    elif 'id="13" width="1280"' in _data:
+        to_add = r'''\1\n      <Representation id="1" width="960" height="540" frameRate="50/1" bandwidth="3000000" codecs="avc1.4D401F"/>
+        <Representation id="7" width="1280" height="720" frameRate="50/1" bandwidth="5699968" codecs="avc1.640020"/>
+        <Representation id="2" width="640" height="360" frameRate="50/1" bandwidth="2499968" codecs="avc1.4D401F"/>
+        <Representation id="5" width="480" height="270" frameRate="50/1" bandwidth="1000000" codecs="avc1.4D401F"/>
+        <Representation id="3" width="480" height="270" frameRate="50/1" bandwidth="600000" codecs="avc1.4D401E"/>'''
+        _data = re.sub('(<Representation id="13" width="1280".*?>)', to_add, _data, 1)
 
     with open(_path, 'wb') as f:
         f.write(_data.encode('utf8'))
