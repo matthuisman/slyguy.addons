@@ -255,7 +255,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 elif a['bandwidth'] < b['bandwidth']:
                     return -1
 
-            # Same bandwidth - they are equal (could compare framerate)
+            # Same bandwidth - compare framerate
+            if a['frame_rate'] and b['frame_rate']:
+                if a['frame_rate'] > b['frame_rate']:
+                    return 1
+                elif a['frame_rate'] < b['frame_rate']:
+                    return -1
+
             return 0
 
         def _stream_label(stream):
