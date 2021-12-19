@@ -1,9 +1,10 @@
 import codecs
+import re
 
 import arrow
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, MIDDLEWARE_PLUGIN
 
 from .api import API
 from .language import _
@@ -131,6 +132,23 @@ def logout(**kwargs):
     api.logout()
     gui.refresh()
 
+
+@plugin.route()
+@plugin.plugin_middleware()
+def mpd_request(_data, _path, **kwargs):
+    _data = _data.decode('utf8')
+
+    to_add = r'''\1\n      <Representation id="4" width="960" height="540" frameRate="50/1" bandwidth="3000000" codecs="avc1.4D401F"/>
+      <Representation id="6" width="1280" height="720" frameRate="50/1" bandwidth="5699968" codecs="avc1.640020"/>
+      <Representation id="5" width="640" height="360" frameRate="50/1" bandwidth="2499968" codecs="avc1.4D401F"/>
+      <Representation id="7" width="480" height="270" frameRate="50/1" bandwidth="1000000" codecs="avc1.4D401F"/>
+      <Representation id="1" width="480" height="270" frameRate="50/1" bandwidth="600000" codecs="avc1.4D401E"/>'''
+
+    _data = re.sub('(<Representation id="12".*?>)', to_add, _data, 1)
+
+    with open(_path, 'wb') as f:
+        f.write(_data.encode('utf8'))
+
 @plugin.route()
 @plugin.login_required()
 def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
@@ -144,9 +162,14 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
 
     item = plugin.Item(
         path = stream['url'],
-        inputstream = inputstream.Widevine(license_key=stream['license']['@uri']),
+        inputstream = inputstream.Widevine(
+            license_key=stream['license']['@uri'],
+            # manifest_type = 'hls',
+            # mimetype = 'application/vnd.apple.mpegurl',
+        ),
         headers = HEADERS,
     )
+    item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     drm_data = stream['license'].get('drmData')
     if drm_data:

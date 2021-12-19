@@ -102,7 +102,21 @@ class API(object):
         params = {
             'type': 'dash',
             'drm': 'widevine',
+          #  'vendor': 'NVIDIA',
+           # 'model': 'SHIELD Android TV',
             'yspSdk': 'false',
+            'osName': 'android',
+            'osVersion': '8.1.0',
+            'playerName': 'exoPlayer',
+            'playerVersion': '1.6.508',
+            'appVersion': '1.6.508',
+            'advertConsent': 'false',
+            'advertIdType': '',
+            'deviceId': '',
+            'advertId': '',
+            'platform': 'androidtv',
+            'device': 'android',
+            'sdksInitialised': 'false',
             'watchMode': 'startover' if from_start else 'live',
         }
 
@@ -124,9 +138,6 @@ class API(object):
 
         if not stream:
             raise APIError(_.NO_STREAM)
-
-        # 50fps hack
-        stream['url'] = stream['url'].replace('/dash/plain/', '/dash/scte/')
 
         return stream
 
