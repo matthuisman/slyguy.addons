@@ -122,10 +122,12 @@ class API(object):
         with self.api_call():
             return self._session.get('/ocm/v2/search', params=params).json()['results']
 
+    @cached(expires=60*5)
     def sparksport(self):
         with self.api_call():
-            return self._session.get('https://d2rhrqdzx7i00p.cloudfront.net/sparksport2').json()
+            return self._session.get('https://d2rhrqdzx7i00p.cloudfront.net/sparksport-prod').json()
 
+    @cached(expires=60*5)
     def page(self, page_id):
         with self.api_call():
             return self._session.get('/ocm/v4/pages/{}'.format(page_id)).json()

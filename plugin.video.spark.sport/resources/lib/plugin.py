@@ -51,20 +51,38 @@ def search(query, page, **kwargs):
     return _process_rows(rows), False
 
 @plugin.route()
-def sports(**kwargs):
+def sports(page_id=None, **kwargs):
     folder = plugin.Folder(_.SPORTS)
 
     info = api.sparksport()
 
-    for row in info['sports']:
-        page_info = info['pageInformation'].get(row['id'])
-        if not page_info or row['isHidden']:
+    for sport in info['contentConfiguration']['sports']:
+        if page_id:
+            if page_id == sport['pageId']:
+                folder.add_item(
+                    label = _(_.BEST_OF, sport=sport['displayText']['title']),
+                    art = {'thumb': IMG_URL.format(sport['images']['sportLogo'])},
+                    path = plugin.url_for(page, page_id=sport['pageId'])
+                )
+
+                for league in sport.get('leagues', []):
+                    folder.add_item(
+                        label = league['displayText']['title'],
+                        art = {'thumb': IMG_URL.format(league['images']['leagueLogo'])},
+                        path = plugin.url_for(page, page_id=league['pageId']),
+                    )
+
             continue
 
+        if sport.get('leagues'):
+            path = plugin.url_for(sports, page_id=sport['pageId'])
+        else:
+            path = plugin.url_for(page, page_id=sport['pageId'])
+
         folder.add_item(
-            label = row['name'],
-            art = {'thumb': IMG_URL.format(row['images']['channelLogo'])},
-            path = plugin.url_for(page, page_id=page_info['RAILS_V3_PAGE_ID']),
+            label = sport['displayText']['title'],
+            art = {'thumb': IMG_URL.format(sport['images']['sportLogo'])},
+            path = path,
         )
 
     return folder
@@ -163,7 +181,7 @@ def section(section_id, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 

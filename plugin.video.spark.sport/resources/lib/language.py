@@ -1,8 +1,8 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-    ASK_USERNAME     = 30001
-    ASK_PASSWORD     = 30002
+    BEST_OF          = 30001
+
     LOGIN_ERROR      = 30003
     CHANNELS         = 30004
     FEATURED         = 30005
