@@ -214,6 +214,40 @@ def search():
         return decorated_function
     return lambda f: decorator(f)
 
+# @plugin.pagination()
+def pagination():
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(page=1, **kwargs):
+            multiplier = settings.getInt('pagination_multiplier') or 1
+
+            page = int(page)
+            real_page = ((page-1)*multiplier)+1
+
+            items = []
+            for i in range(multiplier):
+                folder, more_results = f(page=real_page, **kwargs)
+                real_page += 1
+                items.extend(folder.items)
+                if not more_results:
+                    break
+
+            folder.items = items
+            # if page > 1:
+            #     folder.title += ' (Page {})'.format(page)
+
+            if more_results:
+                folder.add_item(
+                    label = _(_.NEXT_PAGE, page=page+1),
+                    path = router.add_url_args(kwargs[ROUTE_URL_TAG], page=page+1),
+                    specialsort = 'bottom',
+                )
+
+            return folder
+
+        return decorated_function
+    return lambda f: decorator(f)
+
 def resolve(error=False):
     handle = _handle()
     if handle > 0:

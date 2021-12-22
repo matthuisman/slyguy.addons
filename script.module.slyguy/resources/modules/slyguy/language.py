@@ -193,6 +193,7 @@ class BaseLanguage(object):
     DONATE_HEADER               = 32140
     SEASON                      = 32141
     IA_LINUX_MISSING            = 32142
+    PAGINATION_MULTIPLIER       = 32143
 
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022

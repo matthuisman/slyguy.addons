@@ -729,3 +729,7 @@ msgid "Inputstream Adaptive add-on is required for playback\n"
 "eg. [B][I]apt-get -y install kodi-inputstream-adaptive libnss3[/I][/B]\n"
 "Restart Kodi after installing"
 msgstr ""
+
+msgctxt "#32143"
+msgid "Pagination Multiplier"
+msgstr ""

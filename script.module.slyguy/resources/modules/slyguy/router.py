@@ -34,7 +34,7 @@ def add_url_args(url, **kwargs):
     if not _url:
         return url
 
-    return build_url(_url, _addon_id=parsed.netloc , **params)
+    return build_url(_url, _addon_id=parsed.netloc, **params)
 
 # @router.parse_url('?_=_settings')
 def parse_url(url):
@@ -44,11 +44,12 @@ def parse_url(url):
             params[key] = params[key]
 
         _url = params.pop(ROUTE_TAG, '')
+        params[ROUTE_URL_TAG] = 'plugin://{}{}'.format(ADDON_ID, url)
     else:
         params = {}
         _url = url
+        params[ROUTE_URL_TAG] = url
 
-    params[ROUTE_URL_TAG] = url
     if len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
         params[ROUTE_RESUME_TAG] = True
 
