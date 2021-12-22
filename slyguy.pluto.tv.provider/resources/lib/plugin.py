@@ -211,13 +211,18 @@ def _get_url(channel):
 def play(id, **kwargs):
     data = _app_data()
     channel = data['regions'][ALL]['channels'][id]
+    region = data['regions'][channel['epg']]
+
+    headers = data.get('headers', {})
+    headers.update(region.get('headers', {}))
+    headers.update(channel.get('headers', {}))
 
     return plugin.Item(
         label = channel['name'],
         info = {'plot': channel.get('description')},
         art = {'thumb': channel['logo']},
         inputstream = inputstream.HLS(live=True),
-        headers = data['headers'],
+        headers = headers,
         path = _get_url(channel),
     )
 
