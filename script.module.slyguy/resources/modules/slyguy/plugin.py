@@ -368,6 +368,60 @@ def _service(**kwargs):
         #catch all errors so dispatch doesn't show error
         log.exception(e)
 
+# @route()
+# def views(content=None, **kwargs):
+#     choices = [['Movies', 'movies'], ['Shows', 'tvshows'], ['Mixed', 'mixed'], ['Menus', 'menus']]
+
+#     if content is None:
+#         folder = Folder('View Types')
+
+#         for choice in choices:
+#             folder.add_item(
+#                 label = choice[0],
+#                 path = url_for(views, content=choice[1]),
+#             )
+
+#         return folder
+
+#     if content == 'movies':
+#         mediatype = 'movie'
+#     elif content == 'tvshows':
+#         mediatype = 'tvshow'
+#     elif content == 'mixed':
+#         mediatype = 'movie'
+#     elif content == 'menus':
+#         mediatype = 'movie'
+
+#     folder = Folder('View Type')
+
+#     ## Add setting to each that allows changing mediatype
+#     folder.add_item(
+#         label = 'Save Current View',
+#         path = url_for(save_view, content=content),
+#         info = {'mediatype': mediatype},
+#     )
+
+#     folder.add_item(
+#         label = 'Reset View',
+#         path = url_for(reset_view, content=content),
+#         info = {'mediatype': mediatype},
+#     )
+
+#     return folder
+
+# @route()
+# def save_view(content, **kwargs):
+#     view_id = gui.get_view_id()
+#     userdata.set('view_{}'.format(content), view_id)
+#     gui.notification(str(view_id))
+#     gui.refresh()
+
+# @route()
+# def reset_view(content, **kwargs):
+#     userdata.delete('view_{}'.format(content))
+#     gui.notification('Reset')
+#     gui.refresh()
+
 def service(interval=ROUTE_SERVICE_INTERVAL):
     monitor = xbmc.Monitor()
 
@@ -620,22 +674,41 @@ class Folder(object):
             li = item.get_li()
             xbmcplugin.addDirectoryItem(handle, item.path, li, item.is_folder)
 
+        top_type = percent = None
+        if item_types:
+            top_type = sorted(item_types, key=lambda k: item_types[k], reverse=True)[0]
+            percent = (item_types[top_type] / count) * 100
+
+        content_type = 'mixed'
+        if percent == 100:
+            if top_type == None:
+                content_type = 'menus'
+            elif top_type == 'movie':
+                content_type = 'movies'
+            elif top_type == 'tvshow':
+                content_type = 'tvshows'
+            elif top_type == 'season':
+                content_type = 'seasons'
+            elif top_type == 'episode':
+                content_type = 'episodes'
+
+        if settings.common_settings.getBool('video_folder_content', False):
+            content_type = 'videos'
+
+        # data = userdata.get('view_{}'.format(content_type))
+        # if data:
+        #     xbmc.executebuiltin('Container.SetViewMode({})'.format(data[0]))
+        #     self.content = data[1]
+
         if self.content == 'AUTO':
-            self.content = 'videos'
-
-            if not settings.common_settings.getBool('video_folder_content', False) and item_types:
-                type_map = {
-                    'movie': 'movies',
-                    'tvshow': 'tvshows',
-                    'season': 'tvshows',
-                    'episode': 'episodes',
-                }
-
-                top_type = sorted(item_types, key=lambda k: item_types[k], reverse=True)[0]
-                percent = (item_types[top_type] / count) * 100
-                content_type = type_map.get(top_type)
-                if percent > 70 and content_type:
-                    self.content = content_type
+            if content_type == 'movies':
+                self.content = 'movies'
+            elif content_type in ('tvshows', 'seasons'):
+                self.content = 'tvshows'
+            elif content_type == 'episodes':
+                self.content = 'tvshows'
+            else:
+                self.content = 'videos'
 
         if self.content: xbmcplugin.setContent(handle, self.content)
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)
