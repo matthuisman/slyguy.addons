@@ -178,6 +178,7 @@ def collection(slug, content_class, label=None, **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def sets(set_id, set_type, page=1, **kwargs):
     page = int(page)
     data = api.set_by_id(set_id, set_type, page=page)
@@ -187,14 +188,7 @@ def sets(set_id, set_type, page=1, **kwargs):
     items = _process_rows(data.get('items', []), data['type'])
     folder.add_items(items)
 
-    if (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(sets, set_id=set_id, set_type=set_type, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
 
 def _process_rows(rows, content_class=None):
     sync_enabled = settings.getBool('sync_playback', True)
@@ -427,6 +421,7 @@ def series(series_id, **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def season(season_id, title, page=1, **kwargs):
     page = int(page)
     data = api.episodes(season_id, page=page)
@@ -436,14 +431,7 @@ def season(season_id, title, page=1, **kwargs):
     items = _process_rows(data['videos'], content_class='episode')
     folder.add_items(items)
 
-    if (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(season, season_id=season_id, title=title, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
 
 @plugin.route()
 def suggested(family_id=None, series_id=None, **kwargs):
