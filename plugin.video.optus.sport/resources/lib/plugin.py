@@ -178,7 +178,10 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
         ),
         headers = HEADERS,
     )
-    item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
+
+    #720p 50hz hack
+    if 'v5/OptusSport1' in stream['url'] or 'v5/OptusSport2' in stream['url']:
+        item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     drm_data = stream['license'].get('drmData')
     if drm_data:
