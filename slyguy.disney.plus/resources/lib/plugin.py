@@ -20,7 +20,7 @@ def index(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login, set_id=LOGIN_SET_ID, set_type=LOGIN_SET_TYPE ), bookmark=False)
     else:
         folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(collection, slug='home', content_class='home', label=_.FEATURED))
         folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(sets, set_id=HUBS_SET_ID, set_type=HUBS_SET_TYPE))
