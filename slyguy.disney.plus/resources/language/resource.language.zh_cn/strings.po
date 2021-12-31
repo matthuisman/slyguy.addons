@@ -2,17 +2,9 @@
 # Addon Name: Disney+
 # Addon id: slyguy.disney.plus
 # Addon Provider: SlyGuy
+# Language file translator: anshi84@outlook.com
 msgid ""
 msgstr ""
-"Project-Id-Version: Kodi Addons\n"
-"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
-"Last-Translator: matthuisman\n"
-"Language-Team: \n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Language: zh-cn\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30001"
 msgid "Email Address"
