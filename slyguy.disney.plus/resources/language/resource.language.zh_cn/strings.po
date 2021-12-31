@@ -154,6 +154,10 @@ msgid "Logout"
 msgstr "退出账号"
 
 msgctxt "#30035"
+msgid "Select Profile"
+msgstr "选择用户档案"
+
+msgctxt "#30036"
 msgid "Settings"
 msgstr "设置"
 
