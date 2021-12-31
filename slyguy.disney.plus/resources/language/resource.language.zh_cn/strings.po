@@ -246,3 +246,43 @@ msgstr "自定义"
 msgctxt "#32073"
 msgid "Disabled"
 msgstr "禁用"
+
+msgctxt "#32061"
+msgid "Playback Quality"
+msgstr "视频画质"
+
+msgctxt "#32072"
+msgid "Default Audio"
+msgstr "默认音轨语言"
+
+msgctxt "#32121"
+msgid "Default Subtitle"
+msgstr "默认字幕语言"
+
+msgctxt "#32086"
+msgid "Audio Allow List"
+msgstr "音轨语言白名单"
+
+msgctxt "#32086"
+msgid "Subtitle Allow List"
+msgstr "字幕语言白名单"
+
+msgctxt "#32090"
+msgid "Include Audio Description Tracks"
+msgstr "包括音轨描述音轨"
+
+msgctxt "#32088"
+msgid "Include Forced Subs"
+msgstr "包括强制字幕"
+
+msgctxt "#32089"
+msgid "Include Non-forced Subs"
+msgstr "包括非强制字幕"
+
+msgctxt "#32104"
+msgid "Disable profile switching in Kids profile"
+msgstr "禁止儿童用户切换用户档案"
+
+msgctxt "#32111"
+msgid "Bookmarks"
+msgstr "收藏夹"
