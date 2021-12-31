@@ -31,6 +31,11 @@ class Language(BaseLanguage):
     DELETE_WATCHLIST         = 30028
     ADDED_WATCHLIST          = 30029
     ENTER_PIN                = 30030
+    SEARCH                   = 30031
+    LOGIN                    = 30032
+    BOOKMARKS                = 30033
+    LOGOUT                   = 30034
+    SETTINGS                 = 30035
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
