@@ -36,7 +36,6 @@ class Language(BaseLanguage):
     BOOKMARKS                = 30033
     LOGOUT                   = 30034
     SETTINGS                 = 30035
-    SELECT_PROFILE           = 30036
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
