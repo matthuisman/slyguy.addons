@@ -157,10 +157,6 @@ msgctxt "#30035"
 msgid "Settings"
 msgstr "设置"
 
-msgctxt "#30036"
-msgid "Select Profile"
-msgstr "选择用户档案"
-
 msgctxt "#30043"
 msgid "You are not entitled to access this content.\n"
 "Check your subscription is valid."
@@ -179,7 +175,7 @@ msgstr "{label} [B](即将上线)[/B]"
 
 msgctxt "#30046"
 msgid "Incorrect Pin"
-msgstr "PIN码不正确"
+msgstr "PIN码错误"
 
 msgctxt "#30047"
 msgid "Disney+ Watchlist"
