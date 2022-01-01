@@ -101,6 +101,30 @@ msgctxt "#30029"
 msgid "Added to Watchlist"
 msgstr "Lagt til i min liste"
 
+msgctxt "#30031"
+msgid "Search"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Login"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Bookmarks"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Logout"
+msgstr ""
+
+msgctxt "#30035"
+msgid "Settings"
+msgstr ""
+
+msgctxt "#30036"
+msgid "Select Profile"
+msgstr ""
+
 msgctxt "#30041"
 msgid "Play with Intro"
 msgstr "Spill av med intro"

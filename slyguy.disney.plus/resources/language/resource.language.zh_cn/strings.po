@@ -1,8 +1,3 @@
-# Language file for Disney+ Video Add-on for Kodi
-# Addon Name: Disney+
-# Addon id: slyguy.disney.plus
-# Addon Provider: SlyGuy
-# Language file translator: anshi84@outlook.com
 msgid ""
 msgstr ""
 
@@ -49,7 +44,7 @@ msgstr "相关推荐"
 
 msgctxt "#30011"
 msgid "Featured"
-msgstr "精选内容"
+msgstr "精选"
 
 msgctxt "#30012"
 msgid "Season {season}"
@@ -133,10 +128,6 @@ msgctxt "#30030"
 msgid "Enter your Profile PIN"
 msgstr "输入您的用户档案PIN码"
 
-msgctxt "#30030"
-msgid "Enter your Profile PIN"
-msgstr "输入您的用户档案PIN码"
-
 msgctxt "#30031"
 msgid "Search"
 msgstr "搜索"
@@ -154,12 +145,12 @@ msgid "Logout"
 msgstr "退出账号"
 
 msgctxt "#30035"
-msgid "Select Profile"
-msgstr "选择用户档案"
-
-msgctxt "#30036"
 msgid "Settings"
 msgstr "设置"
+
+msgctxt "#30036"
+msgid "Select Profile"
+msgstr "选择用户档案"
 
 msgctxt "#30043"
 msgid "You are not entitled to access this content.\n"
