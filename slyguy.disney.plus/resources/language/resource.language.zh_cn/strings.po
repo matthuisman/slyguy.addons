@@ -1,0 +1,220 @@
+# Language file for Disney+ Video Add-on for Kodi
+# Addon Name: Disney+
+# Addon id: slyguy.disney.plus
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: Anshi84\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "邮箱地址"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "密码"
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "服务器错误: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "电影"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr "剧集"
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr "原创"
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "详细信息"
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr "品牌频道"
+
+msgctxt "#30009"
+msgid "IMAX"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr "相关推荐"
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "精选"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "第 {season} 季"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr "额外片段"
+
+msgctxt "#32111"
+msgid "bookmarks"
+msgstr "收藏夹"
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr "对 Kodi {kodi_ver} 的全面支持至少需要 Inputstream Adaptive 版本 {ver_required}\n"
+"你可能在当前版本下遇到播放问题。"
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr "杜比视界 / 4K"
+
+msgctxt "#30016"
+msgid "Disney+ Sync Playback"
+msgstr "Disney+ 同播共享"
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr "{name} [PIN]"
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
+
+msgctxt "#30019"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr "跳过片尾"
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr "播放下一集"
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr "播放下一部推荐电影"
+
+msgctxt "#30023"
+msgid "Default Ratio"
+msgstr "默认画面比例"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "跳过片头"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "从头播放"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "观看列表"
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr "加入观看列表"
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "从观看列表中移除"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "加入观看列表"
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "输入您的用户档案PIN码"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "您无权访问此内容。\n"
+"请检查并重试。"
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "您无权访问此内容。\n"
+"请检查并重试。"
+
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr "{label} [B](即将上线)[/B]"
+
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr "PIN码错误"
+
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr "Disney+ 观看列表"
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "从 {time:0>8} 开始"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](上线日期 {date})[/B]"
+
+msgctxt "#30050"
+msgid "DD/MM/YYYY"
+msgstr "YYYY/MM/DD"
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "找不到此内容的流媒体数据"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr "杜比全景声"
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr "用户档案设置"
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr "继续观看"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "询问"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "最高画质"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "最低画质"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "忽略"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "自定义"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "禁用"
