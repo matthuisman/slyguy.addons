@@ -189,13 +189,14 @@ def select_quality(qualities):
 @plugin.route()
 @plugin.login_required()
 def play(asset_id, **kwargs):
-    use_ia_hls = settings.getBool('use_ia_hls')
     stream_data = api.get_stream_data(asset_id)
     token = userdata.get('access_token')
 
+    headers = {'Authorization': 'Bearer {}'.format(token)}
+    headers.update(HEADERS)
+
     play_item = plugin.Item(
-        art = False,
-        headers = {'Authorization': 'Bearer {}'.format(token)},
+        headers = headers,
         cookies = {'access_token': token, 'client_id': CLIENT_ID},
     )
 
@@ -286,6 +287,7 @@ def play(asset_id, **kwargs):
         quality = qualities[-1][0]
 
     play_item.path = urls[-1][1]
+    play_item.use_proxy = False #proxy doesnt like streaming the mp4 - look into this..
     for item in urls:
         if item[0] <= quality:
             play_item.path = item[1]
