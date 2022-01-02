@@ -995,9 +995,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             return response
 
-        debug = ADDON_DEV or self._session.get('debug_all') or self._session.get('debug_{}'.format(method.lower()))
-        if self._post_data and debug:
-            with open(xbmc.translatePath('special://temp/{}-request.txt').format(method.lower()), 'wb') as f:
+        if self._post_data and ADDON_DEV:
+            with open(xbmc.translatePath('special://temp/request.data'), 'wb') as f:
                 f.write(self._post_data)
 
         if not self._session.get('session'):
@@ -1036,10 +1035,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         response.headers = headers
 
-        if debug:
-            with open(xbmc.translatePath('special://temp/{}-response.txt').format(method.lower()), 'wb') as f:
-                f.write(response.stream.content)
-
         if 'location' in response.headers:
             if '://' not in response.headers['location']:
                 response.headers['location'] = urljoin(url, response.headers['location'])
@@ -1069,11 +1064,20 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _output_response(self, response):
         self._output_headers(response)
 
-        for chunk in response.stream.iter_content():
-            try:
-                self.wfile.write(chunk)
-            except Exception as e:
-                break
+        if ADDON_DEV:
+            f = open(xbmc.translatePath('special://temp/response.data'), 'wb')
+        else:
+            f = None
+
+        try:
+            for chunk in response.stream.iter_content():
+                try:
+                    self.wfile.write(chunk)
+                except Exception as e:
+                    break
+                if f: f.write(chunk)
+        finally:
+            if f: f.close()
 
     def do_HEAD(self):
         url = self._get_url('HEAD')
