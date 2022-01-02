@@ -287,7 +287,6 @@ def play(asset_id, **kwargs):
         quality = qualities[-1][0]
 
     play_item.path = urls[-1][1]
-    play_item.use_proxy = False #proxy doesnt like streaming the mp4 - look into this..
     for item in urls:
         if item[0] <= quality:
             play_item.path = item[1]

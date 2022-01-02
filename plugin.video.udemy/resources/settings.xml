@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30018" type="bool" id="business_account" default="false"/>
-        <setting label="30019" type="text" id="business_host" default="business.udemy.com" visible="eq(-1,true)"/>
+        <setting label="30006" type="bool" id="business_account" default="false"/>
+        <setting label="30007" type="text" id="business_host" default="business.udemy.com" visible="eq(-1,true)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
@@ -11,16 +11,10 @@
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="false" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
-        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32044]" id="http_timeout" type="number" default="30"/>
-        <setting label="$ADDON[script.module.slyguy 32045]" id="http_retries" type="number" default="2"/>
-        <setting label="$ADDON[script.module.slyguy 32046]" id="chunksize"    type="number" default="4096"/>
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
 
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
