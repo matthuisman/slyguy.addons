@@ -196,7 +196,9 @@ class API(object):
     def _endpoint(self, href, **kwargs):
         profile, session = self.profile()
 
-        region = session['location']['countryCode']
+        print(session)
+
+        region = session['portabilityLocation']['countryCode'] if session['portabilityLocation'] else session['location']['countryCode']
         maturity = session['preferredMaturityRating']['impliedMaturityRating'] if session['preferredMaturityRating'] else 1850
         kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
         appLanguage = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
