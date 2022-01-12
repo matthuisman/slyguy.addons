@@ -157,11 +157,13 @@ class API(object):
             'VodId': vod_id,
         }
 
-        data = self._session.post('/api/play/play', json=payload).json()['Data']
-        if not data:
-            raise APIError(_.NO_STREAM)
+        data = self._session.post('/api/play/play', json=payload).json()
+        if not data['Data']:
+            try: error = data['Message']['Text']
+            except: error = _.NO_STREAM
+            raise APIError(error)
 
-        return data
+        return data['Data']
 
     def logout(self):
         userdata.delete('token')
