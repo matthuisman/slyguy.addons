@@ -250,7 +250,7 @@ class API(object):
         try:
             return self._session.get(self.url('markers', '/markers/{}'.format(','.join(markers))), params=params, json={}).json()
         except:
-            return None
+            return []
 
     def update_marker(self, url, cut_id, runtime, playback_time):
         self._refresh_token()
