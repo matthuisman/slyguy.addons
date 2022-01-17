@@ -21,6 +21,11 @@ def start():
     boot_merge = settings.getBool('boot_merge', False)
     set_kodi_string('_iptv_merge_force_run')
 
+    delay = settings.getInt('service_delay', 0)
+    if delay:
+        log.debug('Service delay: {}s'.format(delay))
+        monitor.waitForAbort(delay)
+
     while not monitor.waitForAbort(1):
         http.start() if settings.getBool('http_api', False) else http.stop()
 

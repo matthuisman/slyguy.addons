@@ -97,5 +97,6 @@ class Language(BaseLanguage):
     MERGE_PLAYLISTS        = 30093
     MERGE_EPGS             = 30094
     DISABLE_GROUPS         = 30095
+    SERVICE_DELAY          = 30096
 
 _ = Language()

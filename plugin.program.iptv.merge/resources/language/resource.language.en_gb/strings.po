@@ -389,6 +389,10 @@ msgctxt "#30095"
 msgid "Disable Groups"
 msgstr ""
 
+msgctxt "#30096"
+msgid "Service Start Delay (seconds)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
