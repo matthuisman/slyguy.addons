@@ -201,11 +201,7 @@ def search(query, page, **kwargs):
 
 def _get_url(channel):
     device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(uuid.getnode())))
-
-    url = channel['url_alt'] if settings.getBool('show_adverts', True) else channel['url']
-    url = url.replace('%7BPSID%7D', device_id)
-
-    return url
+    return channel['url'].replace('%7BPSID%7D', device_id)
 
 @plugin.route()
 def play(id, **kwargs):
