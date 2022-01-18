@@ -64,12 +64,31 @@ class API(object):
         if 'error_code' in data:
             raise APIError('Failed to login')
 
-        device_id = hashlib.sha1(username.lower().strip().encode('utf8')).hexdigest().upper()
+        device_id = hashlib.sha1(data['master_id'].encode('utf8')).hexdigest().upper()
 
         userdata.set('device_id', device_id)
         userdata.set('access_token', access_token)
-        userdata.set('user_id', data['user_id'])
+        userdata.set('user_id', data['master_id'])
         userdata.set('parental_pin', data.get('parental_pin',''))
+
+        self._refresh()
+
+    def _refresh(self):
+        params = {
+            'subscription_status': 'full',
+            'mode': 'paid',
+            'showmax_rating': '18-plus',
+            'lang': self._language,
+         #   'content_country': 'ZA',
+        }
+
+        data = {
+            'target_user_id': userdata.get('user_id'),
+        }
+
+        data = self._session.post(PROFILE_URL, params=params, data=data).json()
+        userdata.set('access_token', data['token'])
+        self._set_access_token(data['token'])
 
     def logout(self):
         userdata.delete('device_id')
@@ -164,6 +183,8 @@ class API(object):
         return self._session.get('catalogue/asset/{}'.format(asset_id), params=params).json()['videos']
 
     def play(self, video_id):
+        self._refresh()
+
         codecs = ''
 
         if settings.getBool('vp9', False):
