@@ -517,7 +517,7 @@ def live_tv(**kwargs):
                     'plot': plot,
                 },
                 art = {'thumb': config.image(row['filePathLogoSelected'])},
-                path = plugin.url_for(play_channel, slug=row['slug'], listing_id=listing['id'] if row['streamType'] == 'mpx_live' else None, _is_live=True),
+                path = plugin.url_for(play_channel, slug=row['slug'], listing_id=listing['id'] if (row['streamType'] == 'mpx_live' and len(row['currentListing']) > 1) else None, _is_live=True),
                 playable = True,
             )
 
@@ -701,12 +701,15 @@ def mpd_request(_data, _path, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(video_id, **kwargs):
+    return _play(video_id)
+
+def _play(video_id):
     url, license_url, token, data = api.play(video_id)
 
     item = _parse_item(data)
     item.path = url
 
-    if data.get('assetType') == 'DASH_LIVE':
+    if not data.get('isProtected') and data.get('assetType') == 'DASH_LIVE':
         if url.lower().endswith('.m3u8') or url.lower().endswith('.m3u'):
             item.inputstream = inputstream.HLS(live=data.get('isLive', False))
         else:
@@ -729,9 +732,9 @@ def play_channel(slug, listing_id=None, **kwargs):
         if row['slug'] != slug:
             continue
 
-        play_path = None
+        url = None
         if row['dma']:
-            play_path = row['dma']['playback_url']
+            url = row['dma']['playback_url']
         elif row['currentListing']:
             if not listing_id:
                 selected = row['currentListing'][0]
@@ -744,12 +747,11 @@ def play_channel(slug, listing_id=None, **kwargs):
 
             if selected:
                 if selected['contentCANVideo'].get('liveStreamingUrl'):
-                    play_path = selected['contentCANVideo']['liveStreamingUrl']
+                    url = selected['contentCANVideo']['liveStreamingUrl']
                 elif selected['streamType'] == 'mpx_live':
-                    play_path, license_url, token, data = api.play(selected['videoContentId'])
-                    headers['authorization'] = 'Bearer {}'.format(token)
+                    return _play(selected['videoContentId'])
 
-        if not play_path:
+        if not url:
             raise PluginError('No url found for this channel')
 
         return plugin.Item(
@@ -759,7 +761,7 @@ def play_channel(slug, listing_id=None, **kwargs):
             },
             headers = headers,
             art = {'thumb': config.image(row['filePathLogoSelected'])},
-            path = play_path,
+            path = url,
             inputstream = inputstream.HLS(live=True),
         )
 
@@ -780,13 +782,13 @@ def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(plugin.url_for(epg, output='$FILE')))
 
-        for row in api.live_channels():
-            if not row['currentListing'] or row['streamType'] == 'mpx_live':
+        for channel in api.live_channels():
+            if not channel['currentListing'] or len(channel['currentListing']) > 1:
                 continue
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=row['slug'], name=row['channelName'], logo=config.image(row['filePathLogoSelected']),
-                    url=plugin.url_for(play_channel, slug=row['slug'], _is_live=True)))
+                id=channel['slug'], name=channel['channelName'], logo=config.image(channel['filePathLogoSelected']),
+                    url=plugin.url_for(play_channel, slug=channel['slug'], _is_live=True)))
 
 @plugin.route()
 @plugin.merge()
@@ -797,7 +799,7 @@ def epg(output, **kwargs):
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
         for channel in api.live_channels():
-            if not channel['currentListing'] or (not channel['dma'] and not channel['currentListing'][-1]['contentCANVideo'].get('liveStreamingUrl')):
+            if not channel['currentListing'] or len(channel['currentListing']) > 1:
                 continue
 
             f.write(u'<channel id="{id}"></channel>'.format(id=channel['slug']))
