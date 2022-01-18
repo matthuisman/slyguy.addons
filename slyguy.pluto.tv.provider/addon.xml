@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.pluto.tv.provider" name="Pluto TV" provider-name="SlyGuy" version="0.5.4">
+<addon id="slyguy.pluto.tv.provider" name="Pluto TV" provider-name="SlyGuy" version="0.5.5">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>

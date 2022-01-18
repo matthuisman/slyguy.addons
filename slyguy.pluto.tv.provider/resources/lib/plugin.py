@@ -199,10 +199,6 @@ def search(query, page, **kwargs):
 
     return _process_channels(results), False
 
-def _get_url(channel):
-    device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(uuid.getnode())))
-    return channel['url'].replace('%7BPSID%7D', device_id)
-
 @plugin.route()
 def play(id, **kwargs):
     data = _app_data()
@@ -213,13 +209,15 @@ def play(id, **kwargs):
     headers.update(region.get('headers', {}))
     headers.update(channel.get('headers', {}))
 
+    device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(uuid.getnode())))
+
     return plugin.Item(
         label = channel['name'],
         info = {'plot': channel.get('description')},
         art = {'thumb': channel['logo']},
         inputstream = inputstream.HLS(live=True),
         headers = headers,
-        path = _get_url(channel),
+        path = channel['url'].replace('%7BPSID%7D', device_id).replace('{PSID}', device_id),
     )
 
 @plugin.route()
