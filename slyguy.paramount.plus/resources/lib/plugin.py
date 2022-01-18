@@ -736,6 +736,7 @@ def play_channel(slug, listing_id=None, **kwargs):
             if not listing_id:
                 selected = row['currentListing'][0]
             else:
+                selected = None
                 for listing in row['currentListing']:
                     if str(listing['id']) == listing_id:
                         selected = listing
