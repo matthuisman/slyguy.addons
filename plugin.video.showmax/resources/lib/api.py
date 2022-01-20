@@ -62,7 +62,7 @@ class API(object):
 
         data = self._session.get('user/current', params={'lang': self._language}).json()
         if 'error_code' in data:
-            raise APIError('Failed to login')
+            raise APIError(data['message'])
 
         device_id = hashlib.sha1(data['master_id'].encode('utf8')).hexdigest().upper()
 
@@ -87,6 +87,9 @@ class API(object):
         }
 
         data = self._session.post(PROFILE_URL, params=params, data=data).json()
+        if 'error_code' in data:
+            raise APIError(data['message'])
+
         userdata.set('access_token', data['token'])
         self._set_access_token(data['token'])
 
