@@ -373,20 +373,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             mpd.removeAttribute('publishTime')
             log.debug('Dash Fix: publishTime removed')
 
+        ## NOT NEEDED
         ## Remove mediaPresentationDuration from live PR: https://github.com/xbmc/inputstream.adaptive/pull/762
-        if (mpd.getAttribute('type') == 'dynamic' or 'timeShiftBufferDepth' in mpd_attribs) and 'mediaPresentationDuration' in mpd_attribs:
-            mpd.removeAttribute('mediaPresentationDuration')
-            log.debug('Dash Fix: mediaPresentationDuration removed from live')
+        # if (mpd.getAttribute('type') == 'dynamic' or 'timeShiftBufferDepth' in mpd_attribs) and 'mediaPresentationDuration' in mpd_attribs:
+        #     mpd.removeAttribute('mediaPresentationDuration')
+        #     log.debug('Dash Fix: mediaPresentationDuration removed from live')
 
-        ## Fix mpd overalseconds bug issue: https://github.com/xbmc/inputstream.adaptive/issues/731
-        if mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs:
-            if 'availabilityStartTime' in mpd_attribs:
-                buffer_seconds = (arrow.now() - arrow.get(mpd.getAttribute('availabilityStartTime'))).total_seconds()
-            else:
-                buffer_seconds = 60
-
-            mpd.setAttribute('timeShiftBufferDepth', 'PT{}S'.format(buffer_seconds))
-            log.debug('Dash Fix: {}S timeShiftBufferDepth added'.format(buffer_seconds))
+        ## Fix mpd overalseconds bug issue: https://github.com/xbmc/inputstream.adaptive/issues/731 / https://github.com/xbmc/inputstream.adaptive/pull/881
+        if mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs and 'mediaPresentationDuration' not in mpd_attribs:
+            buffer_seconds = (arrow.now() - arrow.get(mpd.getAttribute('availabilityStartTime'))).total_seconds()
+            mpd.setAttribute('mediaPresentationDuration', 'PT{}S'.format(buffer_seconds))
+            log.debug('Dash Fix: {}S mediaPresentationDuration added'.format(buffer_seconds))
 
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
