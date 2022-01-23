@@ -709,15 +709,19 @@ def _play(video_id):
     item = _parse_item(data)
     item.path = url
 
-    if not data.get('isProtected') and data.get('assetType') == 'DASH_LIVE':
-        if url.lower().endswith('.m3u8') or url.lower().endswith('.m3u'):
-            item.inputstream = inputstream.HLS(live=data.get('isLive', False))
-        else:
-            item.inputstream = inputstream.MPD()
-    else:
+    # print(data.get('isProtected')) #True / False
+    # print(data.get('assetType')) #DASH_LIVE, HLS_AES, DASH_CENC_HDR10, DASH_CENC_PRECON
+    # print(data.get('mediaType')) #Live, Movie, Promo Full Episode
+    # print(data.get('isLive')) #True / False
+
+    if data.get('isProtected'):
         item.inputstream = inputstream.Widevine(license_key=license_url)
         item.headers['authorization'] = 'Bearer {}'.format(token)
         item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
+    elif data.get('assetType') == 'DASH_LIVE':
+        item.inputstream = inputstream.MPD()
+    elif data.get('assetType') == 'HLS_AES':
+        item.inputstream = inputstream.HLS(live=data.get('isLive', False))
 
     return item
 
