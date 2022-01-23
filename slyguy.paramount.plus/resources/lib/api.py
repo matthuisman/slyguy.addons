@@ -307,7 +307,12 @@ class API(object):
     def play(self, video_id):
         self._refresh_token()
 
-        video_data = self._session.get('/v2.0/androidphone/video/cid/{}.json'.format(video_id), params=self._params()).json()['itemList'][0]
+        video_data = self._session.get('/v2.0/androidphone/video/cid/{}.json'.format(video_id), params=self._params()).json()['itemList']
+
+        if not video_data:
+            raise APIError('No data found for this content')
+
+        video_data = video_data[0]
         if 'pid' not in video_data:
             raise APIError('Check your subscription is valid')
 

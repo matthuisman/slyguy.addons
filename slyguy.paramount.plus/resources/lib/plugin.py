@@ -10,7 +10,7 @@ from slyguy.monitor import monitor
 from slyguy.util import replace_kids
 from slyguy.drm import is_wv_secure
 from slyguy.log import log
-from slyguy.constants import MIDDLEWARE_PLUGIN
+from slyguy.constants import MIDDLEWARE_PLUGIN, LIVE_HEAD
 
 from .language import _
 from .api import API
@@ -716,12 +716,13 @@ def _play(video_id):
 
     if data.get('isProtected'):
         item.inputstream = inputstream.Widevine(license_key=license_url)
-        item.headers['authorization'] = 'Bearer {}'.format(token)
         item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
     elif data.get('assetType') == 'DASH_LIVE':
         item.inputstream = inputstream.MPD()
     elif data.get('assetType') == 'HLS_AES':
         item.inputstream = inputstream.HLS(live=data.get('isLive', False))
+
+    item.headers['authorization'] = 'Bearer {}'.format(token)
 
     return item
 
@@ -730,8 +731,7 @@ def _play(video_id):
 def play_channel(slug, listing_id=None, **kwargs):
     channels = api.live_channels()
 
-    headers = {}
-
+    item = None
     for row in channels:
         if row['slug'] != slug:
             continue
@@ -750,26 +750,30 @@ def play_channel(slug, listing_id=None, **kwargs):
                         break
 
             if selected:
-                if selected['contentCANVideo'].get('liveStreamingUrl'):
-                    url = selected['contentCANVideo']['liveStreamingUrl']
+                if selected['contentCANVideo'] and selected['contentCANVideo'].get('liveStreamingUrl'):
+                    url = selected['contentCANVideo'].get('liveStreamingUrl')
                 elif selected['streamType'] == 'mpx_live':
-                    return _play(selected['videoContentId'])
+                    item = _play(selected['videoContentId'])
+                    break
 
         if not url:
             raise PluginError('No url found for this channel')
 
-        return plugin.Item(
+        item = plugin.Item(
             label = row['channelName'],
             info = {
                 'plot': row['description'],
             },
-            headers = headers,
             art = {'thumb': config.image(row['filePathLogoSelected'])},
             path = url,
             inputstream = inputstream.HLS(live=True),
         )
 
-    raise PluginError('Unable to find that channel')
+    if not item:
+        raise PluginError('Unable to find that channel')
+
+    #item.resume_from = LIVE_HEAD
+    return item
 
 @plugin.route()
 def logout(**kwargs):
