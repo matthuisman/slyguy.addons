@@ -717,10 +717,10 @@ def _play(video_id):
     if data.get('isProtected'):
         item.inputstream = inputstream.Widevine(license_key=license_url)
         item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
-    elif data.get('assetType') == 'DASH_LIVE':
-        item.inputstream = inputstream.MPD()
-    elif data.get('assetType') == 'HLS_AES':
+    elif url.lower().endswith('.m3u8') or url.lower().endswith('.m3u'):
         item.inputstream = inputstream.HLS(live=data.get('isLive', False))
+    else:
+        item.inputstream = inputstream.MPD()
 
     item.headers['authorization'] = 'Bearer {}'.format(token)
 
