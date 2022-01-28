@@ -731,4 +731,8 @@ def fix_language(language=None):
     if len(split) > 1 and split[1].lower() == split[0].lower():
         return split[0]
 
+    ## Kodi or IA doesnt seem to match on en-US
+    if split[0] in ('en',):
+        return split[0]
+
     return language
