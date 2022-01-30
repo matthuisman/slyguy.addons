@@ -170,18 +170,6 @@ def require_version(required_version, required=False):
 
     return ia_addon if result else False
 
-def supports_arm64tls():
-    try:
-        return int(os.environ['LIBC_WIDEVINE_PATCHLEVEL']) >= 1
-    except KeyError:
-        pass
-
-    try:
-        return 'arm64tls' in subprocess.check_output(['ldd', '--version'], stderr=subprocess.STDOUT).decode('utf-8').split('\n')[0].lower()
-    except Exception as e:
-        log.exception(e)
-        return False
-
 def install_widevine(reinstall=False):
     DST_FILES = {
         'Linux': 'libwidevinecdm.so',
@@ -243,19 +231,12 @@ def install_widevine(reinstall=False):
 
     current = None
     latest = None
-    tls_min_version = LooseVersion('4.10.2252.0')
     for wv in wv_versions:
         wv['compatible'] = True
         wv['label'] = str(wv['ver'])
         wv['ver'] = LooseVersion(wv['ver'])
         wv['confirm'] = wv.get('confirm', None)
         wv['notes'] = wv.get('notes', None)
-
-        if 'arm' in arch.lower() and wv['ver'] >= tls_min_version and not supports_arm64tls():
-            wv['compatible'] = False
-            wv['label'] = _(_.WV_UNSUPPORTED_OS, label=wv['label'])
-            if not wv['confirm']:
-                wv['confirm'] = _.WV_UNSUPPORTED_OS_CONFIRM
 
         if wv.get('revoked'):
             wv['compatible'] = False
