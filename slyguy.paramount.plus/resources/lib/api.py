@@ -382,7 +382,7 @@ class API(object):
 
         return self._session.get('/v3.0/androidphone/live/channels/{slug}/listings.json'.format(slug=channel), params=self._params(params)).json()['listing']
 
-    @mem_cache.cached(60*10)
+    ## Dont cache as channels use short lived dma token
     def dma(self):
         self._refresh_token()
 
