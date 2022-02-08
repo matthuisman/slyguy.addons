@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.11.2">
+<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.11.3">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -20,7 +20,7 @@ Abonnement requis.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Support EU portability</news>
+    <news>Fix Search</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

@@ -207,6 +207,7 @@ class API(object):
             'impliedMaturityRating': maturity,
             'kidsModeEnabled': 'true' if kids_mode else 'false',
             'appLanguage': appLanguage,
+            'partner': BAM_PARTNER,
         }
         _args.update(**kwargs)
 
@@ -228,9 +229,9 @@ class API(object):
 
         return profile, session
 
-    def search(self, query):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getSiteSearch']['href'], query=query)
-        return self._json_call(endpoint)['data']['disneysearch']
+    def search(self, query, page_size=PAGE_SIZE_CONTENT):
+        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getSearchResults']['href'], query=query, queryType=SEARCH_QUERY_TYPE, pageSize=page_size)
+        return self._json_call(endpoint)['data']['search']
 
     def avatar_by_id(self, ids):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getAvatars']['href'], avatarIds=','.join(ids))
@@ -260,7 +261,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCollection']['href'], collectionSubType=sub_type, contentClass=content_class, slug=slug)
         return self._json_call(endpoint)['data']['Collection']
 
-    def set_by_id(self, set_id, set_type, page=1, page_size=15):
+    def set_by_id(self, set_id, set_type, page=1, page_size=PAGE_SIZE_SETS):
         if set_type == 'ContinueWatchingSet':
             endpoint = 'getCWSet'
         elif set_type == 'CuratedSet':
@@ -279,7 +280,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getDmcSeriesBundle']['href'], encodedSeriesId=series_id)
         return self._json_call(endpoint)['data']['DmcSeriesBundle']
 
-    def episodes(self, season_id, page=1, page_size=PAGE_SIZE_EPISODES):
+    def episodes(self, season_id, page=1, page_size=PAGE_SIZE_CONTENT):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getDmcEpisodes']['href'], seasonId=season_id, pageSize=page_size, page=page)
         return self._json_call(endpoint)['data']['DmcEpisodes']
 

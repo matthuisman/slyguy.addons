@@ -1,8 +1,10 @@
 API_VERSION = '5.1'
 API_KEY = 'ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA'
 CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v3.0/disney-svod-3d9324fc/android/v6.1.0/google/tv/prod.json'
-PAGE_SIZE = 15
-PAGE_SIZE_EPISODES = 30
+PAGE_SIZE_SETS = 15
+PAGE_SIZE_CONTENT = 30
+SEARCH_QUERY_TYPE = 'ge'
+BAM_PARTNER = 'disney'
 
 WATCHLIST_SET_ID = '6f3e3200-ce38-4865-8500-a9f463c1971e'
 WATCHLIST_SET_TYPE = 'WatchlistSet'
