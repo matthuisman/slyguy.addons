@@ -597,45 +597,31 @@ class Channel(database.Model):
             custom   = True,
         )
 
-    @classmethod
-    def from_playlist(cls, extinf):
+    def load_extinf(self, extinf):
         colon = extinf.find(':', 0)
         comma = extinf.rfind(',', 0)
 
-        name = None
         if colon >= 0 and comma >= 0 and comma > colon:
-            name = extinf[comma+1:].strip()
+            self.name = extinf[comma+1:].strip()
 
         attribs = {}
         for key, value in re.findall('([\w-]+)="([^"]*)"', extinf):
             attribs[key.lower()] = value.strip()
 
-        is_radio = attribs.pop('radio', 'false').lower() == 'true'
+        self.radio = attribs.pop('radio', 'false').lower() == 'true'
 
         try:
-            chno = int(attribs.pop('tvg-chno'))
+            self.chno = int(attribs.pop('tvg-chno'))
         except:
-            chno = None
+            self.chno = None
 
         groups = attribs.pop('group-title', '').strip()
-
         if groups:
-            groups = groups.split(';')
-        else:
-            groups = []
+            self.groups = groups.split(';')
 
-        channel = Channel(
-            chno = chno,
-            name = name,
-            groups = groups,
-            radio = is_radio,
-            epg_id = attribs.pop('tvg-id', None) or attribs.get('tvg-name') or name,
-            logo = attribs.pop('tvg-logo', None),
-        )
-
-        channel.attribs = attribs
-
-        return channel
+        self.epg_id = attribs.pop('tvg-id', None) or attribs.get('tvg-name') or self.name
+        self.logo = attribs.pop('tvg-logo', None)
+        self.attribs = attribs
 
 class Override(database.Model):
     playlist = peewee.ForeignKeyField(Playlist, backref="overrides", on_delete='cascade')

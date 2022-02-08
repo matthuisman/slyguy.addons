@@ -269,16 +269,16 @@ class Merger(object):
                     if 'catchup-correction' in attribs:
                         default_attribs['catchup-correction'] = attribs['catchup-correction']
 
+                if not channel:
+                    channel = Channel()
+
                 if line.startswith('#EXTINF'):
-                    channel = Channel.from_playlist(line)
+                    channel.load_extinf(line)
                     for key in default_attribs:
                         if key not in channel.attribs:
                             channel.attribs[key] = default_attribs[key]
 
-                elif not channel:
-                    continue
-
-                if line.startswith('#EXTGRP'):
+                elif line.startswith('#EXTGRP'):
                     value = line.split(':',1)[1].strip()
                     if value:
                         channel.groups.extend(value.split(';'))
@@ -295,11 +295,11 @@ class Merger(object):
                         channel.is_live = False
 
                 elif not line.startswith('#'):
-                    channel.url = line
-                    if not channel.url:
+                    if not line:
                         channel = None
                         continue
 
+                    channel.url = line
                     channel.playlist = playlist
 
                     if playlist.skip_playlist_groups:
