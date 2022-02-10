@@ -91,6 +91,7 @@ class API(object):
 
         for row in channels:
             if row['channel']['id'] == id:
-                return 'https://pubads.g.doubleclick.net/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
+                #return 'https://pubads.g.doubleclick.net/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
+                return 'https://dai.google.com/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
 
         raise APIError('Failed to find stream key')
