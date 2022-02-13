@@ -421,6 +421,14 @@ class Merger(object):
             count = 0
             starting_ch_no = settings.getInt('start_ch_no', 1)
             groups_disabled = settings.getBool('disable_groups', False)
+            ignore_groups = [x.strip() for x in settings.get('ignore_groups', '').split(';') if x.strip()]
+
+            def ignore_channel(channel):
+                for group in ignore_groups:
+                    if group in channel.groups:
+                        log.debug('Ignoring channel: {} due to ignored group: {}'.format(channel.slug, group))
+                        return True
+                return False
 
             with codecs.open(working_path, 'w', encoding='utf8') as outfile:
                 outfile.write(u'#EXTM3U')
@@ -436,6 +444,9 @@ class Merger(object):
                         channel.chno = chno
                     chno = channel.chno + 1
 
+                    if ignore_channel(channel):
+                        continue
+
                     if groups_disabled:
                         channel.groups = []
                     else:
@@ -450,6 +461,9 @@ class Merger(object):
                     if channel.chno is None:
                         channel.chno = chno
                     chno = channel.chno + 1
+
+                    if ignore_channel(channel):
+                        continue
 
                     if groups_disabled:
                         channel.groups = []

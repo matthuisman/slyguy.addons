@@ -98,5 +98,6 @@ class Language(BaseLanguage):
     MERGE_EPGS             = 30094
     DISABLE_GROUPS         = 30095
     SERVICE_DELAY          = 30096
+    IGNORE_GROUPS          = 30097
 
 _ = Language()
