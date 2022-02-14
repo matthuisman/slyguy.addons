@@ -466,8 +466,8 @@ class Channel(database.Model):
     def plot(self):
         plot = u'{}\n{}'.format(_.URL, self.url)
 
-        # if self.groups:
-        #     plot += u'\n\n{}\n{}'.format('Groups', '\n'.join(self.groups))
+        if self.groups:
+            plot += u'\n\n{}\n{}'.format('Groups', ';'.join(self.groups))
 
         if self.playlist_id:
             plot += u'\n\n{}\n{}'.format(_.PLAYLIST, self.playlist.path)

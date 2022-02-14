@@ -394,7 +394,7 @@ msgid "Service Start Delay (seconds)"
 msgstr ""
 
 msgctxt "#30097"
-msgid "Ignore Groups"
+msgid "Hide Groups"
 msgstr ""
 
 ## COMMON SETTINGS ##
