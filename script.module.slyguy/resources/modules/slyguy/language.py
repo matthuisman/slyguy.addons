@@ -198,6 +198,8 @@ class BaseLanguage(object):
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021
+    PLAYBACK_FAILED             = 16026
+    PLAYBACK_FAILED_CHECK_LOG   = 16029
     AUTO                        = 16316
 
     def __getattribute__(self, name):

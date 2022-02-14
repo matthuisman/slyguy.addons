@@ -215,7 +215,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 response.stream.content = str(e).encode('utf-8')
                 failed_playback()
             elif url == manifest:
-                gui.error(_.QUALITY_PARSE_ERROR)
+                response.status_code = 200
+                gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
+                xbmc.executebuiltin("Action(ChannelUp)")
+                xbmc.sleep(100)
 
         self._output_response(response)
 
