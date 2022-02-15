@@ -20,7 +20,6 @@ from slyguy import settings, gui, inputstream
 from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
-from slyguy.plugin import failed_playback
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
@@ -191,16 +190,22 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = self._get_url('GET')
-        response = self._proxy_request('GET', url)
         manifest = self._session.get('manifest')
 
-        if self._session.get('redirecting') or not self._session.get('type') or not manifest or int(response.headers.get('content-length', 0)) > 1000000:
-            self._output_response(response)
-            return
-
-        parse = urlparse(self.path.lower())
+        response = Response()
+        response.stream = ResponseStream(response)
+        response.headers = {}
+        response.ok = True
 
         try:
+            response = self._proxy_request('GET', url)
+
+            if self._session.get('redirecting') or not self._session.get('type') or not manifest or int(response.headers.get('content-length', 0)) > 1000000:
+                self._output_response(response)
+                return
+
+            parse = urlparse(self.path.lower())
+
             if self._session.get('type') == 'm3u8' and (url == manifest or parse.path.endswith('.m3u') or parse.path.endswith('.m3u8')):
                 self._parse_m3u8(response)
 
@@ -211,14 +216,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             log.exception(e)
 
             if type(e) == Exit:
-                response.status_code = 500
+                response.status_code = 200
                 response.stream.content = str(e).encode('utf-8')
-                failed_playback()
+                xbmc.executebuiltin("Action(Stop)") #stop autoplaying next item
+                xbmc.sleep(200)
+
             elif url == manifest:
                 response.status_code = 200
+                response.stream.content = str(e).encode('utf-8')
                 gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
                 xbmc.executebuiltin("Action(ChannelUp)")
-                xbmc.sleep(100)
+                xbmc.sleep(200)
 
         self._output_response(response)
 

@@ -733,3 +733,7 @@ msgstr ""
 msgctxt "#32143"
 msgid "Pagination Multiplier"
 msgstr ""
+
+msgctxt "#32144"
+msgid "Check log for more info"
+msgstr ""

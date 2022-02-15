@@ -194,12 +194,12 @@ class BaseLanguage(object):
     SEASON                      = 32141
     IA_LINUX_MISSING            = 32142
     PAGINATION_MULTIPLIER       = 32143
+    PLAYBACK_FAILED_CHECK_LOG   = 32144
 
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021
     PLAYBACK_FAILED             = 16026
-    PLAYBACK_FAILED_CHECK_LOG   = 16029
     AUTO                        = 16316
 
     def __getattribute__(self, name):
