@@ -31,6 +31,7 @@ REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'conn
 
 DEFAULT_PORT = 52103
 HOST = '127.0.0.1'
+ERROR_URL = 'error.m3u8'
 
 PORT = check_port(DEFAULT_PORT)
 if not PORT:
@@ -196,6 +197,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         response.stream = ResponseStream(response)
         response.headers = {}
         response.ok = True
+        response.status_code = 200
+
+        if url == ERROR_URL:
+            xbmc.sleep(200)
+            response.stream.content = b'#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:1\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-ENDLIST'
+            self._output_response(response)
+            return
 
         try:
             response = self._proxy_request('GET', url)
@@ -223,10 +231,20 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             elif url == manifest:
                 response.status_code = 200
-                response.stream.content = str(e).encode('utf-8')
-                gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
-                xbmc.executebuiltin("Action(ChannelUp)")
-                xbmc.sleep(200)
+                response.ok = True
+                if self._session.get('type') == 'm3u8':
+                    response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}{}'.format(PROXY_PATH, ERROR_URL).encode('utf8')
+                else:
+                    response.stream.content = str(e).encode('utf-8')
+
+                self._output_response(response)
+
+                if not self._session.get('failing'):
+                    self._session['failing'] = True
+                    gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
+                    xbmc.executebuiltin("Action(ChannelUp)")
+
+                return
 
         self._output_response(response)
 
