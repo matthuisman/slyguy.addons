@@ -118,7 +118,7 @@ class API(object):
 
         access_token = data.get('access_token')
         if not access_token:
-            raise APIError(_(_.LOGIN_ERROR, msg=data.get('detail', '')))
+            raise APIError(_(_.LOGIN_ERROR, msg=data.get('error_message', '')))
 
         userdata.set('access_token', access_token)
         self._set_authentication()
