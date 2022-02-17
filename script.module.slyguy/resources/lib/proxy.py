@@ -196,7 +196,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         response = Response()
         response.stream = ResponseStream(response)
         response.headers = {}
-        response.ok = True
         response.status_code = 200
 
         if url == ERROR_URL:
@@ -231,7 +230,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             elif url == manifest:
                 response.status_code = 200
-                response.ok = True
                 if self._session.get('type') == 'm3u8':
                     response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}{}'.format(PROXY_PATH, ERROR_URL).encode('utf8')
                 else:
@@ -1009,13 +1007,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             response.stream = ResponseStream(response)
 
             if os.path.exists(url):
-                response.ok = True
                 response.status_code = 200
                 with open(url, 'rb') as f:
                     response.stream.content = f.read()
                 if not ADDON_DEV: remove_file(url)
             else:
-                response.ok = False
                 response.status_code = 500
                 response.stream.content = "File not found: {}".format(url).encode('utf-8')
 
