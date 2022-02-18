@@ -199,6 +199,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         response.status_code = 200
 
         if url == ERROR_URL:
+            gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
+            xbmc.executebuiltin("Action(ChannelUp)")
             xbmc.sleep(200)
             response.stream.content = b'#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:1\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-ENDLIST'
             self._output_response(response)
@@ -228,21 +230,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 xbmc.executebuiltin("Action(Stop)") #stop autoplaying next item
                 xbmc.sleep(200)
 
-            elif url == manifest:
+            elif url == manifest and self._session.get('type') in ('m3u8', 'mpd'):
                 response.status_code = 200
+                _error_url = PROXY_PATH + ERROR_URL
+    
                 if self._session.get('type') == 'm3u8':
-                    response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}{}'.format(PROXY_PATH, ERROR_URL).encode('utf8')
-                else:
-                    response.stream.content = str(e).encode('utf-8')
+                    response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}'.format(
+                        _error_url).encode('utf8')
 
-                self._output_response(response)
-
-                if not self._session.get('failing'):
-                    self._session['failing'] = True
-                    gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
-                    xbmc.executebuiltin("Action(ChannelUp)")
-
-                return
+                elif self._session.get('type') == 'mpd':
+                    response.stream.content = '<MPD><Period><AdaptationSet id="1" contentType="video" mimeType="video/mp4"><SegmentTemplate initialization="{}" media="{}" startNumber="1"><SegmentTimeline><S d="540000" r="1" t="263007000000"/></SegmentTimeline></SegmentTemplate><Representation bandwidth="300000" codecs="avc1.42001e" frameRate="25" height="224" id="videosd-400x224" sar="224:225" scanType="progressive" width="400"></Representation></AdaptationSet></Period></MPD>'.format(
+                        _error_url, PROXY_PATH).encode('utf8')
 
         self._output_response(response)
 
