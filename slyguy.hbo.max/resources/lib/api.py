@@ -163,6 +163,16 @@ class API(object):
         self._oauth_token(payload)
         mem_cache.empty()
 
+    def login(self, username, password):
+        payload = {
+            'username': username,
+            'password': password,
+            'grant_type': 'user_name_password',
+            'scope': 'browse video_playback device elevated_account_management',
+        }
+
+        self._oauth_token(payload)
+
     def device_login(self, serial, code):
         payload = {
             'model': DEVICE_MODEL,

@@ -408,7 +408,13 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    if not _device_code():
+    options = [
+        [_.EMAIL_PASSWORD, _email_password],
+        [_.DEVICE_CODE, _device_code],
+    ]
+
+    index = gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
         return
 
     _select_profile()
@@ -428,6 +434,19 @@ def _device_code():
 
             if i % 5 == 0 and api.device_login(serial, code):
                 return True
+
+def _email_password():
+    email = gui.input(_.ASK_EMAIL, default=userdata.get('email', '')).strip()
+    if not email:
+        return
+
+    userdata.set('email', email)
+    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+    if not password:
+        return
+
+    api.login(email, password)
+    return True
 
 @plugin.route()
 def select_profile(**kwargs):
