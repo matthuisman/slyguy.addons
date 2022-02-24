@@ -151,7 +151,7 @@ def _live_channels():
 
         channels.append(row['data'])
 
-    return sorted(channels, key=lambda x: (x is None, x['chno']))
+    return sorted(channels, key=lambda x: (x is None, x['chno'] or 9999))
 
 @plugin.route()
 def live(**kwargs):
