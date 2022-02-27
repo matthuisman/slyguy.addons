@@ -150,7 +150,9 @@ class API(object):
         return self._session.get('{host}/production/sport-menu/lists/default.json'.format(host=self._config()['endPoints']['resourcesAPI'])).json()
 
     def use_cdn(self, live=False, sport=None):
-        return self._session.get('{host}/usecdn/mobile/{media}'.format(host=self._config()['endPoints']['cdnSelectionServiceAPI'], media='LIVE' if live else 'VOD'), params={'sport': sport}, headers=self._auth_header).json()
+        live = True #Force live like the website does
+        url = '{host}/web/usecdn/unknown/{media}'.format(host=self._config()['endPoints']['cdnSelectionServiceAPI'], media='LIVE' if live else 'VOD')
+        return self._session.get(url, params={'sport': sport}, headers=self._auth_header).json()
 
     #landing has heros and panels
     def landing(self, name, sport=None):

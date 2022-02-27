@@ -63,6 +63,10 @@ msgctxt "#30017"
 msgid "Hide Locked Content"
 msgstr ""
 
+msgctxt "#30018"
+msgid "Lumen"
+msgstr ""
+
 msgctxt "#30025"
 msgid "Inputstream HLS is required to watch this content\n"
 "Check Inputstream Adaptive is installed and enabled"

@@ -9,7 +9,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="30048" id="prefer_cdn" type="enum" default="2" lvalues="30049|30050|30052"/>
+        <setting label="30048" id="prefer_cdn" type="enum" default="2" lvalues="30049|30050|30052|30018"/>
         <setting label="$ADDON[script.module.slyguy 32063]" id="live_play_type" type="enum" default="0" lvalues="32066|32065|32064"/>
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>

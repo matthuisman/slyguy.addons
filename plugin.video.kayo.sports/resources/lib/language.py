@@ -16,6 +16,7 @@ class Language(BaseLanguage):
     SHOW_EPG              = 30015
     LOCKED                = 30016
     HIDE_LOCKED           = 30017
+    CDN_LUMEN             = 30018
 
     HLS_REQUIRED          = 30025
 
