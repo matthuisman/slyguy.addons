@@ -57,6 +57,7 @@ ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 PROXY_GLOBAL = {
     'last_qualities': [],
     'session': {},
+    'error_count': 0,
 }
 
 def middleware_regex(response, pattern, **kwargs):
@@ -207,8 +208,12 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if url == ERROR_URL:
             gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
-            xbmc.executebuiltin("Action(ChannelUp)")
-            xbmc.sleep(200)
+            if PROXY_GLOBAL['error_count'] >= 10:
+                xbmc.executebuiltin("Action(Stop)")
+                PROXY_GLOBAL['error_count'] = 0
+            else:
+                xbmc.executebuiltin("Action(ChannelUp)")
+            xbmc.sleep(500)
             response.stream.content = '#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:1\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:0.500,\n{}\n#EXT-X-ENDLIST'.format(EMPTY_TS).encode('utf8')
             self._output_response(response)
             return
@@ -234,10 +239,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             if type(e) == Exit:
                 response.status_code = 200
                 response.stream.content = str(e).encode('utf-8')
+                PROXY_GLOBAL['error_count'] = 0
                 xbmc.executebuiltin("Action(Stop)") #stop autoplaying next item
-                xbmc.sleep(200)
+                xbmc.sleep(500)
 
             elif url == manifest and self._session.get('type') in ('m3u8', 'mpd'):
+                PROXY_GLOBAL['error_count'] += 1
                 response.status_code = 200
                 _error_url = PROXY_PATH + ERROR_URL
     
@@ -248,6 +255,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 elif self._session.get('type') == 'mpd':
                     response.stream.content = '<MPD><Period><AdaptationSet id="1" contentType="video" mimeType="video/mp4"><SegmentTemplate initialization="{}" media="{}" startNumber="1"><SegmentTimeline><S d="540000" r="1" t="263007000000"/></SegmentTimeline></SegmentTemplate><Representation bandwidth="300000" codecs="avc1.42001e" frameRate="25" height="224" id="videosd-400x224" sar="224:225" scanType="progressive" width="400"></Representation></AdaptationSet></Period></MPD>'.format(
                         _error_url, PROXY_PATH).encode('utf8')
+        else:
+            if url == manifest:
+                PROXY_GLOBAL['error_count'] = 0
 
         self._output_response(response)
 
