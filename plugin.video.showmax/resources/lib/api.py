@@ -99,51 +99,61 @@ class API(object):
         userdata.delete('user_id')
         self.new_session()
 
-    def _catalogue(self, _params):
-        def process_page(start):
-            params = {
-                'field[]': ['id'],
-                'lang': self._language,
-                'showmax_rating': '18-plus',
-                'sort': 'alphabet',
-                'start': start,
-                'subscription_status': 'full',
-                'mode': 'paid',
-               # 'content_country': 'ZA',
-            }
+    def _catalogue(self, _params, page=1):
+        items_per_page = 60
 
-            params.update(_params)
+        params = {
+            'field[]': ['id'],
+            'lang': self._language,
+            'showmax_rating': '18-plus',
+            'num': items_per_page,
+            'sort': 'alphabet',
+            'start': (page-1)*items_per_page,
+            'subscription_status': 'full',
+            'mode': 'paid',
+            'mode_action': 'filter',
+            # 'content_country': 'ZA',
+        }
 
-            data = self._session.get('catalogue/assets', params=params).json()
-            items = data['items']
+        params.update(_params)
 
-            count     = int(data.get('count', 0))
-            remaining = int(data.get('remaining', 0))
-            if count > 0 and remaining > 0:
-                items.extend(process_page(start + count))
+        data = self._session.get('catalogue/search', params=params).json()
+        items = data['items']
 
-            return items
+        count = int(data.get('count', 0))
+        remaining = int(data.get('remaining', 0))
+        has_more = count > 0 and remaining > 0
 
-        return process_page(start=0)
+        return items, has_more
 
-    def series(self):
+    def series(self, page=1):
         return self._catalogue({
             'field[]': ['id', 'images', 'title', 'items', 'total', 'description', 'videos', 'type'],
             'type': 'tv_series',
-        })
+        }, page=page)
 
-    def movies(self):
+    def movies(self, page=1):
         return self._catalogue({
             'field[]': ['id', 'images', 'title', 'items', 'total', 'description', 'videos', 'type'],
             'type': 'movie',
-        })
+        }, page=page)
 
-    def kids(self):
+    def kids(self, page=1):
         return self._catalogue({
             'field[]': ['id', 'images', 'title', 'items', 'total', 'description', 'videos', 'type'],
             'showmax_rating': '5-6',
             'types[]': ['tv_series', 'movie'],
-        })
+        }, page=page)
+
+    def search(self, query, page=1):
+        return self._catalogue({
+            'field[]': ['id', 'images', 'title', 'items', 'total', 'type', 'description', 'type', 'videos'],
+            'types[]': ['tv_series', 'movie'],
+            'showmax_rating': '18-plus',
+            'subscription_status': 'full',
+            'mode_action': 'sort',
+            'q': query,
+        }, page=page)
 
     def seasons(self, series_id):
         params = {
@@ -152,7 +162,6 @@ class API(object):
             'showmax_rating': '18-plus',
             'subscription_status': 'full',
         }
-
         return self._session.get('catalogue/tv_series/{}'.format(series_id), params=params).json()
 
     def episodes(self, season_id):
@@ -164,15 +173,6 @@ class API(object):
         }
 
         return self._session.get('catalogue/season/{}'.format(season_id), params=params).json()
-
-    def search(self, query):
-        return self._catalogue({
-            'field[]': ['id', 'images', 'title', 'items', 'total', 'type', 'description', 'type', 'videos'],
-            'types[]': ['tv_series', 'movie'],
-            'showmax_rating': '18-plus',
-            'subscription_status': 'full',
-            'q': query,
-        })
 
     def asset(self, asset_id):
         params = {

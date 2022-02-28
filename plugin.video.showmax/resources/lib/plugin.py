@@ -36,31 +36,34 @@ def home(**kwargs):
     return folder
 
 @plugin.route()
-def series(**kwargs):
+@plugin.pagination()
+def series(page=1, **kwargs):
     folder = plugin.Folder(_.SERIES)
-    rows = api.series()
+    rows, more_results = api.series(page)
     folder.add_items(_parse_rows(rows))
-    return folder
+    return folder, more_results
 
 @plugin.route()
-def movies(**kwargs):
+@plugin.pagination()
+def movies(page=1, **kwargs):
     folder = plugin.Folder(_.MOVIES)
-    rows = api.movies()
+    rows, more_results = api.movies(page)
     folder.add_items(_parse_rows(rows))
-    return folder
+    return folder, more_results
 
 @plugin.route()
-def kids(**kwargs):
+@plugin.pagination()
+def kids(page=1, **kwargs):
     folder = plugin.Folder(_.KIDS)
-    rows = api.kids()
+    rows, more_results = api.kids(page)
     folder.add_items(_parse_rows(rows))
-    return folder
+    return folder, more_results
 
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    rows = api.search(query)
-    return _parse_rows(rows), False
+    rows, more_results = api.search(query, page)
+    return _parse_rows(rows), more_results
 
 @plugin.route()
 def seasons(series_id, **kwargs):
