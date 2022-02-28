@@ -199,17 +199,13 @@ def search():
                 return folder
 
             else:
-                folder = Folder(_(_.SEARCH_FOR, query=query))
-                items, more_results = f(query=query, page=page, **kwargs)
-                folder.add_items(items)
-
-                if more_results:
-                    folder.add_item(
-                        label = _(_.NEXT_PAGE, page=page+1),
-                        path  = url_for(f, query=query, page=page+1),
-                    )
-
-                return folder
+                @pagination()
+                def search(page=1, **kwargs):
+                    folder = Folder(_(_.SEARCH_FOR, query=query))
+                    items, more_results = f(query=query, page=page, **kwargs)
+                    folder.add_items(items)
+                    return folder, more_results
+                return search(page, **kwargs)
 
         return decorated_function
     return lambda f: decorator(f)
