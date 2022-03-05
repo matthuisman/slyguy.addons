@@ -619,7 +619,7 @@ msgid "Failed to fetch JSON data\n"
 "Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
 msgstr "Nem sikerült lekérni a JSON-adatokat\n"
 "Győződjön meg arról, hogy IP-címe engedélyezett (nincs földrajzilag blokkolva)\n"
-„Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-kiegészítő-probléma e” 
+"Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-kiegészítő-probléma e” 
 
 msgctxt "#32110"
 msgid "URL returned no response\n"
