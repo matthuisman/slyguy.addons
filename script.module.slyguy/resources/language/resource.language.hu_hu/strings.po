@@ -389,7 +389,7 @@ msgid "Failed to fetch / parse playback URL\n"
 "Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
 msgstr "Nem sikerült lekérni/elemezni a lejátszási URL-t\n"
 "Győződjön meg arról, hogy jogosult erre a tartalomra, és az IP-címe engedélyezett (nincs földrajzilag blokkolva)\n"
-„Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-bővítmény-probléma e”
+"Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-bővítmény-probléma e”
 
 msgctxt "#32057"
 msgid "M3U8 file does not start with #EXTM3U"
@@ -481,7 +481,7 @@ msgid "Your IP address is not allowed to access this content (geo-blocked)\n"
 "Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
 msgstr "Az Ön IP-címe nem fér hozzá ehhez a tartalomhoz (földrajzilag blokkolva)\n"
 "Lehet, hogy VPN-t/intelligens DNS-t kell használnia. Néha még ezek is blokkolhatók.\n"
-„Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-bővítmény-probléma e”
+"Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-bővítmény-probléma e”
 
 msgctxt "#32078"
 msgid "Kiosk Mode"
