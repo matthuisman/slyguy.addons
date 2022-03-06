@@ -591,7 +591,7 @@ msgstr "{name} már használatban"
 
 msgctxt "#32104"
 msgid "Disable profile switching in Kids profile"
-msgstr "Profilváltás letiltása a gyerekek profiljában”
+msgstr "Profilváltás tiltása a gyermek profilban"
 
 msgctxt "#32105"
 msgid "Content requires a newer version of Inputstream Adaptive\n"
