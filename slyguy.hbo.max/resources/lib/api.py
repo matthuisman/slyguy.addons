@@ -253,6 +253,10 @@ class API(object):
     def markers(self, markers):
         self._refresh_token()
 
+        if len(markers) == 1:
+            #always have at least 2 markers so api returns a list
+            markers.append(markers[0])
+
         params = {
             'limit': len(markers),
         }
