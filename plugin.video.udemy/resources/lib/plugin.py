@@ -1,7 +1,6 @@
 from slyguy import plugin, gui, settings, userdata, inputstream, signals
 from slyguy.log import log
 from slyguy.constants import QUALITY_TAG, QUALITY_CUSTOM, QUALITY_ASK, QUALITY_BEST, QUALITY_LOWEST, QUALITY_TYPES
-from slyguy.exceptions import FailedPlayback
 from slyguy.util import get_system_arch, strip_html_tags
 
 from .api import API
@@ -180,7 +179,7 @@ def select_quality(qualities):
 
     index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=10000) #autoclose after 10seconds
     if index < 0:
-        raise FailedPlayback('User cancelled quality select')
+        return None
 
     userdata.set('last_quality', values[index])
 
@@ -280,6 +279,8 @@ def play(asset_id, **kwargs):
         quality = int(settings.getFloat('max_bandwidth')*1000000)
     elif quality == QUALITY_ASK:
         quality = select_quality(qualities)
+        if quality is None:
+            return
 
     if quality == QUALITY_BEST:
         quality = qualities[0][0]
