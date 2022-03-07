@@ -27,14 +27,6 @@ from slyguy.router import add_url_args
 
 from .language import _
 
-REMOVE_IN_HEADERS = ['upgrade', 'host', 'accept-encoding']
-REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
-
-DEFAULT_PORT = 52103
-HOST = '127.0.0.1'
-ERROR_URL = 'error.m3u8'
-EMPTY_TS = 'empty.ts' if KODI_VERSION < 19 else ''
-
 PORT = check_port(DEFAULT_PORT)
 if not PORT:
     PORT = check_port()
@@ -206,13 +198,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._output_response(response)
             return
 
-        if url == ERROR_URL:
-            gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
-            if PROXY_GLOBAL['error_count'] >= 10:
-                xbmc.executebuiltin("Action(Stop)")
+        if url in (STOP_URL, ERROR_URL):
+            if url == STOP_URL:
                 PROXY_GLOBAL['error_count'] = 0
+                xbmc.executebuiltin("Action(Stop)")
             else:
-                xbmc.executebuiltin("Action(ChannelUp)")
+                PROXY_GLOBAL['error_count'] += 1
+                gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.PLAYBACK_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
+                if PROXY_GLOBAL['error_count'] >= 10:
+                    xbmc.executebuiltin("Action(Stop)")
+                    PROXY_GLOBAL['error_count'] = 0
+                else:
+                    xbmc.executebuiltin("Action(ChannelUp)")
+
             xbmc.sleep(500)
             response.stream.content = '#EXTM3U\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:1\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:0.500,\n{}\n#EXT-X-ENDLIST'.format(EMPTY_TS).encode('utf8')
             self._output_response(response)
@@ -236,25 +234,22 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             log.exception(e)
 
-            if type(e) == Exit:
+            def output_error(url):
                 response.status_code = 200
-                response.stream.content = str(e).encode('utf-8')
-                PROXY_GLOBAL['error_count'] = 0
-                xbmc.executebuiltin("Action(Stop)") #stop autoplaying next item
-                xbmc.sleep(500)
-
-            elif url == manifest and self._session.get('type') in ('m3u8', 'mpd'):
-                PROXY_GLOBAL['error_count'] += 1
-                response.status_code = 200
-                _error_url = PROXY_PATH + ERROR_URL
-    
                 if self._session.get('type') == 'm3u8':
                     response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}'.format(
-                        _error_url).encode('utf8')
+                        PROXY_PATH+url).encode('utf8')
 
                 elif self._session.get('type') == 'mpd':
                     response.stream.content = '<MPD><Period><AdaptationSet id="1" contentType="video" mimeType="video/mp4"><SegmentTemplate initialization="{}" media="{}" startNumber="1"><SegmentTimeline><S d="540000" r="1" t="263007000000"/></SegmentTimeline></SegmentTemplate><Representation bandwidth="300000" codecs="avc1.42001e" frameRate="25" height="224" id="videosd-400x224" sar="224:225" scanType="progressive" width="400"></Representation></AdaptationSet></Period></MPD>'.format(
-                        _error_url, PROXY_PATH).encode('utf8')
+                        PROXY_PATH+url, PROXY_PATH).encode('utf8')
+
+            if self._session.get('type') in ('m3u8', 'mpd'):
+                if type(e) == Exit:
+                    output_error(PROXY_PATH+STOP_URL)
+
+                elif url == manifest:
+                    output_error(PROXY_PATH+ERROR_URL)
         else:
             if url == manifest:
                 PROXY_GLOBAL['error_count'] = 0

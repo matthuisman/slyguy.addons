@@ -4,9 +4,6 @@ from .constants import ADDON_NAME
 class Exit(Exception):
     pass
 
-class FailedPlayback(Exception):
-    pass
-
 class Error(Exception):
     def __init__(self, message='', heading=None):
         self.message = message

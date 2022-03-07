@@ -13,7 +13,7 @@ from . import router, gui, settings, userdata, inputstream, signals, migrate, bo
 from .constants import *
 from .log import log
 from .language import _
-from .exceptions import Error, PluginError, FailedPlayback
+from .exceptions import Error, PluginError
 from .util import set_kodi_string, get_addon, remove_file, user_country
 
 ## SHORTCUTS
@@ -244,13 +244,16 @@ def pagination():
         return decorated_function
     return lambda f: decorator(f)
 
-def resolve(error=False):
+def resolve():
     handle = _handle()
-    if handle > 0:
-        if error and '_play=1' in sys.argv[2]:
-            failed_playback()
-        else:
-            xbmcplugin.endOfDirectory(handle, succeeded=False, updateListing=False, cacheToDisc=False)
+    if not handle:
+        return
+
+    if '_play=1' in sys.argv[2]:
+        path = settings.common_settings.get('_proxy_path')+STOP_URL
+        xbmcplugin.setResolvedUrl(handle, True, Item(path=path).get_li())
+    else:
+        xbmcplugin.endOfDirectory(handle, succeeded=False, updateListing=False, cacheToDisc=False)
 
 @signals.on(signals.ON_ERROR)
 def _error(e):
@@ -263,20 +266,16 @@ def _error(e):
 
     log.debug(e, exc_info=True)
     gui.ok(e.message, heading=e.heading)
-    resolve(error=True)
+    resolve()
 
 @signals.on(signals.ON_EXCEPTION)
 def _exception(e):
     mem_cache.empty()
     _close()
 
-    if type(e) == FailedPlayback:
-        failed_playback()
-        return
-
     log.exception(e)
     gui.exception()
-    resolve(error=True)
+    resolve()
 
 @route('')
 def _home(**kwargs):
@@ -473,18 +472,8 @@ def service(interval=ROUTE_SERVICE_INTERVAL):
         monitor.waitForAbort(5)
 
 def _handle():
-    try:
-        return int(sys.argv[1])
-    except:
-        return -1
-
-def failed_playback():
-    handle = _handle()
-    xbmcplugin.setResolvedUrl(handle, False, Item(path='http').get_li())
-    xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=False, cacheToDisc=False)
-    if KODI_VERSION < 18:
-        xbmc.PlayList(xbmc.PLAYLIST_MUSIC).clear()
-        xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
+    try: return int(sys.argv[1])
+    except: return -1
 
 def _autoplay(folder, pattern, playable=True):
     choose = 'pick'
