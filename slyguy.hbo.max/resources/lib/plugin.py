@@ -69,9 +69,7 @@ def _process_rows(rows, slug):
             if viewable:
                 ids.append(viewable.split(':')[-1])
 
-        if ids:
-            for row in api.markers(ids):
-                markers[row['id']] = [row['position'], row['runtime']]
+        markers = api.markers(ids)
 
     for row in rows:
         viewable = row.get('viewable') or ''
@@ -98,11 +96,11 @@ def _process_rows(rows, slug):
                 path = _get_play_path(viewable),
             )
             if viewable in markers:
-                if float(markers[viewable][0]) / markers[viewable][1] > (WATCHED_PERCENT / 100.0):
+                if float(markers[viewable]['position']) / markers[viewable]['runtime'] > (WATCHED_PERCENT / 100.0):
                     item.info['playcount'] = 1
                     item.resume_from = 0
                 else:
-                    item.resume_from = markers[viewable][0]
+                    item.resume_from = markers[viewable]['position']
 
         elif content_type == 'SERIES':
             item = plugin.Item(
@@ -130,11 +128,11 @@ def _process_rows(rows, slug):
             )
 
             if viewable in markers:
-                if float(markers[viewable][0]) / markers[viewable][1] > (WATCHED_PERCENT / 100.0):
+                if float(markers[viewable]['position']) / markers[viewable]['runtime'] > (WATCHED_PERCENT / 100.0):
                     item.info['playcount'] = 1
                     item.resume_from = 0
                 else:
-                    item.resume_from = markers[viewable][0]
+                    item.resume_from = markers[viewable]['position']
 
         elif row['id'].startswith('urn:hbo:themed-tray') and row['items']:
             item = plugin.Item(
@@ -244,9 +242,7 @@ def extras(slug, **kwargs):
             if row.get('playbackMarkerId'):
                 ids.append(row['playbackMarkerId'])
 
-        if ids:
-            for row in api.markers(ids):
-                markers[row['id']] = [row['position'], row['runtime']]
+        markers = api.markers(ids)
 
     for row in content['extras']:
         if not row.get('playbackMarkerId'):
@@ -265,11 +261,11 @@ def extras(slug, **kwargs):
         )
 
         if row['id'] in markers:
-            if float(markers[row['id']][0]) / markers[row['id']][1] > (WATCHED_PERCENT / 100.0):
+            if float(markers[row['id']]['position']) / markers[row['id']]['runtime'] > (WATCHED_PERCENT / 100.0):
                 item.info['playcount'] = 1
                 item.resume_from = 0
             else:
-                item.resume_from = markers[row['id']][0]
+                item.resume_from = markers[row['id']]['position']
 
         folder.add_items(item)
 
@@ -351,9 +347,7 @@ def series(slug, season=None, **kwargs):
             for row in data['episodes']:
                 ids.append(row['id'].split(':')[-1])
 
-            if ids:
-                for row in api.markers(ids):
-                    markers[row['id']] = [row['position'], row['runtime']]
+            markers = api.markers(ids)
 
         for row in data['episodes']:
             item = plugin.Item(
@@ -374,11 +368,11 @@ def series(slug, season=None, **kwargs):
                 item.context.insert(0, ((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, slug=row['id'], title=item.label, icon=item.art.get('thumb'))))))
 
             if row['id'] in markers:
-                if float(markers[row['id']][0]) / markers[row['id']][1] > (WATCHED_PERCENT / 100.0):
+                if float(markers[row['id']]['position']) / markers[row['id']]['runtime'] > (WATCHED_PERCENT / 100.0):
                     item.info['playcount'] = 1
                     item.resume_from = 0
                 else:
-                    item.resume_from = markers[row['id']][0]
+                    item.resume_from = markers[row['id']]['position']
 
             folder.add_items(item)
 
@@ -689,7 +683,7 @@ def play(slug, **kwargs):
         item.headers = headers
 
     if settings.getBool('sync_playback', False) and not kwargs.get(ROUTE_RESUME_TAG):
-        marker = api.markers([edit['playbackMarkerId'],])
+        marker = api.marker(edit['playbackMarkerId'])
 
         if marker and float(marker['position']) / marker['runtime'] <= (WATCHED_PERCENT / 100.0):
             item.resume_from = plugin.resume_from(marker['position'])

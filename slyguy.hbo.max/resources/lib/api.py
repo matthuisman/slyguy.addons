@@ -250,21 +250,33 @@ class API(object):
         self._refresh_token()
         return self._session.delete(self.url('comet', '/watchlist/{}'.format(slug))).ok
 
-    def markers(self, markers):
+    def marker(self, id):
+        markers = self.markers([id,])
+        return list(markers.values())[0] if markers else None
+
+    def markers(self, ids):
+        if not ids:
+            return {}
+
+        print(ids)
+
         self._refresh_token()
 
-        if len(markers) == 1:
+        if len(ids) == 1:
             #always have at least 2 markers so api returns a list
-            markers.append(markers[0])
+            ids.append(ids[0])
 
         params = {
-            'limit': len(markers),
+            'limit': len(ids),
         }
 
         try:
-            return self._session.get(self.url('markers', '/markers/{}'.format(','.join(markers))), params=params, json={}).json()
+            markers = {}
+            for row in self._session.get(self.url('markers', '/markers/{}'.format(','.join(ids))), params=params, json={}).json():
+                markers[row['id']] = {'position': row['position'], 'runtime': row['runtime']}
+            return markers
         except:
-            return []
+            return {}
 
     def update_marker(self, url, cut_id, runtime, playback_time):
         self._refresh_token()
