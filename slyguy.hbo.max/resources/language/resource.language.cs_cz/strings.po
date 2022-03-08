@@ -1,0 +1,193 @@
+# Language file for Kodi
+# Addon Name: HBO Max
+# Addon id: slyguy.hbo.max
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: Ricrdsson\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs_CZ\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+
+msgctxt "#30003"
+msgid "Device ID"
+msgstr "ID zařízení"
+
+msgctxt "#30004"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "Požadavek API se nezdařil\n"
+"Chyba serveru: {msg}"
+
+msgctxt "#30005"
+msgid "Go to Series"
+msgstr "Přejít na sérii"
+
+msgctxt "#30006"
+msgid "Unable to find a video for this content\n"
+"Check your subscription is valid and your IP is in correct region"
+msgstr "Nelze najít video pro tento obsah\n"
+"Zkontrolujte, zda je vaše předplatné platné a zda je vaše IP adresa ve správném regionu."
+
+msgctxt "#30007"
+msgid "Dolby Digital Plus (EC-3)"
+msgstr "Dolby Digital Plus (EC-3)"
+
+msgctxt "#30009"
+msgid "Playback language"
+msgstr "Jazyk přehrávání"
+
+msgctxt "#30010"
+msgid "Play Next Episode"
+msgstr "Přehrát další epizodu"
+
+msgctxt "#30011"
+msgid "Skip Intros"
+msgstr "Přeskočení úvodu"
+
+msgctxt "#30012"
+msgid "Play Next Recommended Movie"
+msgstr "Přehrát další doporučený film"
+
+msgctxt "#30013"
+msgid "Skip Credits"
+msgstr "Přeskočit zavěrečné titulky"
+
+msgctxt "#30014"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30015"
+msgid "4K"
+msgstr "4K"
+
+msgctxt "#30016"
+msgid "Dolby Vision"
+msgstr "Dolby Vision"
+
+
+
+msgctxt "#30018"
+msgid "Dolby Digital (AC-3)"
+msgstr "Dolby Digital (AC-3)"
+
+msgctxt "#30019"
+msgid "Featured"
+msgstr "Doporučené"
+
+msgctxt "#30020"
+msgid "Series"
+msgstr "Série"
+
+msgctxt "#30021"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#30022"
+msgid "Originals"
+msgstr "Originály"
+
+msgctxt "#30023"
+msgid "Just Added"
+msgstr "Právě přidáno"
+
+msgctxt "#30024"
+msgid "Last Chance"
+msgstr "Poslední příležitost"
+
+msgctxt "#30025"
+msgid "Coming Soon"
+msgstr "Již brzy"
+
+msgctxt "#30026"
+msgid "Trending Now"
+msgstr "Trendy"
+
+msgctxt "#30027"
+msgid "No data returned\n"
+"Usually caused if your IP is out of region\n"
+"or HBO Max is blocking your VPN"
+msgstr "Žádná data nebyla vrácena\n"
+"Obvykle způsobeno, pokud je vaše IP mimo region\n"
+"nebo HBO Max blokuje vaši VPN"
+
+msgctxt "#30028"
+msgid "HBO Max has detected your out of region\n"
+"Check your IP is in correct region"
+msgstr "HBO Max zjistil, že jste mimo region\n"
+"Zkontrolujte, zda je vaše IP adresa ve správném regionu"
+
+msgctxt "#30029"
+msgid "Full Details"
+msgstr "Úplné informace"
+
+msgctxt "#30030"
+msgid "Extras"
+msgstr "Doplňky"
+
+msgctxt "#30031"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+msgctxt "#30032"
+msgid "HBO Max My List"
+msgstr "HBO Max Můj seznam"
+
+msgctxt "#30033"
+msgid "HBO Max Sync Playback"
+msgstr "Přehrávání HBO Max Sync"
+
+msgctxt "#30034"
+msgid "My List"
+msgstr "Můj seznam"
+
+msgctxt "#30035"
+msgid "Continue Watching"
+msgstr "Pokračovat ve sledování"
+
+msgctxt "#30036"
+msgid "Added to My List"
+msgstr "Přidáno na můj seznam"
+
+msgctxt "#30037"
+msgid "Add to My List"
+msgstr "Přidat na můj seznam"
+
+msgctxt "#30038"
+msgid "Remove from My List"
+msgstr "Odebrat z mého seznamu"
+
+msgctxt "#30039"
+msgid "Default Playback language"
+msgstr "Výchozí jazyk přehrávání"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Zeptejte se"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Nejlepší"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Nejhorší"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Vlastní"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Zakázané"
