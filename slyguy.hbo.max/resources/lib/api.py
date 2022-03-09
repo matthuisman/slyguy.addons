@@ -10,7 +10,7 @@ from slyguy.log import log
 from slyguy.util import get_system_arch, lang_allowed
 
 from .constants import *
-from .language import Language, _
+from .language import _
 
 class APIError(Error):
     pass
@@ -93,7 +93,7 @@ class API(object):
             system, arch = get_system_arch()
             return str(string.format(mac_address=mac_address, system=system).strip())
 
-        return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _format_id(settings.get('device_id'))))
+        return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _format_id(settings.get('device_id').strip() or DEFAULT_DEVICE_ID)))
 
     def _guest_login(self):
         serial = self._device_serial()
