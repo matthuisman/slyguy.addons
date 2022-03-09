@@ -104,7 +104,7 @@ msgstr "Hamarosan"
 
 msgctxt "#30026"
 msgid "Trending Now"
-msgstr "Trendi most"
+msgstr "Népszerű most"
 
 msgctxt "#30027"
 msgid "No data returned\n"
@@ -138,7 +138,7 @@ msgstr "HBO Max Saját lista"
 
 msgctxt "#30033"
 msgid "HBO Max Sync Playback"
-msgstr "HBO Max szinkronizált lejátszás"
+msgstr "HBO Max-al szinkronizált lejátszás"
 
 msgctxt "#30034"
 msgid "My List"
@@ -162,13 +162,13 @@ msgstr "Törlés a Saját listából"
 
 msgctxt "#30039"
 msgid "Default Playback language"
-msgstr "Alapvető hanglejátszás nyelve"
+msgstr "Alapértelmezett hangsáv nyelve"
 
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
 msgid "Ask"
-msgstr "Kérdez"
+msgstr "Kérdezze"
 
 msgctxt "#32043"
 msgid "Best"
