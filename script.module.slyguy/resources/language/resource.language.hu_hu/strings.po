@@ -377,11 +377,11 @@ msgstr "Ez a manifest több alap URL-t tartalmaz\n"
 
 msgctxt "#32054"
 msgid "Custom"
-msgstr "Saját"
+msgstr "Egyedi"
 
 msgctxt "#32055"
 msgid "Ask"
-msgstr "Kérdezz"
+msgstr "Kérdezze"
 
 msgctxt "#32056"
 msgid "Failed to fetch / parse playback URL\n"
@@ -455,7 +455,7 @@ msgstr "{label} (Ismeretlen)"
 
 msgctxt "#32072"
 msgid "Default Audio"
-msgstr "Alap Audió"
+msgstr "Alapértelmezett hangsáv"
 
 msgctxt "#32073"
 msgid "Disabled"
@@ -519,7 +519,7 @@ msgstr "A szolgáltatáshoz {required} hely szükséges\n"
 
 msgctxt "#32086"
 msgid "Audio Allow List"
-msgstr "Audió engedélyezési lista"
+msgstr "Hangsáv engedélyezési lista"
 
 msgctxt "#32087"
 msgid "Subtitle Allow List"
@@ -531,11 +531,11 @@ msgstr "Kényszerített feliratok is"
 
 msgctxt "#32089"
 msgid "Include Non-forced Subs"
-msgstr "Nem kényszerített feliratok is"
+msgstr "Normál feliratok is"
 
 msgctxt "#32090"
 msgid "Include Audio Description Tracks"
-msgstr "Magyarázó nyelvi trackok is"
+msgstr "Kommentár hangsávok is"
 
 msgctxt "#32091"
 msgid "Add Profile"
@@ -669,7 +669,7 @@ msgstr "(A sorozat mappák beállítása átkerült a SlyGuy általános beáll�
 
 msgctxt "#32121"
 msgid "Default Subtitle"
-msgstr "Alapvető felirat"
+msgstr "Alapértelmezett  felirat"
 
 msgctxt "#32122"
 msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"
