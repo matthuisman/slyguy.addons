@@ -1,0 +1,194 @@
+# Language file for Kodi
+# Addon Name: HBO Max
+# Addon id: slyguy.hbo.max
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30003"
+msgid "Device ID"
+msgstr "ID Urządzenia"
+
+msgctxt "#30004"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "Żądanie API nie powiodło się\n"
+"Błąd serwera: {msg}"
+
+msgctxt "#30005"
+msgid "Go to Series"
+msgstr "Przejdź do serialu"
+
+msgctxt "#30006"
+msgid "Unable to find a video for this content\n"
+"Check your subscription is valid and your IP is in correct region"
+msgstr "Nie można znaleźć filmu dla tej treści\n"
+"Sprawdź, czy Twoja subskrypcja jest ważna, a adres IP znajduje się we właściwym regionie"
+
+msgctxt "#30007"
+msgid "Dolby Digital Plus (EC-3)"
+msgstr "Dolby Digital Plus (EC-3)"
+
+msgctxt "#30009"
+msgid "Playback language"
+msgstr "Język odtwarzania"
+
+msgctxt "#30010"
+msgid "Play Next Episode"
+msgstr "Odtwórz nastęny odcinek"
+
+msgctxt "#30011"
+msgid "Skip Intros"
+msgstr "Pomiń czołówkę"
+
+msgctxt "#30012"
+msgid "Play Next Recommended Movie"
+msgstr "Odtwarzaj następny polecany film"
+
+msgctxt "#30013"
+msgid "Skip Credits"
+msgstr "Pomiń listę płac"
+
+msgctxt "#30014"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30015"
+msgid "4K"
+msgstr "4K"
+
+msgctxt "#30016"
+msgid "Dolby Vision"
+msgstr "Dolby Vision"
+
+
+
+msgctxt "#30018"
+msgid "Dolby Digital (AC-3)"
+msgstr "Dolby Digital (AC-3)"
+
+msgctxt "#30019"
+msgid "Featured"
+msgstr "Wyróżnione"
+
+msgctxt "#30020"
+msgid "Series"
+msgstr "Seriale"
+
+msgctxt "#30021"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#30022"
+msgid "Originals"
+msgstr "Oryginalne"
+
+msgctxt "#30023"
+msgid "Just Added"
+msgstr "Ostatnio dodane"
+
+msgctxt "#30024"
+msgid "Last Chance"
+msgstr "Ostania szansa"
+
+msgctxt "#30025"
+msgid "Coming Soon"
+msgstr "Wkrótce"
+
+msgctxt "#30026"
+msgid "Trending Now"
+msgstr "Popularne teraz"
+
+msgctxt "#30027"
+msgid "No data returned\n"
+"Usually caused if your IP is out of region\n"
+"or HBO Max is blocking your VPN"
+msgstr "Nie zwrócono danych\n"
+"Zazwyczaj spowodowane, gdy Twój adres IP jest spoza regionu\n"
+"lub HBO Max blokuje Twój VPN"
+
+msgctxt "#30028"
+msgid "HBO Max has detected your out of region\n"
+"Check your IP is in correct region"
+msgstr "
+HBO Max wykrył, że jesteś poza regionem\n"
+"Sprawdź, czy Twój adres IP jest w prawidłowym regionie"
+
+msgctxt "#30029"
+msgid "Full Details"
+msgstr "Pełne szczegóły"
+
+msgctxt "#30030"
+msgid "Extras"
+msgstr "Dodatkowe"
+
+msgctxt "#30031"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+msgctxt "#30032"
+msgid "HBO Max My List"
+msgstr "HBO Max Moja lista"
+
+msgctxt "#30033"
+msgid "HBO Max Sync Playback"
+msgstr "HBO Max synchronizuj odtwarzania"
+
+msgctxt "#30034"
+msgid "My List"
+msgstr "Moja lista"
+
+msgctxt "#30035"
+msgid "Continue Watching"
+msgstr "Kontynuuj oglądanie"
+
+msgctxt "#30036"
+msgid "Added to My List"
+msgstr "Dodane do Mojej listy"
+
+msgctxt "#30037"
+msgid "Add to My List"
+msgstr "Dodaj do Mojej listy"
+
+msgctxt "#30038"
+msgid "Remove from My List"
+msgstr "Usuń z Mojej listy"
+
+msgctxt "#30039"
+msgid "Default Playback language"
+msgstr "Domyślny język odtawrzania"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Pytaj"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Najlepsza"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Najniższa"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Pomiń"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Własna"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Wyłączone"
