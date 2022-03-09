@@ -59,7 +59,12 @@ class API(object):
     def login(self, username, password, kickdevice=None):
         self.logout()
 
-        raw_id = self._format_id(settings.get('device_id')).lower()
+        device_id = settings.get('device_id').strip()
+        if not device_id:
+            device_id = DEFAULT_DEVICEID
+            settings.set('device_id', device_id)
+
+        raw_id = self._format_id(device_id).lower()
         device_id = hashlib.sha1(raw_id.encode('utf8')).hexdigest()
 
         log.debug('Raw device id: {}'.format(raw_id))
@@ -124,7 +129,12 @@ class API(object):
         return string.format(username=userdata.get('username'), mac_address=mac_address, system=system).strip()
 
     def _hex_password(self, password, device_id):
-        nickname = self._format_id(settings.get('device_name'))
+        nickname = settings.get('device_name').strip()
+        if not nickname:
+            nickname = DEFAULT_NICKNAME
+            settings.set('device_name', nickname)
+
+        nickname = self._format_id(nickname)
         log.debug('Device nickname: {}'.format(nickname))
 
         payload = {

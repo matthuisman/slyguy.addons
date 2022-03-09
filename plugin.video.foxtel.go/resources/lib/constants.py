@@ -5,6 +5,9 @@ HEADERS = {
 LIVE_SITEID = '206'
 VOD_SITEID  = '296'
 
+DEFAULT_NICKNAME = 'Kodi-{mac_address} on {system}'
+DEFAULT_DEVICEID = '{username}{mac_address}'
+
 BASE_URL = 'https://foxtel-go-sw.foxtelplayer.foxtel.com.au/go-mobile-570'
 API_URL = BASE_URL + '/api{}'
 BUNDLE_URL = BASE_URL + '/bundleAPI/getHomeBundle.php'
