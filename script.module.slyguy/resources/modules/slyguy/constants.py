@@ -18,9 +18,13 @@ COMMON_ADDON_ID = 'script.module.slyguy'
 COMMON_ADDON    = xbmcaddon.Addon(COMMON_ADDON_ID)
 
 try:
-    KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split('.')[0])
+    KODI_VERSION_INFO = xbmc.getInfoLabel("System.BuildVersion").split(' ')[0].split('.')
+    KODI_FULL_VERSION = int(''.join(KODI_VERSION_INFO[0:2]))
+    KODI_VERSION = int(KODI_VERSION_INFO[0])
 except:
-    KODI_VERSION = 16
+    KODI_VERSION_INFO = ['16', '0', '0']
+    KODI_FULL_VERSION = int(''.join(KODI_VERSION_INFO[0:2]))
+    KODI_VERSION = int(KODI_VERSION_INFO[0])
 
 #### DATABASE #####
 DB_PATH         = os.path.join(ADDON_PROFILE, 'data.db')

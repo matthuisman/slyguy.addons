@@ -179,6 +179,9 @@ def yes_no(message, heading=None, autoclose=None, **kwargs):
     return xbmcgui.Dialog().yesno(heading, message, **kwargs)
 
 def info(item):
+    #playing python path via info dialog fixed in 19.4
+    if KODI_FULL_VERSION < 194:
+        item.path = None
     dialog = xbmcgui.Dialog()
     dialog.info(item.get_li())
 
