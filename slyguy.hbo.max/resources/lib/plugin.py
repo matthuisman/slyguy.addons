@@ -288,7 +288,7 @@ def full_details(slug, **kwargs):
                 'tvshowtitle': data['titles']['full'],
                 'mediatype': 'tvshow',
             },
-            #path = plugin.url_for(series, slug=slug), #kodi stalls when trying to browse from this dialog
+            path = plugin.url_for(series, slug=slug),
         )
 
     elif ':feature' in slug:
@@ -301,8 +301,8 @@ def full_details(slug, **kwargs):
                 'year': data['releaseYear'],
                 'mediatype': 'movie',
             },
-            #path = _get_play_path(slug), #kodi stalls when trying to play from this dialog
-            #playable = True,
+            path = _get_play_path(slug),
+            playable = True,
         )
 
     gui.info(item)

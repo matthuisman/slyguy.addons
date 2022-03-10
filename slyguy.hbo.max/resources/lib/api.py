@@ -115,12 +115,12 @@ class API(object):
 
         self._check_errors(data)
         self._set_authentication(data['access_token'])
+        self.logged_in = False
         return serial
 
     @mem_cache.cached(60*30, key='config')
     def _client_config(self):
         if not self.logged_in:
-            print('hey')
             self._guest_login()
 
         payload = {
@@ -129,6 +129,7 @@ class API(object):
         }
 
         data = self._session.post(CONFIG_URL, json=payload).json()
+        self._set_authentication(userdata.get('access_token'))
         self._check_errors(data)
         return data
 
