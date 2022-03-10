@@ -50,7 +50,7 @@ class API(object):
             return 'https://oauth{userSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
 
         elif name == 'gateway':
-            return 'https://gateway.{domain}.hbo.com'.format(**config['routeKeys']) + path
+            return 'https://gateway{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
         elif name == 'sessions':
             return 'https://sessions{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
@@ -77,6 +77,8 @@ class API(object):
 
         if 'refresh_token' in data:
             userdata.set('refresh_token', data['refresh_token'])
+
+        mem_cache.delete('config')
 
     def _device_serial(self):
         def _format_id(string):
@@ -107,26 +109,18 @@ class API(object):
             }
         }
 
-        data = self._session.post(GUEST_AUTH.format(userSubdomain='-emea'), json=payload, headers={'Authorization': None}).json()
+        data = self._session.post(GUEST_AUTH, json=payload, headers={'Authorization': None}).json()
         if 'code' in data and data['code'] == 'invalid_credentials':
             raise APIError(_.BLOCKED_IP)
 
         self._check_errors(data)
         self._set_authentication(data['access_token'])
-        self.logged_in = False
         return serial
 
+    @mem_cache.cached(60*30, key='config')
     def _client_config(self):
         if not self.logged_in:
-            cache_key = 'config_guest'
-        else:
-            cache_key = 'config'
-
-        data = mem_cache.get(cache_key)
-        if data:
-            return data
-
-        if not self.logged_in:
+            print('hey')
             self._guest_login()
 
         payload = {
@@ -136,8 +130,6 @@ class API(object):
 
         data = self._session.post(CONFIG_URL, json=payload).json()
         self._check_errors(data)
-        mem_cache.set(cache_key, data, expires=60*5)
-
         return data
 
     def device_code(self):
