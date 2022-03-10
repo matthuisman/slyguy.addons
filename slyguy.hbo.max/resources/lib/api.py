@@ -47,22 +47,19 @@ class API(object):
         config = self._client_config()
 
         if name == 'tokens':
-            try:
-                if config['endpoints']['getTokens']['domain'] == 'userGateway':
-                    return 'https://gateway{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + config['endpoints']['getTokens']['path']
-            except KeyError:
-                pass
-
-            return 'https://oauth{globalUserSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
+            return 'https://oauth{userSubdomain}.{domain}.hbo.com/auth/tokens'.format(**config['routeKeys'])
 
         elif name == 'gateway':
             return 'https://gateway.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
-        elif name == 'comet':
-            return 'https://comet{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
+        elif name == 'sessions':
+            return 'https://sessions{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
-        elif name == 'markers': #need to confirm with latin
-            return 'https://markers{contentSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
+        elif name == 'comet':
+            return 'https://comet{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
+
+        elif name == 'markers':
+            return 'https://markers{userSubdomain}.{domain}.hbo.com'.format(**config['routeKeys']) + path
 
         elif name == 'artist':
             return 'https://artist.{cdnDomain}.hbo.com'.format(**config['routeKeys']) + path
@@ -91,9 +88,10 @@ class API(object):
                 mac_address = ''
 
             system, arch = get_system_arch()
-            return str(string.format(mac_address=mac_address, system=system).strip())
+            return str(string.format(mac_address=mac_address, system=system, arch=arch).strip())
 
-        return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _format_id(settings.get('device_id').strip() or DEFAULT_DEVICE_ID)))
+        _id = _format_id(settings.get('device_id').strip()) or _format_id(DEFAULT_DEVICE_ID)
+        return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _id))
 
     def _guest_login(self):
         serial = self._device_serial()
@@ -109,17 +107,27 @@ class API(object):
             }
         }
 
-        data = self._session.post(GUEST_AUTH, json=payload, headers={'Authorization': None}).json()
+        data = self._session.post(GUEST_AUTH.format(userSubdomain='-emea'), json=payload, headers={'Authorization': None}).json()
         if 'code' in data and data['code'] == 'invalid_credentials':
             raise APIError(_.BLOCKED_IP)
 
         self._check_errors(data)
         self._set_authentication(data['access_token'])
+        self.logged_in = False
         return serial
 
-    @mem_cache.cached(60*30)
     def _client_config(self):
-        self._guest_login()
+        if not self.logged_in:
+            cache_key = 'config_guest'
+        else:
+            cache_key = 'config'
+
+        data = mem_cache.get(cache_key)
+        if data:
+            return data
+
+        if not self.logged_in:
+            self._guest_login()
 
         payload = {
             'contract': 'hadron:1.1.2.0',
@@ -127,11 +135,8 @@ class API(object):
         }
 
         data = self._session.post(CONFIG_URL, json=payload).json()
-        self._set_authentication(userdata.get('access_token'))
-
         self._check_errors(data)
-        if data['features']['currentRegionOutOfFootprint']['enabled']:
-            raise APIError(_.GEO_LOCKED)
+        mem_cache.set(cache_key, data, expires=60*5)
 
         return data
 
@@ -258,10 +263,7 @@ class API(object):
         if not ids:
             return {}
 
-        print(ids)
-
         self._refresh_token()
-
         if len(ids) == 1:
             #always have at least 2 markers so api returns a list
             ids.append(ids[0])
@@ -296,16 +298,6 @@ class API(object):
         else:
             return resp.json().get('status') == 'Accepted'
 
-    @mem_cache.cached(60*30)
-    def _flighted_features(self):
-        headers = {
-            'x-hbo-headwaiter': self._headwaiter(),
-        }
-
-        data = self._session.get(self.url('comet', '/flighted-features'), headers=headers).json()
-        self._check_errors(data)
-        return data
-
     def _headwaiter(self):
         config = self._client_config()
 
@@ -316,7 +308,10 @@ class API(object):
         return headwaiter.rstrip(',')
 
     def get_languages(self):
-        return [x for x in self._session.get(self.url('gateway', '/sessions/v1/enabledLanguages')).json() if x.get('disabledForCurrentRegion') != True]
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter(),
+        }
+        return [x for x in self._session.get(self.url('sessions', '/sessions/v1/enabledLanguages'), headers=headers).json() if x.get('disabledForCurrentRegion') != True]
 
     @mem_cache.cached(60*30, key='language')
     def _get_language(self):
@@ -335,6 +330,9 @@ class API(object):
         log.debug('Using default language: {}'.format(DEFAULT_LANGUAGE))
         return DEFAULT_LANGUAGE
 
+    def entitlements(self):
+        return self.content([{"id":"urn:hbo:entitlement-status:mine"}])['urn:hbo:entitlement-status:mine']
+
     def express_content(self, slug, tab=None):
         self._refresh_token()
 
@@ -346,8 +344,11 @@ class API(object):
             'language': self._get_language(),
         }
 
-        query = self._flighted_features()['express-content']['config']['expressContentParams']
-        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, query)), params=params, headers=headers).json()
+        entitlements = self.entitlements()
+        if entitlements['outOfTerritory']:
+            raise APIError(_.GEO_LOCKED)
+
+        data = self._session.get(self.url('comet', '/express-content/{}?{}'.format(slug, entitlements['expressContentParams'])), params=params, headers=headers).json()
         self._check_errors(data)
 
         _data = {}
