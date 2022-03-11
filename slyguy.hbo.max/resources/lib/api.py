@@ -35,6 +35,9 @@ class API(object):
         if not force and userdata.get('expires', 0) > time():
             return
 
+        self.logged_in = False
+        userdata.delete('access_token')
+
         payload = {
             'refresh_token': userdata.get('refresh_token'),
             'grant_type': 'refresh_token',
@@ -115,13 +118,15 @@ class API(object):
 
         self._check_errors(data)
         self._set_authentication(data['access_token'])
-        self.logged_in = False
         return serial
 
     @mem_cache.cached(60*30, key='config')
     def _client_config(self):
         if not self.logged_in:
+            log.debug("GUEST CONFIG")
             self._guest_login()
+        else:
+            log.debug("USER CONFIG")
 
         payload = {
             'contract': 'hadron:1.1.2.0',
@@ -129,7 +134,6 @@ class API(object):
         }
 
         data = self._session.post(CONFIG_URL, json=payload).json()
-        self._set_authentication(userdata.get('access_token'))
         self._check_errors(data)
         return data
 
