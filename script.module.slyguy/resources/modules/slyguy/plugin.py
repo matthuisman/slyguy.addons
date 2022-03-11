@@ -246,7 +246,7 @@ def pagination():
 
 def resolve():
     handle = _handle()
-    if not handle:
+    if handle < 0:
         return
 
     if '_play=1' in sys.argv[2]:

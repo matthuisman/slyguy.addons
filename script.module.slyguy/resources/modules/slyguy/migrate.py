@@ -16,10 +16,8 @@ def get_addon(addon_id):
         return None
 
 def _handle():
-    try:
-        return int(sys.argv[1])
-    except:
-        return -1
+    try: return int(sys.argv[1])
+    except: return -1
 
 # Runs on old add-on
 def migrate(new_addon_id, copy_userdata=True, message=_.CONFIRM_MIGRATE):
