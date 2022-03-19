@@ -35,9 +35,6 @@ class API(object):
         if not force and userdata.get('expires', 0) > time():
             return
 
-        self.logged_in = False
-        userdata.delete('access_token')
-
         payload = {
             'refresh_token': userdata.get('refresh_token'),
             'grant_type': 'refresh_token',
@@ -71,6 +68,9 @@ class API(object):
             return None
 
     def _oauth_token(self, payload, headers=None):
+        self.logged_in = False
+        mem_cache.delete('config')
+
         data = self._session.post(self.url('tokens'), data=payload, headers=headers).json()
         self._check_errors(data)
 
