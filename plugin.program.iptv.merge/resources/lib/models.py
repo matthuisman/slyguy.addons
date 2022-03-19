@@ -22,8 +22,12 @@ from .language import _
 
 @plugin.route()
 def play_channel(slug, **kwargs):
+    log.info('MICAHG in play_channel')
     channel = Channel.get_by_id(slug)
     split = channel.url.split('|')
+
+    log.info('MICAHG HELLO THERE')
+    log.info(f'MICAHG playing {channel}')
 
     headers = {
         'user-agent': DEFAULT_USERAGENT,

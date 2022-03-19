@@ -337,13 +337,25 @@ class Merger(object):
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = is_visible(channel)
-                    channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(channel.epg_id or channel.url.lower().strip()))
+                    slug_input = channel.epg_id or channel.url.lower().strip()
+                    channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(slug_input))
                     channel.order = added_count + 1
 
                     count = 1
                     while channel.slug in slugs:
                         channel.slug = '{}.{}'.format(slug, count)
                         count += 1
+
+                    # log.info(f'MICAHG {slug_input} => {channel.slug}')
+
+                    # MICAH slugs might get what you want. Each epg_id gets the same hash
+                    # and so slugs end up looking like:
+                    #
+                    # BTSPOR2 => 2.l4J1UT
+                    # BTSPOR2 => 2.l4J1UT.1
+                    # BTSPOR2 => 2.l4J1UT.2
+                    #
+                    # So they could be used to find similar channels.
 
                     slugs.add(channel.slug)
                     to_create.add(channel)
@@ -394,10 +406,11 @@ class Merger(object):
                 error = None
                 try:
                     log.debug('Processing: {}'.format(playlist.path))
+                    # log.info(f'MICAHG {playlist}')
 
                     if playlist.source_type != Playlist.TYPE_CUSTOM:
                         self._process_source(playlist, METHOD_PLAYLIST, self.tmp_file)
-
+                        # log.info(f'MICAHG datbase is {database}')
                         with database.db.atomic() as transaction:
                             try:
                                 added = self._process_playlist(playlist, self.tmp_file)
@@ -434,6 +447,7 @@ class Merger(object):
             starting_ch_no = settings.getInt('start_ch_no', 1)
             groups_disabled = settings.getBool('disable_groups', False)
 
+            # log.info(f'MICAHG writing to {working_path}')
             with codecs.open(working_path, 'w', encoding='utf8') as outfile:
                 outfile.write(u'#EXTM3U')
 
@@ -444,6 +458,12 @@ class Merger(object):
                 chno = starting_ch_no
                 tv_groups = []
                 for channel in Channel.playlist_list(radio=False):
+
+                    if len(channel.slug) > 8:
+                        log.debug(f'Skipping duplicate channel {channel.slug}')
+                        continue
+                    log.info(f'MICAHG writing {channel.slug} {channel.name}')
+
                     if channel.chno is None:
                         channel.chno = chno
                     chno = channel.chno + 1
