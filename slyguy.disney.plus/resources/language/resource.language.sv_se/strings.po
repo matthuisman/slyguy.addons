@@ -1,0 +1,221 @@
+# Language file for Disney+ Video Add-on for Kodi
+# Addon Name: Disney+
+# Addon id: slyguy.disney.plus
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: Sopor\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: sv_SE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "E-postadress"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "Lösenord"
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "API-begäran misslyckades\n"
+"Serverfel: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "Filmer"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr "TV-serier"
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr "Originals"
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "Fullständiga detaljer"
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr "Hubbar"
+
+msgctxt "#30009"
+msgid "IMAX"
+msgstr "IMAX"
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr "Förslag"
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "Utvalda"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "Säsong {season}"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr "Extra"
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr "Fullt stöd på Kodi {kodi_ver} kräver minst version {ver_required} av Inputstream Adaptive\n"
+"Du kan uppleva uppspelningsproblem med din nuvarande version."
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
+
+msgctxt "#30016"
+msgid "Disney+ Sync Playback"
+msgstr "Disney+ Synkronisera uppspelning"
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr "{name} [PINKOD]"
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
+
+msgctxt "#30019"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr "Hoppa över eftertexterna"
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr "Spela nästa avsnitt"
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr "Spela nästa rekommenderade film"
+
+msgctxt "#30023"
+msgid "Default Ratio"
+msgstr "Standardförhållande"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "Hoppa över intros"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "Spela från början"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "Min lista"
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr "Lägg till Min lista"
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "Ta bort från Min lista"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "Tillagd till Min lista"
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "Ange din profils PINKOD"
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr "Fortsätt titta"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "Du har inte rätt att få tillgång till detta innehåll.\n"
+"Kontrollera att din prenumeration är giltig."
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "Dina inloggningsuppgifter är felaktiga\n"
+"Kontrollera dem och försök igen."
+
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr "{label} [B](Kommer snart)[/B]"
+
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr "Felaktig PINKOD"
+
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr "Disney+ Min lista"
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "Från {time:0>8}"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](Tillgänglig {date})[/B]"
+
+msgctxt "#30050"
+msgid "DD/MM/YYYY"
+msgstr "YYYY-MM-DD"
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "Det gick inte att hitta strömdata för detta innehåll"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr "Profilinställningar"
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr "Fortsätt titta"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Fråga"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Bäst"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Lägsta"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Gå förbi"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Anpassad"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Inaktiverad"
