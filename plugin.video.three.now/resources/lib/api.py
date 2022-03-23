@@ -16,12 +16,14 @@ class API(object):
     def shows(self):
         return self._shows()['shows']
 
+    @mem_cache.cached(60*5)
     def show(self, id):
         return self._session.get('shows/{}'.format(id)).json()['show']
 
     def channels(self):
         return self._shows()['channels']
 
+    @mem_cache.cached(60*5)
     def live(self):
         return self._session.get('live-epg').json()['channels']
 
@@ -32,7 +34,7 @@ class API(object):
 
     def genre(self, genre):
         shows = []
-        
+
         for show in self.shows():
             if genre in show['genres'] or genre == show['channel']:
                 shows.append(show)
@@ -50,7 +52,7 @@ class API(object):
 
     def get_brightcove_src(self, referenceID):
         brightcove_url = BRIGHTCOVE_URL.format(BRIGHTCOVE_ACCOUNT, referenceID)
-        
+
         resp = self._session.get(brightcove_url, headers={'BCOV-POLICY': BRIGHTCOVE_KEY})
         data = resp.json()
 

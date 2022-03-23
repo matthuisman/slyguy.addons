@@ -25,6 +25,10 @@ msgctxt "#30005"
 msgid "0 - 9"
 msgstr ""
 
+msgctxt "#30006"
+msgid "Flatten Single Seasons"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

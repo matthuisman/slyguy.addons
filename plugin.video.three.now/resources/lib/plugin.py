@@ -157,11 +157,33 @@ def _parse_episodes(rows):
     return items
 
 @plugin.route()
-def show(id, **kwargs):
-    row = api.show(id)
-    fanart = row.get('images',{}).get('dashboardHero','').replace('[width]', '1600').replace('[height]', '520')
-    folder = plugin.Folder(row['name'], fanart=fanart)
-    folder.add_items(_parse_episodes(row['episodes']))
+def show(id, season=None, **kwargs):
+    data = api.show(id)
+    thumb = data.get('images',{}).get('showTile','').replace('[width]', '301').replace('[height]', '227')
+    fanart = data.get('images',{}).get('dashboardHero','').replace('[width]', '1600').replace('[height]', '520')
+    folder = plugin.Folder(data['name'], thumb=thumb, fanart=fanart)
+
+    if 'seasons' in data:
+        if season is None and len(data['seasons']) == 1 and settings.getBool('flatten_single_season'):
+            folder.add_items(_parse_episodes(data['seasons'][0]['episodes']))
+        else:
+            for row in sorted(data['seasons'], key=lambda x: x['order']):
+                if season is None and settings.getBool('flatten_single_season'):
+                    folder.add_item(
+                        label = row['name'],
+                        info = {
+                            'plot': data.get('synopsis'),
+                            'mediatype': 'season',
+                            'tvshowtitle': data['name'],
+                        },
+                        path = plugin.url_for(show, id=id, season=row['seasonId']),
+                    )
+                elif season == row['seasonId']:
+                    folder.add_items(_parse_episodes(row['episodes']))
+
+    elif 'episodes' in data:
+        folder.add_items(_parse_episodes(data['episodes']))
+
     return folder
 
 @plugin.route()
