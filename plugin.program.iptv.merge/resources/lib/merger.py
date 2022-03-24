@@ -337,24 +337,13 @@ class Merger(object):
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = is_visible(channel)
-                    slug_input = channel.epg_id or channel.url.lower().strip()
-                    channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(slug_input))
+                    channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(channel.epg_id or channel.url.lower().strip()))
                     channel.order = added_count + 1
 
                     count = 1
                     while channel.slug in slugs:
                         channel.slug = '{}.{}'.format(slug, count)
                         count += 1
-
-                    # TODO remove this comment
-                    # MICAH slugs might get what you want. Each epg_id gets the same hash
-                    # and so slugs end up looking like:
-                    #
-                    # BTSPOR2 => 2.l4J1UT
-                    # BTSPOR2 => 2.l4J1UT.1
-                    # BTSPOR2 => 2.l4J1UT.2
-                    #
-                    # So they could be used to find similar channels.
 
                     slugs.add(channel.slug)
                     to_create.add(channel)
@@ -408,6 +397,7 @@ class Merger(object):
 
                     if playlist.source_type != Playlist.TYPE_CUSTOM:
                         self._process_source(playlist, METHOD_PLAYLIST, self.tmp_file)
+
                         with database.db.atomic() as transaction:
                             try:
                                 added = self._process_playlist(playlist, self.tmp_file)

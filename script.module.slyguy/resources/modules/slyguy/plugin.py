@@ -59,10 +59,7 @@ def route(url=None):
     def decorator(f, url):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            log.info(f'MICAHG in decorator args {args}')
-            log.info(f'MICAH kwargs {kwargs}')
             item = f(*args, **kwargs)
-            log.info(f'MICAH got item {item}')
             autoplay = kwargs.get(ROUTE_AUTOPLAY_TAG, None)
             autofolder = kwargs.get(ROUTE_AUTOFOLDER_TAG, None)
 
@@ -73,7 +70,6 @@ def route(url=None):
             elif isinstance(item, Folder):
                 item.display()
             elif isinstance(item, Item):
-                log.info(f'MICAH playing item')
                 item.play(**kwargs)
             elif isinstance(item, Redirect):
                 if _handle() > 0:
@@ -593,8 +589,6 @@ class Item(gui.Item):
     def play(self, **kwargs):
         self.playable = True
 
-        log.info(f'MICAHG in play kwargs {kwargs}')
-
         quality = kwargs.get(QUALITY_TAG, self.quality)
         is_live = ROUTE_LIVE_TAG in kwargs
 
@@ -626,16 +620,14 @@ class Item(gui.Item):
             if play_data['next']['next_file']:
                 play_data['next']['next_file'] = router.add_url_args(play_data['next']['next_file'], _play=1)
 
-        if self.callback:en
+        if self.callback:
             play_data['callback'].update(self.callback)
 
         set_kodi_string('_slyguy_play_data', json.dumps(play_data))
 
         if handle > 0:
-            log.info(f'MICAHG setResolvedUrl handle {handle} {li}')
             xbmcplugin.setResolvedUrl(handle, True, li)
         else:
-            log.info(f'MICAHG playing {self.path}')
             xbmc.Player().play(self.path, li)
 
 #Plugin.Folder()

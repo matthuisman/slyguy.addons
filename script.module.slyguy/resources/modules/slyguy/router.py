@@ -113,12 +113,9 @@ def redirect(url):
 
 # router.dispatch('?_=_settings')
 def dispatch(url):
-    log.debug(f'MICAHG dispatching "{url}"')
     with signals.throwable():
         signals.emit(signals.BEFORE_DISPATCH)
         function, params = parse_url(url)
-        log.info(f'MICAHG function is {function}')
-        log.info(f'MICAHG params are {params}')
 
         try:
             function(**params)
