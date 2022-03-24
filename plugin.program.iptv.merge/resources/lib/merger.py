@@ -445,6 +445,7 @@ class Merger(object):
                 tv_groups = []
                 for channel in Channel.playlist_list(radio=False):
 
+                    # 8 would imply a second dot (eg: this slug indicates it is a duplicate channel by guide id)
                     if len(channel.slug) > 8:
                         log.debug(f'Skipping duplicate channel {channel.slug}')
                         continue

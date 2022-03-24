@@ -23,7 +23,7 @@
         <setting label="30077" id="ask_to_add" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="false" visible="false"/>
         <setting label="30098" id="consolidate_duplicates" type="bool" default="false"/>
-        <setting label="30099" id="duplicate_prefs" type="text" default="FHD,HD,SD" subsetting="true" enable="eq(-1,true)"/>
+        <setting label="30099" id="duplicate_prefs" type="text" default="FHD,HD" subsetting="true" enable="eq(-1,true)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
