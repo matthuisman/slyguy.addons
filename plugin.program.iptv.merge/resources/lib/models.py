@@ -51,7 +51,7 @@ def play_channel(slug, **kwargs):
     #     item = get_item(chan, prev_item)
     #     prev_item = item
 
-    return get_item()
+    return get_item(channels[0])
 
 def get_item(channel, play_next=None):
     # channel = Channel.get_by_id(slug)
