@@ -22,12 +22,40 @@ from .language import _
 
 @plugin.route()
 def play_channel(slug, **kwargs):
-    log.info('MICAHG in play_channel')
-    channel = Channel.get_by_id(slug)
-    split = channel.url.split('|')
+    sq = Channel.select().where(Channel.slug % f'{slug}*')
+    channels = list(sq)
+    channels.reverse()
 
-    log.info('MICAHG HELLO THERE')
-    log.info(f'MICAHG playing {channel}')
+    if not settings.getBool('consolidate_duplicates'):
+        return get_item(channels[0])
+
+    dupe_prefs = settings.get('duplicate_prefs')
+    matches = {x.strip().lower(): [] for x in dupe_prefs.split(',')} if dupe_prefs else None
+    if not matches:
+        return get_item(channels[0])
+
+    for chan in channels:
+        for match_str in matches:
+            if match_str in chan.name.lower():
+                matches[match_str].append(chan)
+                break
+
+    for _, chans in matches.items():
+        if chans:
+            return get_item(chans[0])
+
+    # work backwards through the duplicates, linking them together
+    # prev_item = None
+    # for chan in channels:
+    #     log.info(f'MICAHG channel could be [reverse order] {chan}')
+    #     item = get_item(chan, prev_item)
+    #     prev_item = item
+
+    return get_item()
+
+def get_item(channel, play_next=None):
+    # channel = Channel.get_by_id(slug)
+    split = channel.url.split('|')
 
     headers = {
         'user-agent': DEFAULT_USERAGENT,
@@ -59,6 +87,7 @@ def play_channel(slug, **kwargs):
         properties = channel.properties,
         headers = headers,
         playable = True,
+        # play_next = play_next
     )
 
     if channel.radio:

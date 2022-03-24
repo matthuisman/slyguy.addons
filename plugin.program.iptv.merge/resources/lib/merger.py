@@ -346,8 +346,7 @@ class Merger(object):
                         channel.slug = '{}.{}'.format(slug, count)
                         count += 1
 
-                    # log.info(f'MICAHG {slug_input} => {channel.slug}')
-
+                    # TODO remove this comment
                     # MICAH slugs might get what you want. Each epg_id gets the same hash
                     # and so slugs end up looking like:
                     #
@@ -406,11 +405,9 @@ class Merger(object):
                 error = None
                 try:
                     log.debug('Processing: {}'.format(playlist.path))
-                    # log.info(f'MICAHG {playlist}')
 
                     if playlist.source_type != Playlist.TYPE_CUSTOM:
                         self._process_source(playlist, METHOD_PLAYLIST, self.tmp_file)
-                        # log.info(f'MICAHG datbase is {database}')
                         with database.db.atomic() as transaction:
                             try:
                                 added = self._process_playlist(playlist, self.tmp_file)
@@ -447,7 +444,6 @@ class Merger(object):
             starting_ch_no = settings.getInt('start_ch_no', 1)
             groups_disabled = settings.getBool('disable_groups', False)
 
-            # log.info(f'MICAHG writing to {working_path}')
             with codecs.open(working_path, 'w', encoding='utf8') as outfile:
                 outfile.write(u'#EXTM3U')
 
@@ -462,7 +458,6 @@ class Merger(object):
                     if len(channel.slug) > 8:
                         log.debug(f'Skipping duplicate channel {channel.slug}')
                         continue
-                    log.info(f'MICAHG writing {channel.slug} {channel.name}')
 
                     if channel.chno is None:
                         channel.chno = chno

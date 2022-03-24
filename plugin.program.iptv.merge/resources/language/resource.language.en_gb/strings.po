@@ -397,6 +397,14 @@ msgctxt "#30097"
 msgid "Hide Groups"
 msgstr ""
 
+msgctxt "#30098"
+msgid "Consolidate Duplicate Channels"
+msgstr ""
+
+msgctxt "#30099"
+msgid "Duplicate Channel Preference"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
