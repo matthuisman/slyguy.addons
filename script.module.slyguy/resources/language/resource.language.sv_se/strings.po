@@ -1,0 +1,783 @@
+# Translation file for script.module.slyguy
+# Addon Name: SlyGuy Common
+# Addon id: script.module.slyguy
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: Sopor\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: sv_SE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "Update SlyGuy Add-ons"
+msgstr "Uppdatera SlyGuys tillägg"
+
+msgctxt "#30001"
+msgid "No SlyGuy updates available"
+msgstr "Inga uppdatering tillgängliga för SlyGuy"
+
+msgctxt "#30002"
+msgid "{count} updates available\n\n"
+"{updates}\n\n"
+"These should automatically install shortly\n"
+"Sometimes a reboot may be required after updates"
+msgstr "{count} uppdateringar tillgängliga\n\n"
+"Dessa bör installeras automatiskt inom kort\n"
+"Ibland kan en omstart krävas efter uppdateringarna"
+
+msgctxt "#30003"
+msgid "{count} updates available\n\n"
+"{updates}\n\n"
+"You will need to manually update each add-on\n"
+"Sometimes a reboot may be required after updates"
+msgstr "{count} uppdateringar tillgängliga\n\n"
+"{updates}\n\n"
+"Du måste uppdatera varje tillägg manuellt\n"
+"Ibland kan en omstart krävas efter uppdateringarna"
+
+msgctxt "#30004"
+msgid "{name} [Atmos]"
+msgstr "{name} [Atmos]"
+
+msgctxt "#30005"
+msgid "Proxy Enabled (Required for some addons and features)"
+msgstr "Proxy aktiverad (Krävs för vissa tillägg och funktioner)"
+
+msgctxt "#30006"
+msgid "Persist Cache"
+msgstr "Beständig cache"
+
+msgctxt "#30007"
+msgid "Widevine Level (Restart Kodi after changing)"
+msgstr "Widevine-nivå (Starta om Kodi efter ändring)"
+
+msgctxt "#30008"
+msgid "Auto"
+msgstr "Automatiskt"
+
+msgctxt "#30009"
+msgid "L1 (Secure)"
+msgstr "L1 (Säker)"
+
+msgctxt "#30010"
+msgid "L3"
+msgstr "L3"
+
+msgctxt "#30011"
+msgid "HDCP Level (Restart Kodi after changing)"
+msgstr "HDCP-nivå Level (Starta om Kodi efter ändring)"
+
+msgctxt "#30012"
+msgid "None"
+msgstr "Ingen"
+
+msgctxt "#30013"
+msgid "1.0"
+msgstr "1.0"
+
+msgctxt "#30014"
+msgid "2.2"
+msgstr "2.2"
+
+msgctxt "#30015"
+msgid "3.0"
+msgstr "3.0"
+
+msgctxt "#30016"
+msgid "No SlyGuy errors found"
+msgstr "Hittade inga SlyGuy-fel"
+
+msgctxt "#30017"
+msgid "SlyGuy errors"
+msgstr "SlyGuy-fel"
+
+msgctxt "#30018"
+msgid "Upload / share Kodi log?"
+msgstr "Ladda upp / Dela Kodi-logg"
+
+msgctxt "#30019"
+msgid "Check Kodi log for SlyGuy errors"
+msgstr "Kontrollera Kodi-loggen efter SlyGuy-fel"
+
+msgctxt "#30020"
+msgid "Donor ID (Restart Kodi after changing)"
+msgstr "Donor-ID (Starta om Kodi efter ändring)"
+
+msgctxt "#30021"
+msgid "Show News"
+msgstr "Visa nyheter"
+
+
+msgctxt "#30023"
+msgid "Video view for all content"
+msgstr "Videovy för allt innehåll"
+
+msgctxt "#30024"
+msgid "Folders for TV Show and Seasons"
+msgstr "Mappar för TV-program och säsonger"
+
+## COMMON ##
+
+msgctxt "#32000"
+msgid "You need to login to access this content"
+msgstr "Du måste logga in för att komma åt detta innehållet"
+
+msgctxt "#32001"
+msgid "No default route found"
+msgstr "Ingen standardrutt hittades"
+
+msgctxt "#32002"
+msgid "Are you sure you want to reset this add-on?\n"
+"This will reset all settings and clear all data"
+msgstr "Är du säker på att du vill återställa det här tillägget?\n"
+"Detta kommer att återställa alla inställningar och ta bort all data"
+
+msgctxt "#32003"
+msgid "Reset Complete"
+msgstr "Återställt"
+
+msgctxt "#32004"
+msgid "Removed {delete_count} Cached Item"
+msgstr "Tog bort {delete_count} cachade objekt"
+
+msgctxt "#32005"
+msgid "Clear Cache"
+msgstr "Rensa cachen"
+
+msgctxt "#32006"
+msgid "This add-on path is no longer valid\n"
+"If your using favorites, remove the favorite and then re-create it via the add-on"
+msgstr "Tilläggests sökväg är inte längre giltigt\n"
+"Om du använder favoriter, ta bort favoriten och återskapa den sedan via tillägget"
+
+msgctxt "#32007"
+msgid "Could not find a url for function: {function_name}"
+msgstr "Det gick inte att hitta en webbadress för funktionen: {function_name}"
+
+msgctxt "#32008"
+msgid "{addon_id} add-on is required"
+msgstr "Tillägget {addon_id} krävs"
+
+msgctxt "#32009"
+msgid "Kodi Microsoft UWP version does not support Widevine playback.\n"
+"If using Windows, use the .exe installer version from the Kodi website instead."
+msgstr "Kodi Microsoft UWP-versionen stöder inte uppspelning av Widevine.\n"
+"Om du använder Windows, använd i stället exe-installationsversionen från Kodi-webbplatsen."
+
+msgctxt "#32010"
+msgid "Kodi 18 or higher required for Widevine playback"
+msgstr "Kodi 18 eller högre krävs för uppspelning av Widevine"
+
+msgctxt "#32011"
+msgid "ARM 64bit does not support Widevine playback\n"
+"An OS with a 32-bit userspace is required.\n"
+"Try coreelec.org"
+msgstr "ARM 64bit stöder inte uppspelning av Widevine\n"
+"Ett OS med ett 32-bitars användarutrymme krävs.\n"
+"Prova coreelec.org"
+
+msgctxt "#32012"
+msgid "{system} {arch} Kodi v{kodi_version}\ndoes not yet support Widevine playback"
+msgstr "{system} {arch} Kodi v{kodi_version}\nstöder ännu inte uppspelning av Widevine"
+
+msgctxt "#32013"
+msgid "Could not find a media source from Brightcove\n"
+"Server Message: {error}"
+msgstr "Det gick inte att hitta en mediakälla från Brightcove\n"
+"Servermeddelande: {error}"
+
+msgctxt "#32014"
+msgid "Downloading required file\n"
+"{url}"
+msgstr "Laddar ned nödvändig fil\n"
+"{url}"
+
+msgctxt "#32015"
+msgid "Widevine CDM"
+msgstr "Widevine CDM"
+
+msgctxt "#32016"
+msgid "There was an unexpected error installing the Widevine CDM\n"
+"Please restart Kodi and try again"
+msgstr "Det uppstod ett oväntat fel vid installation av Widevine CDM\n"
+"Starta om Kodi och försök igen"
+
+msgctxt "#32017"
+msgid "Use Cache"
+msgstr "Använd cache"
+
+msgctxt "#32018"
+msgid "Inputstream Settings"
+msgstr "Inputstream-inställningar"
+
+msgctxt "#32019"
+msgid "Reset Add-on"
+msgstr "Återställ tillägg"
+
+msgctxt "#32020"
+msgid "{addon} - Error"
+msgstr "{addon} - Fel"
+
+msgctxt "#32021"
+msgid "(Re)install Widevine CDM"
+msgstr "(Om)installera Widevine CDM"
+
+msgctxt "#32022"
+msgid "Widevine CDM ({version}) installerad\n"
+"[B]If videos do not play, please restart Kodi and try again[/B]"
+msgstr ""
+"[B]Om videor inte spelas upp, starta om Kodi och försök igen[/B]"
+
+msgctxt "#32023"
+msgid "Use Inputstream HLS for VOD Streams"
+msgstr "Använd Inputstream HLS för VOD-strömmar"
+
+msgctxt "#32024"
+msgid "Login"
+msgstr "Logga in"
+
+msgctxt "#32025"
+msgid "Logout"
+msgstr "Logga ut"
+
+msgctxt "#32026"
+msgid "Settings"
+msgstr "Inställningar"
+
+msgctxt "#32027"
+msgid "Are you sure you want to logout?"
+msgstr "Är du säker på att du vill logga ut?"
+
+msgctxt "#32028"
+msgid "Failed to login.\n"
+"Check your details are correct and try again."
+msgstr "Det gick inte att logga in.\n"
+"Kontrollera att dina inloggningsuppgifter är korrekta och försök igen."
+
+msgctxt "#32029"
+msgid "Search"
+msgstr "Sök"
+
+msgctxt "#32030"
+msgid "Search: {query}"
+msgstr "Sök: {query}"
+
+msgctxt "#32031"
+msgid "No Results"
+msgstr "Inga resultat"
+
+msgctxt "#32032"
+msgid "{addon} ({version}) - Unexpected Error"
+msgstr "{addon} ({version}) - Oväntat fel"
+
+msgctxt "#32033"
+msgid "Failed to download required file: {filename}"
+msgstr "Det gick inte att ladda ner nödvändig fil: {filename}"
+
+msgctxt "#32034"
+msgid "General"
+msgstr "Allmänt"
+
+msgctxt "#32035"
+msgid "Playback"
+msgstr "Uppspelning"
+
+msgctxt "#32036"
+msgid "Advanced"
+msgstr "Avancerat"
+
+msgctxt "#32037"
+msgid "Verify SSL Certs"
+msgstr "Verifiera SSL-certifikat"
+
+msgctxt "#32038"
+msgid "Select Widevine CDM version to install"
+msgstr "Välj vilken version av Widevine CDM du vill installera"
+
+msgctxt "#32039"
+msgid "Service Start Delay (0 = Random 10s-60s)"
+msgstr "Uppstartsfördröjning av tjänst (0 = slumpmässig 10s-60s)"
+
+msgctxt "#32040"
+msgid "MD5 checksum failed for file: {filename}\n"
+"{local_md5} != {remote_md5}"
+msgstr "MD5-kontrollsumman misslyckades för filen: {filename}\n"
+"{local_md5} != {remote_md5}"
+
+msgctxt "#32041"
+msgid "No Items"
+msgstr "Inga objekt"
+
+msgctxt "#32042"
+msgid "New add-on not found.\n"
+"Update repos then try again."
+msgstr "Hittade inga nya tillägg.\n"
+"Uppdatera förrådet och försök igen."
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Bästa"
+
+msgctxt "#32044"
+msgid "HTTP Timeout (seconds)"
+msgstr "HTTP-timeout (sekunder)"
+
+msgctxt "#32045"
+msgid "HTTP Retries"
+msgstr "HTTP-försök"
+
+msgctxt "#32046"
+msgid "Chunksize"
+msgstr "Bitstorlek"
+
+msgctxt "#32047"
+msgid "{label} [COLOR green][B](LATEST)[/B][/COLOR]"
+msgstr "{label} [COLOR green][B](SENASTE)[/B][/COLOR]"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Gå förbi"
+
+msgctxt "#32049"
+msgid "\"{choose}\" item not found that matches pattern \"{pattern}\""
+msgstr "\"{choose}\" objekt som matchade mönstret hittades inte \"{pattern}\""
+
+msgctxt "#32050"
+msgid "This add-on has moved\n"
+"A new add-on '{new_addon_id}' is therefore required\n"
+"Install and migrate to new add-on?"
+msgstr "Detta tillägget har flyttat\n"
+"Det krävs därför ett nytt tillägg '{new_addon_id}'\n"
+"Installera och migrera till ett nytt tillägg?"
+
+msgctxt "#32051"
+msgid "Add-on has been migrated\n"
+"Remove the old add-on?"
+msgstr "Tillägget har migrerats\n"
+"Ta bort det gamla tillägget?"
+
+msgctxt "#32052"
+msgid "Unknown Error"
+msgstr "Okänt fel"
+
+msgctxt "#32053"
+msgid "This manifest contains multiple base urls\n"
+"Support for this will hopefully be introduced in Kodi 19\n"
+"There is a chance this content may not play"
+msgstr "Detta manifest innehåller flera baswebbadresser\n"
+"Stöd för detta kommer förhoppningsvis att introduceras i Kodi 19\n"
+"Det finns en chans att detta innehåll inte kan spelas upp"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Anpassad"
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Fråga"
+
+msgctxt "#32056"
+msgid "Failed to fetch / parse playback URL\n"
+"Make sure your entitled to this content and your IP address is allowed (not geo-blocked)\n"
+"Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
+msgstr "Det gick inte att hämta / tolka uppspelningswebbadressen\n"
+"Se till att du har rätt till detta innehåll och att din IP-adress är tillåten (inte geo-blockerad)\n"
+"Försök komma åt innehållet på andra sätt (officiell app / webbplats) för att testa om det är ett problem i Kodi-tillägget"
+
+msgctxt "#32057"
+msgid "M3U8 file does not start with #EXTM3U"
+msgstr "M3U8-filen börjar inte med #EXTM3U"
+
+msgctxt "#32058"
+msgid "{label} [INSTALLED]"
+msgstr "{label} [INSTALLERAD]"
+
+msgctxt "#32059"
+msgid "Max Bandwidth (Mbit/s)"
+msgstr "Max bandbredd (Mbit/s)"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Lägsta"
+
+msgctxt "#32061"
+msgid "Playback Quality"
+msgstr "Uppspelningskvalitet"
+
+msgctxt "#32062"
+msgid "Inputstream HLS required to watch streams from live.\n"
+"Check HLS is enabled in settings and Inputstream Adaptive is installed"
+msgstr "Inputstream HLS krävs för att titta på strömmar från live.\n"
+"Kontrollera att HLS är aktiverat och att Inputstream Adaptive är installerat"
+
+msgctxt "#32063"
+msgid "Live Play Action"
+msgstr "Live Play Action"
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr "Från början"
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr "Från Live"
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr "Fråga"
+
+msgctxt "#32067"
+msgid "Play From?"
+msgstr "Spela upp från?"
+
+msgctxt "#32068"
+msgid "{bandwidth:.2f} Mbit/s {resolution} {fps} {codecs}"
+msgstr "{bandwidth:.2f} Mbit/s {resolution} {fps} {codecs}"
+
+msgctxt "#32069"
+msgid "{fps:.2f} FPS"
+msgstr "{fps:.2f} BPS"
+
+msgctxt "#32070"
+msgid "Available Widevine CDM Versions"
+msgstr "Tillgängliga versioner av Widevine CDM"
+
+msgctxt "#32071"
+msgid "{label} (Unknown)"
+msgstr "{label} (Okänd)"
+
+msgctxt "#32072"
+msgid "Default Audio"
+msgstr "Standardljud"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Inaktiverad"
+
+msgctxt "#32074"
+msgid "URL returned error code: {code}"
+msgstr "Webbadressen returnerade felkod: {code}"
+
+msgctxt "#32075"
+msgid "Widevine CDM is built-in to Android\n"
+"If content does not play, your Android device may not have a suitable Widevine level."
+msgstr "Widevine CDM är inbyggt i Android\n"
+"Om innehållet inte spelas upp har kanske inte din Android-enhet en lämplig Widevine-nivå."
+
+msgctxt "#32076"
+msgid "Use Inputstream HLS for Live Streams"
+msgstr "Använd Inputstream HLS för Live-strömmar"
+
+msgctxt "#32077"
+msgid "Your IP address is not allowed to access this content (geo-blocked)\n"
+"You may need to use a VPN / Smart DNS. Sometimes even these can be blocked.\n"
+"Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
+msgstr "Din IP-adress tillåts inte komma åt detta innehåll (geo-blockerad)\n"
+"Du kan behöva använda en VPN / Smart DNS, men ibland kan även dessa blockeras.\n"
+"Försök komma åt innehållet på andra sätt (officiell app / webbplats) för att testa om det är ett problem i Kodi-tillägget"
+
+msgctxt "#32078"
+msgid "Kiosk Mode"
+msgstr "Kioskläge"
+
+msgctxt "#32079"
+msgid "Setup IPTV Merge"
+msgstr "Konfigurera IPTV-merge"
+
+msgctxt "#32080"
+msgid "Max EPG Days to Scrape"
+msgstr "Max EPG-dagar att hämta"
+
+msgctxt "#32081"
+msgid "Live TV & EPG"
+msgstr "Live TV och EPG"
+
+msgctxt "#32082"
+msgid "Force built-in EPG scraper"
+msgstr "Tvinga inbyggd EPG-hämtning"
+
+msgctxt "#32083"
+msgid "Profile Activated"
+msgstr "Profil aktiverad"
+
+msgctxt "#32084"
+msgid "Select Profile"
+msgstr "Välj profil"
+
+msgctxt "#32085"
+msgid "This service requires a {required} location\n"
+"We detected your location is {current}\n"
+msgstr "Den här tjänsten kräver en {required} plats\n"
+"Vi upptäckte att din plats är {current}\n"
+
+msgctxt "#32086"
+msgid "Audio Allow List"
+msgstr "Tillåtna ljudspår"
+
+msgctxt "#32087"
+msgid "Subtitle Allow List"
+msgstr "Tillåtna undertexter"
+
+msgctxt "#32088"
+msgid "Include Forced Subs"
+msgstr "Inkludera tvingade undertexter"
+
+msgctxt "#32089"
+msgid "Include Non-forced Subs"
+msgstr "Inkludera icke-tvingade undertexter"
+
+msgctxt "#32090"
+msgid "Include Audio Description Tracks"
+msgstr "Inkludera ljudbeskrivningsspår"
+
+msgctxt "#32091"
+msgid "Add Profile"
+msgstr "Lägg till profil"
+
+msgctxt "#32092"
+msgid "Delete Profile"
+msgstr "Ta bort profil"
+
+msgctxt "#32093"
+msgid "Random Pick"
+msgstr "Slumpmässigt val"
+
+msgctxt "#32094"
+msgid "Select Avatar"
+msgstr "Välj avatar"
+
+msgctxt "#32095"
+msgid "Select profile to delete"
+msgstr "Välj profilen du vill ta bort"
+
+msgctxt "#32096"
+msgid "Profile history, watchlist, and activity will be deleted. There is no way to undo this."
+msgstr "Profilhistorik, bevakningslista och aktivitet kommer att tas bort. Det finns inget sätt att ångra detta"
+
+msgctxt "#32097"
+msgid "Delete {name}'s profile?"
+msgstr "Ta bort profilen {name}?"
+
+msgctxt "#32098"
+msgid "Profile Deleted"
+msgstr "Profilen borttagen"
+
+msgctxt "#32099"
+msgid "{label} (Used)"
+msgstr "{label} (Använd)"
+
+msgctxt "#32100"
+msgid "Kid friendly interface with only content suitable for kids."
+msgstr "Barnvänligt gränssnitt med endast innehåll som är lämpligt för barn."
+
+msgctxt "#32101"
+msgid "Kids Profile?"
+msgstr "Barnprofil?"
+
+msgctxt "#32102"
+msgid "Profile Name"
+msgstr "Profilnamn"
+
+msgctxt "#32103"
+msgid "{name} is already being used"
+msgstr "{name} är upptaget"
+
+msgctxt "#32104"
+msgid "Disable profile switching in Kids profile"
+msgstr "Inaktivera profilbyte i barnprofilen"
+
+msgctxt "#32105"
+msgid "Content requires a newer version of Inputstream Adaptive\n"
+"Minimum required version: [B]{required}[/B]\n"
+"Your current version: {current}"
+msgstr "Innehållet kräver en nyare version av Inputstream Adaptive\n"
+"Du behöver minst version: [B]{required}[/B]\n"
+"Nuvarande version: {current}"
+
+msgctxt "#32106"
+msgid "ARMv6 does not support Widevine playback"
+msgstr "ARMv6 stöder inte uppspelning av Widevine"
+
+msgctxt "#32107"
+msgid "iOS does not support Widevine playback on Kodi"
+msgstr "iOS stöder inte uppspelning av Widevine i Kodi"
+
+msgctxt "#32108"
+msgid "Next Page ({page})"
+msgstr "Nästa sida ({page})"
+
+msgctxt "#32109"
+msgid "Failed to fetch JSON data\n"
+"Make sure your IP address is allowed (not geo-blocked)\n"
+"Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
+msgstr "Det gick inte att hämta JSON-data\n"
+"Se till att din IP-adress är tillåten (inte geo-blockerad)\n"
+"Försök komma åt innehållet på andra sätt (officiell app / webbplats) för att testa om det är ett problem i Kodi-tillägget"
+
+msgctxt "#32110"
+msgid "URL returned no response\n"
+"Check your internet connection and make sure your IP address is allowed (not geo-blocked)"
+msgstr "Webbadressen svarade inte\n"
+"Kontrollera din internetanslutning och se till att din IP-adress är tillåten (inte geo-blockerad)"
+
+msgctxt "#32111"
+msgid "Bookmarks"
+msgstr "Bokmärken"
+
+msgctxt "#32112"
+msgid "Add to Bookmarks"
+msgstr "Lägg till bokmärken"
+
+msgctxt "#32113"
+msgid "Remove Bookmark"
+msgstr "Ta bort bokmärke"
+
+msgctxt "#32114"
+msgid "Bookmark Added"
+msgstr "Bokmärke tillagt"
+
+msgctxt "#32115"
+msgid "Move Up"
+msgstr "Flytta upp"
+
+msgctxt "#32116"
+msgid "Move Down"
+msgstr "Flytta ner"
+
+msgctxt "#32117"
+msgid "Rename Bookmark"
+msgstr "Döp om bokmärke"
+
+msgctxt "#32118"
+msgid "XZ extracting requires Kodi 19 or above"
+msgstr "XZ-extrahering kräver Kodi 19 eller högre"
+
+msgctxt "#32119"
+msgid "Attempting to install Inputstream Adaptive from apt..."
+msgstr "Försöker att installera Inputstream Adaptive från apt..."
+
+msgctxt "#32120"
+msgid "(Tv Show Folders setting moved to SlyGuy Common Settings)"
+msgstr "(Inställningar för TV-programmappar har flyttats till SlyGuys vanliga inställningar)"
+
+msgctxt "#32121"
+msgid "Default Subtitle"
+msgstr "Standardundertext"
+
+msgctxt "#32122"
+msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"
+msgstr "{label} [COLOR red][B](ÅTERKALLAD)[/B][/COLOR]"
+
+msgctxt "#32123"
+msgid "This Widevine versions has been revoked by Google\n"
+"It most likely will cause playback to fail\n"
+"Select Yes to install anyway"
+msgstr "Denna version av Widevine har blivit återkallad av Google\n"
+"Troligen kommer uppspelningen att misslyckas\n"
+"Välj Ja om du ändå vill installera den"
+
+msgctxt "#32124"
+msgid "Widevine license request failed\n"
+"Usual cause is Google revoking older Widevine versions\n"
+"Select Yes to check for new Widevine versions"
+msgstr "Widevine-licensbegäran misslyckades\n"
+"Detta beror troligen på att Google har återkallat äldre versioner av Widevine\n"
+"Välj Ja för att söka efter nya versioner av Widevine"
+
+msgctxt "#32125"
+msgid "tvOS does not support Widevine playback on Kodi"
+msgstr "tvOS stöder inte uppspelning av Widevine i Kodi"
+
+msgctxt "#32126"
+msgid "New Search"
+msgstr "Ny sök"
+
+msgctxt "#32127"
+msgid "Remove search"
+msgstr "Ta bort sök"
+
+msgctxt "#32128"
+msgid "SlyGuy News"
+msgstr "Nyheter från SlyGuy"
+
+msgctxt "#32129"
+msgid "(Video view setting moved to SlyGuy Common Settings)"
+msgstr "(Inställningar för videovisning har flyttats till SlyGuys vanliga inställningar)"
+
+msgctxt "#32130"
+msgid "Play from live"
+msgstr "Spela upp från live"
+
+msgctxt "#32131"
+msgid "Email Address"
+msgstr "E-postadress"
+
+msgctxt "#32132"
+msgid "Password"
+msgstr "Lösenord"
+
+msgctxt "#32133"
+msgid "Device Code"
+msgstr "Enhetskod"
+
+msgctxt "#32134"
+msgid "Email / Password"
+msgstr "E-post / Lösenord"
+
+msgctxt "#32135"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr "1. Gå till: [B]{url}[/B]\n"
+"2. Ange kode: [B]{code}[/B]"
+
+msgctxt "#32136"
+msgid "{label} [COLOR orange][B](OS Update Needed)[/B][/COLOR]"
+msgstr "{label} [COLOR orange][B](kräver uppdatering av OS)[/B][/COLOR]"
+
+msgctxt "#32137"
+msgid "Your OS does not yet support this version of Widevine\n"
+"See [B]http://mjh.nz/widevine[/B] for more information\n"
+"Select Yes to install anyway"
+msgstr "Ditt OS stöder ännu inte denna versionen av Widevine\n"
+"För mer information gå till [B]http://mjh.nz/widevine[/B]\n"
+"Välj Ja om du ändå vill installera den"
+
+msgctxt "#32138"
+msgid "Donations"
+msgstr "Dinationer"
+
+msgctxt "#32139"
+msgid "Look & Feel"
+msgstr "Utseende och känsla"
+
+msgctxt "#32140"
+msgid "Donate at [B]www.matthuisman.nz/donate[/B]"
+msgstr "Donera via [B]www.matthuisman.nz/donate[/B]"
+
+msgctxt "#32141"
+msgid "Season {number}"
+msgstr "Säsong {number}"
+
+msgctxt "#32142"
+msgid "Inputstream Adaptive add-on is required for playback\n"
+"This often needs to be installed via your package manager\n"
+"eg. [B][I]apt-get -y install kodi-inputstream-adaptive libnss3[/I][/B]\n"
+"Restart Kodi after installing"
+msgstr "Tillägget Inputstream Adaptive krävs för uppspelning\n"
+"Detta måste ofta installeras via din pakethanterare\n"
+"t.ex [B][I]apt-get -y install kodi-inputstream-adaptive libnss3[/I][/B]\n"
+"Starta om Kodi efter installationen"
+
+msgctxt "#32143"
+msgid "Pagination Multiplier"
+msgstr "Pagineringsmultiplikator"
+
+msgctxt "#32144"
+msgid "Check log for more info"
+msgstr "Kontrollera loggen för mer information"
