@@ -1,7 +1,6 @@
 import hashlib
 import uuid
 
-import arrow
 import pyaes
 
 from slyguy import userdata, gui, settings, mem_cache
@@ -9,6 +8,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
 from slyguy.util import get_system_arch
+from slyguy.drm import is_wv_secure
 
 from .constants import *
 from .language import _
@@ -331,16 +331,15 @@ class API(object):
 
         params = {
             'rate': 'WIREDHIGH',
-            'plt': 'ipstb',
+            'plt': 'ipstb', #andr_phone causes the -negative seek
             'appID': 'PLAY2',
             'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
 
-        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
-
         if error:
             raise APIError(_(_.PLAYBACK_ERROR, msg=error))
 
@@ -350,13 +349,18 @@ class API(object):
 
         playback_url = streams[0]['url']
         playback_url = playback_url.replace('cm=yes&','') #without this = bad widevine key
+        license_url = data['fullLicenceUrl']
 
         ## Get L3 License URL
-        params['plt'] = 'andr_phone'
-        params['appID'] = 'PLAY2'
-        data = self._session.post(LICENSE_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
-        license_url = data['fullLicenceUrl']
-        #######
+        if not is_wv_secure():
+            try:
+                params['plt'] = PLT_DEVICE
+                params['appID'] = 'GO2'
+                l3_data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+                license_url = l3_data['fullLicenceUrl']
+            except:
+                log.debug('Failed to get L3 license url')
+        #########
 
         params = {
             'sessionId': data['general']['sessionID'],
