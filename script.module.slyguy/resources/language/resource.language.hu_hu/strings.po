@@ -386,7 +386,7 @@ msgstr "Kérdezze"
 msgctxt "#32056"
 msgid "Failed to fetch / parse playback URL\n"
 "Make sure your entitled to this content and your IP address is allowed (not geo-blocked)\n"
-"Try accessing the content via other means (offical app / website) to test if it's a Kodi add-on issue"
+"Try accessing the content via other means (official app / website) to test if it's a Kodi add-on issue"
 msgstr "Nem sikerült lekérni/elemezni a lejátszási URL-t\n"
 "Győződjön meg arról, hogy jogosult erre a tartalomra, és az IP-címe engedélyezett (nincs földrajzilag blokkolva)\n"
 "Próbálja más módon (hivatalos alkalmazással/webhellyel) elérni a tartalmat, és tesztelje, hogy ez egy Kodi-bővítmény-probléma e”
