@@ -337,7 +337,7 @@ class API(object):
             'format': 'json',
         }
 
-        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
         if error:
