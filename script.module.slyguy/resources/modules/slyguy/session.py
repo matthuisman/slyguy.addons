@@ -64,6 +64,12 @@ class RawSession(requests.Session):
             kwargs['timeout'] = self._timeout
         return super(RawSession, self).request(method, url, **kwargs)
 
+
+def _remove_proxy_authorization(proxy):
+    return re.sub(r"^(?P<protocol>[a-zA-Z]+):\/\/((?P<userinfo>.*)@)?(?P<host>[^:]+)(:(?P<port>[0-9]+))?$",
+                  "\\g<protocol>://\\g<host>\\5", proxy, 1)
+
+
 class Session(RawSession):
     def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None):
         super(Session, self).__init__(verify, timeout)
@@ -82,6 +88,26 @@ class Session(RawSession):
 
         if self._cookies_key:
             self.cookies.update(userdata.get(self._cookies_key, {}))
+
+        self._set_proxies(settings.get('proxy'))
+
+    def _set_proxies(self, proxy):
+        if not proxy:
+            log.debug('NO PROXY')
+            return
+
+        log.debug('PROXY: {}'.format(_remove_proxy_authorization(proxy)))
+        proxies = {
+            "http": proxy,
+            "https": proxy
+        }
+        self.proxies.update(proxies)
+        try:
+            country_code = self.get(url='https://ifconfig.io/country_code').text
+        except BaseException as ex:
+            log.error('PROXY TEST FAILED: {}'.format(ex))
+            country_code = 'FAIL'
+        log.debug('COUNTRY CODE: {}'.format(country_code))
 
     def gz_json(self, *args, **kwargs):
         resp = self.get(*args, **kwargs)

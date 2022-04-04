@@ -487,3 +487,7 @@ msgstr ""
 msgctxt "#32108"
 msgid "Next Page ({page})"
 msgstr "Prossima pagina ({page})"
+
+msgctxt "#32145"
+msgid "HTTP/HTTPS/SOCKS Proxy"
+msgstr ""

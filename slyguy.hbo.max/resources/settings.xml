@@ -44,6 +44,8 @@
 
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
 
+        <setting label="$ADDON[script.module.slyguy 32145]" type="text" id="proxy" default=""/>
+
         <setting id="_fresh" type="bool" default="true" visible="false"/>
         <setting id="_userdata" type="text" default="{}" visible="false"/>
     </category>

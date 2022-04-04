@@ -766,3 +766,7 @@ msgstr "Donaciones en [B]www.matthuisman.nz/donate[/B]"
 msgctxt "#32141"
 msgid "Season {number}"
 msgstr "Temporada {number}"
+
+msgctxt "#32145"
+msgid "HTTP/HTTPS/SOCKS Proxy"
+msgstr ""

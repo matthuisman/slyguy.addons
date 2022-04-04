@@ -737,3 +737,7 @@ msgstr ""
 msgctxt "#32144"
 msgid "Check log for more info"
 msgstr ""
+
+msgctxt "#32145"
+msgid "HTTP/HTTPS/SOCKS Proxy"
+msgstr ""

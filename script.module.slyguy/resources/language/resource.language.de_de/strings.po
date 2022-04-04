@@ -748,3 +748,7 @@ msgid "Your OS does not yet support this version of Widevine\n"
 msgstr "Dein Betriebssystem unterstützt Widevine derzeit nicht\n"
 "Besuche [B]http://mjh.nz/widevine[/B] für mehr Informationen\n"
 "Wähle JA aus, um dennoch zu installieren"
+
+msgctxt "#32145"
+msgid "HTTP/HTTPS/SOCKS Proxy"
+msgstr ""

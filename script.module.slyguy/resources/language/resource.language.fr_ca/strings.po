@@ -589,3 +589,7 @@ msgctxt "#32135"
 msgid "1. Go to: [B]{url}[/B]\n"
 "2. Enter code: [B]{code}[/B]"
 msgstr ""
+
+msgctxt "#32145"
+msgid "HTTP/HTTPS/SOCKS Proxy"
+msgstr ""

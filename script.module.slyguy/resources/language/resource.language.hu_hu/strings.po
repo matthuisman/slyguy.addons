@@ -782,3 +782,7 @@ msgstr "Lapszámozási szorzó"
 msgctxt "#32144"
 msgid "Check log for more info"
 msgstr "Nézze meg a Log-ot több infóért"
+
+msgctxt "#32145"
+msgid "HTTP/HTTPS/SOCKS Proxy"
+msgstr ""
