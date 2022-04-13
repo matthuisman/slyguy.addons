@@ -41,6 +41,7 @@
     <category label="$ADDON[script.module.slyguy 32036]">
         <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32147]" type="text" id="proxy_server" default=""/>
 
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
 
