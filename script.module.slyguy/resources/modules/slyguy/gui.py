@@ -457,7 +457,7 @@ class Item(object):
                 'verify': settings.common_settings.getBool('verify_ssl', True),
                 'timeout': settings.common_settings.getInt('http_timeout', 30),
                 'dns_rewrites': get_dns_rewrites(self.dns_rewrites),
-                'proxy': settings.get('proxy') or settings.common_settings.get('proxy'),
+                'proxy_server': settings.get('proxy_server') or settings.common_settings.get('proxy_server'),
             }
 
             if mimetype == 'application/vnd.apple.mpegurl':

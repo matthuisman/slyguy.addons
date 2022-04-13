@@ -1034,7 +1034,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not self._session.get('session'):
             self._session['session'] = RawSession(verify=self._session.get('verify'), timeout=self._session.get('timeout'))
             self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
-            self._session['session'].set_proxy(self._session.get('proxy'))
+            self._session['session'].set_proxy(self._session.get('proxy_server'))
         else:
             self._session['session'].headers.clear()
             #self._session['session'].cookies.clear() #lets handle cookies in session

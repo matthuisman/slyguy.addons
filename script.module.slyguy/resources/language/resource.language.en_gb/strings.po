@@ -108,9 +108,6 @@ msgctxt "#30021"
 msgid "Show News"
 msgstr ""
 
-msgctxt "#30022"
-msgid "Proxy Server"
-msgstr ""
 
 msgctxt "#30023"
 msgid "Video view for all content"
@@ -747,4 +744,8 @@ msgctxt "#32146"
 msgid "This Widevine version has the below reported stability issues\n"
 "[B]{issues}[/B]\n"
 "Select Yes to install anyway"
+msgstr ""
+
+msgctxt "#32147"
+msgid "Proxy Server"
 msgstr ""

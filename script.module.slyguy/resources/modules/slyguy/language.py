@@ -197,6 +197,7 @@ class BaseLanguage(object):
     PLAYBACK_FAILED_CHECK_LOG   = 32144
     WV_ISSUES                   = 32145
     WV_ISSUES_CONFIRM           = 32146
+    PROXY_SERVER                = 32147
 
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022
