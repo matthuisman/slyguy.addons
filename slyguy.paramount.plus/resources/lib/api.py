@@ -321,28 +321,32 @@ class API(object):
         if 'pid' not in video_data:
             raise APIError('Check your subscription is valid')
 
-        params = {
-            #'formats': 'mpeg-dash',
-            'Tracking': 'true',
-            'format': 'SMIL',
-            #'sig': '0060cbe3920bcb86969e8c733a9cdcdb203d6e57beae30781c706f63',
-        }
+        if 'streamingUrl' in video_data:
+            url = video_data['streamingUrl']
+        else:
+            params = {
+                #'formats': 'mpeg-dash',
+                'Tracking': 'true',
+                'format': 'SMIL',
+                #'sig': '0060cbe3920bcb86969e8c733a9cdcdb203d6e57beae30781c706f63',
+            }
 
-        url = self._config.get_link_platform_url(video_data['cmsAccountId'], video_data['pid'])
-        resp = self._session.get(url, params=params)
+            url = self._config.get_link_platform_url(video_data['cmsAccountId'], video_data['pid'])
+            resp = self._session.get(url, params=params)
 
-        root = parseString(resp.content)
+            root = parseString(resp.content)
 
-        videos = root.getElementsByTagName('video')
-        if not videos:
-            error_msg = ''
-            for ref in root.getElementsByTagName('ref'):
-                error_msg = ref.getAttribute('abstract')
-                if error_msg:
-                    break
-            raise APIError(_(error_msg))
+            videos = root.getElementsByTagName('video')
+            if not videos:
+                error_msg = ''
+                for ref in root.getElementsByTagName('ref'):
+                    error_msg = ref.getAttribute('abstract')
+                    if error_msg:
+                        break
+                raise APIError(_(error_msg))
 
-        url = videos[0].getAttribute('src')
+            url = videos[0].getAttribute('src')
+
         params = {'contentId': video_id}
         data = self._session.get('/v3.0/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
 
