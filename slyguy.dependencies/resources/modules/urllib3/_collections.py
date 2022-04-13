@@ -17,9 +17,10 @@ except ImportError:  # Platform-specific: No threads available
 
 
 from collections import OrderedDict
-from .exceptions import InvalidHeader
-from .packages.six import iterkeys, itervalues, PY3
 
+from .exceptions import InvalidHeader
+from .packages import six
+from .packages.six import iterkeys, itervalues
 
 __all__ = ["RecentlyUsedContainer", "HTTPHeaderDict"]
 
@@ -174,7 +175,7 @@ class HTTPHeaderDict(MutableMapping):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    if not PY3:  # Python 2
+    if six.PY2:  # Python 2
         iterkeys = MutableMapping.iterkeys
         itervalues = MutableMapping.itervalues
 
