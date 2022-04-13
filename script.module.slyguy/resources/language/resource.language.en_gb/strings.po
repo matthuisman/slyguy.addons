@@ -41,7 +41,7 @@ msgid "{name} [Atmos]"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Proxy Enabled (Required for some addons and features)"
+msgid "SlyProxy Enabled (Required for some addons and features)"
 msgstr ""
 
 msgctxt "#30006"
@@ -108,6 +108,9 @@ msgctxt "#30021"
 msgid "Show News"
 msgstr ""
 
+msgctxt "#30022"
+msgid "Proxy Server"
+msgstr ""
 
 msgctxt "#30023"
 msgid "Video view for all content"

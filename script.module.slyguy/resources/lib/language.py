@@ -23,7 +23,7 @@ class Language(BaseLanguage):
     CHECK_LOG         = 30019
     DONOR_ID          = 30020
     SHOW_NEWS         = 30021
-
+    PROXY_SERVER      = 30022
     MOVIE_FOLDERS     = 30023
     SHOW_FOLDERS      = 30024
 
