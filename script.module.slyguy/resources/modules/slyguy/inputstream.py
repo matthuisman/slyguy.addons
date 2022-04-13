@@ -1,7 +1,7 @@
 import os
 import time
 import struct
-import subprocess
+import json
 from distutils.version import LooseVersion
 
 from kodi_six import xbmc
@@ -229,38 +229,39 @@ def install_widevine(reinstall=False):
     if not wv_versions:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
+    new_wv_md5 = md5sum(json.dumps([x for x in wv_versions if not x.get('hidden')]))
+
     current = None
-    latest = None
+    has_compatible = False
     for wv in wv_versions:
         wv['compatible'] = True
         wv['label'] = str(wv['ver'])
-        wv['ver'] = LooseVersion(wv['ver'])
-        wv['confirm'] = wv.get('confirm', None)
-        wv['notes'] = wv.get('notes', None)
+        wv['confirm'] = None
 
         if wv.get('revoked'):
             wv['compatible'] = False
             wv['label'] = _(_.WV_REVOKED, label=wv['label'])
-            if not wv['confirm']:
-                wv['confirm'] = _.WV_REVOKED_CONFIRM
+            wv['confirm'] = _.WV_REVOKED_CONFIRM
 
-        if not latest:
-            latest = wv
-            if wv['compatible']:
-                wv['label'] = _(_.WV_LATEST, label=wv['label'])
+        if wv.get('issues'):
+            wv['compatible'] = False
+            wv['label'] = _(_.WV_ISSUES, label=wv['label'])
+            wv['confirm'] = _(_.WV_ISSUES_CONFIRM, issues=wv['issues'])
 
         if wv['md5'] == installed:
             current = wv
+            wv['hidden'] = False
             wv['label'] = _(_.WV_INSTALLED, label=wv['label'])
+        elif wv['compatible'] and not wv.get('hidden'):
+            has_compatible = True
 
-        if wv['notes']:
-            wv['label'] = u'{}\n{}'.format(wv['label'], wv['notes'])
+    current_wv_md5 = userdata.get('_wv_latest_md5')
+    userdata.set('_wv_latest_md5', new_wv_md5)
 
-    latest = wv_versions[0]
-    latest_known = userdata.get('_wv_latest_md5')
-    userdata.set('_wv_latest_md5', latest['md5'])
+    if new_wv_md5 != current_wv_md5 and (current and not current['compatible'] and has_compatible):
+        reinstall = True
 
-    if not reinstall and (installed == latest['md5'] or latest['md5'] == latest_known):
+    if not reinstall:
         return True
 
     if installed and not current:
@@ -269,12 +270,14 @@ def install_widevine(reinstall=False):
             'label': _(_.WV_INSTALLED, label=_(_.WV_UNKNOWN, label=str(installed[:6]))),
         })
 
+    display_versions = [x for x in wv_versions if not x.get('hidden')]
+
     while True:
-        index = gui.select(_.SELECT_WV_VERSION, options=[x['label'] for x in wv_versions])
+        index = gui.select(_.SELECT_WV_VERSION, options=[x['label'] for x in display_versions])
         if index < 0:
             return False
 
-        selected = wv_versions[index]
+        selected = display_versions[index]
         if selected.get('confirm') and not gui.yes_no(selected['confirm']):
             continue
 

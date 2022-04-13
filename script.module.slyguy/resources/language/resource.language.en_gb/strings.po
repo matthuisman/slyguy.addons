@@ -319,9 +319,7 @@ msgctxt "#32046"
 msgid "Chunksize"
 msgstr ""
 
-msgctxt "#32047"
-msgid "{label} [COLOR green][B](LATEST)[/B][/COLOR]"
-msgstr ""
+
 
 msgctxt "#32048"
 msgid "Bypass"
@@ -371,7 +369,7 @@ msgid "M3U8 file does not start with #EXTM3U"
 msgstr ""
 
 msgctxt "#32058"
-msgid "{label} [INSTALLED]"
+msgid "{label} [COLOR green][B](INSTALLED)[/B][/COLOR]"
 msgstr ""
 
 msgctxt "#32059"
@@ -637,7 +635,7 @@ msgid "Default Subtitle"
 msgstr ""
 
 msgctxt "#32122"
-msgid "{label} [COLOR red][B](REVOKED)[/B][/COLOR]"
+msgid "{label} [COLOR red](REVOKED)[/COLOR]"
 msgstr ""
 
 msgctxt "#32123"
@@ -736,4 +734,14 @@ msgstr ""
 
 msgctxt "#32144"
 msgid "Check log for more info"
+msgstr ""
+
+msgctxt "#32145"
+msgid "{label} [COLOR yellow](UNSTABLE)[/COLOR]"
+msgstr ""
+
+msgctxt "#32146"
+msgid "This Widevine version has the below reported stability issues\n"
+"[B]{issues}[/B]\n"
+"Select Yes to install anyway"
 msgstr ""

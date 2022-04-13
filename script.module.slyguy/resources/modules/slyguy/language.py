@@ -97,7 +97,7 @@ class BaseLanguage(object):
     HTTP_TIMEOUT                = 32044
     HTTP_RETRIES                = 32045
     CHUNK_SIZE                  = 32046
-    WV_LATEST                   = 32047
+
     QUALITY_SKIP                = 32048
     NO_AUTOPLAY_FOUND           = 32049
     CONFIRM_MIGRATE             = 32050
@@ -195,6 +195,8 @@ class BaseLanguage(object):
     IA_LINUX_MISSING            = 32142
     PAGINATION_MULTIPLIER       = 32143
     PLAYBACK_FAILED_CHECK_LOG   = 32144
+    WV_ISSUES                   = 32145
+    WV_ISSUES_CONFIRM           = 32146
 
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022
