@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.dependencies" name="SlyGuy Dependencies" provider-name="SlyGuy" version="0.0.2">
+<addon id="slyguy.dependencies" name="SlyGuy Dependencies" provider-name="SlyGuy" version="0.0.3">
   <requires>
     <import addon="repository.slyguy"/>
   </requires>
@@ -10,7 +10,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Bump urllib3 to 1.26.9. Add PySocks 1.7.1. Thanks @StepanOrt</news>
+    <news>Add win_inet_pton 1.1.0</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
