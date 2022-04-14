@@ -8,6 +8,7 @@ from six import BytesIO
 from kodi_six import xbmc
 
 from . import userdata, settings
+from .util import get_kodi_proxy
 from .dns import get_dns_rewrites
 from .log import log
 from .language import _
@@ -41,6 +42,10 @@ class RawSession(requests.Session):
         self._rewrite_cache = {}
 
     def set_proxy(self, proxy):
+        proxy = proxy or ''
+        if proxy.lower().strip() == 'kodi':
+            proxy = get_kodi_proxy()
+        log.debug('proxy set to: {}'.format(proxy))
         self._proxy = proxy
 
     def _getaddrinfoPreferIPv4(self, host, port, family=0, _type=0, proto=0, flags=0):
@@ -73,6 +78,7 @@ class RawSession(requests.Session):
                 "http": self._proxy,
                 "https": self._proxy,
             }
+            log.debug('Using proxy: {}'.format(self._proxy))
 
         return super(RawSession, self).request(method, url, **kwargs)
 

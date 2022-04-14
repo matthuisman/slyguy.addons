@@ -736,3 +736,36 @@ def fix_language(language=None):
         return split[0]
 
     return language
+
+def get_kodi_proxy():
+    usehttpproxy = get_kodi_setting('network.usehttpproxy')
+    if usehttpproxy is not True:
+        return None
+
+    try:
+        httpproxytype = int(get_kodi_setting('network.httpproxytype'))
+    except ValueError:
+        httpproxytype = 0
+
+    proxy_types = ['http', 'socks4', 'socks4a', 'socks5', 'socks5h']
+
+    proxy = dict(
+        scheme = proxy_types[httpproxytype] if 0 <= httpproxytype < 5 else 'http',
+        server = get_kodi_setting('network.httpproxyserver'),
+        port = get_kodi_setting('network.httpproxyport'),
+        username = get_kodi_setting('network.httpproxyusername'),
+        password = get_kodi_setting('network.httpproxypassword'),
+    )
+
+    if proxy.get('username') and proxy.get('password') and proxy.get('server') and proxy.get('port'):
+        proxy_address = '{scheme}://{username}:{password}@{server}:{port}'.format(**proxy)
+    elif proxy.get('username') and proxy.get('server') and proxy.get('port'):
+        proxy_address = '{scheme}://{username}@{server}:{port}'.format(**proxy)
+    elif proxy.get('server') and proxy.get('port'):
+        proxy_address = '{scheme}://{server}:{port}'.format(**proxy)
+    elif proxy.get('server'):
+        proxy_address = '{scheme}://{server}'.format(**proxy)
+    else:
+        return None
+
+    return proxy_address
