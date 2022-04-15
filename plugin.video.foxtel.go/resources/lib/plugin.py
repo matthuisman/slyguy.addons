@@ -2,6 +2,7 @@ import codecs
 
 import arrow
 from kodi_six import xbmcplugin
+from six.moves.urllib_parse import quote
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
@@ -335,7 +336,7 @@ def _get_entitlements():
 
 def _image(id, width=400, fragment=''):
     if fragment:
-        fragment = '#{}'.format(fragment)
+        fragment = '#{}'.format(quote(fragment))
     return IMG_URL.format(id=id, width=width, fragment=fragment)
 
 @plugin.route()
