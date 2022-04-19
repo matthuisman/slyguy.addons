@@ -708,12 +708,12 @@ def lang_allowed(lang, lang_list):
     if not lang_list:
         return True
 
-    lang = fix_language(lang)
+    lang = lang.lower().strip()
     if not lang:
         return False
 
     for _lang in lang_list:
-        _lang = fix_language(_lang)
+        _lang = _lang.lower().strip()
         if not _lang:
             continue
 
@@ -728,14 +728,17 @@ def fix_language(language=None):
 
     language = language.lower().strip()
     split = language.split('-')
+
     if len(split) > 1 and split[1].lower() == split[0].lower():
         return split[0]
 
-    ## Kodi or IA doesnt seem to match on en-US
-    if split[0] in ('en',):
+    # Kodi only supports 2 letter codes before the -
+    # https://github.com/xbmc/xbmc/blob/master/xbmc/utils/LangCodeExpander.cpp
+    if len(split[0]) == 2:
         return split[0]
 
     return language
+
 
 def get_kodi_proxy():
     usehttpproxy = get_kodi_setting('network.usehttpproxy')
