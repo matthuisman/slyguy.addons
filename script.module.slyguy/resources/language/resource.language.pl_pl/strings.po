@@ -48,7 +48,7 @@ msgstr ""
 
 msgctxt "#30005"
 msgid "SlyProxy Enabled (Required for some addons and features)"
-msgstr ""
+msgstr "SlyProxy włączony (wymagany dla niektórych dodatków i funkcji)"
 
 msgctxt "#30006"
 msgid "Persist Cache"
@@ -80,15 +80,15 @@ msgstr "Brak"
 
 msgctxt "#30013"
 msgid "1.0"
-msgstr ""
+msgstr "1.0"
 
 msgctxt "#30014"
 msgid "2.2"
-msgstr ""
+msgstr "2.2"
 
 msgctxt "#30015"
 msgid "3.0"
-msgstr ""
+msgstr "3.0"
 
 msgctxt "#30016"
 msgid "No SlyGuy errors found"
@@ -108,7 +108,7 @@ msgstr "Sprawdź dziennik Kodi pod kątem błędów SlyGuy"
 
 msgctxt "#30020"
 msgid "Donor ID (Restart Kodi after changing)"
-msgstr ""
+msgstr "ID dawcy (zrestartuj Kodi po zmianie)"
 
 msgctxt "#30021"
 msgid "Show News"
@@ -121,7 +121,7 @@ msgstr "Widok wideo dla wszystkich treści"
 
 msgctxt "#30024"
 msgid "Folders for TV Show and Seasons"
-msgstr ""
+msgstr "Foldery na programy TV i sezony"
 
 ## COMMON ##
 
@@ -131,7 +131,7 @@ msgstr "Musisz się zalogować, aby uzyskać dostęp do tej zawartości"
 
 msgctxt "#32001"
 msgid "No default route found"
-msgstr ""
+msgstr "Nie znaleziono domyślnej trasy"
 
 msgctxt "#32002"
 msgid "Are you sure you want to reset this add-on?\n"
@@ -183,7 +183,7 @@ msgstr "ARM 64bit nie obsługuje odtwarzania Widevine\n"
 
 msgctxt "#32012"
 msgid "{system} {arch} Kodi v{kodi_version}\ndoes not yet support Widevine playback"
-msgstr ""
+msgstr "{system} {arch} Kodi v{kodi_version}\nie obsługuje jeszcze odtwarzania Widevine"
 
 msgctxt "#32013"
 msgid "Could not find a media source from Brightcove\n"
@@ -199,12 +199,13 @@ msgstr "Pobieranie wymaganych plików\w"
 
 msgctxt "#32015"
 msgid "Widevine CDM"
-msgstr ""
+msgstr "Widevine CDM"
 
 msgctxt "#32016"
 msgid "There was an unexpected error installing the Widevine CDM\n"
 "Please restart Kodi and try again"
-msgstr ""
+msgstr "Wystąpił nieoczekiwany błąd podczas instalowania CDM Widevine\n"
+"Uruchom ponownie Kodi i spróbuj ponownie"
 
 msgctxt "#32017"
 msgid "Use Cache"
@@ -482,7 +483,7 @@ msgstr ""
 
 msgctxt "#32081"
 msgid "Live TV & EPG"
-msgstr "Kanały na żywo & EPG"
+msgstr "TV na żywo & EPG"
 
 msgctxt "#32082"
 msgid "Force built-in EPG scraper"
