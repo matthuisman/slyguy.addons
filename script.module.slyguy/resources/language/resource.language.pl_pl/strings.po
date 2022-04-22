@@ -145,7 +145,7 @@ msgstr "Resetowanie zakończone"
 
 msgctxt "#32004"
 msgid "Removed {delete_count} Cached Item"
-msgstr ""
+msgstr "Usunięto {delete_count} element z pamięci podręcznej"
 
 msgctxt "#32005"
 msgid "Clear Cache"
@@ -158,11 +158,11 @@ msgstr "Jeśli używasz ulubionych, usuń ulubione, a następnie utwórz je pono
 
 msgctxt "#32007"
 msgid "Could not find a url for function: {function_name}"
-msgstr ""
+msgstr "Nie można znaleźć adresu URL funkcji: {function_name}"
 
 msgctxt "#32008"
 msgid "{addon_id} add-on is required"
-msgstr ""
+msgstr "Dodatek {addon_id} jest wymagany"
 
 msgctxt "#32009"
 msgid "Kodi Microsoft UWP version does not support Widevine playback.\n"
@@ -177,7 +177,9 @@ msgctxt "#32011"
 msgid "ARM 64bit does not support Widevine playback\n"
 "An OS with a 32-bit userspace is required.\n"
 "Try coreelec.org"
-msgstr ""
+msgstr "ARM 64bit nie obsługuje odtwarzania Widevine\n"
+"Wymagany jest system operacyjny z 32-bitową przestrzenią użytkownika.\n"
+"Wypróbuj coreelec.org"
 
 msgctxt "#32012"
 msgid "{system} {arch} Kodi v{kodi_version}\ndoes not yet support Widevine playback"
@@ -186,12 +188,14 @@ msgstr ""
 msgctxt "#32013"
 msgid "Could not find a media source from Brightcove\n"
 "Server Message: {error}"
-msgstr ""
+msgstr „Nie można znaleźć źródła multimediów z Brightcove\n”
+"Komunikat serwera: {błąd}"
 
 msgctxt "#32014"
 msgid "Downloading required file\n"
 "{url}"
-msgstr ""
+msgstr "Pobieranie wymaganych plików\w"
+"{url}"
 
 msgctxt "#32015"
 msgid "Widevine CDM"
