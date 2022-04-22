@@ -44,7 +44,7 @@ msgstr "Język odtwarzania"
 
 msgctxt "#30010"
 msgid "Play Next Episode"
-msgstr "Odtwórz nastęny odcinek"
+msgstr "Odtwórz następny odcinek"
 
 msgctxt "#30011"
 msgid "Skip Intros"
@@ -56,7 +56,7 @@ msgstr "Odtwarzaj następny polecany film"
 
 msgctxt "#30013"
 msgid "Skip Credits"
-msgstr "Pomiń listę płac"
+msgstr "Pomiń napisy końcowe"
 
 msgctxt "#30014"
 msgid "H.265"
@@ -141,7 +141,7 @@ msgstr "HBO Max Moja lista"
 
 msgctxt "#30033"
 msgid "HBO Max Sync Playback"
-msgstr "HBO Max synchronizuj odtwarzania"
+msgstr "HBO Max Synchronizuj odtwarzanie"
 
 msgctxt "#30034"
 msgid "My List"
@@ -165,7 +165,7 @@ msgstr "Usuń z Mojej listy"
 
 msgctxt "#30039"
 msgid "Default Playback language"
-msgstr "Domyślny język odtawrzania"
+msgstr "Domyślny język odtwarzania"
 
 ## COMMON SETTINGS ##
 
