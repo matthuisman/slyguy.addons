@@ -714,17 +714,20 @@ msgstr "e-mail / hasło"
 msgctxt "#32135"
 msgid "1. Go to: [B]{url}[/B]\n"
 "2. Enter code: [B]{code}[/B]"
-msgstr ""
+msgstr "1. Przejdź do: [B]{url}[/B]\n"
+"2. Wpisz kod: [B]{code}[/B]"
 
 msgctxt "#32136"
 msgid "{label} [COLOR orange][B](OS Update Needed)[/B][/COLOR]"
-msgstr ""
+msgstr „{label} [COLOR orange][B](Wymagana aktualizacja systemu operacyjnego)[/B][/COLOR]”
 
 msgctxt "#32137"
 msgid "Your OS does not yet support this version of Widevine\n"
 "See [B]http://mjh.nz/widevine[/B] for more information\n"
 "Select Yes to install anyway"
-msgstr ""
+msgstr "Twój system operacyjny nie obsługuje jeszcze tej wersji Widevine\n"
+"Zobacz [B]http://mjh.nz/widevine[/B], aby uzyskać więcej informacji\n"
+"Wybierz Tak, aby zainstalować mimo to"
 
 msgctxt "#32138"
 msgid "Donations"
@@ -740,7 +743,7 @@ msgstr ""
 
 msgctxt "#32141"
 msgid "Season {number}"
-msgstr "Sezon {numer}"
+msgstr "Sezon {number}"
 
 msgctxt "#32142"
 msgid "Inputstream Adaptive add-on is required for playback\n"
