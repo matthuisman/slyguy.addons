@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.dependencies" name="SlyGuy Dependencies" provider-name="SlyGuy" version="0.0.4">
+<addon id="slyguy.dependencies" name="SlyGuy Dependencies" provider-name="SlyGuy" version="0.0.5">
   <requires>
     <import addon="repository.slyguy"/>
   </requires>
@@ -10,7 +10,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Add win_inet_pton 1.1.0</news>
+    <news>Bump requests > 2.27.1</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
