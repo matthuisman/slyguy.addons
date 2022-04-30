@@ -45,38 +45,6 @@ def fix_url(url):
     parse = parse._replace(path=re.sub('/{2,}','/',parse.path))
     return urlunparse(parse)
 
-def url_sub(url):
-    file_path = os.path.join(ADDON_PROFILE, 'url_subs.txt')
-    if not os.path.exists(file_path):
-        return url
-
-    try:
-        with open(file_path, 'r') as f:
-            while True:
-                pattern = f.readline()
-                if not pattern: # end of file
-                    break
-
-                pattern = pattern.rstrip()
-                if not pattern: # blank line
-                    continue
-
-                replace = f.readline().rstrip()
-                if not replace: # no replace after pattern
-                    continue
-
-                _url = re.sub(pattern, replace, url)
-                if _url != url:
-                    log.debug('URL sub match: {} > {}'.format(url, _url))
-                    url = _url
-                    break
-
-    except Exception as e:
-        log.debug('failed to parse urls.txt')
-        log.exception(e)
-
-    return url
-
 def check_port(port=0, default=False):
     try:
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:

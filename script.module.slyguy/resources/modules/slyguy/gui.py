@@ -12,7 +12,7 @@ from .constants import *
 from .router import add_url_args
 from .language import _
 from .dns import get_dns_rewrites
-from .util import url_sub, fix_url, set_kodi_string, hash_6
+from .util import fix_url, set_kodi_string, hash_6
 
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
@@ -434,7 +434,6 @@ class Item(object):
                 elif parse.path.endswith('.ism'):
                     mimetype = 'application/vnd.ms-sstr+xml'
 
-            self.path = url_sub(self.path)
             self.path = fix_url(self.path)
 
             proxy_data = {

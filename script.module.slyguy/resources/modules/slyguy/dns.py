@@ -29,32 +29,38 @@ def _get_url(url):
 def _load_rewrites(directory):
     rewrites = []
 
-    file_path = os.path.join(xbmc.translatePath(directory), 'dns_rewrites.txt')
-    if not os.path.exists(file_path):
+    file_names = [
+        'urls.txt',
+        'dns_rewrites.txt', #legacy
+    ]
+
+    found = False
+    for name in file_names:
+        file_path = os.path.join(xbmc.translatePath(directory), name)
+        if os.path.exists(file_path):
+            found = True
+            break
+
+    if not found:
         return rewrites
 
     try:
         def _process_lines(lines):
             for line in lines:
                 entry = line.strip()
-                if not entry:
+                if not entry or entry.startswith('#'):
                     continue
 
-                try:
-                    ip, pattern = entry.split(None, 1)
-                except:
-                    if entry.lower().startswith('http'):
-                        text = _get_url(entry)
-                        _process_lines(text.split('\n'))
-
+                entries = [x.strip() for x in entry.split() if x.strip()]
+                if len(entries) == 1 and entries[0].lower().startswith('http'):
+                    text = _get_url(entry)
+                    _process_lines(text.split('\n'))
                     continue
 
-                pattern = pattern.strip()
-                ip = ip.strip()
-                if not pattern or not ip:
+                if len(entries) < 2:
                     continue
 
-                rewrites.append((pattern, ip))
+                rewrites.append(entries)
 
         with open(file_path, 'r') as f:
             text = f.read()
