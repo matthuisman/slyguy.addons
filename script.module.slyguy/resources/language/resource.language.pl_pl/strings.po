@@ -108,7 +108,7 @@ msgstr "Sprawdź dziennik Kodi pod kątem błędów SlyGuy"
 
 msgctxt "#30020"
 msgid "Donor ID (Restart Kodi after changing)"
-msgstr "ID dawcy (zrestartuj Kodi po zmianie)"
+msgstr "ID darczyńcy (zrestartuj Kodi po zmianie)"
 
 msgctxt "#30021"
 msgid "Show News"
