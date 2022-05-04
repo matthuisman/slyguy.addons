@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.22.0">
+<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.22.1">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -13,7 +13,7 @@
     <license></license>
     <language/>
     <website></website>
-    <news>New Hide Groups setting</news>
+    <news>Add Polish language. Thanks @hevet</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
