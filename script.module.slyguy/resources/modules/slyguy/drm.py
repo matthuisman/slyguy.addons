@@ -28,10 +28,18 @@ def req_hdcp_level(level):
     return hdcp_level() >= level
 
 def widevine_level():
-    return int(get_kodi_string('wv_level', WV_L3))
+    wv_level = settings.common_settings.getEnum('wv_level', WV_LEVELS, default=AUTO)
+    if wv_level == AUTO:
+        return int(get_kodi_string('wv_level', WV_L3))
+    else:
+        return wv_level
 
 def hdcp_level():
-    return int(get_kodi_string('hdcp_level', HDCP_NONE))
+    hdcp_level = settings.common_settings.getEnum('hdcp_level', HDCP_LEVELS, default=AUTO)
+    if hdcp_level == AUTO:
+        return int(get_kodi_string('hdcp_level', HDCP_NONE))
+    else:
+        return hdcp_level
 
 def set_drm_level():
     wv_level = settings.common_settings.getEnum('wv_level', WV_LEVELS, default=AUTO)
