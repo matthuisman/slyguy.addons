@@ -1565,12 +1565,85 @@ fragment SubscriptionInformationFields on SubscriptionInformation {
 """
 
 PLAYBACK_AUTH = """
-query playbackAuth($contentItemId: ID!) {
-    playbackAuth(contentItemId: $contentItemId) {
-        __typename
-            videos {__typename format referenceId token renditions {__typename size encodingRate} }    
-            firstPlayback {__typename rentalPeriodHours viewingPeriodHours}
+mutation PlaybackAuth($drmLevel: DrmLevel!, $os: Os!, $osVersion: String!, $contentItemId: ID!) {
+  playAuth(input: {drmLevel: $drmLevel, os: $os, osVersion: $osVersion, contentItemId: $contentItemId}) {
+    account_id
+    ad_keys
+    created_at
+    maxResolution
+    cue_points {
+      id
+      name
+      type
+      time
+      metadata
+      force_stop
+      __typename
     }
+    custom_fields {
+      programtype
+      title
+      spritesheet
+      ldreferenceid
+      seasonnumber
+      episodenumber
+      __typename
+    }
+    description
+    duration
+    economics
+    id
+    link
+    long_description
+    name
+    offline_enabled
+    poster
+    poster_sources {
+      src
+      __typename
+    }
+    published_at
+    reference_id
+    sources {
+      ext_x_version
+      type
+      src
+      key_systems
+      profiles
+      __typename
+    }
+    tags
+    thumbnail
+    thumbnail_sources {
+      src
+      __typename
+    }
+    text_tracks {
+      id
+      account_id
+      src
+      srclang
+      label
+      kind
+      mime_type
+      asset_id
+      sources {
+        src
+        __typename
+      }
+      in_band_metadata_track_dispatch_type
+      default
+      __typename
+    }
+    updated_at
+    drmToken
+    firstPlayback {
+      viewingPeriodHours
+      rentalPeriodHours
+      __typename
+    }
+    __typename
+  }
 }
 """
 

@@ -244,8 +244,8 @@ def play(id, **kwargs):
         msg = data['errors'][0]['message']
         plugin.exception(msg)
 
-    referenceID = data['data']['playbackAuth']['videos'][0]['referenceId']
-    jwt_token = data['data']['playbackAuth']['videos'][0]['token']
+    referenceID = data['data']['playAuth']['reference_id']
+    jwt_token = data['data']['playAuth']['drmToken']
 
     item = api.get_brightcove_src(referenceID, jwt_token)
     item.headers = HEADERS

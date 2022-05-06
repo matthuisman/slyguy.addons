@@ -5,6 +5,7 @@ from slyguy import userdata, util
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import jwt_data
+from slyguy.drm import widevine_level
 
 from .constants import API_URL, HEADERS, BRIGHTCOVE_URL, BRIGHTCOVE_ACCOUNT, BRIGHTCOVE_KEY
 from . import queries
@@ -131,6 +132,9 @@ class API(object):
 
         variables = {
             'contentItemId': contentID,
+            'drmLevel': 'WIDEVINE_{}'.format(widevine_level()),
+            'os': 'Android',
+            'osVersion': "9.0",
         }
 
         return self._query_request(queries.PLAYBACK_AUTH, variables)
