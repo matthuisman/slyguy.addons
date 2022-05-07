@@ -133,8 +133,8 @@ class API(object):
         variables = {
             'contentItemId': contentID,
             'drmLevel': 'WIDEVINE_{}'.format(widevine_level()),
-            'os': 'Android',
-            'osVersion': "9.0",
+            'os': 'Windows',
+            'osVersion': "10.0",
         }
 
         return self._query_request(queries.PLAYBACK_AUTH, variables)
