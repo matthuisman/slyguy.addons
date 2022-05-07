@@ -628,6 +628,7 @@ def run_merge(type='all', refresh=1, forced=0, **kwargs):
         path = merge.playlists(refresh)
 
     elif type == 'epg':
+        merge.playlists(refresh)
         path = merge.epgs(refresh)
 
     elif type == 'all':
