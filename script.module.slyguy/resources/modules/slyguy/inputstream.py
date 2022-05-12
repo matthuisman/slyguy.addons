@@ -186,7 +186,6 @@ def install_widevine(reinstall=False):
 
     ia_addon = require_version(IA_WV_MIN_VER, required=True)
     system, arch = get_system_arch()
-    system = 'Android'
 
     if system == 'Android':
         ia_addon.setSetting('NOSECUREDECODER', 'true' if KODI_VERSION > 18 and not is_wv_secure() else 'false')
