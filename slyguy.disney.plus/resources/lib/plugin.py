@@ -1,5 +1,4 @@
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION
 from slyguy.drm import is_wv_secure
@@ -144,7 +143,7 @@ def _switch_profile(profile):
 @plugin.route()
 def collection(slug, content_class, label=None, **kwargs):
     data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection' if slug == 'home' else 'StandardCollection')
-    folder = plugin.Folder(label or _get_text(data['text'], 'title', 'collection'), thumb=_get_art(data.get('image', []).get('fanart')))
+    folder = plugin.Folder(label or _get_text(data, 'title', 'collection'), thumb=_get_art(data).get('fanart'))
 
     for row in data['containers']:
         _set = row.get('set')
@@ -166,9 +165,9 @@ def collection(slug, content_class, label=None, **kwargs):
             data = api.set_by_id(set_id, ref_type, page_size=0)
             if not data['meta']['hits']:
                 continue
-            title = _get_text(data['text'], 'title', 'set')
+            title = _get_text(data, 'title', 'set')
         else:
-            title = _get_text(_set['text'], 'title', 'set')
+            title = _get_text(_set, 'title', 'set')
 
         folder.add_item(
             label = title,
@@ -183,7 +182,7 @@ def sets(set_id, set_type, page=1, **kwargs):
     page = int(page)
     data = api.set_by_id(set_id, set_type, page=page)
 
-    folder = plugin.Folder(_get_text(data['text'], 'title', 'set'))
+    folder = plugin.Folder(_get_text(data, 'title', 'set'))
 
     items = _process_rows(data.get('items', []), data['type'])
     folder.add_items(items)
@@ -241,9 +240,9 @@ def delete_watchlist(content_id, **kwargs):
 
 def _parse_collection(row):
     return plugin.Item(
-        label = _get_text(row['text'], 'title', 'collection'),
-        info  = {'plot': _get_text(row['text'], 'description', 'collection')},
-        art   = _get_art(row['image']),
+        label = _get_text(row, 'title', 'collection'),
+        info  = {'plot': _get_text(row, 'description', 'collection')},
+        art   = _get_art(row),
         path  = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass']),
     )
 
@@ -265,17 +264,21 @@ def _get_play_path(content_id):
     return plugin.url_for(play, **kwargs)
 
 def _parse_series(row):
-    return plugin.Item(
-        label = _get_text(row['text'], 'title', 'series'),
-        art = _get_art(row['image']),
+    item = plugin.Item(
+        label = _get_text(row, 'title', 'series'),
+        art = _get_art(row),
         info = {
-            'plot': _get_text(row['text'], 'description', 'series'),
+            'plot': _get_text(row, 'description', 'series'),
             'year': row['releases'][0]['releaseYear'],
             'mediatype': 'tvshow',
         },
-        context = ((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))),),
         path = plugin.url_for(series, series_id=row['encodedSeriesId']),
     )
+
+    if not item.info['plot']:
+        item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))))
+
+    return item
 
 def _parse_season(row, series):
     title = _(_.SEASON, season=row['seasonSequenceNumber'])
@@ -283,26 +286,26 @@ def _parse_season(row, series):
     return plugin.Item(
         label = title,
         info  = {
-            'plot': _get_text(row['text'], 'description', 'season') or _get_text(series['text'], 'description', 'series'),
+            'plot': _get_text(row, 'description', 'season') or _get_text(series, 'description', 'series'),
             'year': row['releases'][0]['releaseYear'],
             'season': row['seasonSequenceNumber'],
             'mediatype': 'season',
         },
-        art   = _get_art(row.get('image') or series['image']),
+        art   = _get_art(row) or _get_art(series),
         path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
     )
 
 def _parse_video(row):
     item = plugin.Item(
-        label = _get_text(row['text'], 'title', 'program'),
+        label = _get_text(row, 'title', 'program'),
         info  = {
-            'plot': _get_text(row['text'], 'description', 'program'),
+            'plot': _get_text(row, 'description', 'program'),
             'duration': row['mediaMetadata']['runtimeMillis']/1000,
             'year': row['releases'][0]['releaseYear'],
             'aired': row['releases'][0]['releaseDate'] or row['releases'][0]['releaseYear'],
             'mediatype': 'movie',
         },
-        art  = _get_art(row['image']),
+        art  = _get_art(row),
         path = _get_play_path(row['contentId']),
         playable = True,
     )
@@ -312,16 +315,30 @@ def _parse_video(row):
             'mediatype': 'episode',
             'season': row['seasonSequenceNumber'],
             'episode': row['episodeSequenceNumber'],
-            'tvshowtitle': _get_text(row['text'], 'title', 'series'),
+            'tvshowtitle': _get_text(row, 'title', 'series'),
         })
     else:
-        item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
+        if not item.info['plot']:
+            item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
         item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, family_id=row['family']['encodedFamilyId']))))
         item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
 
     return item
 
-def _get_art(images):
+def _get_art(row):
+    if 'image' in row:
+        # api 5.1
+        images = row['image']
+    elif 'images' in row:
+        #api 3.1
+        images = {}
+        for data in row['images']:
+            if data['purpose'] not in images:
+                images[data['purpose']] = {}
+            images[data['purpose']][str(data['aspectRatio'])] = {data['sourceEntity']: {'default': data}}
+    else:
+        return None
+
     def _first_image_url(d):
         for r1 in d:
             for r2 in d[r1]:
@@ -333,22 +350,40 @@ def _get_art(images):
     bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
     fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
 
+    thumb_ratios = ['1.78', '1.33', '1.00']
+    poster_ratios = ['0.71', '0.75', '0.80']
+    clear_ratios = ['2.00', '1.78', '3.32']
+    banner_ratios = ['3.91', '3.00', '1.78']
+
     fanart_count = 0
     for name in images or []:
         art_type = images[name]
 
-        lr = br = pr = '' # chosen ratios
-        for r in art_type:
-            if r == '1.78':
-                lr = r
-            elif r.startswith('3') and (not br or float(r) > float(br)):
-                br = r # longest banner ratio
-            elif r.startswith('0') and (not lr or float(lr)-0.67 > float(r)-0.67):
-                pr = r # poster ratio closest to 2:3
+        tr = br = pr = ''
+
+        for ratio in thumb_ratios:
+            if ratio in art_type:
+                tr = ratio
+                break
+
+        for ratio in banner_ratios:
+            if ratio in art_type:
+                br = ratio
+                break
+
+        for ratio in poster_ratios:
+            if ratio in art_type:
+                pr = ratio
+                break
+
+        for ratio in clear_ratios:
+            if ratio in art_type:
+                cr = ratio
+                break
 
         if name in ('tile', 'thumbnail'):
-            if lr:
-                art['thumb'] = _first_image_url(art_type[lr]) + thumbsize
+            if tr:
+                art['thumb'] = _first_image_url(art_type[tr]) + thumbsize
             if pr:
                 art['poster'] = _first_image_url(art_type[pr]) + thumbsize
 
@@ -357,21 +392,33 @@ def _get_art(images):
                 art['banner'] = _first_image_url(art_type[br]) + bannersize
 
         elif name in ('hero_collection', 'background_details', 'background'):
-            if lr:
+            if tr:
                 k = 'fanart{}'.format(fanart_count) if fanart_count else 'fanart'
-                art[k] = _first_image_url(art_type[lr]) + fullsize
+                art[k] = _first_image_url(art_type[tr]) + fullsize
                 fanart_count += 1
             if pr:
                 art['keyart'] = _first_image_url(art_type[pr]) + bannersize
 
         elif name in ('title_treatment', 'logo'):
-            lr = '2.00' if '2.00' in art_type else lr
-            if lr:
-                art['clearlogo'] = _first_image_url(art_type[lr]) + thumbsize
+            if cr:
+                art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
 
     return art
 
-def _get_text(texts, field, source):
+def _get_text(row, field, source):
+    if 'text' in row:
+        # api 5.1
+        texts = row['text']
+    elif 'texts' in row:
+        # api 3.1
+        texts = {}
+        for data in row['texts']:
+            if data['field'] not in texts:
+                texts[data['field']] = {}
+            texts[data['field']][data['type']] = {data['sourceEntity']: {'default': data}}
+    else:
+        return None
+
     _types = ['medium', 'brief', 'full']
 
     candidates = []
@@ -394,8 +441,8 @@ def _get_text(texts, field, source):
 @plugin.route()
 def series(series_id, **kwargs):
     data = api.series_bundle(series_id)
-    art = _get_art(data['series']['image'])
-    title = _get_text(data['series']['text'], 'title', 'series')
+    art = _get_art(data['series'])
+    title = _get_text(data['series'], 'title', 'series')
     folder = plugin.Folder(title, fanart=art.get('fanart'))
 
     for row in data['seasons']['seasons']:
@@ -450,10 +497,10 @@ def suggested(family_id=None, series_id=None, **kwargs):
 def extras(family_id=None, series_id=None, **kwargs):
     if family_id:
         data = api.video_bundle(family_id)
-        fanart = _get_art(data['video']['image']).get('fanart')
+        fanart = _get_art(data['video']).get('fanart')
     elif series_id:
         data = api.series_bundle(series_id)
-        fanart = _get_art(data['series']['image']).get('fanart')
+        fanart = _get_art(data['series']).get('fanart')
 
     folder = plugin.Folder(_.EXTRAS, fanart=fanart)
     items = _process_rows(data['extras']['videos'])
