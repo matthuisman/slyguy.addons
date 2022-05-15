@@ -198,12 +198,15 @@ class BaseLanguage(object):
     WV_ISSUES                   = 32145
     WV_ISSUES_CONFIRM           = 32146
     PROXY_SERVER                = 32147
+    TRAILER_NOT_FOUND           = 32148
 
+    # Kodi strings
     LANGUAGE                    = 304
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021
     PLAYBACK_FAILED             = 16026
     AUTO                        = 16316
+    TRAILER                     = 20410
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
