@@ -271,12 +271,14 @@ def _parse_series(row):
             'plot': _get_text(row, 'description', 'series'),
             'year': row['releases'][0]['releaseYear'],
             'mediatype': 'tvshow',
+            'trailer': plugin.url_for(play_trailer, series_id=row['encodedSeriesId']),
         },
         path = plugin.url_for(series, series_id=row['encodedSeriesId']),
     )
 
     if not item.info['plot']:
         item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))))
+    item.context.append((_.TRAILER, 'RunPlugin({})'.format(item.info['trailer'])))
 
     return item
 
@@ -304,6 +306,7 @@ def _parse_video(row):
             'year': row['releases'][0]['releaseYear'],
             'aired': row['releases'][0]['releaseDate'] or row['releases'][0]['releaseYear'],
             'mediatype': 'movie',
+            'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
         art  = _get_art(row),
         path = _get_play_path(row['contentId']),
@@ -320,6 +323,7 @@ def _parse_video(row):
     else:
         if not item.info['plot']:
             item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
+        item.context.append((_.TRAILER, 'RunPlugin({})'.format(item.info['trailer'])))
         item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, family_id=row['family']['encodedFamilyId']))))
         item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
 
@@ -494,6 +498,19 @@ def suggested(family_id=None, series_id=None, **kwargs):
     return folder
 
 @plugin.route()
+def play_trailer(family_id=None, series_id=None, **kwargs):
+    if family_id:
+        data = api.video_bundle(family_id)
+    elif series_id:
+        data = api.series_bundle(series_id)
+
+    videos = [x for x in data['extras']['videos'] if x.get('contentType') == 'trailer']
+    if not videos:
+        raise PluginError(_.TRAILER_NOT_FOUND)
+
+    return _play(videos[0]['contentId'])
+
+@plugin.route()
 def extras(family_id=None, series_id=None, **kwargs):
     if family_id:
         data = api.video_bundle(family_id)
@@ -529,6 +546,9 @@ def search(query, page, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(content_id=None, family_id=None, **kwargs):
+    return _play(content_id, family_id, **kwargs)
+
+def _play(content_id=None, family_id=None, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
     else:
