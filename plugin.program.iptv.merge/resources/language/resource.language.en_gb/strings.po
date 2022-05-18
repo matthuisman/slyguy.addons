@@ -6,11 +6,11 @@ msgid "Output Directory"
 msgstr ""
 
 msgctxt "#30002"
-msgid "Auto Merge Sources"
+msgid "Merge every X hours"
 msgstr ""
 
 msgctxt "#30003"
-msgid "Hours between merges"
+msgid "Hours"
 msgstr ""
 
 msgctxt "#30004"
@@ -395,6 +395,14 @@ msgstr ""
 
 msgctxt "#30097"
 msgid "Hide Groups"
+msgstr ""
+
+msgctxt "#30098"
+msgid "Merge at hour"
+msgstr ""
+
+msgctxt "#30099"
+msgid "Hour of day (24h)"
 msgstr ""
 
 ## COMMON SETTINGS ##

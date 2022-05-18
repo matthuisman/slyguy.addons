@@ -3,6 +3,8 @@ import time
 from kodi_six import xbmc, xbmcvfs, xbmcaddon
 from six.moves.urllib.parse import unquote_plus
 
+import arrow
+
 from slyguy import router, settings, userdata, gui
 from slyguy.constants import KODI_VERSION
 from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc, kodi_db
@@ -26,12 +28,29 @@ def start():
         log.debug('Service delay: {}s'.format(delay))
         monitor.waitForAbort(delay)
 
+    count = 30
     while not monitor.waitForAbort(1):
-        http.start() if settings.getBool('http_api', False) else http.stop()
+        count += 1
 
         forced = get_kodi_string('_iptv_merge_force_run') or 0
+        reload_time_hours = False
+        merge_at_hour = False
 
-        if forced or boot_merge or (settings.getBool('auto_merge', True) and time.time() - userdata.get('last_run', 0) > settings.getInt('reload_time_hours', 12) * 3600):
+        if count >= 30:
+            count = 0
+            http.start() if settings.getBool('http_api', False) else http.stop()
+
+            reload_time_hours = settings.getBool('auto_merge', True)
+            if reload_time_hours:
+                reload_time_hours = time.time() - userdata.get('last_run', 0) > settings.getInt('reload_time_hours', 12) * 3600
+
+            merge_at_hour = not reload_time_hours and settings.getBool('merge_at_hour', True)
+            if merge_at_hour:
+                now = arrow.now()
+                run_ts = now.replace(hour=int(settings.getInt('merge_hour', 3)), minute=0, second=0, microsecond=0).timestamp
+                merge_at_hour = userdata.get('last_run', 0) < run_ts and now.timestamp >= run_ts
+
+        if forced or boot_merge or reload_time_hours or merge_at_hour:
             set_kodi_string('_iptv_merge_force_run', '1')
 
             url = router.url_for('run_merge', forced=int(forced))
@@ -40,7 +59,8 @@ def start():
             if result:
                 restart_queued = True
 
-            userdata.set('last_run', int(time.time()))
+            if reload_time_hours or merge_at_hour:
+                userdata.set('last_run', int(time.time()))
             set_kodi_string('_iptv_merge_force_run')
 
         if restart_queued and settings.getBool('restart_pvr', False):

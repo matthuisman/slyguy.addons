@@ -2,8 +2,10 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30001" id="output_dir" type="folder" source="files" option="writeable" default="special://userdata/addon_data/plugin.program.iptv.merge"/>
-        <setting label="30002" id="auto_merge" type="bool" default="true"/>
+        <setting label="30002" id="auto_merge" type="bool" default="true" enable="eq(2,false)"/>
         <setting label="30003" id="reload_time_hours" type="slider" default="12" range="1,1,48" option="int" visible="eq(-1,true)"/>
+        <setting label="30098" id="merge_at_hour" type="bool" default="false" enable="eq(-2,false)"/>
+        <setting label="30099" id="merge_hour" type="slider" default="3" range="0,1,23" option="int" visible="eq(-1,true)"/>
         <setting label="30073" id="boot_merge" type="bool" default="false"/>
         <setting label="30093" id="merge_playlists" type="bool" default="true"/>
         <setting label="30094" id="merge_epgs" type="bool" default="true"/>

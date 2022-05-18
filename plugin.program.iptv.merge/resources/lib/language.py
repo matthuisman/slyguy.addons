@@ -99,5 +99,7 @@ class Language(BaseLanguage):
     DISABLE_GROUPS         = 30095
     SERVICE_DELAY          = 30096
     HIDE_GROUPS            = 30097
+    MERGE_AT_HOUR          = 30098
+    MERGE_HOUR             = 30099
 
 _ = Language()
