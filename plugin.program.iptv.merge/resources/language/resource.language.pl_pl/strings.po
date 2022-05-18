@@ -6,12 +6,12 @@ msgid "Output Directory"
 msgstr "Katalog wyjściowy"
 
 msgctxt "#30002"
-msgid "Auto Merge Sources"
-msgstr "Automatyczne łączenie źródeł"
+msgid "Merge every X hours"
+msgstr "Połącz co X godzin"
 
 msgctxt "#30003"
-msgid "Hours between merges"
-msgstr "Godziny między łączeniami"
+msgid "Hours"
+msgstr "Godziny"
 
 msgctxt "#30004"
 msgid "Reload IPTV Simple Client after merge"
@@ -404,6 +404,14 @@ msgstr "Opóźnienie rozpoczęcia usługi (sekundy)"
 msgctxt "#30097"
 msgid "Hide Groups"
 msgstr "Ukryj grupy"
+
+msgctxt "#30098"
+msgid "Merge at hour"
+msgstr "Połącz o godzinie"
+
+msgctxt "#30099"
+msgid "Hour of day (24h)"
+msgstr "Godzina (24h)"
 
 ## COMMON SETTINGS ##
 
