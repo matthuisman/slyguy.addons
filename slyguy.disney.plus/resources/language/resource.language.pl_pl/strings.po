@@ -1,0 +1,222 @@
+# Language file for Disney+ Video Add-on for Kodi
+# Addon Name: Disney+
+# Addon id: slyguy.disney.plus
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "Adres e-mail"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "Hasło"
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "Żądanie API nie powiodło się\n"
+"Błąd serwera: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr "Seriale"
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr "Oryginalne"
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "Pełne szczegóły"
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr ""
+
+msgctxt "#30009"
+msgid "IMAX"
+msgstr "IMAX"
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr "Sugerowane"
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "Wyróżnione"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "Sezon {season}"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr "Dodatkowe"
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr "Pełna obsługa Kodi {kodi_ver} wymaga co najmniej wersji Inputstream Adaptive {ver_required}\n"
+"Możesz napotkać problemy z odtwarzaniem w obecnej wersji."
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
+
+msgctxt "#30016"
+msgid "Disney+ Sync Playback"
+msgstr "Disney+ Synchronizacja odtwarzania"
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr "{name} [PIN]"
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
+
+msgctxt "#30019"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr "Pomiń napisy końcowe"
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr "Odtwórz następny odcinek"
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr "Odtwórz następny polecany film"
+
+msgctxt "#30023"
+msgid "Default Ratio"
+msgstr "Domyślny format obrazu"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "Pomiń wstęp"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "Odtwarzaj od początku"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "Do obejrzenia"
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr "Dodaj do listy do obejrzenia"
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "Usunięto z listy do obejrzenia"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "Dodano do listy do obejrzenia"
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "Wprowadź Twój PIN do profilu"
+
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr "Kontynuuj oglądanie"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "Nie masz uprawnień dostępu do tej zawartości.\n"
+"Sprawdź, czy Twoja subskrypcja jest ważna”."
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "Twoje dane logowania są nieprawidłowe.\n"
+"Proszę je sprawdzić i spróbować ponownie."
+
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr "{label} [B](Wkrótce)[/B]"
+
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr "Nieprawidłowy PIN"
+
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr "Disney+ lista do obejrzenia"
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "Od {time:0>8}"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](Dostępne {data})[/B]"
+
+msgctxt "#30050"
+msgid "DD/MM/YYYY"
+msgstr "DD/MM/YYYY"
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "Nie można znaleźć danych strumienia dla tej treści"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr "Ustawienia profilu"
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr "Kontynuuj oglądanie"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Pytaj"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Najlepsza"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Najniższa"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Pomiń"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Własna"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Wyłączone"
