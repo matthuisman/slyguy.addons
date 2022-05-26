@@ -5,7 +5,7 @@ from slyguy.log import log
 
 REGION_US = 'US'
 REGION_INTL = 'INTL'
-LINK_PLATFORM_URL = 'https://link.theplatform.com/s/{account}/{pid}'
+LINK_PLATFORM_URL = 'http://link.theplatform.com/s/dJ5BDC/media/guid/2198311517/{video_id}'
 
 CONFIG = {
     REGION_US: {
@@ -98,8 +98,8 @@ class Config(object):
     def has_mvpd(self):
         return self._config['mvpd']
 
-    def get_link_platform_url(self, account, pid):
-        return LINK_PLATFORM_URL.format(account=account, pid=pid)
+    def get_link_platform_url(self, video_id):
+        return LINK_PLATFORM_URL.format(video_id=video_id)
 
     def has_device_link(self):
         return CONFIG[self.region]['device_link']

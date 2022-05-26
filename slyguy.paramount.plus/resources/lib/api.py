@@ -312,45 +312,81 @@ class API(object):
     def play(self, video_id):
         self._refresh_token()
 
-        video_data = self._session.get('/v2.0/androidphone/video/cid/{}.json'.format(video_id), params=self._params()).json()['itemList']
+        # url = self._config.get_player_url(video_id)
+        # resp = self._session.get(url)
+        # root = parseString(resp.content)
 
-        if not video_data:
-            raise APIError('No data found for this content')
+        # pids = []
+        # for elem in root.getElementsByTagName('item'):
+        #     pid = None
+        #     pid_type = None
 
-        video_data = video_data[0]
-        if 'pid' not in video_data:
-            raise APIError('Check your subscription is valid')
+        #     for child in elem.childNodes:
+        #         if child.tagName == 'pid':
+        #             pid = child.firstChild.nodeValue
+        #         elif child.tagName == 'assetType':
+        #             pid_type = child.firstChild.nodeValue
 
-        if 'streamingUrl' in video_data:
-            url = video_data['streamingUrl']
-        else:
-            params = {
-                #'formats': 'mpeg-dash',
-                'Tracking': 'true',
-                'format': 'SMIL',
-                #'sig': '0060cbe3920bcb86969e8c733a9cdcdb203d6e57beae30781c706f63',
-            }
+        #     if pid_type and pid:
+        #         pids.append({'pid': pid, 'type': pid_type})
 
-            url = self._config.get_link_platform_url(video_data['cmsAccountId'], video_data['pid'])
-            resp = self._session.get(url, params=params)
+        order = ['HLS_AES', 'DASH_LIVE', 'DASH_CENC_HDR10', 'DASH_CENC', 'DASH_CENC_PRECON', 'DASH_CENC_PS4']
+        order.extend(['HLS_LIVE', 'HLS_FPS_HDR', 'HLS_FPS', 'HLS_FPS_PRECON']) #APPLE SAMPLE-AES - add last
 
-            root = parseString(resp.content)
+        # pids = sorted(pids, key=lambda x: order.index(x['type']) if x['type'] in order else 999)
 
-            videos = root.getElementsByTagName('video')
-            if not videos:
-                error_msg = ''
-                for ref in root.getElementsByTagName('ref'):
-                    error_msg = ref.getAttribute('abstract')
-                    if error_msg:
-                        break
-                raise APIError(_(error_msg))
+        # pid = pids[0]
 
-            url = videos[0].getAttribute('src')
+        # if 'streamingUrl' in video_data:
+        #     url = video_data['streamingUrl']
+        # else:
+
+        params = {
+            'assetTypes': '|'.join(order),
+            'formats': 'MPEG-DASH,MPEG4,M3U',
+            'format': 'SMIL',
+        }
+
+        print(params)
+
+        url = self._config.get_link_platform_url(video_id)
+        resp = self._session.get(url, params=params)
+
+        root = parseString(resp.content)
+
+        videos = root.getElementsByTagName('video')
+        if not videos:
+            error_msg = ''
+            for ref in root.getElementsByTagName('ref'):
+                error_msg = ref.getAttribute('abstract')
+                if error_msg:
+                    break
+            raise APIError(_(error_msg))
 
         params = {'contentId': video_id}
-        data = self._session.get('/v3.0/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
+        session = self._session.get('/v3.0/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
 
-        return url, data['url'], data['ls_session'], video_data
+        switch = root.getElementsByTagName('switch')[0]
+        ref = switch.getElementsByTagName('ref')[0]
+
+        params = {}
+        for elem in ref.getElementsByTagName('param'):
+            try:
+                if elem.tagName == 'param':
+                    params[elem.getAttribute('name')] = elem.getAttribute('value')
+            except:
+                continue
+
+        data = {
+            'url': videos[0].getAttribute('src'),
+            'type': 'DASH' if ref.getAttribute('type') == 'application/dash+xml' else 'HLS',
+            'widevine': ref.getAttribute('security') == 'widevine',
+            'license_url': session['url'],
+            'license_token': session['ls_session'],
+            'live': params.get('IsLive') == 'true',
+        }
+
+        return data
 
     def _ip(self):
         return self._session.get(self._config.ip_url, params=self._params()).json()['ip']
