@@ -1,3 +1,5 @@
+from kodi_six import xbmc
+
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION
@@ -48,19 +50,45 @@ def index(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
-    if not username:
+    options = [
+        [_.EMAIL_PASSWORD, _email_password],
+        #[_.DEVICE_CODE, _device_code],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
         return
 
-    userdata.set('username', username)
+    _select_profile()
+    gui.refresh()
 
+# def _device_code():
+#     monitor = xbmc.Monitor()
+#     code = api.device_code()
+#     timeout = 600
+
+#     with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_CODE_URL), heading=_.DEVICE_CODE) as progress:
+#         for i in range(timeout):
+#             if progress.iscanceled() or monitor.waitForAbort(1):
+#                 return
+
+#             progress.update(int((i / float(timeout)) * 100))
+
+#             if i % 5 == 0 and api.device_login(code):
+#                 return True
+
+def _email_password():
+    email = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+    if not email:
+        return
+
+    userdata.set('username', email)
     password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
     if not password:
         return
 
-    api.login(username, password)
-    _select_profile()
-    gui.refresh()
+    api.login(email, password)
+    return True
 
 @plugin.route()
 def hubs(**kwargs):

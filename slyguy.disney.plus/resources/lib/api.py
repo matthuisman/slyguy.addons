@@ -70,7 +70,7 @@ class API(object):
         refresh_token = data.get('refreshToken') or data['refresh_token']
         userdata.set('refresh_token', refresh_token)
 
-    def login(self, username, password):
+    def _register_device(self):
         self.logout()
 
         payload = {
@@ -92,7 +92,10 @@ class API(object):
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['registerDevice']['href']
         data = self._session.post(endpoint, json=payload, headers={'authorization': API_KEY}).json()
         self._check_errors(data)
-        token = data['extensions']['sdk']['token']['accessToken']
+        return data['extensions']['sdk']['token']['accessToken']
+
+    def login(self, username, password):
+        token = self._register_device()
 
         payload = {
             'operationName': 'loginTv',
@@ -109,6 +112,17 @@ class API(object):
         data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk']['token'])
+
+    # def device_code(self):
+    #     token = self._register_device()
+
+    #     payload = {
+    #         'variables': {},
+    #         'query': queries.REQUEST_DEVICE_CODE,
+    #     }
+
+    #     endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
+    #     data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
 
     def _check_errors(self, data, error=_.API_ERROR):
         if not type(data) is dict:
