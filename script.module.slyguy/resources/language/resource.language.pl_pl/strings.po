@@ -44,7 +44,7 @@ msgstr "Dostępne aktualizacje: {count}\n\n"
 
 msgctxt "#30004"
 msgid "{name} [Atmos]"
-msgstr ""
+msgstr "{name} [Atmos]"
 
 msgctxt "#30005"
 msgid "SlyProxy Enabled (Required for some addons and features)"
@@ -434,11 +434,11 @@ msgstr "Odtwarzaj z?"
 
 msgctxt "#32068"
 msgid "{bandwidth:.2f} Mbit/s {resolution} {fps} {codecs}"
-msgstr ""
+msgstr "{bandwidth:.2f} Mbit/s {resolution} {fps} {codecs}"
 
 msgctxt "#32069"
 msgid "{fps:.2f} FPS"
-msgstr ""
+msgstr "{fps:.2f} FPS"
 
 msgctxt "#32070"
 msgid "Available Widevine CDM Versions"
@@ -772,7 +772,7 @@ msgstr "Do odtwarzania wymagany jest dodatek Inputstream Adaptive\n"
 
 msgctxt "#32143"
 msgid "Pagination Multiplier"
-msgstr "Mnożnik stronicowania"
+msgstr "Wielokrotność strony"
 
 msgctxt "#32144"
 msgid "Check log for more info"
