@@ -347,8 +347,6 @@ class API(object):
             'format': 'SMIL',
         }
 
-        print(params)
-
         url = self._config.get_link_platform_url(video_id)
         resp = self._session.get(url, params=params)
 
