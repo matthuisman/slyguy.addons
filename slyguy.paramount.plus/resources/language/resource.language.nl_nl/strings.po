@@ -11,7 +11,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
+"Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30002"
@@ -20,7 +20,7 @@ msgstr ""
 
 msgctxt "#30003"
 msgid "Local Channel IP Address"
-msgstr ""
+msgstr "IP-adres van lokaal kanaal"
 
 msgctxt "#30004"
 msgid "{label} [LIVE]"
@@ -28,21 +28,21 @@ msgstr ""
 
 msgctxt "#30008"
 msgid "Device ID"
-msgstr ""
+msgstr "Apparaat ID"
 
 msgctxt "#30009"
 msgid "Paramount+ is not available in your region"
-msgstr ""
+msgstr "Paramount+ is niet beschikbaar in jouw regio"
 
 msgctxt "#30011"
 msgid "Shows"
-msgstr ""
+msgstr "Series"
 
 
 
 msgctxt "#30014"
 msgid "Season {season}"
-msgstr ""
+msgstr "Seizoen {seizoen}"
 
 msgctxt "#30015"
 msgid "Clips"
@@ -50,7 +50,7 @@ msgstr ""
 
 msgctxt "#30016"
 msgid "Movies"
-msgstr ""
+msgstr "Films"
 
 msgctxt "#30017"
 msgid "A-Z"
@@ -58,11 +58,11 @@ msgstr ""
 
 msgctxt "#30018"
 msgid "Popular"
-msgstr ""
+msgstr "Populair"
 
 msgctxt "#30019"
 msgid "Featured"
-msgstr ""
+msgstr "Uitgelicht"
 
 msgctxt "#30020"
 msgid "H.265"
@@ -91,7 +91,7 @@ msgstr ""
 
 msgctxt "#30027"
 msgid "Select Partner"
-msgstr ""
+msgstr "Selecteer partner"
 
 msgctxt "#30028"
 msgid "Dolby Atmos"
@@ -101,21 +101,23 @@ msgctxt "#30029"
 msgid "Failed to refresh auth token\n"
 "Check your subscription is still valid\n"
 "Then try logout and login again"
-msgstr ""
+msgstr "Kan verificatietoken niet vernieuwen\n"
+"Controleer of uw abonnement nog geldig is\n"
+"Probeer vervolgens uit te loggen en opnieuw in te loggen"
 
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
 msgid "Ask"
-msgstr ""
+msgstr "Vragen"
 
 msgctxt "#32043"
 msgid "Best"
-msgstr ""
+msgstr "Beste"
 
 msgctxt "#32060"
 msgid "Lowest"
-msgstr ""
+msgstr "laagste"
 
 msgctxt "#32048"
 msgid "Bypass"
@@ -123,7 +125,7 @@ msgstr ""
 
 msgctxt "#32054"
 msgid "Custom"
-msgstr ""
+msgstr "Aangepast"
 
 msgctxt "#32073"
 msgid "Disabled"
@@ -131,12 +133,12 @@ msgstr ""
 
 msgctxt "#32066"
 msgid "Ask"
-msgstr ""
+msgstr "Vragen"
 
 msgctxt "#32065"
 msgid "From Live"
-msgstr ""
+msgstr "Van Live"
 
 msgctxt "#32064"
 msgid "From Start"
-msgstr ""
+msgstr "Van start"
