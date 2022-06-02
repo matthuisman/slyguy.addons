@@ -1,0 +1,222 @@
+# Language file for Disney+ Video Add-on for Kodi
+# Addon Name: Disney+
+# Addon id: slyguy.disney.plus
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "E-mailadres"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "Wachtwoord"
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "API-verzoek mislukt\n"
+"Serverfout: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "Films"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "Alle details"
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr ""
+
+msgctxt "#30009"
+msgid "IMAX"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "Uitgelicht"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "Seizoen {seizoen}"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr "Volledige ondersteuning op Kodi {kodi_ver} vereist minimaal Inputstream Adaptive Version {ver_required}\n"
+"U kunt afspeelproblemen ondervinden met uw huidige versie."
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Disney+ Sync Playback"
+msgstr ""
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr ""
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr ""
+
+msgctxt "#30019"
+msgid "H.265"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr "Credits overslaan"
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr "Volgende aflevering afspelen"
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr "Volgende aanbevolen film afspelen"
+
+msgctxt "#30023"
+msgid "Default Ratio"
+msgstr "Standaardverhouding:"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "Intro's overslaan"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "Afspelen vanaf Start"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "Kijklijst"
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr "Toevoegen aan kijklijst"
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "Verwijderen van kijklijst"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "Toegevoegd aan kijklijst"
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "Voer uw profielpincode in"
+
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr "Doorgaan met kijken"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "Je hebt geen recht op toegang tot deze inhoud.\n"
+"Controleer of uw abonnement geldig is."
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "Uw inloggegevens zijn onjuist.\n"
+"Controleer ze en probeer het opnieuw."
+
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr "{label} [B](Binnenkort beschikbaar)[/B]"
+
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr "Onjuiste pincode"
+
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr "Disney+ kijklijst"
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "Van {time:0>8}"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](Beschikbaar {date})[/B]"
+
+msgctxt "#30050"
+msgid "DD/MM/YYYY"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "Kan geen streamgegevens voor deze inhoud vinden"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr "Profielinstelling"
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr "Doorgaan met kijken"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Vragen"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Het beste"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "laagste"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Aangepast"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
