@@ -194,7 +194,7 @@ msgstr „Nie można znaleźć źródła multimediów z Brightcove\n”
 msgctxt "#32014"
 msgid "Downloading required file\n"
 "{url}"
-msgstr "Pobieranie wymaganych plików\w"
+msgstr "Pobieranie wymaganych plików\n"
 "{url}"
 
 msgctxt "#32015"
