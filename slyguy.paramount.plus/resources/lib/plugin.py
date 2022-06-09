@@ -294,28 +294,28 @@ def movies(genre=None, title=None, page=1, **kwargs):
         data = api.movies(genre=genre, num_results=num_results, page=page)
 
     for row in data['movies']:
-        data = row.get('movieContent')
-        if not data:
+        movie = row.get('movieContent')
+        if not movie:
             #Skip movies that dont have a playable video
             continue
 
         folder.add_item(
-            label = data['label'].strip() or data['title'].strip(),
+            label = movie['label'].strip() or movie['title'].strip(),
             info = {
-                'plot': data.get('shortDescription', data['description']),
-                'aired': data['_airDateISO'],
-                'dateadded': data['_pubDateISO'],
-                'genre': data['genre'],
-                'duration': data['duration'],
+                'plot': movie.get('shortDescription', movie['description']),
+                'aired': movie['_airDateISO'],
+                'dateadded': movie['_pubDateISO'],
+                'genre': movie['genre'],
+                'duration': movie['duration'],
                 'mediatype': 'movie',
                 'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
             },
-            art = _movie_art(data['thumbnailSet']),
-            path = plugin.url_for(play, video_id=data['contentId']),
+            art = _movie_art(movie['thumbnailSet']),
+            path = plugin.url_for(play, video_id=movie['contentId']),
             playable = True,
         )
 
-    if len(folder.items) == num_results:
+    if data['numFound'] > num_results*page:
         folder.add_item(
             label = _(_.NEXT_PAGE, page=page+1),
             path = plugin.url_for(movies, genre=genre, title=title, page=page+1),
