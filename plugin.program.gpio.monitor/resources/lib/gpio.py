@@ -7,7 +7,7 @@ from six import PY3
 from kodi_six import xbmc
 
 from slyguy import gui, database, userdata
-from slyguy.constants import ADDON_PATH, ADDON_ID, ADDON_DEV
+from slyguy.constants import ADDON_PATH, ADDON_ID
 from slyguy.log import log
 from slyguy.exceptions import Error
 from slyguy.util import get_system_arch, set_kodi_string, get_kodi_string, remove_file, md5sum
@@ -118,7 +118,7 @@ def callback(function):
     log.debug('Callback: {}'.format(function))
 
     for function in function.split(FUNCTION_DELIMETER):
-        xbmc.executebuiltin(function.strip())
+        xbmc.executebuiltin(function.strip(), True)
 
 def service():
     def setup_buttons():
