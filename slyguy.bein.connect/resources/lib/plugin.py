@@ -59,7 +59,7 @@ def live(**kwargs):
             continue
 
         folder.add_item(
-            label = row.get('epg_name', row['name']),
+            label = row['name'],
             art = {'thumb': row.get('logo')},
             path = plugin.url_for(play, channel_id=row['idChannel'], _is_live=True),
             playable = True,
@@ -128,7 +128,7 @@ def epg(output, **kwargs):
                 continue
 
             f.write(u'<channel id="{}"><display-name>{}</display-name><icon src="{}"/></channel>'.format(
-                row['idChannel'], escape(row.get('epg_name', row['name'])), escape(row.get('logo'))))
+                row['idChannel'], escape(row['name']), escape(row.get('logo'))))
 
             ids.append(row['idChannel'])
 

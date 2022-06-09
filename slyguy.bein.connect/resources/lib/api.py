@@ -250,14 +250,9 @@ class API(object):
     def channels(self):
         self._create_session()
 
-        _channels = {}
-        for row in self._config['channels_mapping'][REGION]:
-            if 'sso_hls_channel_id' in row:
-                _channels[row['sso_hls_channel_id']] = row
-
         channels = []
         for row in self._session.post('proxy/listChannels').json()['result']['channels']:
-            row.update(_channels.get(row['idChannel'], {}))
+            row['logo'] = '{}proxy/imgdata?objectId=75_{}&type=102'.format(self._config['alpha_networks_dash'][REGION]['platform_url'], row['idChannel'])
             channels.append(row)
 
         return sorted(channels, key=lambda x: x.get('sorting', x['localizeNumber']))

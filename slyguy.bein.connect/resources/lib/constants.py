@@ -2,7 +2,7 @@ HEADERS = {
     'user-agent': 'okhttp/3.12.1',
 }
 
-APP_DATA_URL = 'https://storage.googleapis.com/static-production.netcosports.com/bein_content/init/bein_dev_new_api.json'
+APP_DATA_URL = 'https://d3ruzby390gxsc.cloudfront.net/init/bein_connect.json'
 SECRET_KEY = '2H6kATruFruW&&e5_u4u'
 REGION = 'mena'
 PLAYER_NAME = 'androiddashapp'
