@@ -330,7 +330,7 @@ class API(object):
         #     if pid_type and pid:
         #         pids.append({'pid': pid, 'type': pid_type})
 
-        order = ['HLS_AES', 'DASH_LIVE', 'DASH_CENC_HDR10', 'DASH_CENC', 'DASH_CENC_PRECON', 'DASH_CENC_PS4']
+        order = ['HLS_AES', 'DASH_LIVE', 'DASH_CENC_HDR10', 'DASH_TA', 'DASH_CENC', 'DASH_CENC_PRECON', 'DASH_CENC_PS4']
         order.extend(['HLS_LIVE', 'HLS_FPS_HDR', 'HLS_FPS', 'HLS_FPS_PRECON']) #APPLE SAMPLE-AES - add last
 
         # pids = sorted(pids, key=lambda x: order.index(x['type']) if x['type'] in order else 999)
