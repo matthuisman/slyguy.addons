@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.9now" name="9Now" provider-name="SlyGuy" version="0.1.3">
+<addon id="slyguy.9now" name="9Now" provider-name="SlyGuy" version="0.1.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>New setting to change region for live streams</news>
+    <news>Add playback settings for audio/subs</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
