@@ -561,11 +561,17 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         overwrite_subs = self._session.get('subtitles') or []
 
+        def is_subs(adap_set):
+            return adap_set.getAttribute('contentType').lower() == 'text' or adap_set.getAttribute('mimeType').lower().startswith('text/')
+
+        def is_audio(adap_set):
+            return adap_set.getAttribute('contentType').lower() == 'audio' or adap_set.getAttribute('mimeType').lower().startswith('audio/')
+
         ## Insert subtitles
         if overwrite_subs and adap_parent:
             # remove all built-in subs
             for adap_set in root.getElementsByTagName('AdaptationSet'):
-                if adap_set.getAttribute('contentType') == 'text':
+                if is_subs(adap_set):
                     adap_set.parentNode.removeChild(adap_set)
 
             # add our subs
@@ -608,7 +614,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             adap_set.setAttribute('lang', fix_language(language))
 
-            if adap_set.getAttribute('contentType') == 'audio':
+            if is_audio(adap_set):
                 if not lang_allowed(language, audio_whitelist):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed audio adapt set: {}'.format(adap_set.getAttribute('id')))
@@ -624,7 +630,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 audios.append([language, adap_set])
 
-            if adap_set.getAttribute('contentType') == 'text':
+            elif is_subs(adap_set):
                 if not lang_allowed(language, subs_whitelist):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
