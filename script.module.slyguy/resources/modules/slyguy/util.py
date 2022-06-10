@@ -685,7 +685,9 @@ def lang_allowed(lang, lang_list):
         if not _lang:
             continue
 
-        if lang.startswith(_lang):
+        if lang.startswith('!') and not lang.startswith(_lang[1:]):
+            return True
+        elif not lang.startswith('!') and lang.startswith(_lang):
             return True
 
     return False
