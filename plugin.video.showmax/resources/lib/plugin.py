@@ -68,7 +68,7 @@ def search(query, page, **kwargs):
 @plugin.route()
 def seasons(series_id, **kwargs):
     data = api.seasons(series_id)
-    art = _get_art(data['images'])
+    art = _get_art(data.get('images', []))
     rows = data['seasons']
 
     folder = plugin.Folder(data['title'])
@@ -79,7 +79,7 @@ def seasons(series_id, **kwargs):
 @plugin.route()
 def episodes(season_id, **kwargs):
     data = api.episodes(season_id)
-    art = _get_art(data['images'])
+    art = _get_art(data.get('images', []))
     rows = data['episodes']
 
     folder = plugin.Folder(data['tv_series']['title'], sort_methods=[xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED])
@@ -167,7 +167,7 @@ def _parse_series(rows):
             label = row['title'],
             info = {
                 'sorttitle': row['title'],
-                'plot': row['description'],
+                'plot': row.get('description'),
                 'tvshowtitle': row['title'],
                 'mediatype': 'tvshow',
             },
@@ -189,7 +189,7 @@ def _parse_seasons(rows, series_title, series_art):
         item = plugin.Item(
             label = _(_.SEASON_NUMBER, season_number=row['number']),
             info = {
-                'plot': row['description'],
+                'plot': row.get('description'),
                 'tvshowtitle': series_title,
                 'season': row['number'],
                 'mediatype': 'season',
