@@ -29,6 +29,34 @@ class API(object):
         
         return data['title'], shows
 
+   # @mem_cache.cached(60*5)
+    def featured(self):
+        sections = []
+
+        data = self._session.get('/api/v2/android/play/page/').json()
+        order = ['hero', 'above', 'main', 'below', '_other']
+        for _type in sorted(data['layout']['slots'], key=lambda x: order.index(x) if x in order else order.index('_other')):
+            for module in data['layout']['slots'][_type].get('modules', []):
+                if module.get('type') != 'featuredContent':
+                    continue
+
+                items = module.get('items', [])
+                if not items:
+                    continue
+
+                sections.append({
+                    'name': module['title'],
+                    'href': module['id'],
+                })
+
+        return sections
+
+    def featured_href(self, href):
+        data = self._session.get(href).json()
+        for row in data['items']:
+            row['_embedded'] = data['_embedded'][row['href']]
+        return data
+
     def a_to_z(self):
         data = self._category('all')
 
@@ -49,7 +77,7 @@ class API(object):
     def show(self, slug):
         data = self._session.get('/api/v2/android/play/page/shows/{}'.format(slug)).json()
 
-        show     = data['_embedded'][data['layout']['showHref']]
+        show = data['_embedded'][data['layout']['showHref']]
         sections = data['layout']['slots']['main']['modules'][0].get('sections', [])
 
         for section in sections:

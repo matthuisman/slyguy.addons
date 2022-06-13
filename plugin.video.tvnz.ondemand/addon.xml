@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.tvnz.ondemand" name="TVNZ OnDemand" provider-name="SlyGuy" version="0.19.6">
+<addon id="plugin.video.tvnz.ondemand" name="TVNZ+" provider-name="SlyGuy" version="0.19.7">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -7,12 +7,12 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <description lang="en">Watch your favourite shows from TVNZ OnDemand</description>
+    <description lang="en">Watch free movies &amp; TV shows &amp; Live TV online. Enjoy local, international and popular entertainment.</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>New Search!</news>
+    <news>New name and logo (TVNZ+)</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

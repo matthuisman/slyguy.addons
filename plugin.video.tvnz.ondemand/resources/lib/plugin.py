@@ -17,6 +17,7 @@ api = API()
 def home(**kwargs):
     folder = plugin.Folder()
 
+    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
@@ -103,6 +104,33 @@ def _process_video(data, showname, categories=None):
     )
 
 @plugin.route()
+def featured(href=None, **kwargs):
+    folder = plugin.Folder( _.FEATURED)
+
+    if href is None:
+        folder = plugin.Folder(_.FEATURED)
+        for section in api.featured():
+            folder.add_item(
+                label = section['name'],
+                path = plugin.url_for(featured, href=section['href']),
+            )
+    else:
+        data = api.featured_href(href)
+        folder = plugin.Folder(data['title'])
+        for row in data.get('items', []):
+            item = _parse_row(row['_embedded'])
+            folder.add_items(item)
+
+        if data['nextPage']:
+            folder.add_item(
+                label = _(_.NEXT_PAGE),
+                path = plugin.url_for(featured, href=data['nextPage']),
+                specialsort = 'bottom',
+            )
+
+    return folder
+
+@plugin.route()
 def shows(sort=None, **kwargs):
     SORT_ALL = 'ALL'
     SORT_0_9 = '0 - 9'
@@ -128,7 +156,6 @@ def shows(sort=None, **kwargs):
 
     folder = plugin.Folder(_(_.SHOWS_LETTER, sort=label))
 
-    count = 0
     for section in api.a_to_z():
         if sort == None:
             folder.add_item(
@@ -268,29 +295,31 @@ def _get_image(data, params='?width=400'):
 def search(query, page, **kwargs):
     items = []
     for row in api.search(query):
-        if row['type'] == 'show':
-            items.append(_process_show(row))
-        elif row['type'] == 'category':
-            slug = row['page']['href'].split('/')[-1]
-            if slug == 'shows':
-                slug = 'all'
-
-            items.append(plugin.Item(
-                label = row['title'],
-                info = {'plot': row['searchDescription'] or row['synopsis']},
-                art = {'thumb': _get_image(row['tileImage'])},
-                path = plugin.url_for(category, slug=slug),
-            ))
-        elif row['type'] == 'channel':
-            items.append(plugin.Item(
-                label = row['title'],
-                info = {'plot': row['searchDescription'] or row['synopsis']},
-                art = {'thumb': _get_image(row['tileImage'])},
-                path = plugin.url_for(play, channel=row['page']['href'].split('/')[-1], _is_live=True),
-                playable = True,
-            ))
-
+        items.append(_parse_row(row))
     return items, False
+
+def _parse_row(row):
+    if row['type'] == 'show':
+        return _process_show(row)
+    elif row['type'] == 'category':
+        slug = row['page']['href'].split('/')[-1]
+        if slug == 'shows':
+            slug = 'all'
+
+        return plugin.Item(
+            label = row['title'],
+            info = {'plot': row['searchDescription'] or row['synopsis']},
+            art = {'thumb': _get_image(row['tileImage'])},
+            path = plugin.url_for(category, slug=slug),
+        )
+    elif row['type'] == 'channel':
+        return plugin.Item(
+            label = row['title'],
+            info = {'plot': row['searchDescription'] or row['synopsis']},
+            art = {'thumb': _get_image(row['tileImage'])},
+            path = plugin.url_for(play, channel=row['page']['href'].split('/')[-1], _is_live=True),
+            playable = True,
+        )
 
 @plugin.route()
 def live_tv(**kwargs):

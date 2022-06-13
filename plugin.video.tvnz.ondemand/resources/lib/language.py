@@ -15,5 +15,6 @@ class Language(BaseLanguage):
     ZERO_NINE        = 30011
     FLATTEN_SEASONS  = 30012
     HIDE_EMPTY_SHOWS = 30013
+    FEATURED         = 30014
 
 _ = Language()

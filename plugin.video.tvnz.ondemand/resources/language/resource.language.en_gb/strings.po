@@ -57,6 +57,10 @@ msgctxt "#30013"
 msgid "Hide Empty Shows"
 msgstr ""
 
+msgctxt "#30014"
+msgid "Featured"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
