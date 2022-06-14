@@ -332,7 +332,7 @@ msgstr "Ponowienie HTTP"
 
 msgctxt "#32046"
 msgid "Chunksize"
-msgstr ""
+msgstr "Rozmiar fragmentu"
 
 
 
