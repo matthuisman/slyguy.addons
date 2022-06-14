@@ -46,7 +46,7 @@ msgstr "Pełne szczegóły"
 
 msgctxt "#30008"
 msgid "Hubs"
-msgstr ""
+msgstr "Kolekcje"
 
 msgctxt "#30009"
 msgid "IMAX"
