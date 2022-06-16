@@ -786,6 +786,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                             line = params[key]
                             log.debug('M3U8 Fix: Beacon removed')
 
+            # Remove sample-aes apple streaming
+            # See https://github.com/xbmc/inputstream.adaptive/issues/1007
+            elif 'com.apple.streamingkeydelivery' in line and 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed' in m3u8:
+                log.debug('Removed com.apple.streamingkeydelivery EXT-X-KEY')
+                continue
+
             lines.append(line)
 
         # # bad playlist test

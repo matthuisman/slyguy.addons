@@ -332,7 +332,7 @@ msgstr "Ponowienie HTTP"
 
 msgctxt "#32046"
 msgid "Chunksize"
-msgstr ""
+msgstr "Rozmiar fragmentu"
 
 
 
@@ -606,7 +606,7 @@ msgstr "iOS nie obsługuje odtwarzania Widevine w Kodi"
 
 msgctxt "#32108"
 msgid "Next Page ({page})"
-msgstr "Następna strona ({strona})"
+msgstr "Następna strona ({page})"
 
 msgctxt "#32109"
 msgid "Failed to fetch JSON data\n"

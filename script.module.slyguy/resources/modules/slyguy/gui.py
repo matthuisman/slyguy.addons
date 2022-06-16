@@ -376,10 +376,11 @@ class Item(object):
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
-                li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}&{headers}|{challenge}|{response}'.format(
+                license_headers = self.get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
+                li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}{headers}|{challenge}|{response}'.format(
                     url = get_url(self.inputstream.license_key),
-                    headers = self.get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers,
                     content_type = self.inputstream.content_type,
+                    headers = '&' + license_headers if license_headers else '',
                     challenge = self.inputstream.challenge,
                     response = self.inputstream.response,
                 ))
