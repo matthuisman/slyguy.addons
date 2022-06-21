@@ -128,7 +128,7 @@ msgstr "Dodaj do listy do obejrzenia"
 
 msgctxt "#30028"
 msgid "Remove from Watchlist"
-msgstr "Usunięto z listy do obejrzenia"
+msgstr "Usuń z listy do obejrzenia"
 
 msgctxt "#30029"
 msgid "Added to Watchlist"
