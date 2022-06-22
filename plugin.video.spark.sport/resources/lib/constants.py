@@ -5,7 +5,7 @@ HEADERS = {
 
 API_BASE = 'https://platform.prod.dtc.istreamplanet.net{}'
 WV_LICENSE_URL = 'https://widevine.license.istreamplanet.com/widevine/api/license/0f6160eb-bbd3-4c70-8e4d-0d485e7cb055'
-IMG_URL = 'https://res.cloudinary.com/istreamplanet/image/upload/spark-prod/{}'
+IMG_URL = 'https://images.istreamplanet.net/spark-prod/{}'
 EPG_URL = 'https://i.mjh.nz/SparkSport/epg.xml.gz'
 
 UUID_NAMESPACE = '124f1611-0232-4336-be43-e054c8ecd0d5'
