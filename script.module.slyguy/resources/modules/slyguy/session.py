@@ -63,10 +63,12 @@ class RawSession(requests.Session):
             self._rewrites.append([pattern, sorted(new_entries, key=lambda x: x[0] == 'dns')])
 
     def set_proxy(self, proxy):
-        proxy = proxy or ''
-        if proxy.lower().strip() == 'kodi':
-            proxy = get_kodi_proxy()
         self._proxy = proxy
+
+    def _get_proxy(self):
+        if self._proxy and self._proxy.lower().strip() == 'kodi':
+            self._proxy = get_kodi_proxy()
+        return self._proxy
 
     def request(self, method, url, **kwargs):
         req = requests.Request(method, url, params=kwargs.pop('params', None))
@@ -124,7 +126,7 @@ class RawSession(requests.Session):
             log.debug("URL Changed: {}".format(session_data['url']))
 
         if session_data['proxy'] is None:
-            session_data['proxy'] = self._proxy
+            session_data['proxy'] = self._get_proxy()
 
         if session_data['proxy']:
             # remove username, password from proxy for logging
