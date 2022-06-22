@@ -56,6 +56,12 @@ def sports(page_id=None, **kwargs):
 
     info = api.sparksport()
 
+    def league_image(images):
+        for key in ['leagueLogo', 'leagueId', 'cardLogo']:
+            if images.get(key):
+                return IMG_URL.format(images[key])
+        return None
+
     for sport in info['contentConfiguration']['sports']:
         if page_id:
             if page_id == sport['pageId']:
@@ -66,9 +72,12 @@ def sports(page_id=None, **kwargs):
                 )
 
                 for league in sport.get('leagues', []):
+                    if not league.get('pageId'):
+                        continue
+
                     folder.add_item(
                         label = league['displayText']['title'],
-                        art = {'thumb': IMG_URL.format(league['images']['leagueLogo'])},
+                        art = {'thumb': league_image(league['images'])},
                         path = plugin.url_for(page, page_id=league['pageId']),
                     )
 
