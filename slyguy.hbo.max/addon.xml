@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.9.7">
+<addon id="slyguy.hbo.max" name="HBO Max" provider-name="Slyguy" version="0.9.8">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -17,7 +17,7 @@ Je potřeba předplatné.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Add Dutch language. Thanks @djdirty60</news>
+    <news>Fix some subs not working</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

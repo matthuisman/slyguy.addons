@@ -567,10 +567,11 @@ def mpd_request(_data, _path, **kwargs):
                 continue
 
             for seg in segments:
+                stub = seg.getAttribute('media').split('/')[1]
                 repr.removeChild(seg)
 
             elem = root.createElement('BaseURL')
-            elem2 = root.createTextNode('t/sub/{lang}_{type}.vtt'.format(lang=lang, type=_type))
+            elem2 = root.createTextNode('t/{stub}/{lang}_{type}.vtt'.format(stub='sub' if stub.startswith('t') else stub, lang=lang, type=_type))
             elem.appendChild(elem2)
             repr.appendChild(elem)
 
