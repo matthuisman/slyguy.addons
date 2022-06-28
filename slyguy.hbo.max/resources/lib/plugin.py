@@ -695,6 +695,14 @@ def play(slug, **kwargs):
     if settings.getBool('skip_credits', True) and 'creditsStartTime' in edit:
         item.play_next['time'] = edit['creditsStartTime']
 
+    item.skip_intro = {}
+    if settings.getBool('skip_intros', True) and 'annotations' in data:
+        annotations = data['annotations']
+        for note in annotations:
+            if note['type']=='SKIP' and note['secondaryType']=='Intro':
+                item.skip_intro['start']=note['start']
+                item.skip_intro['end']=note['end']
+
     if ':episode' in slug:
         item.update(
             label = content['titles']['full'],

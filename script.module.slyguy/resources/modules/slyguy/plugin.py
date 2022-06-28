@@ -614,12 +614,16 @@ class Item(gui.Item):
             'next': {'time': 0, 'next_file': None},
             'skips': self.play_skips or [],
             'callback': {'type': 'interval', 'interval': 0, 'callback': None},
+            'skip_intro': self.skip_intro or {},            
         }
 
         if self.play_next:
             play_data['next'].update(self.play_next)
             if play_data['next']['next_file']:
                 play_data['next']['next_file'] = router.add_url_args(play_data['next']['next_file'], _play=1)
+                
+        if self.skip_intro:
+            play_data['skip_intro'].update(self.skip_intro)                
 
         if self.callback:
             play_data['callback'].update(self.callback)

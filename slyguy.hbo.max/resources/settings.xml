@@ -2,7 +2,7 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32139]">
         <setting label="30003" type="text" id="device_id" default="kodi{mac_address}{system}{arch}"/>
-        <!-- <setting label="30011" type="bool" id="skip_intros" default="false"/> -->
+        <setting label="30011" type="bool" id="skip_intros" default="false"/>
         <setting label="30013" type="bool" id="skip_credits" default="true"/>
         <setting label="30010" type="bool" id="play_next_episode" default="true"/>
         <setting label="30012" type="bool" id="play_next_movie" default="false"/>

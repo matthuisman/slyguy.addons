@@ -86,6 +86,9 @@ class Player(xbmc.Player):
         if play_data['next']['time']:
             play_skips.append({'from': play_data['next']['time'], 'to': 0})
 
+        if play_data['skip_intro']:
+            play_skips.append({'from': play_data['skip_intro']['start'], 'to': play_data['skip_intro']['end']})
+
         for skip in play_skips:
             if not skip.get('to'):
                 skip['to'] = int(self.getTotalTime())+1
