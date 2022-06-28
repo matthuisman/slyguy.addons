@@ -7,8 +7,6 @@ from slyguy.mem_cache import cached
 from .language import _
 from .constants import *
 
-session = Session()
-
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
@@ -31,12 +29,12 @@ def live_tv(**kwargs):
         channel = channels[slug]
 
         folder.add_item(
-            label    = channel['name'],
-            path     = plugin.url_for(play, slug=slug, _is_live=True),
-            info     = {'plot': channel.get('description')},
-            video    = channel.get('video', {}),
-            audio    = channel.get('audio', {}),
-            art      = {'thumb': channel.get('logo')},
+            label = channel['name'],
+            path = plugin.url_for(play, slug=slug, _is_live=True),
+            info = {'plot': channel.get('description')},
+            video = channel.get('video', {}),
+            audio = channel.get('audio', {}),
+            art = {'thumb': channel.get('logo')},
             playable = True,
         )
 
@@ -45,19 +43,17 @@ def live_tv(**kwargs):
 @plugin.route()
 def play(slug, **kwargs):
     channel = get_channels()[slug]
-    url = session.head(channel['mjh_master']).headers.get('location', '')
+    url = Session().head(channel['mjh_master']).headers.get('location', '')
 
     item = plugin.Item(
-        path      = url or channel['mjh_master'],
-        headers   = channel['headers'],
-        info      = {'plot': channel.get('description')},
-        video     = channel.get('video', {}),
-        audio     = channel.get('audio', {}),
-        art       = {'thumb': channel.get('logo')},
+        path = url or channel['mjh_master'],
+        headers = channel['headers'],
+        info = {'plot': channel.get('description')},
+        video = channel.get('video', {}),
+        audio = channel.get('audio', {}),
+        art = {'thumb': channel.get('logo')},
+        proxy_data = {'cert': channel.get('cert')},
     )
-
-    if 'cert' in channel:
-        item.proxy_data['cert'] = channel['cert']
 
     if channel.get('hls', False):
         item.inputstream = inputstream.HLS(live=True)
@@ -66,7 +62,7 @@ def play(slug, **kwargs):
 
 @cached(60*5)
 def get_channels():
-    return session.gz_json(M3U8_URL)
+    return Session().gz_json(M3U8_URL)
 
 @plugin.route()
 @plugin.merge()
