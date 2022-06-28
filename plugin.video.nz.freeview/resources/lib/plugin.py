@@ -56,6 +56,9 @@ def play(slug, **kwargs):
         art       = {'thumb': channel.get('logo')},
     )
 
+    if 'cert' in channel:
+        item.proxy_data['cert'] = channel['cert']
+
     if channel.get('hls', False):
         item.inputstream = inputstream.HLS(live=True)
 
