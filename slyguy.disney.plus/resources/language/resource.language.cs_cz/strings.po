@@ -1,0 +1,217 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: waladir\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs_CZ\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "Emailová adresa"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "Heslo"
+
+msgctxt "#30003"
+msgid "API request failed\n"-
+"Server Error: {msg}"
+msgstr "API selhalo\n"
+"Chyba serveru: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr "Seriály"
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr "Originals"
+
+msgctxt "#30007"
+msgid "Full Details"
+msgstr "Detailní informace"
+
+msgctxt "#30008"
+msgid "Hubs"
+msgstr "Huby"
+
+msgctxt "#30009"
+msgid "IMAX"
+msgstr "IMAX"
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr "Navrhované"
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "Doporučené"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "Sezóna {season}"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr "Extra"
+
+msgctxt "#30014"
+msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
+"You may experience playback issues with your current version."
+msgstr "Pro Kodi {kodi_ver} je třeba Inputstream Adaptive ve verzi alespoň {ver_required}\n"
+"Se současnou verzí můžeze mít problémy při přehrávání."
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
+
+msgctxt "#30016"
+msgid "Disney+ Sync Playback"
+msgstr "Přehrávání Disney+ Sync"
+
+msgctxt "#30017"
+msgid "{name} [PIN]"
+msgstr "{name} [PIN]"
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
+
+msgctxt "#30019"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr "Vynechat titulky"
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr "Přehrát další epizodu"
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr "Přehrát další doporučený film"
+
+msgctxt "#30023"
+msgid "Default Ratio"
+msgstr "Vychozí poměr stran"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "Vynechat intra"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "Přehrát od začátku"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "Můj seznam"
+
+msgctxt "#30027"
+msgid "Add to Watchlist"
+msgstr "Přidat do mého seznamu"
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "Odstranit ze mého seznamu"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "Přidáno do mého seznamu"
+
+msgctxt "#30030"
+msgid "Enter your Profile PIN"
+msgstr "Zadejte PIN profilu"
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr "Pokračovat ve sledování"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "Nemáte přístup k tomuto obsahu.\n"
+"Zkontrolujte jestli máte platné předplatné."
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "Vaše přihlašovací údaje nejsou správné.\n"
+"Zkontrolujte je a zkuste to znovu."
+
+msgctxt "#30045"
+msgid "{label} [B](Coming Soon)[/B]"
+msgstr "{label} [B](Brzy uvidíte)[/B]"
+
+msgctxt "#30046"
+msgid "Incorrect Pin"
+msgstr "Nesprávný PIN"
+
+msgctxt "#30047"
+msgid "Disney+ Watchlist"
+msgstr "Můj Disney+ seznam"
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "Od {time:0>8}"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](Dostupný do {date})[/B]"
+
+msgctxt "#30050"
+msgid "DD/MM/YYYY"
+msgstr "DD/MM/YYYY"
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "Nepodařilo se najít stream k tomuto obsahu"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+msgctxt "#30053"
+msgid "Profile Settings"
+msgstr "Nastavení profilu"
+
+msgctxt "#30054"
+msgid "Continue Watching"
+msgstr "Pokračovat ve sledování"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Zeptat se"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Nejlepší"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Nejnižší"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Vynechat"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Vlastní"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Zakázat"
