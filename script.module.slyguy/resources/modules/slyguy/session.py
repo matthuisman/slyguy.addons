@@ -51,13 +51,13 @@ class RawSession(requests.Session):
             new_entries = []
             for entry in entries:
                 _type = 'skip'
-                if entry.lower().startswith('_http'):
-                    _type = 'url_sub'
-                    entry = entry[1:]
-                elif '://' in entry:
+                if entry.startswith('>'):
                     _type = 'proxy'
+                    entry = entry[1:]
                 elif entry[0].isdigit():
                     _type = 'dns'
+                else:
+                    _type = 'url_sub'
                 new_entries.append([_type, entry])
 
             # Make sure dns is done last
