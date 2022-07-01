@@ -255,6 +255,7 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
         stream = _select_stream(event_id)
         if stream:
             content_id = stream['id']
+            is_live = stream['status'].lower() == 'live'
 
     elif network_id:
         stream = api.play_network(network_id)
@@ -262,9 +263,6 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
 
     if not content_id:
         raise PluginError(_.NO_SOURCE)
-
-    if stream.get('status'):
-        is_live = stream['status'].lower() == 'live'
 
     airing, playback_data = api.play(content_id)
 
