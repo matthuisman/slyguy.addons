@@ -6,8 +6,9 @@ msgid "Live"
 msgstr ""
 
 msgctxt "#30001"
-msgid "1. Go to: [B]https://www.espn.com/activate[/B]\n"
-"2. Enter code: [B]{code}[/B]"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Select your TV Provider\n"
+"3. Enter code: [B]{code}[/B]"
 msgstr ""
 
 msgctxt "#30002"
@@ -86,6 +87,19 @@ msgstr ""
 
 msgctxt "#30020"
 msgid "Event Whitelist"
+msgstr ""
+
+msgctxt "#30021"
+msgid "1. Go to: [B]{url}[/B]\n"
+"2. Enter code: [B]{code}[/B]"
+msgstr ""
+
+msgctxt "#30022"
+msgid "(Live)"
+msgstr ""
+
+msgctxt "#30023"
+msgid "(Replay)"
 msgstr ""
 
 ## COMMON SETTINGS ##

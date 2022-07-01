@@ -105,6 +105,7 @@ class Bam():
 
         data = {
             'url': data['stream']['complete'][0]['url'],
+            'type': 'HLS',
             'headers': {
                 'authorization': token,
             }

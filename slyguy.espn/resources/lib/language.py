@@ -2,7 +2,7 @@ from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
     LIVE               = 30000
-    LOGIN_STEPS        = 30001
+    PROVIDER_LOGIN_STEPS = 30001
     NOT_ENTITLED       = 30002
     GEO_ERROR          = 30003
     API_ERROR          = 30004
@@ -22,5 +22,8 @@ class Language(BaseLanguage):
     STARTS             = 30018
     STARTED            = 30019
     EVENT_WHITELIST    = 30020
+    ESPN_LOGIN_STEPS   = 30021
+    LIVE_EVENT         = 30022
+    REPLAY_EVENT       = 30023
 
 _ = Language()

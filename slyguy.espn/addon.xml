@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.espn" name="ESPN" provider-name="Slyguy" version="0.2.7">
+<addon id="slyguy.espn" name="ESPN" provider-name="Slyguy" version="0.2.8">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ ESPN+ and/or Tv Provider login required</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix live... again</news>
+    <news>Support all countries TV Provider login! Fix Widevine only streams</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

@@ -1,13 +1,13 @@
 import arrow
 from slyguy import plugin, gui, signals, inputstream, settings, userdata
-from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
-from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_LIVE_TAG
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, ROUTE_LIVE_TAG
 
 from .language import _
 from .api import API
+from .constants import PROVIDER_LOGIN_URL, ESPN_LOGIN_URL
 
 api = API()
 
@@ -133,7 +133,7 @@ def _process_events(rows):
             plot += '\n' + _(_.STARTS, time=starts)
 
         if row.get('eventId'):
-            path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
+            path = plugin.url_for(play, content_id=row['id'], event_id=row['eventId'], _is_live=True)
             if 'event' in row and show_scores:
                 plot += u'\n\n{statusTextOne}\n{teamOneName} {teamOneScore}\n{teamTwoName} {teamTwoScore}'.format(**row['event'])
         else:
@@ -202,7 +202,7 @@ def account(**kwargs):
 def _espn_login(**kwargs):
     timeout = 600
     with api.espn.login() as login_progress:
-        with gui.progress(_(_.LOGIN_STEPS, code=login_progress.code), heading=_.ESPN_LOGIN) as progress:
+        with gui.progress(_(_.ESPN_LOGIN_STEPS, url=ESPN_LOGIN_URL, code=login_progress.code), heading=_.ESPN_LOGIN) as progress:
             for i in range(timeout):
                 if progress.iscanceled() or not login_progress.is_alive() or monitor.waitForAbort(1):
                     break
@@ -214,7 +214,14 @@ def _espn_login(**kwargs):
 
 def _provider_login(**kwargs):
     with api.provider.login() as data:
-        with gui.progress(_(_.LOGIN_STEPS, code=data['code']), heading=_.PROVIDER_LOGIN) as progress:
+        # Countries that support TV Provider login natively
+        if api.geo()['countryAbbrev'].upper() in ('US',):
+            instructions = _(_.ESPN_LOGIN_STEPS, url=ESPN_LOGIN_URL, code=data['code'])
+        # Use TV Provider MJH workaround
+        else:
+            instructions = _(_.PROVIDER_LOGIN_STEPS, url=PROVIDER_LOGIN_URL, code=data['code'])
+
+        with gui.progress(instructions, heading=_.PROVIDER_LOGIN) as progress:
             timeout = int((data['expires'] - data['generated']) / 1000)
             for i in range(timeout):
                 if progress.iscanceled() or monitor.waitForAbort(1):
@@ -245,21 +252,31 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
     is_live = ROUTE_LIVE_TAG in kwargs
 
     if event_id:
-        content_id = _select_stream(event_id)
-        if not content_id:
-            return
+        stream = _select_stream(event_id)
+        if stream:
+            content_id = stream['id']
 
     elif network_id:
-        data = api.play_network(network_id)
-        content_id = data['id']
+        stream = api.play_network(network_id)
+        content_id = stream['id']
+
+    if not content_id:
+        raise PluginError(_.NO_SOURCE)
+
+    if stream.get('status'):
+        is_live = stream['status'].lower() == 'live'
 
     airing, playback_data = api.play(content_id)
 
     item = plugin.Item(
         path = playback_data['url'],
-        inputstream = inputstream.HLS(live=is_live),
         headers = playback_data.get('headers'),
     )
+
+    if playback_data['type'] == 'DASH_WIDEVINE':
+        item.inputstream = inputstream.Widevine(license_key=playback_data.get('license_url'))
+    else:
+        item.inputstream = inputstream.HLS(live=is_live)
 
     offset = int((arrow.get(airing['startDateTime']) - arrow.now()).total_seconds())
     if is_live and not airing.get('requiresLinearPlayback', True) and offset < 0:
@@ -308,10 +325,15 @@ def _select_stream(event_id):
             streams.append(stream)
 
         if streams:
-            groups.append([group['name'], streams])
+            name = group['name']
+            if all([x['status'].lower() == 'live' for x in streams]):
+                name += ' ' + _.LIVE_EVENT
+            if all([x['status'].lower() == 'replay' for x in streams]):
+                name += ' ' + _.REPLAY_EVENT
+            groups.append([name, streams])
 
     if not groups:
-        raise PluginError(_.NO_SOURCE)
+        return None
 
     if len(groups) > 1:
         index = gui.context_menu([x[0] for x in groups])
@@ -321,8 +343,13 @@ def _select_stream(event_id):
 
     for index, row in enumerate(groups):
         for stream in row[1]:
-            options.append(stream['name'])
-            values.append(stream['id'])
+            name = stream['name']
+            if stream['status'].lower() == 'live':
+                name += ' ' + _.LIVE_EVENT
+            elif stream['status'].lower() == 'replay':
+                name += ' ' + _.REPLAY_EVENT
+            options.append(name)
+            values.append(stream)
 
     if len(values) == 1:
         return values[0]
@@ -332,3 +359,4 @@ def _select_stream(event_id):
         return
 
     return values[index]
+

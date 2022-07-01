@@ -16,6 +16,7 @@ HEADERS = {
 }
 
 API_URL = 'https://watch.product.api.espn.com/api/product/v3/android/tv{}'
+GEO_URL = 'https://pinpoint.espn.com/geo'
 WATCH_URL = 'https://watch.graph.api.espn.com/api'
 WATCH_KEY = '37e46a0e-505b-430a-b5f0-3d332266c1a9'
 SHIELD_API_KEY = 'uiqlbgzdwuru14v627vdusswb'
@@ -32,6 +33,12 @@ class API(object):
         self._espn = ESPN()
         self._provider = Provider()
         self.logged_in = self._espn.logged_in or self._provider.logged_in
+        self._geo = None
+
+    def geo(self):
+        if not self._geo:
+            self._geo = self._session.get(GEO_URL).json()
+        return self._geo
 
     @property
     def espn(self):
@@ -42,7 +49,7 @@ class API(object):
         return self._provider
 
     def home(self):
-        params = {}
+        params = {'countryCode': self.geo()['countryAbbrev']}
         return self._session.get('https://watch-cdn.product.api.espn.com/api/product/v3/watchespn/web/home', params=params).json()['page']
 
     def bucket(self, bucket_id):
@@ -50,6 +57,7 @@ class API(object):
             'bucketId': bucket_id,
             'authNetworks': 'espn1,espn2,espnu,espnews,espndeportes,sec,longhorn,buzzerbeater,goalline,espn3,espnclassic,acc,accextra,espnvod,secplus',
             'authStates': 'mvpd_login',
+            'countryCode': self.geo()['countryAbbrev'],
             'entitlements': 'ESPN_PLUS',
         }
         return self._session.get('/bucket', params=params).json()['page']
@@ -57,6 +65,7 @@ class API(object):
     def event(self, event_id):
         params = {
             'eventId': event_id,
+            'countryCode': self.geo()['countryAbbrev'],
         }
         return self._session.get('/event', params=params).json()['page']['contents']
 
@@ -64,8 +73,8 @@ class API(object):
         params = {
             'eventId': event_id,
             'partitionDtc': 'true',
-            'tz': 'UTC',
-            # 'countryCode': 'US',
+            'tz': self.geo()['timezone'],
+            'countryCode': self.geo()['countryAbbrev'],
             # 'lang': 'en',
             # 'deviceType': 'settop',
             # 'entitlements': 'ESPN_PLUS',
@@ -78,14 +87,15 @@ class API(object):
     def play_network(self, network):
         params = {
             'network': network,
+            'countryCode': self.geo()['countryAbbrev'],
         }
         return self._session.get('/playback/event', params=params).json()['playbackState']
 
     def play(self, content_id):
         variables = {
-            'countryCode': 'US',
+            'countryCode': self.geo()['countryAbbrev'],
             'deviceType': 'SETTOP',
-            'tz': 'UTC',
+            'tz': self.geo()['timezone'],
             'id': content_id,
         }
 
@@ -112,13 +122,19 @@ class API(object):
                 'adobeToken': provider_data['serializedToken'],
                 'adobeResource': base64.b64encode(provider_data['resource'].encode('utf8')),
                 'plt': 'androidtv',
-                'drmSupport': 'HLS', #DASH_WIDEVINE
+                'drmSupport': 'DASH_WIDEVINE',
             }
 
             data = self._session.post(source['url'], params={'apikey': SHIELD_API_KEY}, data=payload).json()
             check_errors(data)
 
-            return airing, {'url': data['stream']}
+            data = {
+                'url': data['stream'],
+                'type': data['streamInfo']['streamType'],
+                'license_url': data['streamInfo'].get('licenseAcquisitionUrl'),
+            }
+
+            return airing, data
 
         elif source['authorizationType'] == 'BAM':
             if not self._espn.logged_in:
