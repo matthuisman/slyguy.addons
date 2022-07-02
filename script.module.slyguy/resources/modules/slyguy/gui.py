@@ -344,6 +344,8 @@ class Item(object):
 
         headers = self.get_url_headers(self.headers, self.cookies)
         mimetype = self.mimetype
+        if not mimetype and self.inputstream:
+            mimetype = self.inputstream.mimetype
 
         def get_url(url):
             _url = url.lower()
@@ -392,9 +394,6 @@ class Item(object):
 
             if self.inputstream.license_data:
                 li.setProperty('{}.license_data'.format(self.inputstream.addon_id), self.inputstream.license_data)
-
-            if self.inputstream.mimetype and not mimetype:
-                mimetype = self.inputstream.mimetype
 
             for key in self.inputstream.properties:
                 li.setProperty(self.inputstream.addon_id+'.'+key, self.inputstream.properties[key])

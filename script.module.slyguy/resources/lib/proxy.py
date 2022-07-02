@@ -219,13 +219,19 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             response = self._proxy_request('GET', url)
 
+            if not self._session.get('type') and url == manifest:
+                if response.headers.get('content-type') == 'application/x-mpegURL':
+                    self._session['type'] = 'm3u8'
+                elif response == 'application/dash+xml':
+                    self._session['type'] = 'mpd'
+
             if self._session.get('redirecting') or not self._session.get('type') or not manifest or int(response.headers.get('content-length', 0)) > 1000000:
                 self._output_response(response)
                 return
 
             parse = urlparse(self.path.lower())
 
-            if self._session.get('type') == 'm3u8' and (url == manifest or parse.path.endswith('.m3u') or parse.path.endswith('.m3u8')):
+            if self._session.get('type') == 'm3u8' and (url == manifest or parse.path.endswith('.m3u') or parse.path.endswith('.m3u8') or response.headers.get('content-type') == 'application/x-mpegURL'):
                 self._parse_m3u8(response)
 
             elif self._session.get('type') == 'mpd' and url == manifest:
@@ -237,12 +243,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             def output_error(url):
                 response.status_code = 200
                 if self._session.get('type') == 'm3u8':
-                    response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}'.format(
-                        PROXY_PATH+url).encode('utf8')
+                    response.stream.content = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-INDEPENDENT-SEGMENTS\n#EXT-X-STREAM-INF:BANDWIDTH=1\n{}'.format(url).encode('utf8')
 
                 elif self._session.get('type') == 'mpd':
                     response.stream.content = '<MPD><Period><AdaptationSet id="1" contentType="video" mimeType="video/mp4"><SegmentTemplate initialization="{}" media="{}" startNumber="1"><SegmentTimeline><S d="540000" r="1" t="263007000000"/></SegmentTimeline></SegmentTemplate><Representation bandwidth="300000" codecs="avc1.42001e" frameRate="25" height="224" id="videosd-400x224" sar="224:225" scanType="progressive" width="400"></Representation></AdaptationSet></Period></MPD>'.format(
-                        PROXY_PATH+url, PROXY_PATH).encode('utf8')
+                        url, PROXY_PATH).encode('utf8')
 
             if self._session.get('type') in ('m3u8', 'mpd'):
                 if type(e) == Exit:
@@ -314,6 +319,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             return _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution=stream['resolution'], fps=fps, codecs=codec_string.strip()).replace('  ', ' ')
 
         if self._session.get('selected_quality') is not None:
+            if self._session['selected_quality'] == QUALITY_EXIT:
+                raise Exit('Cancelled quality select')
+
             if self._session['selected_quality'] in (QUALITY_DISABLED, QUALITY_SKIP):
                 return None
             else:
@@ -352,6 +360,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=5000)
             if index < 0:
+                self._session['selected_quality'] = QUALITY_EXIT
                 raise Exit('Cancelled quality select')
 
             quality = values[index]
