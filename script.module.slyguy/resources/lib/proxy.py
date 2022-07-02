@@ -222,7 +222,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             if not self._session.get('type') and url == manifest:
                 if response.headers.get('content-type') == 'application/x-mpegURL':
                     self._session['type'] = 'm3u8'
-                elif response == 'application/dash+xml':
+                elif response.headers.get('content-type') == 'application/dash+xml':
                     self._session['type'] = 'mpd'
 
             if self._session.get('redirecting') or not self._session.get('type') or not manifest or int(response.headers.get('content-length', 0)) > 1000000:
