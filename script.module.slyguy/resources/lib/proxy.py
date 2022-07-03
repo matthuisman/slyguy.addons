@@ -119,14 +119,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = self.path.lstrip('/').strip('\\')
         log.debug('{} IN: {}'.format(method, url))
 
-        self._headers = {}
-        for header in self.headers:
-            if header.lower() not in REMOVE_IN_HEADERS:
-                self._headers[header.lower()] = self.headers[header]
-
-        length = int(self._headers.get('content-length', 0))
-        self._post_data = self.rfile.read(length) if length else None
-
         self._session = PROXY_GLOBAL['session']
 
         try:
@@ -140,6 +132,22 @@ class RequestHandler(BaseHTTPRequestHandler):
             pass
 
         PROXY_GLOBAL['session'] = self._session
+
+        self._headers = {}
+        for header in self.headers:
+            if header.lower() == 'referer':
+                # Remove referer header from redirects (fixed in Kodi 19+)
+                if self._session.get('redirecting'):
+                    continue
+                # Remove proxy path from start of referer header
+                elif self.headers[header].startswith(PROXY_PATH):
+                    self.headers[header] = self.headers[header][len(PROXY_PATH):]
+
+            if header.lower() not in REMOVE_IN_HEADERS:
+                self._headers[header.lower()] = self.headers[header]
+
+        length = int(self._headers.get('content-length', 0))
+        self._post_data = self.rfile.read(length) if length else None
 
         url = self._session.get('path_subs', {}).get(url) or url
 
