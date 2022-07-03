@@ -215,7 +215,7 @@ def _espn_login(**kwargs):
 def _provider_login(**kwargs):
     with api.provider.login() as data:
         # Countries that support TV Provider login natively
-        if api.geo()['countryAbbrev'].upper() in ('US',):
+        if api.geo().upper() in ('US',):
             instructions = _(_.ESPN_LOGIN_STEPS, url=ESPN_LOGIN_URL, code=data['code'])
         # Use TV Provider MJH workaround
         else:

@@ -16,10 +16,12 @@ HEADERS = {
 }
 
 API_URL = 'https://watch.product.api.espn.com/api/product/v3/watchespn/web{}'
-GEO_URL = 'https://pinpoint.espn.com/geo'
 WATCH_URL = 'https://watch.graph.api.espn.com/api'
 WATCH_KEY = '37e46a0e-505b-430a-b5f0-3d332266c1a9'
 SHIELD_API_KEY = 'uiqlbgzdwuru14v627vdusswb'
+
+#GEO_URL = 'https://pinpoint.espn.com/geo'
+CONFIG_URL = 'https://cdn.registerdisney.go.com/v4/config/mobile/ESPN-ESPNAPP.AND-PROD/en-US'
 
 class APIError(Error):
     pass
@@ -34,7 +36,7 @@ class API(object):
 
     def geo(self):
         if not self._geo:
-            self._geo = self._session.get(GEO_URL).json()
+            self._geo = self._session.get(CONFIG_URL).json()['siteConfig']['compliance']['ageBands']['ADULT']['country']
         return self._geo
 
     @property
@@ -46,7 +48,7 @@ class API(object):
         return self._provider
 
     def home(self):
-        params = {'countryCode': self.geo()['countryAbbrev']}
+        params = {'countryCode': self.geo()}
         return self._session.get('/home', params=params).json()['page']
 
     def bucket(self, bucket_id):
@@ -54,7 +56,7 @@ class API(object):
             'bucketId': bucket_id,
             'authNetworks': 'espn1,espn2,espnu,espnews,espndeportes,sec,longhorn,buzzerbeater,goalline,espn3,espnclassic,acc,accextra,espnvod,secplus',
             'authStates': 'mvpd_login',
-            'countryCode': self.geo()['countryAbbrev'],
+            'countryCode': self.geo(),
             # 'entitlements': 'ESPN_PLUS',
         }
         return self._session.get('/bucket', params=params).json()['page']
@@ -62,7 +64,7 @@ class API(object):
     def event(self, event_id):
         params = {
             'eventId': event_id,
-            'countryCode': self.geo()['countryAbbrev'],
+            'countryCode': self.geo(),
         }
         return self._session.get('/event', params=params).json()['page']['contents']
 
@@ -70,8 +72,8 @@ class API(object):
         params = {
             'eventId': event_id,
             'partitionDtc': 'true',
-            'tz': self.geo()['timezone'],
-            'countryCode': self.geo()['countryAbbrev'],
+      #      'tz': self.geo()['timezone'],
+            'countryCode': self.geo(),
             'lang': 'en',
             # 'deviceType': 'settop',
             # 'contentorigin': 'espn',
@@ -85,15 +87,15 @@ class API(object):
     def play_network(self, network):
         params = {
             'network': network,
-            'countryCode': self.geo()['countryAbbrev'],
+            'countryCode': self.geo(),
         }
         return self._session.get('/playback/event', params=params).json()['playbackState']
 
     def play(self, content_id):
         variables = {
-            'countryCode': self.geo()['countryAbbrev'],
+            'countryCode': self.geo(),
             'deviceType': 'SETTOP',
-            'tz': self.geo()['timezone'],
+      #      'tz': self.geo()['timezone'],
             'id': content_id,
         }
 
