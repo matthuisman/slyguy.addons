@@ -133,7 +133,7 @@ def _process_events(rows):
             plot += '\n' + _(_.STARTS, time=starts)
 
         if row.get('eventId'):
-            path = plugin.url_for(play, content_id=row['id'], event_id=row['eventId'], _is_live=True)
+            path = plugin.url_for(play, event_id=row['eventId'], _is_live=True)
             if 'event' in row and show_scores:
                 plot += u'\n\n{statusTextOne}\n{teamOneName} {teamOneScore}\n{teamTwoName} {teamTwoScore}'.format(**row['event'])
         else:
@@ -306,6 +306,7 @@ def _select_stream(event_id):
 
     groups = []
     for group in api.picker(event_id):
+
         if not alt_lang and group['name'].lower().startswith('watch in'):
             continue
 

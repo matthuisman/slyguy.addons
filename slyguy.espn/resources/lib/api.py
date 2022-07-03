@@ -15,7 +15,7 @@ HEADERS = {
     'always-ok-response': 'true',
 }
 
-API_URL = 'https://watch.product.api.espn.com/api/product/v3/android/tv{}'
+API_URL = 'https://watch.product.api.espn.com/api/product/v3/watchespn/web{}'
 GEO_URL = 'https://pinpoint.espn.com/geo'
 WATCH_URL = 'https://watch.graph.api.espn.com/api'
 WATCH_KEY = '37e46a0e-505b-430a-b5f0-3d332266c1a9'
@@ -27,9 +27,6 @@ class APIError(Error):
 class API(object):
     def new_session(self):
         self._session = Session(HEADERS, base_url=API_URL, timeout=30)
-        # self._session.headers.update({
-        #     'dss-session-token': '123'
-        # })
         self._espn = ESPN()
         self._provider = Provider()
         self.logged_in = self._espn.logged_in or self._provider.logged_in
@@ -50,7 +47,7 @@ class API(object):
 
     def home(self):
         params = {'countryCode': self.geo()['countryAbbrev']}
-        return self._session.get('https://watch-cdn.product.api.espn.com/api/product/v3/watchespn/web/home', params=params).json()['page']
+        return self._session.get('/home', params=params).json()['page']
 
     def bucket(self, bucket_id):
         params = {
@@ -58,7 +55,7 @@ class API(object):
             'authNetworks': 'espn1,espn2,espnu,espnews,espndeportes,sec,longhorn,buzzerbeater,goalline,espn3,espnclassic,acc,accextra,espnvod,secplus',
             'authStates': 'mvpd_login',
             'countryCode': self.geo()['countryAbbrev'],
-            'entitlements': 'ESPN_PLUS',
+            # 'entitlements': 'ESPN_PLUS',
         }
         return self._session.get('/bucket', params=params).json()['page']
 
@@ -75,12 +72,13 @@ class API(object):
             'partitionDtc': 'true',
             'tz': self.geo()['timezone'],
             'countryCode': self.geo()['countryAbbrev'],
-            # 'lang': 'en',
+            'lang': 'en',
             # 'deviceType': 'settop',
-            # 'entitlements': 'ESPN_PLUS',
+            # 'contentorigin': 'espn',
+            # 'entitlements': 'ESPN_PLUS,ESPN_PLUS_MLB',
             # 'appVersion': '4.7.1',
             # 'iapPackages': 'ESPN_PLUS_UFC_PPV_265,ESPN_PLUS',
-            # 'features': 'imageRatio58x13,promoTiles,openAuthz',
+            'features': 'imageRatio58x13,promoTiles,openAuthz',
         }
         return self._session.get('/picker', params=params).json()['page'].get('buckets', [])
 
@@ -106,10 +104,11 @@ class API(object):
         }
 
         data = self._session.get(WATCH_URL, params=params).json()
-        airing = data['data']['airing']
-        source = airing['source']
 
-        if not source['url']:
+        try:
+            airing = data['data']['airing']
+            source = airing['source']
+        except:
             raise APIError(_.NO_SOURCE)
 
         if source['authorizationType'] == 'SHIELD':
