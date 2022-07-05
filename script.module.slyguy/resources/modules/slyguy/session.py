@@ -232,8 +232,6 @@ class Session(RawSession):
         if verify is not None:
             kwargs['verify'] = verify
 
-        #url = PROXY_PATH + url
-
         for i in range(1, attempts+1):
             attempt = 'Attempt {}/{}: '.format(i, attempts)
             if i > 1 and retry_delay:

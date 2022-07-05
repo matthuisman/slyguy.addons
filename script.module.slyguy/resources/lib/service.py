@@ -37,19 +37,19 @@ def settings_changed():
 def start():
     log.debug('Shared Service: Started')
 
-    try:
-        set_drm_level()
-    except Exception as e:
-        log.error('Failed to set DRM level')
-        log.exception(e)
-
-    player = Player()
     proxy = Proxy()
+    player = Player()
 
     try:
         proxy.start()
     except Exception as e:
         log.error('Failed to start proxy server')
+        log.exception(e)
+
+    try:
+        set_drm_level()
+    except Exception as e:
+        log.error('Failed to set DRM level')
         log.exception(e)
 
     is_donor = False

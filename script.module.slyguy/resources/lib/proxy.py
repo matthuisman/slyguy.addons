@@ -27,13 +27,6 @@ from slyguy.router import add_url_args
 
 from .language import _
 
-PORT = check_port(DEFAULT_PORT)
-if not PORT:
-    PORT = check_port()
-
-PROXY_PATH = 'http://{}:{}/'.format(HOST, PORT)
-settings.set('_proxy_path', PROXY_PATH)
-
 CODECS = [
     ['avc', 'H.264'],
     ['hvc', 'H.265'],
@@ -140,8 +133,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if self._session.get('redirecting'):
                     continue
                 # Remove proxy path from start of referer header
-                elif self.headers[header].startswith(PROXY_PATH):
-                    self.headers[header] = self.headers[header][len(PROXY_PATH):]
+                elif self.headers[header].startswith(self.server.proxy_path):
+                    self.headers[header] = self.headers[header][len(self.server.proxy_path):]
 
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
@@ -255,14 +248,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 elif self._session.get('type') == 'mpd':
                     response.stream.content = '<MPD><Period><AdaptationSet id="1" contentType="video" mimeType="video/mp4"><SegmentTemplate initialization="{}" media="{}" startNumber="1"><SegmentTimeline><S d="540000" r="1" t="263007000000"/></SegmentTimeline></SegmentTemplate><Representation bandwidth="300000" codecs="avc1.42001e" frameRate="25" height="224" id="videosd-400x224" sar="224:225" scanType="progressive" width="400"></Representation></AdaptationSet></Period></MPD>'.format(
-                        url, PROXY_PATH).encode('utf8')
+                        url, self.server.proxy_path).encode('utf8')
 
             if self._session.get('type') in ('m3u8', 'mpd'):
                 if type(e) == Exit:
-                    output_error(PROXY_PATH+STOP_URL)
+                    output_error(self.server.proxy_path+STOP_URL)
 
                 elif url == manifest:
-                    output_error(PROXY_PATH+ERROR_URL)
+                    output_error(self.server.proxy_path+ERROR_URL)
         else:
             if url == manifest:
                 PROXY_GLOBAL['error_count'] = 0
@@ -705,7 +698,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 url = urljoin(response.url, url)
 
             if '://' in url:
-                elem.firstChild.nodeValue = PROXY_PATH + url
+                elem.firstChild.nodeValue = self.server.proxy_path + url
 
             base_url_parents.append(elem.parentNode)
         ################
@@ -731,7 +724,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 url = e.getAttribute(attrib)
                 if '://' in url:
-                    e.setAttribute(attrib, PROXY_PATH + url)
+                    e.setAttribute(attrib, self.server.proxy_path + url)
                 else:
                     ## Fixed with https://github.com/xbmc/inputstream.adaptive/pull/606
                     base_url = get_parent_node(e, 'BaseURL')
@@ -1023,7 +1016,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         m3u8 = re.sub(r'URI="/', r'URI="{}'.format(base_url), m3u8, flags=re.I|re.M)
 
         ## Convert to proxy paths
-        m3u8 = re.sub(r'(https?)://', r'{}\1://'.format(PROXY_PATH), m3u8, flags=re.I)
+        m3u8 = re.sub(r'(https?)://', r'{}\1://'.format(self.server.proxy_path), m3u8, flags=re.I)
 
         m3u8 = m3u8.encode('utf8')
 
@@ -1102,7 +1095,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             self._session['redirecting'] = True
             self._update_urls(url, response.headers['location'])
-            response.headers['location'] = PROXY_PATH + response.headers['location']
+            response.headers['location'] = self.server.proxy_path + response.headers['location']
             response.stream.content = b''
 
         if 'set-cookie' in response.headers:
@@ -1196,6 +1189,10 @@ class ResponseStream(object):
                 yield chunk
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    def __init__(self, *args, **kwargs):
+        super(ThreadedHTTPServer, self).__init__(*args, **kwargs)
+        self.proxy_path = 'http://{}:{}/'.format(*self.server_address)
+
     daemon_threads = True
 
 class Proxy(object):
@@ -1205,12 +1202,20 @@ class Proxy(object):
         if self.started:
             return
 
-        self._server = ThreadedHTTPServer((HOST, PORT), RequestHandler)
+        settings.set('_proxy_path', '')
+
+        port = check_port(DEFAULT_PORT)
+        if not port:
+            port = check_port()
+
+        self._server = ThreadedHTTPServer((HOST, port), RequestHandler)
         self._server.allow_reuse_address = True
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
         self.started = True
-        log.info("Proxy Started: {}:{}".format(HOST, PORT))
+
+        settings.set('_proxy_path', self._server.proxy_path)
+        log.info("Proxy Started: {}".format(self._server.proxy_path))
 
     def stop(self):
         if not self.started:
@@ -1221,4 +1226,5 @@ class Proxy(object):
         self._server.socket.close()
         self._httpd_thread.join()
         self.started = False
+        settings.set('_proxy_path', '')
         log.debug("Proxy: Stopped")
