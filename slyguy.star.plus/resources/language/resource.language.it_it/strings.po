@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "Email Address"
+msgstr "Indirizzo email"
+
+msgctxt "#30002"
+msgid "Password"
+msgstr "Password"
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "Richiesta API non riuscita\n"
+"Errore del server: {msg}"
+
+msgctxt "#30004"
+msgid "Movies"
+msgstr "Film"
+
+msgctxt "#30005"
+msgid "Series"
+msgstr "Serie"
+
+msgctxt "#30006"
+msgid "Originals"
+msgstr "Originali"
+
+msgctxt "#30010"
+msgid "Suggested"
+msgstr "Consigliato"
+
+msgctxt "#30011"
+msgid "Featured"
+msgstr "In primo piano"
+
+msgctxt "#30012"
+msgid "Season {season}"
+msgstr "Stagione {season}"
+
+msgctxt "#30013"
+msgid "Extras"
+msgstr "Extra"
+
+msgctxt "#30014"
+msgid "Playback on Kodi {kodi_ver} requires at least version {ver_required} of the Inputstream Adaptive add-on\n"
+"This version was only recently released so should update over the next few days."
+msgstr "La riproduzione su Kodi {kodi_ver} richiede almeno la versione {ver_required} del componente aggiuntivo Inputstream Adaptive\n"
+"Questa versione è stata rilasciata di recente, quindi dovrebbe aggiornarsi nei prossimi giorni."
+
+msgctxt "#30015"
+msgid "Dolby Vision / 4K"
+msgstr "Dolby Vision / 4K"
+
+msgctxt "#30018"
+msgid "HDR10 / 4K"
+msgstr "HDR10 / 4K"
+
+msgctxt "#30019"
+msgid "H.265"
+msgstr "H.265"
+
+msgctxt "#30020"
+msgid "Skip Credits"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Play Next Episode"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Play Next Recommended Movie"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Play without Intro"
+msgstr "Avvia senza intro"
+
+msgctxt "#30024"
+msgid "Skip Intros"
+msgstr "Salta intro"
+
+msgctxt "#30025"
+msgid "Play from Start"
+msgstr "Avvia dall'inizio"
+
+msgctxt "#30026"
+msgid "Watchlist"
+msgstr "La tua lista"
+
+msgctxt "#30027"
+msgid "Aggiungi ai visti"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Remove from Watchlist"
+msgstr "Rimuovi dai visti"
+
+msgctxt "#30029"
+msgid "Added to Watchlist"
+msgstr "Aggiungi ai visti"
+
+msgctxt "#30041"
+msgid "Play with Intro"
+msgstr "Riproduci con intro"
+
+msgctxt "#30042"
+msgid "Continue Watching"
+msgstr "Continua a guardare"
+
+msgctxt "#30043"
+msgid "You are not entitled to access this content.\n"
+"Check your subscription is valid."
+msgstr "Non sei autorizzato ad accedere a questo contenuto.\n"
+"Controlla che il tuo abbonamento sia valido."
+
+msgctxt "#30044"
+msgid "Your login details are in-correct.\n"
+"Please check them and try again."
+msgstr "I tuoi dati di accesso sono errati.\n"
+"Per favore, controlla e riprova."
+
+msgctxt "#30048"
+msgid "From {time:0>8}"
+msgstr "Da {time:0>8}"
+
+msgctxt "#30049"
+msgid "{label} [B](Available {date})[/B]"
+msgstr "{label} [B](Available {date})[/B]"
+
+msgctxt "#30050"
+msgid "D/MM/YYYY"
+msgstr D/MM/YYYY"
+
+msgctxt "#30051"
+msgid "Could not find stream data for this content"
+msgstr "Impossibile trovare i dati di flusso per questo contenuto"
+
+msgctxt "#30052"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Chiedi"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Migliore"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Minore"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Bypass"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Utente"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Disabilitato"
