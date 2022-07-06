@@ -284,10 +284,6 @@ class API(object):
     def set_by_id(self, set_id, set_type, page=1, page_size=PAGE_SIZE_SETS):
         if set_type == 'ContinueWatchingSet':
             endpoint = 'getCWSet'
-        elif set_type == 'CuratedSet':
-            endpoint = 'getSet'
-        elif set_type == 'Dictionary':
-            endpoint = 'getDictionaryLatest'
         else:
             endpoint = 'getSet'
 
