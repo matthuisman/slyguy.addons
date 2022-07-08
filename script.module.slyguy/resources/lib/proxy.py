@@ -1190,8 +1190,6 @@ class ResponseStream(object):
                 yield chunk
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    def __init__(self, *args, **kwargs):
-        super(ThreadedHTTPServer, self).__init__(*args, **kwargs)
     daemon_threads = True
 
 class Proxy(object):
