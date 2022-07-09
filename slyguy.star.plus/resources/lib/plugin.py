@@ -28,7 +28,7 @@ def index(**kwargs):
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(collection, slug='movies', content_class='contentType'))
         folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(collection, slug='series', content_class='contentType'))
         #folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(collection, slug='originals', content_class='originals'))
-       # folder.add_item(label=_(_.ESPN, _bold=True), path=plugin.url_for(collection, slug='espn', content_class='espn'))
+        folder.add_item(label=_(_.ESPN, _bold=True), path=plugin.url_for(collection, slug='espn', content_class='espn'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('sync_watchlist', False):
@@ -239,8 +239,8 @@ def _process_rows(rows, content_class=None):
         elif content_type == 'DmcSeries':
             item = _parse_series(row)
 
-        # elif content_type == 'Airing':
-        #     item = _parse_event(row)
+        elif content_type == 'Airing':
+            item = _parse_event(row)
 
         elif content_type in ('PersonalizedCollection', 'StandardCollection'):
             item = _parse_collection(row)
@@ -358,6 +358,21 @@ def _parse_video(row):
         item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, family_id=row['family']['encodedFamilyId']))))
         item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
 
+    return item
+
+def _parse_event(row):
+    item = plugin.Item(
+        label = _get_text(row, 'title', 'program'),
+        info = {
+            'plot': _get_text(row, 'description', 'program'),
+         #   'mediatype': 'tvshow',
+            #'aired': row['startDate'] if row['startDate'] else 'Unknown',
+        #    'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
+        },
+        art = _get_art(row),
+        path = plugin.url_for(play, event_id=row['family']['encodedFamilyId'], _is_live=True),
+        playable = True,
+    )
     return item
 
 def _get_art(row):
@@ -586,7 +601,6 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
         ver_required = '2.4.5'
 
     ia = inputstream.Widevine(
-        license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
         manifest_type = 'hls',
         mimetype = 'application/vnd.apple.mpegurl',
         wv_secure = is_wv_secure(),
@@ -609,7 +623,17 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
         video = data['video']
         _type = 'video'
     else:
+        video = None
+
+    if not video:
         raise PluginError(_.NO_VIDEO_FOUND)
+
+    is_live = video.get('liveBroadcast')
+
+    if video.get('linear'):
+        ia.license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLinearLicense']['href']
+    else:
+        ia.license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href']
 
     versions = video['mediaMetadata']['facets']
     has_imax = False
@@ -651,6 +675,9 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
         proxy_data = {'original_language': original_language},
     )
 
+    if is_live:
+        return item
+
     milestones = video.get('milestone', [])
     playhead = playback_data.get('playhead', {})
     item.play_next = {}
@@ -685,10 +712,10 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
                 item.play_next['next_file'] = _get_play_path(row['contentId'])
                 break
 
-    elif video['programType'] != 'episode' and settings.getBool('play_next_movie', False):
+    elif video['programType'] == 'movie' and settings.getBool('play_next_movie', False):
         data = api.up_next(video['contentId'])
         for row in data.get('items', []):
-            if row['type'] == 'DmcVideo' and row['programType'] != 'episode':
+            if row['type'] == 'DmcVideo' and row['programType'] == 'movie':
                 item.play_next['next_file'] = _get_play_path(row['contentId'])
                 break
 
