@@ -186,6 +186,9 @@ class API(object):
         }
 
         resp = self._session.get('https://login.sky.co.nz/authorize', params=params, allow_redirects=False)
+        if not resp.ok:
+            raise APIError(_(_.API_ACCESS_DENIED, code=resp.status_code))
+
         parsed = urlparse(resp.headers['location'])
         payload = dict(parse_qsl(parsed.query))
         payload.update({

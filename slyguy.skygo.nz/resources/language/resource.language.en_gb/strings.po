@@ -58,6 +58,12 @@ msgctxt "#30012"
 msgid "Featured"
 msgstr ""
 
+msgctxt "#30013"
+msgid "Server returned {code} response code\n"
+"SkyGo requires you to have a New Zealand IP address.\n"
+"Try accessing the content via other means (offical app / website) to confirm it's a Kodi add-on issue"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

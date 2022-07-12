@@ -14,5 +14,6 @@ class Language(BaseLanguage):
     SEASON                 = 30010
     FLATTEN_SEASONS        = 30011
     FEATURED               = 30012
+    API_ACCESS_DENIED      = 30013
 
 _ = Language()
