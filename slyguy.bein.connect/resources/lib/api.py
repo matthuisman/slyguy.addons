@@ -193,16 +193,28 @@ class API(object):
         else:
             raise APIError(_(_.HTTP_ERROR, code=resp.status_code))
 
-    def login(self, username, password):
+    def login(self, username, password, _type=LOGIN_CONNECT):
         self.logout()
         self._create_session()
 
-        data = {
-            'password': password,
-            'email': username,
-        }
+        if _type == LOGIN_CONNECT:
+            login_data = {
+                'password': password,
+                'email': username,
+            }
+            login_url = 'proxy/login'
+        elif _type == LOGIN_SATELLITE:
+            login_data = {
+                'userId': 'unknown',
+                'providerId': 'sbs',
+                'tveAdapter': 'sbs',
+                'tveParams': json.dumps({"username":username,"password":hashlib.md5(password.encode('utf8')).hexdigest()}),
+            }
+            login_url = 'proxy/loginFromTve'
+        else:
+            raise APIError('Unknown login type')
 
-        data = self._session.post('proxy/login', data=data).json()
+        data = self._session.post(login_url, data=login_data).json()
         if data['error']:
             raise APIError(_(_.LOGIN_ERROR, msg=data['error']['message']))
 
@@ -213,13 +225,9 @@ class API(object):
             if not selected:
                 return
 
-            data = {
-                'password': password,
-                'deviceId': selected['uniqueDeviceId'],
-                'email': username,
-            }
+            login_data['deviceId'] = selected['uniqueDeviceId']
 
-            data = self._session.post('proxy/login', data=data).json()
+            data = self._session.post(login_url, data=login_data).json()
             if data['error']:
                 gui.error(data['error']['message'])
             else:

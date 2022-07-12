@@ -8,6 +8,9 @@ REGION = 'mena'
 PLAYER_NAME = 'androiddashapp'
 APP_VERSION_URL = 'https://i.mjh.nz/bein/mena.version'
 
+LOGIN_CONNECT = 0
+LOGIN_SATELLITE = 1
+
 LOGIN_MULTI_IP = 0
 LOGIN_MULTI_DEVICE = 1
 LOGIN_PASSWORD = 2

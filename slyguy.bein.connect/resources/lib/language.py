@@ -24,5 +24,7 @@ class Language(BaseLanguage):
     LOGIN_MULTI_DEVICE_ERROR = 30021
     SETTINGS_ERROR           = 30022
     DEFAULT_LANGUAGE         = 30023
+    LOGIN_CONNECT            = 30024
+    LOGIN_SATELLITE          = 30025
 
 _ = Language()

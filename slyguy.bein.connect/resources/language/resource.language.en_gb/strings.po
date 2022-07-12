@@ -97,6 +97,14 @@ msgctxt "#30023"
 msgid "Default Language"
 msgstr ""
 
+msgctxt "#30024"
+msgid "beIN Connect"
+msgstr ""
+
+msgctxt "#30025"
+msgid "beIN Satellite Subscriber"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

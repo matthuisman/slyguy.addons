@@ -37,6 +37,15 @@ def home(**kwargs):
 
 @plugin.route()
 def login(**kwargs):
+    options = [
+        [_.LOGIN_CONNECT, LOGIN_CONNECT],
+        [_.LOGIN_SATELLITE, LOGIN_SATELLITE],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1:
+        return
+
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
     if not username:
         return
@@ -47,7 +56,7 @@ def login(**kwargs):
     if not password:
         return
 
-    api.login(username, password)
+    api.login(username, password, _type=options[index][1])
     gui.refresh()
 
 @plugin.route()

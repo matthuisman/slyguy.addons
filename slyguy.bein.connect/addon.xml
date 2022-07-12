@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.bein.connect" name="beIN CONNECT" provider-name="SlyGuy" version="0.2.3">
+<addon id="slyguy.bein.connect" name="beIN CONNECT" provider-name="SlyGuy" version="0.2.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix login / playback</news>
+    <news>Add support for beIN Satellite Subscriber login</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
