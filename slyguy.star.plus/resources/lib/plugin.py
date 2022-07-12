@@ -1,4 +1,4 @@
-from kodi_six import xbmc
+import arrow
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
@@ -171,7 +171,7 @@ def collection(slug, content_class, label=None, **kwargs):
 
         if not set_id:
             return None
-        if slug == 'home' and (_style in ('brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
+        if _style in ('brandSix', 'hero', 'heroInteractive', 'heroSingle') or ref_type in ('ContinueWatchingSet', 'WatchlistSet'):
             continue
 
         if ref_type == 'BecauseYouSet':
@@ -300,7 +300,7 @@ def _parse_series(row):
         art = _get_art(row),
         info = {
             'plot': _get_text(row, 'description', 'series'),
-            'year': row['releases'][0]['releaseYear'],
+            'year': row['releases'][0]['releaseYear'] if row['releases'] else None,
             'mediatype': 'tvshow',
             'trailer': plugin.url_for(play_trailer, series_id=row['encodedSeriesId']),
         },
@@ -320,7 +320,7 @@ def _parse_season(row, series):
         label = title,
         info  = {
             'plot': _get_text(row, 'description', 'season') or _get_text(series, 'description', 'series'),
-            'year': row['releases'][0]['releaseYear'],
+            'year': row['releases'][0]['releaseYear'] if row['releases'] else None,
             'season': row['seasonSequenceNumber'],
             'mediatype': 'season',
         },
@@ -334,8 +334,8 @@ def _parse_video(row):
         info  = {
             'plot': _get_text(row, 'description', 'program'),
             'duration': row['mediaMetadata']['runtimeMillis']/1000,
-            'year': row['releases'][0]['releaseYear'],
-            'aired': row['releases'][0]['releaseDate'] or row['releases'][0]['releaseYear'],
+            'year': row['releases'][0]['releaseYear'] if row['releases'] else None,
+            'aired': (row['releases'][0]['releaseDate'] or row['releases'][0]['releaseYear']) if row['releases'] else None,
             'mediatype': 'movie',
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
@@ -361,18 +361,32 @@ def _parse_video(row):
     return item
 
 def _parse_event(row):
+    if row['eventState'] == 'PRE':
+        now = arrow.now().to('local')
+        start = arrow.get(row['startDate']).to('local')
+        if start.format('DDDD') == now.format('DDDD'):
+            badge = start.format('h:mm A')
+        else:
+            badge = start.format('MMM Do h:mm A')
+    elif row['liveBroadcast']:
+        badge = _.LIVE
+    elif row['linear']:
+        badge = _.RETRANSMISSION
+
     item = plugin.Item(
-        label = _get_text(row, 'title', 'program'),
+        label = _get_text(row, 'title', 'program') + ' [B]({})[/B]'.format(badge),
         info = {
             'plot': _get_text(row, 'description', 'program'),
-         #   'mediatype': 'tvshow',
-            #'aired': row['startDate'] if row['startDate'] else 'Unknown',
-        #    'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
+            'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
         art = _get_art(row),
         path = plugin.url_for(play, event_id=row['family']['encodedFamilyId'], _is_live=True),
         playable = True,
     )
+
+    # if not item.info['plot']:
+    #     item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
+
     return item
 
 def _get_art(row):
@@ -409,7 +423,7 @@ def _get_art(row):
     for name in images or []:
         art_type = images[name]
 
-        tr = br = pr = ''
+        tr = br = pr = cr = ''
 
         for ratio in thumb_ratios:
             if ratio in art_type:
@@ -469,7 +483,7 @@ def _get_text(row, field, source):
     else:
         return None
 
-    _types = ['medium', 'brief', 'full']
+    _types = ['medium', 'full', 'brief']
 
     candidates = []
     for key in texts:

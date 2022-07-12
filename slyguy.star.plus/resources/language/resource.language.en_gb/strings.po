@@ -140,6 +140,13 @@ msgctxt "#30031"
 msgid "ESPN"
 msgstr ""
 
+msgctxt "#30032"
+msgid "Live"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Retransmission"
+msgstr ""
 
 msgctxt "#30042"
 msgid "Continue Watching"

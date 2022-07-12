@@ -6,7 +6,7 @@ API_KEY = 'c3RhciZicm93c2VyJjEuMC4w.COknIGCR7I6N0M5PGnlcdbESHGkNv7POwhFNL-_vIdg'
 CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v3.0/{}/android/v{}/google/tv/prod.json'.format(CLIENT_ID, CLIENT_VERSION)
 PAGE_SIZE_SETS = 15
 PAGE_SIZE_CONTENT = 30
-SEARCH_QUERY_TYPE = 'ge'
+SEARCH_QUERY_TYPE = 'top' #top (top results from all), #ge (movies&shows) #sports (just sport)
 BAM_PARTNER = 'star'
 
 WATCHLIST_SET_ID = 'f8085c31-cdd0-4429-9a29-f70ad0f3f84e'

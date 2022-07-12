@@ -32,6 +32,8 @@ class Language(BaseLanguage):
     ADDED_WATCHLIST          = 30029
     ENTER_PIN                = 30030
     ESPN                     = 30031
+    LIVE                     = 30032
+    RETRANSMISSION           = 30033
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
