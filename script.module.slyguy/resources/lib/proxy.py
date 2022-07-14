@@ -501,6 +501,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                             adap_set.removeChild(stream)
                             new_set = adap_set.cloneNode(deep=True)
 
+                            new_set.setAttribute('name', 'ATMOS')
                             new_set.setAttribute('id', '{}-atmos'.format(attribs.get('id','')))
                             new_set.setAttribute('lang', _(_.ATMOS, name=attribs.get('lang','')))
 
