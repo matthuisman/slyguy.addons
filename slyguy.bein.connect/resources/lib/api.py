@@ -75,15 +75,13 @@ class API(object):
             # Multiple device, static IP address
             data = self._session.post('proxy/casAvailableDevice', headers=self._auth_headers).json()
 
-        elif login_type == LOGIN_PASSWORD:
+        elif login_type == LOGIN_PASSWORD and userdata.get('login_data'):
             # Supports multiple devices and multiple IP address as long (as others also using password)
-            data = {
-                'password': userdata.get('password'),
-                'deviceId': userdata.get('device_id'),
-                'email': userdata.get('username'),
-            }
+            data = userdata.get('login_data')
+            data = self._session.post(data.pop('url'), data=data).json()
 
-            data = self._session.post('proxy/login', data=data).json()
+        else:
+            raise APIError('Unable to persist session. Try logout and login again.')
 
         if data['error']:
             error = _(_.TOKEN_ERROR, msg=data['error']['message'])
@@ -197,13 +195,7 @@ class API(object):
         self.logout()
         self._create_session()
 
-        if _type == LOGIN_CONNECT:
-            login_data = {
-                'password': password,
-                'email': username,
-            }
-            login_url = 'proxy/login'
-        elif _type == LOGIN_SATELLITE:
+        if _type == LOGIN_SATELLITE:
             login_data = {
                 'userId': 'unknown',
                 'providerId': 'sbs',
@@ -212,7 +204,11 @@ class API(object):
             }
             login_url = 'proxy/loginFromTve'
         else:
-            raise APIError('Unknown login type')
+            login_data = {
+                'password': password,
+                'email': username,
+            }
+            login_url = 'proxy/login'
 
         data = self._session.post(login_url, data=login_data).json()
         if data['error']:
@@ -233,7 +229,7 @@ class API(object):
             else:
                 break
 
-        auth_token   = data['result']['newAuthToken']
+        auth_token = data['result']['newAuthToken']
         device_token = data['result']['deviceAuthToken']
         userdata.set('device_token', device_token)
 
@@ -251,8 +247,8 @@ class API(object):
         mem_cache.delete('channels')
 
         if settings.getEnum('login_type', choices=LOGIN_TYPE, default=LOGIN_MULTI_IP) == LOGIN_PASSWORD:
-            userdata.set('password', password)
-            userdata.set('device_id', selected['uniqueDeviceId'])
+            login_data['url'] = login_url
+            userdata.set('login_data', login_data)
 
     @mem_cache.cached(60*10, key='channels')
     def channels(self):
