@@ -805,24 +805,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             lines.append(line)
 
-        # # bad playlist test
-        # if ADDON_DEV:
-        #     error_every = 5
-        #     error_repeat = 2
-
-        #     self._session['count'] = self._session.get('count', 0) + 1
-        #     print(self._session['count'])
-        #     if self._session['count'] >= error_every:
-        #         if self._session['count'] == error_every + error_repeat - 1:
-        #             self._session['count'] = 0
-        #         segments = segments[:int(len(segments)/2)]
-
-        self._session['m3u8_last_lines'] = self._session.get('m3u8_last_lines', {})
-        if url in self._session['m3u8_last_lines'] and self._session['m3u8_last_lines'][url] not in segments:
-            raise Exception('Invalid M3U8 refresh. Could not find previous segment in playlist')
-
-        self._session['m3u8_last_lines'][url] = segments[-1]
-
         return '\n'.join(lines)
 
     def _parse_m3u8_master(self, m3u8, manifest_url):
