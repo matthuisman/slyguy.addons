@@ -640,6 +640,16 @@ class RequestHandler(BaseHTTPRequestHandler):
                     default_languages.append(language)
                     adap_set.removeAttribute('default')
 
+                is_audio_description = any([elem for elem in adap_set.getElementsByTagName('Accessibility') if elem.getAttribute('schemeIdUri') == 'urn:tva:metadata:cs:AudioPurposeCS:2007'])
+                #any([elem for elem in adap_set.getElementsByTagName('Role') if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011' and elem.getAttribute('value') == 'description'])
+                if is_audio_description:
+                    if not audio_description:
+                        log.debug('Removed audio description adapt set: {}'.format(adap_set.getAttribute('id')))
+                        adap_set.parentNode.removeChild(adap_set)
+                        continue
+                    else:
+                        adap_set.setAttribute('impaired', 'true')
+
                 audios.append([language, adap_set])
 
             elif is_subs(adap_set):
@@ -647,6 +657,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
                     continue
+
+                if lang_allowed(language, [original_language]):
+                    adap_set.setAttribute('original', 'true')
 
                 default = adap_set.getAttribute('default')
                 if default == 'true':
@@ -675,16 +688,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         set_default_laguage(default_languages, audios)
         set_default_laguage(default_subtitles, subs)
         ################
-
-        ## Remove audio_description
-        if not audio_description:
-            for row in audio_sets:
-                for elem in row[1].getElementsByTagName('Accessibility'):
-                    if elem.getAttribute('schemeIdUri') == 'urn:tva:metadata:cs:AudioPurposeCS:2007':
-                        row[2].removeChild(row[1])
-                        log.debug('Removed audio description adapt set: {}'.format(row[1].getAttribute('id')))
-                        break
-        ############
 
         ## Convert BaseURLS
         base_url_parents = []
@@ -857,9 +860,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                     continue
 
                 language = attribs.get('LANGUAGE','')
-                attribs['LANGUAGE'] = fix_language(language)
 
                 if attribs.get('TYPE') == 'AUDIO' and lang_allowed(language, audio_whitelist):
+                    # not yet supported (https://github.com/xbmc/inputstream.adaptive/issues/1021)
+                    # if lang_allowed(language, [original_language]):
+                    #     attribs['ORIGINAL'] = 'YES'
+
                     audios.append(attribs)
                     if attribs.get('DEFAULT') == 'YES':
                         attribs['DEFAULT'] = 'NO'
@@ -929,6 +935,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
+                if key == 'LANGUAGE':
+                    attribs[key] = fix_language(attribs[key])
                 if attribs[key] is not None:
                     new_line += u'{}="{}",'.format(key, attribs[key])
             new_lines.append(new_line.rstrip(','))
@@ -942,6 +950,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:
+                if key == 'LANGUAGE':
+                    attribs[key] = fix_language(attribs[key])
                 if attribs[key] is not None:
                     new_line += u'{}="{}",'.format(key, attribs[key])
             new_lines.append(new_line.rstrip(','))
