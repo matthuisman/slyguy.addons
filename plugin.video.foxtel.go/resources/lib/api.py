@@ -8,6 +8,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
 from slyguy.util import get_system_arch
+from slyguy.drm import is_wv_secure
 
 from .constants import *
 from .language import _
@@ -256,6 +257,9 @@ class API(object):
             'format': 'json',
         }
 
+        vod_token = None
+        live_token = None
+
         data = self._session.post('/userCatalog.class.api.php/getSyncTokens/{site_id}'.format(site_id=VOD_SITEID), params=params, data=payload).json()
 
         for token in data.get('tokens', []):
@@ -333,7 +337,7 @@ class API(object):
             'format': 'json',
         }
 
-        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
         if error:
@@ -346,6 +350,17 @@ class API(object):
         playback_url = streams[0]['url']
         playback_url = playback_url.replace('cm=yes&','') #without this = bad widevine key
         license_url = data['fullLicenceUrl']
+
+        ## Get L3 License URL
+        if not is_wv_secure():
+            try:
+                params['plt'] = PLT_DEVICE
+                params['appID'] = 'GO2'
+                l3_data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+                license_url = l3_data['fullLicenceUrl']
+            except:
+                log.debug('Failed to get L3 license url')
+        #########
 
         params = {
             'sessionId': data['general']['sessionID'],
