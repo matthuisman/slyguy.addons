@@ -186,10 +186,13 @@ def install_widevine(reinstall=False):
 
     ia_addon = require_version(IA_WV_MIN_VER, required=True)
     system, arch = get_system_arch()
+    log.debug('Widevine - System: {} | Arch: {}'.format(system, arch))
 
     if system == 'Android':
         if KODI_VERSION > 18 and not is_wv_secure():
+            log.debug('Widevine - Disable IA secure decoder')
             ia_addon.setSetting('NOSECUREDECODER', 'true')
+        log.debug('Widevine - Android: Builtin Widevine')
         return True
 
     if system not in DST_FILES:
@@ -199,6 +202,7 @@ def install_widevine(reinstall=False):
     decryptpath = xbmc.translatePath(ia_addon.getSetting('DECRYPTERPATH') or ia_addon.getAddonInfo('profile'))
     wv_path = os.path.join(decryptpath, DST_FILES[system])
     installed = md5sum(wv_path)
+    log.debug('Widevine - Current wv md5: {}'.format(installed))
     last_check = int(userdata.get('_wv_last_check', 0))
 
     if not installed:
@@ -221,11 +225,13 @@ def install_widevine(reinstall=False):
             reinstall = True
 
     if not reinstall and time.time() - last_check < IA_CHECK_EVERY:
+        log.debug('Widevine - Already installed and no check required')
         return True
 
     ## DO INSTALL ##
     userdata.set('_wv_last_check', int(time.time()))
 
+    log.debug('Downloading wv versions: {}'.format(IA_MODULES_URL))
     widevine = Session().gz_json(IA_MODULES_URL)['widevine']
     wv_versions = widevine['platforms'].get(system + arch, [])
 
@@ -265,6 +271,7 @@ def install_widevine(reinstall=False):
         reinstall = True
 
     if not reinstall:
+        log.debug('Widevine - Installed wv version already suitable')
         return True
 
     if installed and not current:
@@ -278,6 +285,7 @@ def install_widevine(reinstall=False):
     while True:
         index = gui.select(_.SELECT_WV_VERSION, options=[x['label'] for x in display_versions])
         if index < 0:
+            log.debug('Widevine - Install cancelled')
             return False
 
         selected = display_versions[index]
@@ -292,6 +300,7 @@ def install_widevine(reinstall=False):
         break
 
     gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
+    log.debug('Widevine - Install ok: {}'.format(selected['ver']))
 
     return True
 
@@ -305,11 +314,12 @@ def _download(url, dst_path, md5=None):
 
     if os.path.exists(dst_path):
         if md5 and md5sum(dst_path) == md5:
-            log.debug('MD5 of local file {} same. Skipping download'.format(filename))
+            log.debug('Widevine - MD5 of local file {} same. Skipping download'.format(filename))
             return True
         else:
             remove_file(dst_path)
 
+    log.debug('Widevine - Downloading: {} to {}'.format(url, dst_path))
     with gui.progress(_(_.IA_DOWNLOADING_FILE, url=filename), heading=_.IA_WIDEVINE_DRM) as progress:
         resp = Session().get(url, stream=True)
         if resp.status_code != 200:
@@ -331,6 +341,7 @@ def _download(url, dst_path, md5=None):
 
     if progress.iscanceled():
         remove_file(dst_path)
+        log.debug('Widevine - Download canceled')
         return False
 
     checksum = md5sum(dst_path)
