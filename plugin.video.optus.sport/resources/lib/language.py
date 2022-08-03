@@ -10,5 +10,6 @@ class Language(BaseLanguage):
     NO_STREAM          = 30007
     LIVE               = 30008
     DATE_FORMAT        = 30009
+    H265               = 30010
 
 _ = Language()

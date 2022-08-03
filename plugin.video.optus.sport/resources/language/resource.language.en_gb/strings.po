@@ -39,6 +39,10 @@ msgctxt "#30009"
 msgid " (ddd MMM D, h:mm A)"
 msgstr ""
 
+msgctxt "#30010"
+msgid "H265"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
