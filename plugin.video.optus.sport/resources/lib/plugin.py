@@ -139,15 +139,29 @@ def mpd_request(_data, _path, **kwargs):
     _data = _data.decode('utf8')
 
     ## 50FPS OS1 HACK
-    if 'id="17" width="1280"' in _data:
-        to_add = r'''\1\n      <Representation id="18" width="960" height="540" frameRate="50/1" bandwidth="3000000" codecs="avc1.4D401F"/>
-        <Representation id="16" width="1280" height="720" frameRate="50/1" bandwidth="5699968" codecs="avc1.640020"/>'''
-        _data = re.sub('(<Representation id="17" width="1280".*?>)', to_add, _data, 1)
+    if 'id="9" width="1280"' in _data:
+        to_add = r'''\1\n
+        <Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>
+        <Representation id="1" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
+        <Representation id="5" width="1024" height="576" frameRate="50/1" bandwidth="3932799" codecs="hvc1.1.6.H120.B0"/>
+        <Representation id="7" width="896" height="504" frameRate="50/1" bandwidth="3686399" codecs="avc1.640020"/>
+        <Representation id="2" width="640" height="360" frameRate="50/1" bandwidth="2454399" codecs="avc1.640020"/>
+        <Representation id="6" width="384" height="216" frameRate="50/1" bandwidth="1345630" codecs="avc1.640020"/>
+        <Representation id="3" width="256" height="144" frameRate="50/1" bandwidth="852830" codecs="avc1.640020"/>
+        '''
+        _data = re.sub('(<Representation id="9" width="1280".*?>)', to_add, _data, 1)
     ## 50FPS OS2 HACK
-    elif 'id="21" width="1280"' in _data:
-        to_add = r'''\1\n      <Representation id="20" width="960" height="540" frameRate="50/1" bandwidth="3000000" codecs="avc1.4D401F"/>
-        <Representation id="14" width="1280" height="720" frameRate="50/1" bandwidth="5699968" codecs="avc1.640020"/>'''
-        _data = re.sub('(<Representation id="21" width="1280".*?>)', to_add, _data, 1)
+    elif 'id="13" width="1280"' in _data:
+        to_add = r'''\1\n
+        <Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>
+        <Representation id="7" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
+        <Representation id="1" width="1024" height="576" frameRate="50/1" bandwidth="3932799" codecs="hvc1.1.6.H120.B0"/>
+        <Representation id="2" width="896" height="504" frameRate="50/1" bandwidth="3686399" codecs="avc1.640020"/>
+        <Representation id="3" width="640" height="360" frameRate="50/1" bandwidth="2454399" codecs="avc1.640020"/>
+        <Representation id="4" width="384" height="216" frameRate="50/1" bandwidth="1345630" codecs="avc1.640020"/>
+        <Representation id="5" width="256" height="144" frameRate="50/1" bandwidth="852830" codecs="avc1.640020"/>
+        '''
+        _data = re.sub('(<Representation id="13" width="1280".*?>)', to_add, _data, 1)
 
     with open(_path, 'wb') as f:
         f.write(_data.encode('utf8'))
@@ -174,7 +188,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
     )
 
     #720p 50hz hack
-    if 'v5/OptusSport1' in stream['url'] or 'v5/OptusSport2' in stream['url']:
+    if 'v6/OptusSport1' in stream['url'] or 'v6/OptusSport2' in stream['url']:
         item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     drm_data = stream['license'].get('drmData')
