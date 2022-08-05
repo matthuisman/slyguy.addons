@@ -4,6 +4,8 @@ from slyguy import plugin, settings, inputstream
 from slyguy.mem_cache import cached
 from slyguy.session import Session
 
+import arrow
+
 from .constants import M3U8_URL, REGIONS, EPG_URL
 from .language import _
 
@@ -29,13 +31,36 @@ def live_tv(**kwargs):
 
     folder = plugin.Folder(_(_.REGIONS[region]))
 
+    if settings.getBool('show_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        epg_count = None
+
     for slug in sorted(channels, key=lambda k: (channels[k].get('network', 'zzzzzzz'), int(channels[k].get('channel', 99999)), channels[k].get('name', 'zzzzzzz'))):
         channel = channels[slug]
+
+        plot = u''
+        if epg_count:
+            count = 0
+            for index, row in enumerate(channel.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if not count:
+            plot += channel.get('description', '')
 
         folder.add_item(
             label = channel['name'],
             path = plugin.url_for(play, slug=slug, _is_live=True),
-            info = {'plot': channel.get('description')},
+            info = {'plot': plot},
             video = channel.get('video', {}),
             audio = channel.get('audio', {}),
             art = {'thumb': channel.get('logo')},
