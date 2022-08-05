@@ -47,7 +47,7 @@ def live_tv(**kwargs):
 @plugin.route()
 def play(slug, **kwargs):
     region = get_region()
-    channel = get_channels(region, use_new=settings.getBool('use_new', False))[slug]
+    channel = get_channels(region)[slug]
     url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
@@ -64,11 +64,14 @@ def play(slug, **kwargs):
 
     return item
 
-@cached(60*5)
-def get_channels(region, use_new=False):
+def get_channels(region):
     url = M3U8_URL.format(region=region)
-    if use_new:
+    if settings.getBool('use_new', False):
         url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
+    return get_url_channels(url)
+
+@cached(60*5)
+def get_url_channels(url):
     return session.gz_json(url)
 
 def get_region():
@@ -78,7 +81,7 @@ def get_region():
 @plugin.merge()
 def playlist(output, **kwargs):
     region = get_region()
-    channels = get_channels(region, use_new=settings.getBool('use_new', False))
+    channels = get_channels(region)
 
     url = EPG_URL.format(region=region)
     if settings.getBool('use_new', False):
