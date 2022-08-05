@@ -13,5 +13,6 @@ class Language(BaseLanguage):
         'Canberra':     30008,
     }
     LIVE_TV =           30009
+    USE_NEW =           30010
 
 _ = Language()

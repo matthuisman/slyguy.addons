@@ -3,7 +3,6 @@ import codecs
 from slyguy import plugin, settings, inputstream
 from slyguy.mem_cache import cached
 from slyguy.session import Session
-from slyguy.util import gzip_extract
 
 from .constants import M3U8_URL, REGIONS, EPG_URL
 from .language import _
@@ -25,7 +24,7 @@ def home(**kwargs):
 
 @plugin.route()
 def live_tv(**kwargs):
-    region  = get_region()
+    region = get_region()
     channels = get_channels(region)
 
     folder = plugin.Folder(_(_.REGIONS[region]))
@@ -35,11 +34,11 @@ def live_tv(**kwargs):
 
         folder.add_item(
             label = channel['name'],
-            path  = plugin.url_for(play, slug=slug, _is_live=True),
-            info  = {'plot': channel.get('description')},
+            path = plugin.url_for(play, slug=slug, _is_live=True),
+            info = {'plot': channel.get('description')},
             video = channel.get('video', {}),
             audio = channel.get('audio', {}),
-            art   = {'thumb': channel.get('logo')},
+            art = {'thumb': channel.get('logo')},
             playable = True,
         )
 
@@ -47,17 +46,17 @@ def live_tv(**kwargs):
 
 @plugin.route()
 def play(slug, **kwargs):
-    region  = get_region()
+    region = get_region()
     channel = get_channels(region)[slug]
     url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
-        path      = url or channel['mjh_master'],
-        headers   = channel['headers'],
-        info      = {'plot': channel.get('description')},
-        video     = channel.get('video', {}),
-        audio     = channel.get('audio', {}),
-        art       = {'thumb': channel.get('logo')},
+        path = url or channel['mjh_master'],
+        headers = channel.get('headers'),
+        info = {'plot': channel.get('description')},
+        video = channel.get('video', {}),
+        audio = channel.get('audio', {}),
+        art = {'thumb': channel.get('logo')},
     )
 
     if channel.get('hls', False):
@@ -67,7 +66,10 @@ def play(slug, **kwargs):
 
 @cached(60*5)
 def get_channels(region):
-    return session.gz_json(M3U8_URL.format(region=region))
+    url = M3U8_URL.format(region=region)
+    if settings.getBool('use_new', False):
+        url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
+    return session.gz_json(url)
 
 def get_region():
     return REGIONS[settings.getInt('region_index')]
@@ -78,8 +80,12 @@ def playlist(output, **kwargs):
     region = get_region()
     channels = get_channels(region)
 
+    url = EPG_URL.format(region=region)
+    if settings.getBool('use_new', False):
+        url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
+
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL.format(region=region)))
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(url))
 
         for slug in sorted(channels, key=lambda k: (channels[k].get('network', ''), channels[k].get('name', ''))):
             channel = channels[slug]

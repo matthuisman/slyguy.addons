@@ -41,6 +41,10 @@ msgctxt "#30009"
 msgid "Live TV"
 msgstr ""
 
+msgctxt "#30010"
+msgid "Use new experimental improved data (new.mjh.nz)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

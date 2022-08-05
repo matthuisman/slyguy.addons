@@ -2,6 +2,7 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30000" id="region_index" type="enum" default="0" lvalues="30001|30002|30003|30004|30005|30006|30007|30008"/>
+        <setting label="30010" id="use_new" type="bool" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32139]">
