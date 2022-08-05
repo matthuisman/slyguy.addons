@@ -84,7 +84,7 @@ def play(slug, **kwargs):
         art = {'thumb': channel.get('logo')},
     )
 
-    if channel.get('hls', False):
+    if channel.get('hls', True):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
