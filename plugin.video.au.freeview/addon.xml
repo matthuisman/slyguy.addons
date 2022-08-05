@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.au.freeview" name="IPTV AU" provider-name="SlyGuy" version="0.17.8">
+<addon id="plugin.video.au.freeview" name="IPTV AU" provider-name="SlyGuy" version="0.17.9">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>

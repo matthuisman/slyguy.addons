@@ -29,7 +29,7 @@ def live_tv(**kwargs):
 
     folder = plugin.Folder(_(_.REGIONS[region]))
 
-    for slug in sorted(channels, key=lambda k: (channels[k].get('network', ''), channels[k].get('name', ''))):
+    for slug in sorted(channels, key=lambda k: (channels[k].get('network', 'zzzzzzz'), int(channels[k].get('channel', 99999)), channels[k].get('name', 'zzzzzzz'))):
         channel = channels[slug]
 
         folder.add_item(
