@@ -79,7 +79,7 @@ def play(slug, **kwargs):
         proxy_data = {'cert': channel.get('cert')},
     )
 
-    if channel.get('hls', False):
+    if channel.get('hls', True):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
