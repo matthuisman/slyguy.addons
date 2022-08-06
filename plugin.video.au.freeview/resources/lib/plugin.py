@@ -79,6 +79,7 @@ def play(slug, **kwargs):
         video = channel.get('video', {}),
         audio = channel.get('audio', {}),
         art = {'thumb': channel.get('logo')},
+        proxy_data = {'cert': channel.get('cert')},
     )
 
     if channel.get('hls', True):
