@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
+    <category label="$ADDON[script.module.slyguy 32034]">
+        <setting label="30001" id="use_new" type="bool" default="false"/>
+        <setting label="30002" id="show_epg" type="bool" default="true" visible="eq(-1,true)"/>
+    </category>
+
     <category label="$ADDON[script.module.slyguy 32139]">
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
     </category>

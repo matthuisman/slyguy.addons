@@ -1,5 +1,6 @@
 import codecs
 
+import arrow
 from slyguy import plugin, inputstream, settings
 from slyguy.session import Session
 from slyguy.mem_cache import cached
@@ -24,14 +25,37 @@ def home(**kwargs):
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
+    if settings.getBool('show_epg', True):
+        now = arrow.now()
+        epg_count = 5
+    else:
+        epg_count = None
+
     channels = get_channels()
     for slug in sorted(channels, key=lambda k: (float(channels[k].get('channel', 'inf')), channels[k]['name'])):
         channel = channels[slug]
 
+        plot = u''
+        count = 0
+        if epg_count:
+            for index, row in enumerate(channel.get('programs', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if not count:
+            plot += channel.get('description', '')
+
         folder.add_item(
             label = channel['name'],
             path = plugin.url_for(play, slug=slug, _is_live=True),
-            info = {'plot': channel.get('description')},
+            info = {'plot': plot},
             video = channel.get('video', {}),
             audio = channel.get('audio', {}),
             art = {'thumb': channel.get('logo')},
@@ -60,17 +84,27 @@ def play(slug, **kwargs):
 
     return item
 
-@cached(60*5)
 def get_channels():
-    return Session().gz_json(M3U8_URL)
+    url = M3U8_URL
+    if settings.getBool('use_new', False):
+        url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
+    return get_url_channels(url)
+
+@cached(60*5)
+def get_url_channels(url):
+    return Session().gz_json(url)
 
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
     channels = get_channels()
 
+    url = EPG_URL
+    if settings.getBool('use_new', False):
+        url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
+
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(url))
 
         for slug in sorted(channels, key=lambda k: (float(channels[k].get('channel', 'inf')), channels[k]['name'])):
             channel = channels[slug]
