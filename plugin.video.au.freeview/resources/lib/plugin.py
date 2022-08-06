@@ -1,15 +1,12 @@
 import codecs
 
+import arrow
 from slyguy import plugin, settings, inputstream
 from slyguy.mem_cache import cached
 from slyguy.session import Session
 
-import arrow
-
 from .constants import M3U8_URL, REGIONS, EPG_URL
 from .language import _
-
-session = Session()
 
 @plugin.route('')
 def home(**kwargs):
@@ -37,12 +34,12 @@ def live_tv(**kwargs):
     else:
         epg_count = None
 
-    for slug in sorted(channels, key=lambda k: (channels[k].get('network', 'zzzzzzz'), int(channels[k].get('channel', 99999)), channels[k].get('name', 'zzzzzzz'))):
+    for slug in sorted(channels, key=lambda k: (channels[k].get('network', 'zzzzzzz'), float(channels[k].get('channel', 'inf')), channels[k].get('name', 'zzzzzzz'))):
         channel = channels[slug]
 
         plot = u''
+        count = 0
         if epg_count:
-            count = 0
             for index, row in enumerate(channel.get('programs', [])):
                 start = arrow.get(row[0])
                 try: stop = arrow.get(channel['programs'][index+1][0])
@@ -73,7 +70,7 @@ def live_tv(**kwargs):
 def play(slug, **kwargs):
     region = get_region()
     channel = get_channels(region)[slug]
-    url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
+    url = Session().head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
         path = url or channel['mjh_master'],
@@ -97,7 +94,7 @@ def get_channels(region):
 
 @cached(60*5)
 def get_url_channels(url):
-    return session.gz_json(url)
+    return Session().gz_json(url)
 
 def get_region():
     return REGIONS[settings.getInt('region_index')]

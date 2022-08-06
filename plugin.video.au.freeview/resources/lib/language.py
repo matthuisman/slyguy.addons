@@ -14,5 +14,6 @@ class Language(BaseLanguage):
     }
     LIVE_TV =           30009
     USE_NEW =           30010
+    SHOW_MINI_EPG =     30011
 
 _ = Language()

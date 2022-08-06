@@ -45,6 +45,10 @@ msgctxt "#30010"
 msgid "Use new experimental improved data (new.mjh.nz)"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Show Mini EPG"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
