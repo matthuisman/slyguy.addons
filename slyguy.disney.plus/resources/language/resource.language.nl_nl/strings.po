@@ -62,7 +62,7 @@ msgstr "Uitgelicht"
 
 msgctxt "#30012"
 msgid "Season {season}"
-msgstr "Seizoen {seizoen}"
+msgstr "Seizoen {season}"
 
 msgctxt "#30013"
 msgid "Extras"

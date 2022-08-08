@@ -24,17 +24,17 @@ def index(**kwargs):
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(collection, slug='home', content_class='home', label=_.FEATURED))
-        folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(sets, set_id=HUBS_SET_ID, set_type=HUBS_SET_TYPE))
+        folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(hubs))
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(collection, slug='movies', content_class='contentType'))
         folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(collection, slug='series', content_class='contentType'))
         folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(collection, slug='originals', content_class='originals'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('sync_watchlist', False):
-            folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(sets, set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE))
+            folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(watchlist))
 
         if settings.getBool('sync_playback', False):
-            folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(sets, set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE))
+            folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -186,7 +186,7 @@ def collection(slug, content_class, label=None, **kwargs):
         if not set_id:
             return None
 
-        if slug == 'home' and (_style in ('brandSix', 'hero') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
+        if slug == 'home' and (_style in ('brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
             continue
 
         if ref_type == 'BecauseYouSet':
@@ -205,8 +205,19 @@ def collection(slug, content_class, label=None, **kwargs):
     return folder
 
 @plugin.route()
+def watchlist(**kwargs):
+    return _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
+
+@plugin.route()
+def continue_watching(**kwargs):
+    return _sets(set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE, **kwargs)
+
+@plugin.route()
+def sets(**kwargs):
+    return _sets(**kwargs)
+
 @plugin.pagination()
-def sets(set_id, set_type, page=1, **kwargs):
+def _sets(set_id, set_type, page=1, **kwargs):
     page = int(page)
     data = api.set_by_id(set_id, set_type, page=page)
 
@@ -218,7 +229,6 @@ def sets(set_id, set_type, page=1, **kwargs):
     return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
 
 def _process_rows(rows, content_class=None):
-    sync_enabled = settings.getBool('sync_playback', True)
     watchlist_enabled = settings.getBool('sync_watchlist', True)
 
     items = []
