@@ -111,7 +111,7 @@ class API(object):
         return True
 
     def _device_data(self):
-        enable_h265 = settings.getBool('enable_h265', False)
+        enable_h265 = settings.getBool('enable_h265', True)
         enable_4k = settings.getBool('enable_4k', True) if (req_wv_level(WV_L1) and req_hdcp_level(HDCP_2_2)) else False
 
         return {

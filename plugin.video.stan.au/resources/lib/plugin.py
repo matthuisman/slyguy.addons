@@ -209,7 +209,11 @@ def nav(key, title, **kwargs):
 
 @plugin.route()
 def parse(url, title=None, **kwargs):
-    data   = api.url(url)
+    if not url.lower().startswith('http'):
+        data = api.page(url)
+    else:
+        data = api.url(url)
+
     folder = plugin.Folder(title or data.get('title'))
 
     if data.get('type') == 'section':
@@ -274,11 +278,20 @@ def _process_entries(entries):
     play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
 
     for row in entries:
-        if row.get('type') in ('posters', 'landscapes') and not row.get('hideTitle', False):
+        if row.get('type') in ('posters', 'landscapes'):
+            if row.get('hideTitle'):
+                row['title'] = row['title'].replace('More In:', '').strip()
+
             items.append(plugin.Item(
                 label = row['title'],
                 #art = {'thumb': row.get('thumbnail')},
                 path = plugin.url_for(parse, url=row['url'], title=row['title']),
+            ))
+        elif row.get('type') == 'link':
+            items.append(plugin.Item(
+                label = row['title'],
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                path = plugin.url_for(parse, url=row['path'], title=row['title']),
             ))
         elif row.get('programType') == 'series':
             items.append(plugin.Item(
@@ -293,6 +306,56 @@ def _process_entries(entries):
                 path = plugin.url_for(series, series_id=row['id']),
             ))
 
+
+        elif row.get('liveStartDate'):
+            is_live = False
+            start_date = arrow.get(int(row['liveStartDate'])/1000)
+
+            item = plugin.Item(
+                info = {
+                    'duration': row['runtime'],
+                    'mediatype': 'video',
+                },
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                playable = True,
+                path = _get_play_path(program_id=row['id']),
+            )
+
+            if row.get('liveEndDate'):
+                end_date = arrow.get(int(row['liveEndDate']/1000))
+                if not item.info['duration']:
+                    item.info['duration'] = (end_date-start_date).total_seconds()
+            else:
+                end_date = now.shift(hours=2)
+
+            item.label = row['title']
+            item.info['plot'] = '[B]{}[/B]\n\n{}'.format(start_date.to('local').format('MMM Do h:mm A'), row['description'])
+            if now < start_date:
+                item.label += ' [B][{}][/B]'.format(start_date.humanize())
+            elif now > start_date and now < end_date:
+                is_live = True
+                item.label += ' [B][LIVE][/B]'
+
+            if 'episode' in row:
+                program_id = row['episode']['id']
+                if row['episode'].get('bonusFeature'):
+                    item.info['duration'] = None
+            else:
+                program_id = row['id']
+
+            item.path = _get_play_path(program_id=program_id, play_type=play_type, _is_live=is_live)
+
+            if is_live:
+                item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
+                    _get_play_path(program_id=row['id'], play_type=PLAY_FROM_LIVE, _is_live=is_live)
+                )))
+
+                item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
+                    _get_play_path(program_id=row['id'], play_type=PLAY_FROM_START, _is_live=is_live)
+                )))
+
+            items.append(item)
+
         elif row.get('programType') == 'movie':
             item = plugin.Item(
                 label = row['title'],
@@ -306,42 +369,6 @@ def _process_entries(entries):
                 playable = True,
                 path = _get_play_path(program_id=row['id']),
             )
-
-            if row.get('liveStartDate'):
-                is_live = False
-                start_date = arrow.get(int(row['liveStartDate'])/1000)
-
-                if row.get('liveEndDate'):
-                    end_date = arrow.get(int(row['liveEndDate']/1000))
-                    if not item.info['duration']:
-                        item.info['duration'] = (end_date-start_date).total_seconds()
-                else:
-                    end_date = now.shift(hours=2)
-
-                if now < start_date:
-                    item.label += ' [{}]'.format(start_date.humanize())
-                elif now > start_date and now < end_date:
-                    is_live = True
-                    item.label += ' [B][LIVE][/B]'
-
-                if 'episode' in row:
-                    program_id = row['episode']['id']
-                    if row['episode'].get('bonusFeature'):
-                        item.info['duration'] = None
-                else:
-                    program_id = row['id']
-
-                item.path = _get_play_path(program_id=program_id, play_type=play_type, _is_live=is_live)
-
-                if is_live:
-                    item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
-                        _get_play_path(program_id=row['id'], play_type=PLAY_FROM_LIVE, _is_live=is_live)
-                    )))
-
-                    item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
-                        _get_play_path(program_id=row['id'], play_type=PLAY_FROM_START, _is_live=is_live)
-                    )))
-
             items.append(item)
 
     return items
