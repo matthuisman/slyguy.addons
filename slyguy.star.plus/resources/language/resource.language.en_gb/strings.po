@@ -141,11 +141,15 @@ msgid "ESPN"
 msgstr ""
 
 msgctxt "#30032"
-msgid "Live"
+msgid "LIVE"
 msgstr ""
 
 msgctxt "#30033"
-msgid "Retransmission"
+msgid "Re-Air"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Just Ended"
 msgstr ""
 
 msgctxt "#30042"

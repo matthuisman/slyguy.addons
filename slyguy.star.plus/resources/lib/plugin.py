@@ -361,8 +361,32 @@ def _parse_video(row):
     return item
 
 def _parse_event(row):
+    isJustEnded = row['eventState'] == 'POST' and row['type'] == 'Airing'
+    isLive = row['eventState'] == 'MID' and row['type'] == 'Airing'
+    isLiveLinear = isLive and row['linear']
+    isLiveUpcoming = row['eventState'] == 'PRE' and row['type'] == 'Airing'
+    isReAir = isLive and not row['liveBroadcast']
+    isReAirUpcoming = isLiveUpcoming and not row['liveBroadcast']
+    isReplay = row['type'] == 'DmcVideo' and (row['programType'] == 'sports' or row['seriesType'] == 'studio-show')
+
+    if isJustEnded:
+        badge = _.JUST_ENDED
+    elif isReAir:
+        badge = _.REAIR
+    elif isLive or isLiveLinear:
+        badge = _.LIVE
+    elif isReAirUpcoming or isLiveUpcoming or isReplay:
+        now = arrow.now().to('local')
+        start = arrow.get(row['startDate']).to('local')
+        if start.format('DDDD') == now.format('DDDD'):
+            badge = start.format('h:mm A')
+        else:
+            badge = start.format('MMM Do h:mm A')
+    else:
+        badge = None
+
     item = plugin.Item(
-        label = _get_text(row, 'title', 'program'),
+        label = _get_text(row, 'title', 'program') + ' [B]({})[/B]'.format(badge) if badge else '',
         info = {
             'plot': _get_text(row, 'description', 'program'),
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
@@ -371,23 +395,6 @@ def _parse_event(row):
         path = plugin.url_for(play, event_id=row['family']['encodedFamilyId'], _is_live=True),
         playable = True,
     )
-
-    if row['eventState'] == 'PRE':
-        now = arrow.now().to('local')
-        start = arrow.get(row['startDate']).to('local')
-        if start.format('DDDD') == now.format('DDDD'):
-            badge = start.format('h:mm A')
-        else:
-            badge = start.format('MMM Do h:mm A')
-    elif row['liveBroadcast']:
-        badge = _.LIVE
-    elif row['linear']:
-        badge = _.RETRANSMISSION
-    else:
-        badge = None
-
-    if badge:
-        item.label += ' [B]({})[/B]'.format(badge)
 
     # if not item.info['plot']:
     #     item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))

@@ -33,7 +33,8 @@ class Language(BaseLanguage):
     ENTER_PIN                = 30030
     ESPN                     = 30031
     LIVE                     = 30032
-    RETRANSMISSION           = 30033
+    REAIR                    = 30033
+    JUST_ENDED               = 30034
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043

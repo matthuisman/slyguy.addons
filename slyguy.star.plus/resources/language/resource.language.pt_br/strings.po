@@ -121,6 +121,18 @@ msgctxt "#30030"
 msgid "Enter your Profile PIN"
 msgstr "Entre o seu PIN do perfil"
 
+msgctxt "#30032"
+msgid "AO VIVO"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Retransmissão"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Acabou"
+msgstr ""
+
 msgctxt "#30041"
 msgid "Play with Intro"
 msgstr "Tocar com introdução"
