@@ -361,6 +361,17 @@ def _parse_video(row):
     return item
 
 def _parse_event(row):
+    item = plugin.Item(
+        label = _get_text(row, 'title', 'program'),
+        info = {
+            'plot': _get_text(row, 'description', 'program'),
+            'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
+        },
+        art = _get_art(row),
+        path = plugin.url_for(play, event_id=row['family']['encodedFamilyId'], _is_live=True),
+        playable = True,
+    )
+
     if row['eventState'] == 'PRE':
         now = arrow.now().to('local')
         start = arrow.get(row['startDate']).to('local')
@@ -372,17 +383,11 @@ def _parse_event(row):
         badge = _.LIVE
     elif row['linear']:
         badge = _.RETRANSMISSION
+    else:
+        badge = None
 
-    item = plugin.Item(
-        label = _get_text(row, 'title', 'program') + ' [B]({})[/B]'.format(badge),
-        info = {
-            'plot': _get_text(row, 'description', 'program'),
-            'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
-        },
-        art = _get_art(row),
-        path = plugin.url_for(play, event_id=row['family']['encodedFamilyId'], _is_live=True),
-        playable = True,
-    )
+    if badge:
+        item.label += ' [B]({})[/B]'.format(badge)
 
     # if not item.info['plot']:
     #     item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
