@@ -67,7 +67,7 @@ msgstr "Extras"
 msgctxt "#30014"
 msgid "Full support on Kodi {kodi_ver} requires at least Inputstream Adaptive Version {ver_required}\n"
 "You may experience playback issues with your current version."
-msgstr "El soporte completo en Kodi {kodi_ver} requiere al menos Inputstream Adaptive Version {ver_required} \ n"
+msgstr "El soporte completo en Kodi {kodi_ver} requiere al menos Inputstream Adaptive Version {ver_required}\n"
 "Puede experimentar problemas de reproducción con su versión actual."
 
 msgctxt "#30015"
