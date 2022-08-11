@@ -188,7 +188,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
     if stream['protocol'] == 'CMAF':
         item.inputstream.manifest_type = 'hls'
         item.inputstream.mimetype = 'application/vnd.apple.mpegurl'
-    elif 'v6/OptusSport1' in stream['url'] or 'v6/OptusSport2' in stream['url']:
+    elif 'v6/OptusSport1/' in stream['url'] or 'v6/OptusSport2/' in stream['url']:
         #720p 50hz hack
         item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
