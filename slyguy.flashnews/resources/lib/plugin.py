@@ -640,4 +640,4 @@ def playlist(output, **kwargs):
         for channel in _live_channels():
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=channel['contentDisplay']['linearProvider'], channel=channel['chno'] or '', logo=channel['contentDisplay']['images']['tile'].replace('${WIDTH}', '400'),
-                    name=channel['contentDisplay']['title']['value'], url=plugin.url_for(play, channel_id=channel['contentDisplay']['linearProvider'], play_type=PLAY_FROM_START, _is_live=True)))
+                    name=channel['contentDisplay']['title']['value'], url=plugin.url_for(play_channel, channel_id=channel['contentDisplay']['linearProvider'], play_type=PLAY_FROM_START, _is_live=True)))
