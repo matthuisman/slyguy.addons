@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.au.freeview" name="IPTV AU" provider-name="SlyGuy" version="0.18.4">
+<addon id="plugin.video.au.freeview" name="IPTV AU" provider-name="SlyGuy" version="0.18.5">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ You can change the region (default = Sydney) in the addon settings.</description
     <license></license>
     <language></language>
     <website></website>
-    <news>support mini epg</news>
+    <news>Switch to improved new.mjh.nz epg source (can disable in settings)</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
