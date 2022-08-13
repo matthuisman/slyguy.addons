@@ -86,7 +86,7 @@ def play(slug, **kwargs):
 
 def get_channels():
     url = M3U8_URL
-    if settings.getBool('use_new', False):
+    if settings.getBool('use_new_mjh', True):
         url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
     return get_url_channels(url)
 
@@ -100,7 +100,7 @@ def playlist(output, **kwargs):
     channels = get_channels()
 
     url = EPG_URL
-    if settings.getBool('use_new', False):
+    if settings.getBool('use_new_mjh', True):
         url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
 
     with codecs.open(output, 'w', encoding='utf8') as f:

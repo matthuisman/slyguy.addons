@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30001" id="use_new" type="bool" default="true"/>
+        <setting label="30001" id="use_new_mjh" type="bool" default="true"/>
         <setting label="30002" id="show_epg" type="bool" default="true" visible="eq(-1,true)"/>
     </category>
 
