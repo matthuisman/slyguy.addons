@@ -46,7 +46,7 @@ def home(**kwargs):
 @plugin.route()
 def login(**kwargs):
     options = [
-     #   [_.DEVICE_CODE, _device_code], #doesntwork - suspect wrong CLIENT_ID
+        [_.DEVICE_CODE, _device_code],
         [_.EMAIL_PASSWORD, _email_password],
     ]
 
@@ -147,8 +147,7 @@ def _live_channels():
         row['data']['chno'] = None
         row['data']['epg'] = []
         if channel_id in live_data:
-            row['data']['chno'] = live_data[channel_id]['chno']
-            row['data']['epg'] = live_data[channel_id]['epg']
+            row['data'].update(live_data[channel_id])
             channels.append(row['data'])
 
     return sorted(channels, key=lambda x: (x is None, x['chno'] or 9999))
@@ -178,8 +177,8 @@ def live(**kwargs):
             item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
 
         plot = u''
+        count = 0
         if epg_count:
-            count = 0
             for index, row in enumerate(channel.get('epg', [])):
                 start = arrow.get(row[0])
                 try: stop = arrow.get(channel['epg'][index+1][0])
@@ -191,9 +190,10 @@ def live(**kwargs):
                     if count == epg_count:
                         break
 
-        if plot:
-            item.info['plot'] = plot
+        if not count:
+            plot += channel.get('description', '')
 
+        item.info['plot'] = plot
         folder.add_items(item)
 
     return folder
