@@ -51,5 +51,6 @@ class Language(BaseLanguage):
     CONTINUE_WATCHING        = 30054
 
     WIDESCREEN               = 21377
+    TRAILER                  = 20410
 
 _ = Language()
