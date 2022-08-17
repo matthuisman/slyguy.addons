@@ -98,6 +98,9 @@ class API(object):
         if 'errors' in data:
             raise APIError(data['errors'][0]['detail'])
 
+    def channel_data(self):
+        return self._session.gz_json(LIVE_DATA_URL)
+
     def live_channels(self):
         params = {
             'include': 'default',

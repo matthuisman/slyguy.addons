@@ -11,6 +11,9 @@ CONFIG = {
 }
 DEVICE_LINK_URL = 'https://watch.hgtv.com/link'
 
+LIVE_DATA_URL = 'https://i.mjh.nz/hgtv_go/app.json.gz'
+EPG_URL = 'https://i.mjh.nz/hgtv_go/epg.xml.gz'
+
 HEADERS = {
     'x-disco-client': 'ANDROIDTV:27:{}:{}'.format(SITE_ID, APP_VERSION),
     'x-disco-params': 'bid={}'.format(BID),

@@ -6,7 +6,7 @@ from slyguy.log import log
 
 from .api import API
 from .language import _
-from .constants import DEVICE_LINK_URL
+from .constants import *
 
 api = API()
 
@@ -70,20 +70,41 @@ def _art(images, _type='thumb'):
 @plugin.route()
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE_CHANNELS)
-    
+
     if settings.getBool('show_epg', True):
         now = arrow.now()
         epg_count = 5
     else:
         epg_count = None
 
+    live_data = api.channel_data()
     for row in api.live_channels():
-        folder.add_item(
+        item = plugin.Item(
             label = row['attributes']['name'],
             art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], _type='fanart')},
             playable = True,
             path = plugin.url_for(play_channel, channel_id=row['id'], _is_live=True),
         )
+
+        plot = u''
+        count = 0
+        if epg_count and row['id'] in live_data:
+            for index, row in enumerate(live_data[row['id']].get('epg', [])):
+                start = arrow.get(row[0])
+                try: stop = arrow.get(channel['epg'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if not count:
+            plot += channel.get('description', '')
+
+        item.info['plot'] = plot
+        folder.add_items(item)
 
     return folder
 
@@ -108,7 +129,7 @@ def logout(**kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in api.live_channels():
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{url}'.format(

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hgtv.go" name="HGTV Go" provider-name="Slyguy" version="0.0.2">
+<addon id="slyguy.hgtv.go" name="HGTV Go" provider-name="Slyguy" version="0.0.3">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Initial release (live only)</news>
+    <news>Initial EPG support</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
