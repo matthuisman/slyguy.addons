@@ -555,4 +555,4 @@ def playlist(output, **kwargs):
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=asset['id'], channel=row['chno'] or '', logo=_get_image(asset, 'video', 'thumb'),
-                    name=asset['title'], url=plugin.url_for(play, id=asset['id'], play_type=PLAY_FROM_START, _is_live=True)))
+                    name=asset['title'], url=plugin.url_for(play, id=asset['id'], _is_live=True)))
