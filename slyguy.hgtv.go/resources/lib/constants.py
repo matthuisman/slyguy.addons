@@ -4,6 +4,13 @@ SITE_ID = 'hgtv'
 BID = 'hgtv'
 APP_VERSION = '3.0.25'
 
+CONFIG = {
+    'baseApiUrl': 'https://us1-prod.disco-api.com',
+    'realm': 'go',
+    'mainTerritoryCode': 'us',
+}
+DEVICE_LINK_URL = 'https://watch.hgtv.com/link'
+
 HEADERS = {
     'x-disco-client': 'ANDROIDTV:27:{}:{}'.format(SITE_ID, APP_VERSION),
     'x-disco-params': 'bid={}'.format(BID),

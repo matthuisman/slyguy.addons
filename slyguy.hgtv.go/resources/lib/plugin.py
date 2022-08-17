@@ -6,6 +6,7 @@ from slyguy.log import log
 
 from .api import API
 from .language import _
+from .constants import DEVICE_LINK_URL
 
 api = API()
 
@@ -46,10 +47,10 @@ def login(**kwargs):
 
 def _device_code():
     monitor = xbmc.Monitor()
-    data = api.device_code()
+    code = api.device_code()
     timeout = 600
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, code=data['linkingCode'], url=data['targetUrl']), heading=_.DEVICE_CODE) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_LINK_URL), heading=_.DEVICE_CODE) as progress:
         for i in range(timeout):
             if progress.iscanceled() or monitor.waitForAbort(1):
                 return

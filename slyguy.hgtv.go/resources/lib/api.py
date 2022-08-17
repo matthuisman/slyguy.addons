@@ -23,7 +23,7 @@ class API(object):
         if not access_token:
             return
         
-        config = userdata.get('config')
+        config = self._get_config()
         self._session._base_url = config['baseApiUrl'] + '{}'
         self._session.headers.update({
             'authorization': 'Bearer {}'.format(access_token),
@@ -35,12 +35,20 @@ class API(object):
     def _device_id(self):
         return str(uuid.uuid1())
 
+    def _get_config(self):
+        # config = userdata.get('config')
+        # if not config:
+        #     data = self._session.get(BOOTSTRAP_URL).json()
+        #     config = data['data']['attributes']
+        #     userdata.set('config', config)
+        # return config
+        return CONFIG
+
     def device_code(self):
         self.logout()
 
         data = self._session.get(BOOTSTRAP_URL).json()
-        config = data['data']['attributes']
-        userdata.set('config', config)
+        config = self._get_config()
         
         device_id = self._device_id()
         userdata.set('device_id', device_id)
@@ -70,10 +78,10 @@ class API(object):
         
         data = self._session.post('{}/authentication/linkDevice/initiate'.format(config['baseApiUrl']), json=payload).json()
         self._check_errors(data)
-        return data['data']['attributes']
+        return data['data']['attributes']['linkingCode']
         
     def device_login(self):
-        resp = self._session.post('{}/authentication/linkDevice/login'.format(userdata.get('config')['baseApiUrl']))
+        resp = self._session.post('{}/authentication/linkDevice/login'.format(self._get_config()['baseApiUrl']))
         if resp.status_code == 204:
             return False
         elif resp.status_code != 200:
