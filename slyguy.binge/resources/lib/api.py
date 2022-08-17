@@ -147,6 +147,9 @@ class API(object):
 
         return self._session.get(link, params=params, headers=self._auth_header).json()
 
+    def use_cdn(self, live=False):
+        return self._session.get('https://cdnselectionserviceapi.binge.com.au/web/usecdn/unknown/{media}'.format(media='LIVE' if live else 'VOD'), headers=self._auth_header).json()
+
     def profiles(self):
         self._refresh_token()
         return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()

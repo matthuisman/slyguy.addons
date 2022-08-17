@@ -22,4 +22,10 @@ class Language(BaseLanguage):
     TOKEN_ERROR           = 30032
     PAGE_ERROR            = 30033
 
+    PREFER_CDN            = 30048
+    CDN_AKAMAI            = 30049
+    CDN_CLOUDFRONT        = 30050
+    CDN_LUMEN             = 30051
+    AUTO                  = 30052
+
 _ = Language()

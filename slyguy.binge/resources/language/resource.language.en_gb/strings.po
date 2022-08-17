@@ -79,6 +79,26 @@ msgctxt "#30033"
 msgid "Failed to get that page. Please try again"
 msgstr ""
 
+msgctxt "#30048"
+msgid "Preferred CDN"
+msgstr ""
+
+msgctxt "#30049"
+msgid "Akamai"
+msgstr ""
+
+msgctxt "#30050"
+msgid "CloudFront"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Lumen"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Auto"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

@@ -7,7 +7,7 @@ from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
-from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
+from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, LIVE_HEAD
 
 from .api import API
 from .language import _
@@ -464,6 +464,7 @@ def _parse_video(asset):
         is_live = True
         start_from = 0
         play_type = PLAY_FROM_START
+        item.info['mediatype'] = 'video'
 
     elif asset['playbackType'] == 'LIVE' and click['isStreaming']:
         is_live = True
@@ -539,23 +540,48 @@ def license_request(**kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
-    asset = api.stream(id)
-
     start_from = int(start_from)
     play_type = int(play_type)
     is_live = ROUTE_LIVE_TAG in kwargs
 
+    if is_live:
+        if play_type == PLAY_FROM_LIVE:
+            start_from = 0
+        elif play_type == PLAY_FROM_ASK:
+            start_from = plugin.live_or_start(start_from)
+            if start_from == -1:
+                return
+
+    asset = api.stream(id)
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
     streams = [s for s in streams if s['mediaFormat'] in SUPPORTED_FORMATS]
-
     if not streams:
         raise PluginError(_.NO_STREAM)
 
-    providers = SUPPORTED_PROVIDERS[:]
+    prefer_cdn = settings.getEnum('prefer_cdn', AVAILABLE_CDNS)
+    prefer_format = SUPPORTED_FORMATS[0]
+
+    if prefer_cdn == CDN_AUTO:
+        try:
+            data = api.use_cdn(is_live)
+            prefer_cdn = data['useCDN']
+            prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data.get('ssai') else data['mediaFormat']
+            if prefer_format.startswith('ssai-'):
+                log.debug('Stream Format: Ignoring prefer ssai format')
+                prefer_format = prefer_format[5:]
+        except Exception as e:
+            log.exception(e)
+            log.debug('Failed to get preferred cdn')
+            prefer_cdn = AVAILABLE_CDNS[0]
+
+    providers = [prefer_cdn]
     providers.extend([s['provider'] for s in streams])
 
-    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), SUPPORTED_FORMATS.index(k['mediaFormat'])))
+    formats = [prefer_format]
+    formats.extend(SUPPORTED_FORMATS)
+
+    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), formats.index(k['mediaFormat'])))
     stream = streams[0]
 
     log.debug('Stream CDN: {provider} | Stream Format: {mediaFormat}'.format(**stream))
@@ -565,30 +591,32 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         headers = HEADERS,
     )
 
-    if is_live and (play_type == PLAY_FROM_LIVE or (play_type == PLAY_FROM_ASK and gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START))):
-        play_type = PLAY_FROM_LIVE
-        start_from = 0
-
     if stream['mediaFormat'] == FORMAT_DASH:
         item.inputstream = inputstream.MPD()
 
-    elif stream['mediaFormat'] == FORMAT_HLS_TS:
-        force = (is_live and play_type == PLAY_FROM_LIVE)
+    elif stream['mediaFormat'] in (FORMAT_HLS_TS, FORMAT_HLS_TS_SSAI):
+        force = stream['mediaFormat'] == FORMAT_HLS_TS_SSAI or (is_live and play_type == PLAY_FROM_LIVE and asset['assetType'] != 'live-linear')
         item.inputstream = inputstream.HLS(force=force, live=is_live)
-
         if force and not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
-    elif stream['mediaFormat'] == FORMAT_HLS_FMP4:
+    elif stream['mediaFormat'] in (FORMAT_HLS_FMP4, FORMAT_HLS_FMP4_SSAI):
+        ## No audio on ffmpeg or IA
         item.inputstream = inputstream.HLS(force=True, live=is_live)
         if not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
     elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_HEVC):
-        item.inputstream = inputstream.Widevine(license_key=plugin.url_for(license_request))
+        item.inputstream = inputstream.Widevine(
+            license_key=plugin.url_for(license_request),
+        )
 
-    if start_from:
+    if start_from and not ROUTE_RESUME_TAG in kwargs:
         item.resume_from = start_from
+
+    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
+        ## Need below to seek to live over multi-periods
+        item.resume_from = LIVE_HEAD
 
     return item
 
