@@ -48,7 +48,7 @@ class API(object):
         return True, token_data
 
     def channel_data(self):
-        return self._session.get(LIVE_DATA_URL).json()
+        return self._session.gz_json(LIVE_DATA_URL)
 
     def refresh_token(self):
         self._refresh_token()
@@ -109,13 +109,6 @@ class API(object):
         self._oauth_token(payload)
         self._refresh_token(force=True)
 
-    def search(self, query):
-        params = {
-            'q': query,
-        }
-
-        return self._retry_request('https://api.flashnews.com.au/v1/search/types/landing', params).json()
-
     def _retry_request(self, url, params=None, attempts=2):
         resp = self._session.get(url, params=params, attempts=attempts, retry_not_ok=True, retry_delay=3000)
 
@@ -133,10 +126,22 @@ class API(object):
         _params.update(params or {})
 
         return self._retry_request('https://api.flashnews.com.au/v1/content/types/landing/names/{}'.format(name), _params).json()
+    
+    def _check_errors(self, data):
+        if 'violations' in data:
+            raise APIError('{field} {message}'.format(**data['violations'][0]))
+
+        if ('status' in data and data['status'] != 200) or 'errors' in data:
+            msg = data.get('detail') or data.get('errors', [{}])[0].get('detail')
+            raise APIError(msg)
 
     def panel(self, link=None, panel_id=None, channel_id=None):
         self._refresh_token()
-        params = {'profile': userdata.get('profile_id')}
+
+        params = {
+            'profile': userdata.get('profile_id') or '%20'
+        }
+
         if channel_id:
             params['channel'] = channel_id
 
@@ -144,18 +149,19 @@ class API(object):
             url = 'https://api.flashnews.com.au/v1/private/panels/{panel_id}' if self.logged_in else 'https://api.flashnews.com.au/v1/panels/{panel_id}'
             link = url.format(panel_id=panel_id)
 
-        return self._session.get(link, params=params, headers=self._auth_header).json()
+        data = self._session.get(link, params=params, headers=self._auth_header).json()
+        self._check_errors(data)
+        return data
 
     def use_cdn(self, live=False):
         return self._session.get('https://cdnselectionserviceapi.flashnews.com.au/mobile/usecdn/unknown/{media}'.format(media='LIVE' if live else 'VOD'), headers=self._auth_header).json()
 
     def profiles(self):
         self._refresh_token()
-        return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
-
-    def license_request(self):
-        self._refresh_token()
-        return LICENSE_URL, self._auth_header
+        try:
+            return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/flash', headers=self._auth_header).json()
+        except:
+            return []
 
     def stream(self, asset_id):
         self._refresh_token()
@@ -171,10 +177,7 @@ class API(object):
         }
 
         data = self._session.post('https://play.flashnews.com.au/api/v1/play', json=payload, headers=self._auth_header).json()
-        if ('status' in data and data['status'] != 200) or 'errors' in data:
-            msg = data.get('detail') or data.get('errors', [{}])[0].get('detail')
-            raise APIError(_(_.ASSET_ERROR, msg=msg))
-
+        self._check_errors(data)
         return data['data'][0]
 
     def logout(self):

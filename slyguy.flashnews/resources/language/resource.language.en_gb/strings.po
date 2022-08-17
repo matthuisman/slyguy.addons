@@ -30,6 +30,10 @@ msgctxt "#30008"
 msgid "Show Mini EPG"
 msgstr ""
 
+msgctxt "#30009"
+msgid "No profiles found"
+msgstr ""
+
 msgctxt "#30018"
 msgid "Featured"
 msgstr ""
@@ -38,21 +42,8 @@ msgctxt "#30019"
 msgid "Shows"
 msgstr ""
 
-msgctxt "#30020"
-msgid "Movies"
-msgstr ""
-
-msgctxt "#30021"
-msgid "BingeLists"
-msgstr ""
-
 msgctxt "#30022"
 msgid "Live TV"
-msgstr ""
-
-msgctxt "#30023"
-msgid "Failed to get asset.\n"
-"Server Message: {msg}"
 msgstr ""
 
 msgctxt "#30024"
@@ -77,6 +68,26 @@ msgstr ""
 
 msgctxt "#30033"
 msgid "Failed to get that page. Please try again"
+msgstr ""
+
+msgctxt "#30048"
+msgid "Preferred CDN"
+msgstr ""
+
+msgctxt "#30049"
+msgid "Akamai"
+msgstr ""
+
+msgctxt "#30050"
+msgid "CloudFront"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Lumen"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Auto"
 msgstr ""
 
 ## COMMON SETTINGS ##

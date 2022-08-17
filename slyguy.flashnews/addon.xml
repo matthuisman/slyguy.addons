@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.flashnews" name="Flash" provider-name="SlyGuy" version="0.0.3">
+<addon id="slyguy.flashnews" name="Flash" provider-name="SlyGuy" version="0.0.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
