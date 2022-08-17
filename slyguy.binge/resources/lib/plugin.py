@@ -601,4 +601,4 @@ def playlist(output, **kwargs):
         for row in _live_channels():
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=row['playback']['info']['assetId'], channel=row['chno'] or '', logo=row['contentDisplay']['images']['tile'].replace('${WIDTH}', str(768)),
-                    name=row['playback']['info']['title'], url=plugin.url_for(play, id=row['playback']['info']['assetId'], play_type=PLAY_FROM_START, _is_live=True)))
+                    name=row['playback']['info']['title'], url=plugin.url_for(play, id=row['playback']['info']['assetId'], _is_live=True)))
