@@ -100,5 +100,5 @@ def set_drm_level():
     set_kodi_string('wv_level', wv_level)
     set_kodi_string('hdcp_level', hdcp_level)
 
-    log.debug('Widevine Level ({}): {}'.format(wv_mode, wv_level))
-    log.debug('HDCP Level ({}): {}'.format(hdcp_mode, hdcp_level/10.0))
+    log.info('Widevine Level ({}): {}'.format(wv_mode, wv_level))
+    log.info('HDCP Level ({}): {}'.format(hdcp_mode, hdcp_level/10.0))

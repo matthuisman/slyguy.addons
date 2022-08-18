@@ -342,6 +342,11 @@ class Item(object):
         for key in self.properties:
             li.setProperty(key, u'{}'.format(self.properties[key]))
 
+        # Kodi before 19 set referer header on redirect
+        if KODI_VERSION < 19:
+            if 'referer' not in [x.lower() for x in self.headers]:
+                self.headers['referer'] = '%20'
+
         headers = self.get_url_headers(self.headers, self.cookies)
         mimetype = self.mimetype
         if not mimetype and self.inputstream:

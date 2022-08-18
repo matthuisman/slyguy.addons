@@ -129,13 +129,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         self._headers = {}
         for header in self.headers:
-            if header.lower() == 'referer':
-                # Remove referer header from redirects (fixed in Kodi 19+)
-                if self._session.get('redirecting'):
-                    continue
-                # Remove proxy path from start of referer header
-                elif self.headers[header].startswith(self.proxy_path):
-                    self.headers[header] = self.headers[header][len(self.proxy_path):]
+            if header.lower() == 'referer' and self.headers[header].startswith(self.proxy_path):
+                self.headers[header] = self.headers[header][len(self.proxy_path):]
 
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
