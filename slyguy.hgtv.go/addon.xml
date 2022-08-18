@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hgtv.go" name="HGTV Go" provider-name="Slyguy" version="0.0.3">
+<addon id="slyguy.hgtv.go" name="HGTV Go" provider-name="Slyguy" version="0.0.4">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -9,7 +9,7 @@
   <extension point="xbmc.addon.metadata">
     <description lang="en">Watch amazing home transformation shows and more with your favorite home experts - free with your pay TV subscription!
 
-Subscription required.</description>
+Pay TV subscription required.</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>

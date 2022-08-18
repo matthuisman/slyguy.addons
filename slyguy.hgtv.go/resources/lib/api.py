@@ -96,7 +96,10 @@ class API(object):
     
     def _check_errors(self, data):
         if 'errors' in data:
-            raise APIError(data['errors'][0]['detail'])
+            if data['errors'][0].get('code')  == 'invalid.token':
+                raise APIError(_.INVALID_TOKEN)
+            else:
+                raise APIError(data['errors'][0]['detail'])
 
     def channel_data(self):
         return self._session.gz_json(LIVE_DATA_URL)
