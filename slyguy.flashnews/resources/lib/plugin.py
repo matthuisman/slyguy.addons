@@ -130,7 +130,7 @@ def live(**kwargs):
             label = channel['contentDisplay']['title']['value'],
             playable = True,
             art = {
-                'thumb': channel['contentDisplay']['images']['tile'].replace('${WIDTH}', '400'),
+                'thumb': channel['contentDisplay']['images']['menuItemSelected'].replace('${WIDTH}', '800'),
             },
             path = plugin.url_for(play_channel, channel_id=channel['contentDisplay']['linearProvider'], _is_live=True),
         )
@@ -314,5 +314,5 @@ def playlist(output, **kwargs):
 
         for channel in _live_channels():
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=channel['contentDisplay']['linearProvider'], channel=channel['chno'] or '', logo=channel['contentDisplay']['images']['tile'].replace('${WIDTH}', '400'),
+                id=channel['contentDisplay']['linearProvider'], channel=channel['chno'] or '', logo=channel['contentDisplay']['images']['menuItemSelected'].replace('${WIDTH}', '800'),
                     name=channel['contentDisplay']['title']['value'], url=plugin.url_for(play_channel, channel_id=channel['contentDisplay']['linearProvider'], _is_live=True)))
