@@ -48,7 +48,11 @@ class API(object):
         return True, token_data
 
     def channel_data(self):
-        return self._session.gz_json(LIVE_DATA_URL)
+        try:
+            return self._session.gz_json(LIVE_DATA_URL)
+        except:
+            log.debug('Failed to get: {}'.format(LIVE_DATA_URL))
+            return {}
 
     def refresh_token(self):
         self._refresh_token()

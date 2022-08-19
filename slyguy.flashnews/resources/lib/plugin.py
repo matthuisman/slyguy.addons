@@ -106,10 +106,14 @@ def _live_channels():
         if not channel_id:
             continue
 
-        row['data']['chno'] = None
-        row['data']['epg'] = []
-        if channel_id in live_data:
-            row['data'].update(live_data[channel_id])
+        row['data'].update({
+            'chno': None,
+            'epg': [],
+            'linear': True,
+        })
+        row['data'].update(live_data.get(channel_id) or {})
+
+        if row['data']['linear']:
             channels.append(row['data'])
 
     return sorted(channels, key=lambda x: (x is None, x['chno'] or 9999))
