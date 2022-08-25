@@ -547,13 +547,13 @@ def resume_from(seconds):
         return 0
 
 def live_or_start(seconds=1):
-    index = gui.context_menu([_.PLAY_FROM_LIVE_CONTEXT, _.PLAY_FROM_BEGINNING])
+    index = gui.context_menu([_.PLAY_FROM_BEGINNING, _.PLAY_FROM_LIVE_CONTEXT])
     if index == -1:
         return -1
     elif index == 0:
-        return 0
-    else:
         return seconds
+    else:
+        return 0
 
 #Plugin.Item()
 class Item(gui.Item):
