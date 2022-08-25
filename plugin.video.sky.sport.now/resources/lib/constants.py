@@ -1,12 +1,10 @@
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
+    'x-api-key': 'eca673f3-11cb-4716-8c75-1d1bd024aee2',
+    'realm': 'dce.skynz',
+    'x-app-var': '5.0.1 (5117)',
+    'user-agent': 'okhttp/4.9.2',
 }
 
-API_URL = 'https://www.skysportnow.co.nz{}'
-WIDEVINE_URL = 'https://shield-twoproxy.imggaming.com/proxy'
-THUMB_URL = 'https://esliondsdoc.akamaized.net/mt/skyfanpass_v2/thumbs/{}'
-SCHEDULE_URL = 'https://esliondsdoc.akamaized.net/mt/skyfanpass_v2/epg/{date}.json'
+API_URL = 'https://dce-frontoffice.imggaming.com/api{}'
+DEVICE_CODE_URL = 'https://www.skysportnow.co.nz/tv-login'
 EPG_URL = 'https://i.mjh.nz/SkySportNow/epg.xml.gz'
-
-MEDIA_CHANNEL = 'channel'
-MEDIA_VIDEO = 'video'

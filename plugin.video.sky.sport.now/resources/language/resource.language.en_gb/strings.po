@@ -14,47 +14,8 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#30003"
+msgctxt "#30000"
 msgid "Live TV"
-msgstr ""
-
-msgctxt "#30004"
-msgid "Highlights"
-msgstr ""
-
-msgctxt "#30005"
-msgid " ({cur_page}/{total_pages})"
-msgstr ""
-
-msgctxt "#30007"
-msgid "Sky Sport Now is only available to New Zealand IP Addresses"
-msgstr ""
-
-msgctxt "#30008"
-msgid "Failed to get playback data\n"
-"Server error code: {code}"
-msgstr ""
-
-msgctxt "#30009"
-msgid "Unknown Error\n"
-"Check you have a valid subscription"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Failed to login\n"
-"Server error code: {code}"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Replay"
-msgstr ""
-
-msgctxt "#30012"
-msgid "This event has not started yet"
-msgstr ""
-
-msgctxt "#30013"
-msgid "You can only view events within last 24 hours"
 msgstr ""
 
 ## COMMON SETTINGS ##
@@ -81,4 +42,16 @@ msgstr ""
 
 msgctxt "#32073"
 msgid "Disabled"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
 msgstr ""

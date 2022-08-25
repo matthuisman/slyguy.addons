@@ -1,10 +1,10 @@
-import hashlib
-
-import arrow
+import time
 
 from slyguy import userdata
+from slyguy.log import log
 from slyguy.session import Session
 from slyguy.exceptions import Error
+from slyguy.util import jwt_data
 
 from .language import _
 from .constants import *
@@ -14,124 +14,99 @@ class APIError(Error):
 
 class API(object):
     def new_session(self):
+        self.logged_in = False
         self._session = Session(HEADERS, base_url=API_URL)
-        self.logged_in = userdata.get('nllinktoken') != None
+        self._set_authentication()
+
+    def _set_authentication(self):
+        auth_token = userdata.get('auth_token')
+        if not auth_token:
+            return
+
+        self._session.headers.update({'Authorization': 'Bearer {}'.format(auth_token)})
+        self.logged_in = True
+
+    def device_code(self):
+        return self._session.get('/v2/token/alt/pin').json()
+
+    def device_login(self, pin, anchor):
+        self.logout()
+
+        payload = {
+            'pin': pin,
+            'anchor': anchor,
+        }
+
+        data = self._session.post('/v2/token/alt/pin', json=payload).json()
+        return self._parse_auth(data)
 
     def login(self, username, password):
         self.logout()
         
-        data = {
-            'username': username,
-            'password': password,
-            'cookielink': 'true',
-            'format': 'json',
-        }
-
-        r = self._session.post('/secure/authenticate', data=data)
-
-        data = r.json()
-        nllinktoken = r.cookies.get_dict().pop('nllinktoken', None)
-        code = data.get('code') or _.UNKNOWN_ERROR
-
-        if code != 'loginsuccess' or not nllinktoken:
-            if code == 'failedgeo':
-                raise APIError(_.GEO_ERROR)
-            else:
-                raise APIError(_(_.LOGIN_ERROR, code=code))
-
-        userdata.set('nllinktoken', nllinktoken)
-        self.new_session()
-
-    def deviceid(self):
-        return hashlib.sha1(userdata.get('username').encode('utf8')).hexdigest()[:8]
-
-    def play(self, media_id, media_type, start=None, duration=None):
         payload = {
-            'id': media_id,
-            'nt': 1,
-            'type': media_type,
-            'format': 'json',
-            'drmtoken': True,
-            'deviceid': self.deviceid(),
+            'id': username,
+            'secret': password,
         }
 
-        if start:
-            payload['st'] = '{}000'.format(start)
+        data = self._session.post('/v2/login', json=payload).json()
+        if not self._parse_auth(data):
+            raise APIError(_.LOGIN_ERROR)
 
-        if duration:
-            payload['dur'] = '{}000'.format(duration)
+    def _parse_auth(self, data):
+        if not data.get('authorisationToken'):
+            return False
 
-        login_cookies = {'nllinktoken': userdata.get('nllinktoken'), 'UserName': userdata.get('username')}
-        data = self._session.post('/service/publishpoint', data=payload, cookies=login_cookies).json()
-        
-        if 'path' not in data:
-            code = data.get('code') or _.UNKNOWN_ERROR
-            if code == 'failedgeo':
-                raise APIError(_.GEO_ERROR)
-            else:
-                raise APIError(_(_.PLAYBACK_ERROR, code=code))
+        auth_token = data['authorisationToken']
+        jwt = jwt_data(auth_token)
 
-        return data
+        userdata.set('auth_token', auth_token)
+        userdata.set('token_expires', int(time.time()) + (jwt['exp'] - jwt['iat'] - 30))
+        if 'refreshToken' in data:
+            userdata.set('refresh_token', data['refreshToken'])
 
-    def schedule(self, date):
-        schedule = []
+        self._set_authentication()
+        return True
 
-        data = self._session.get(SCHEDULE_URL.format(date=date.format('YYYY/MM/DD'))).json()
-        for channel in data:
-            for event in channel['items']:
-                start     = arrow.get(event['su'])
-                stop      = start.shift(seconds=event['ds'])
-                duration  = int(event['ds'])
-                title     = event.get('e')
-                desc      = event.get('ed')
-                schedule.append({'channel': channel['channelId'], 'start': start, 'stop': stop, 'duration': duration, 'title': title, 'desc': desc})
+    def _refresh_token(self):
+        if userdata.get('token_expires', 0) > time.time():
+            return
 
-        return sorted(schedule, key=lambda channel: channel['start'])
+        log.debug('Refreshing token')
 
-    def logout(self):
-        # self._session.post('service/logout', data={'format': 'json'})
-        userdata.delete('nllinktoken')
-        self.new_session()
-
-    def highlights(self, page=1, pagesize=100):
-        params = {
-            'type': '0',
-            'format': 'json',
-            'ps': pagesize,
-            'pn': page,
+        payload = {
+            'refreshToken': userdata.get('refresh_token'),
         }
 
-        data = self._session.get('/service/search', params=params).json()
-        
-        try:
-            code = data.get('code')
-        except:
-            code = None
-
-        if code:
-            if code == 'failedgeo':
-                raise APIError(_.GEO_ERROR)
-            else:
-                raise APIError(_(_.PLAYBACK_ERROR, code=code or _.UNKNOWN_ERROR))
-
-        return data
+        data = self._session.post('/v2/token/refresh', json=payload).json()
+        self._parse_auth(data)
 
     def channels(self):
+        self._refresh_token()
+        params = {'rpp': 25}
+        data = self._session.get('/v2/event/live', params=params).json()
+        return data['events']
+
+    def play(self, event_id):
+        self._refresh_token()
+
         params = {
-            'format': 'json',
+            'displayGeoblockedLive': True,
         }
+        event_data = self._session.get('/v2/event/{}'.format(event_id), params=params).json()
 
-        data = self._session.get('/channels', params=params).json()
+        params = {
+            'eventId': event_id,
+            'sportId': 0,
+            'propertyId': 0,
+            'tournamentId': 0,
+            'displayGeoblockedLive': True,
+        }
+        stream_data = self._session.get('/v2/stream'.format(event_id), params=params).json()
+        playback_data = self._session.get(stream_data['playerUrlCallback']).json()
+        return playback_data, event_data
 
-        try:
-            code = data.get('code')
-        except:
-            code = None
-
-        if code:
-            if code == 'failedgeo':
-                raise APIError(_.GEO_ERROR)
-            else:
-                raise APIError(_(_.PLAYBACK_ERROR, code=code or _.UNKNOWN_ERROR))
-
-        return data
+    def logout(self):
+        userdata.delete('auth_token')
+        userdata.delete('refresh_token')
+        userdata.delete('token_expires')
+        self.new_session()
