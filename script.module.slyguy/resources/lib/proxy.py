@@ -788,11 +788,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                     continue
 
                 segments.append(line.lower())
-                if '/beacon?' in line.lower():
+                if '/beacon?' in line.lower() or '/beacon/' in line.lower():
                     parse = urlparse(line)
                     params = dict(parse_qsl(parse.query))
                     for key in params:
-                        if key.lower() == 'redirect_path':
+                        if key.lower() == 'redirect_path' or key.lower() == 'redirect_url':
                             line = params[key]
                             log.debug('M3U8 Fix: Beacon removed')
 
