@@ -154,12 +154,10 @@ def merge():
     return lambda f: decorator(f)
 
 # @plugin.search()
-def search():
+def search(key=None):
     def decorator(f):
         @wraps(f)
-        def decorated_function(query=None, new=None, remove=None, page=1, **kwargs):
-            page = int(page)
-
+        def decorated_function(query=None, new=None, remove=None, **kwargs):
             if remove:
                 queries = userdata.get('queries', [])
                 if remove in queries:
@@ -199,13 +197,13 @@ def search():
                 return folder
 
             else:
-                @pagination()
-                def search(page=1, **kwargs):
+                @pagination(key=key)
+                def search(**kwargs):
                     folder = Folder(_(_.SEARCH_FOR, query=query))
-                    items, more_results = f(query=query, page=page, **kwargs)
+                    items, more_results = f(query=query, **kwargs)
                     folder.add_items(items)
                     return folder, more_results
-                return search(page, **kwargs)
+                return search(**kwargs)
 
         return decorated_function
     return lambda f: decorator(f)
@@ -239,7 +237,7 @@ def pagination(key=None):
 
             if more_results:
                 if key is None:
-                    _kwargs = {'page': kwargs['page']}
+                    _kwargs = {'page': page+1}
                 else:
                     _kwargs = {key: kwargs[key]}                    
 
