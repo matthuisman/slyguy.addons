@@ -189,13 +189,12 @@ def collection(slug, content_class, label=None, **kwargs):
         if slug == 'home' and (_style in ('brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
             continue
 
-        if ref_type == 'BecauseYouSet':
+        title = _get_text(_set, 'title', 'set')
+        if not title or '${' in title:
             data = api.set_by_id(set_id, ref_type, page_size=0)
-            if not data['meta']['hits']:
-                continue
+            # if not data['meta']['hits']:
+            #     continue
             title = _get_text(data, 'title', 'set')
-        else:
-            title = _get_text(_set, 'title', 'set')
 
         folder.add_item(
             label = title,
@@ -448,6 +447,7 @@ def _get_art(row):
     return art
 
 def _get_text(row, field, source):
+    texts = None
     if 'text' in row:
         # api 5.1
         texts = row['text']
@@ -458,7 +458,8 @@ def _get_text(row, field, source):
             if data['field'] not in texts:
                 texts[data['field']] = {}
             texts[data['field']][data['type']] = {data['sourceEntity']: {'default': data}}
-    else:
+
+    if not texts:
         return None
 
     _types = ['medium', 'brief', 'full']
