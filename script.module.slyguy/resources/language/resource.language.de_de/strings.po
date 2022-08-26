@@ -618,8 +618,8 @@ msgid "iOS does not support Widevine playback on Kodi"
 msgstr "iOS unterstützt Widevine nicht"
 
 msgctxt "#32108"
-msgid "Next Page ({page})"
-msgstr "Nächste Seite ({page})"
+msgid "Next Page"
+msgstr "Nächste Seite"
 
 msgctxt "#32109"
 msgid "Failed to fetch JSON data\n"

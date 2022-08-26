@@ -485,5 +485,5 @@ msgid "iOS does not support Widevine playback on Kodi"
 msgstr ""
 
 msgctxt "#32108"
-msgid "Next Page ({page})"
-msgstr "Prossima pagina ({page})"
+msgid "Next Page"
+msgstr "Prossima pagina"
