@@ -1,4 +1,5 @@
 import time
+from six.moves.urllib_parse import urlencode
 
 from slyguy import userdata
 from slyguy.log import log
@@ -80,30 +81,111 @@ class API(object):
         data = self._session.post('/v2/token/refresh', json=payload).json()
         self._parse_auth(data)
 
+    def page(self, content_id, last_seen=None):
+        self._refresh_token()
+
+        params = {
+            'bpp': 10,
+            'rpp': 1,
+            'bspp': 1,
+            'displaySectionLinkBuckets': 'SHOW',
+            'displayEpgBuckets': 'HIDE',
+            'displayEmptyBucketShortcuts': 'SHOW',
+            'displayContentAvailableOnSignIn': 'SHOW',
+            'displayGeoblocked': 'SHOW',
+            'lastSeen': last_seen,
+        }
+
+        data = self._session.get('/v4/content/{}'.format(content_id), params=params).json()
+        if data['paging']['moreDataAvailable'] and data['paging']['lastSeen']:
+            next_page = self.page(content_id, last_seen=data['paging']['lastSeen'])
+            data['buckets'].extend(next_page['buckets'])
+
+        return data
+
+    def bucket(self, content_id, bucket_id, last_seen=None):
+        self._refresh_token()
+
+        params = {
+            'rpp': 25,
+            'displayContentAvailableOnSignIn': 'SHOW',
+            'displayGeoblocked': 'SHOW',
+            'lastSeen': last_seen,
+        }
+        data = self._session.get('/v4/content/{}/bucket/{}'.format(content_id, bucket_id), params=params).json()
+
+        return data
+
+    def playlist(self, playlist_id, page=1):
+        self._refresh_token()
+
+        params = {
+            'rpp': 25,
+            'p': page,
+            'displayGeoblocked': 'SHOW',
+        }
+        data = self._session.get('/v2/vod/playlist/{}'.format(playlist_id), params=params).json()
+        if data['videos']['totalPages'] > page:
+            next_page = self.playlist(playlist_id, page+1)
+            data['videos']['vods'].extend(next_page['videos']['vods'])
+
+        return data
+
+    def search(self, query, page=1):
+        self._refresh_token()
+
+        query_params = {
+            'x-algolia-agent': 'Algolia for JavaScript (3.35.1); React Native',
+            'x-algolia-application-id': 'H99XLDR8MJ',
+            'x-algolia-api-key': 'e55ccb3db0399eabe2bfc37a0314c346',
+        }
+
+        payload_params = {
+            'facets': [],
+            'filters': 'type:VOD_VIDEO',
+            'hitsPerPage': 20,
+            'page': page,
+            'query': query,
+        }
+
+        payload = {
+            'params': urlencode(payload_params),
+        }
+
+        return self._session.post(SEARCH_URL, params=query_params, json=payload).json()
+
     def channels(self):
         self._refresh_token()
         params = {'rpp': 25}
         data = self._session.get('/v2/event/live', params=params).json()
         return data['events']
 
-    def play(self, event_id):
+    def epg(self, channel_ids, start, stop):
         self._refresh_token()
 
         params = {
-            'displayGeoblockedLive': True,
+            'categorisedChannelId': channel_ids,
+            'channelId': channel_ids,
+            'from': start.to('utc').format('YYYY-MM-DDTHH:MM:00.000')+'Z',
+            'to': stop.to('utc').format('YYYY-MM-DDTHH:MM:00.000')+'Z',
         }
-        event_data = self._session.get('/v2/event/{}'.format(event_id), params=params).json()
 
-        params = {
-            'eventId': event_id,
-            'sportId': 0,
-            'propertyId': 0,
-            'tournamentId': 0,
-            'displayGeoblockedLive': True,
-        }
-        stream_data = self._session.get('/v2/stream'.format(event_id), params=params).json()
+        data = self._session.get('/v4/epg/content/programmes', params=params).json()
+        return data['channels']
+
+    def play_event(self, event_id):
+        self._refresh_token()
+        event_data = self._session.get('/v2/event/{}'.format(event_id)).json()
+        stream_data = self._session.get('/v2/stream/event/{}'.format(event_id)).json()
         playback_data = self._session.get(stream_data['playerUrlCallback']).json()
         return playback_data, event_data
+
+    def play_vod(self, vod_id):
+        self._refresh_token()
+        vod_data = self._session.get('/v2/vod/{}'.format(vod_id)).json()
+        stream_data = self._session.get('/v3/stream/vod/{}'.format(vod_id)).json()
+        playback_data = self._session.get(stream_data['playerUrlCallback']).json()
+        return playback_data, vod_data
 
     def logout(self):
         userdata.delete('auth_token')

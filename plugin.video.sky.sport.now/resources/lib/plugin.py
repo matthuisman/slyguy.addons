@@ -29,6 +29,11 @@ def home(**kwargs):
     else:
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live))
 
+        folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, content_id='home', label=_.HOME))
+        folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(content, content_id='browse', label=_.SPORTS))
+        folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
@@ -83,29 +88,165 @@ def _email_password():
     return True
 
 @plugin.route()
+def content(content_id, label, **kwargs):
+    folder = plugin.Folder(label)
+    data = api.page(content_id)
+    items = process_rows(data['buckets'], content_id=content_id)
+    folder.add_items(items)
+    return folder
+
+@plugin.route()
+def vod_playlist(playlist_id, **kwargs):
+    data = api.playlist(playlist_id)
+    folder = plugin.Folder(data['title'])
+    items = process_rows(data['videos'].get('vods', []))
+    folder.add_items(items)
+    return folder
+
+@plugin.route()
+@plugin.pagination('last_seen')
+def bucket(content_id, bucket_id, last_seen=None, **kwargs):
+    data = api.bucket(content_id, bucket_id, last_seen=last_seen)
+
+    folder = plugin.Folder(data['name'])
+    items = process_rows(data['contentList'])
+    folder.add_items(items)
+
+    return folder, data['paging']['moreDataAvailable'] and data['paging']['lastSeen'], data['paging']['lastSeen']
+
+@plugin.route()
+@plugin.search()
+def search(query, page=1, **kwargs):
+    data = api.search(query, page=page)
+    return process_rows(data['hits']), data['nbPages'] > page+1
+
+def process_rows(rows, content_id=None):
+    items = []
+    for row in rows:
+        if 'rowTypeData' in row and row['contentList']: #BUCKET DONE
+            if row['type'] in ('UPCOMING','EPG_NOW_NEXT','LIVE','VOD_RESUME'):
+                continue
+
+            item = plugin.Item(
+                label = row['name'],
+                path = plugin.url_for(bucket, content_id=content_id, bucket_id=row['exid']),
+                info = {
+                    'plot': row['rowTypeData'].get('description'),
+                },
+                art = {'fanart': row['rowTypeData']['background'].get('imageUrl')},
+            )
+
+        elif row['type'] in ('SECTION_LINK',): #DONE
+            item = plugin.Item(
+                label = row['title'],
+                art = {'thumb': row['thumbnailUrl'] if not row['thumbnailUrl'].lower().endswith('.svg') else None},
+                path = plugin.url_for(content, content_id=row['sectionName'], label=row['title']),
+            )
+
+        elif row['type'] in ('PLAYLIST',):  #DONE
+            item = plugin.Item(
+                label = row['title'],
+                art = {'thumb': row['smallCoverUrl'].replace('/original/', '/346x380/'), 'fanart': row['coverUrl'].replace('/original/', '/1920x1080/')},
+                #info = {'plot': str(row['vodCount'])},
+                path = plugin.url_for(vod_playlist, playlist_id=row['id']),
+            )
+
+        elif row['type'] in ('VOD', 'VOD_VIDEO'): #DONE
+            item = plugin.Item(
+                label = row.get('title') or row.get('name'),
+                art = {'thumb': row['thumbnailUrl']},
+                info = {
+                    'plot': row['description'],
+                    'duration': row['duration'],
+                },
+                playable = True,
+                path = plugin.url_for(play_vod, vod_id=row['id']),
+            )
+
+        elif row['type'] in ('EPG',):  #DONE
+            plot = ''
+            for epg in row['programmes']:
+                start = arrow.get(epg['startDate'])
+                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['episode'])
+
+            item = plugin.Item(
+                label = row['title'],
+                art = {'thumb': row['logoUrl'], 'fanart': row['programmes'][0]['thumbnailUrl']},
+                info = {
+                    'plot': plot,
+                },
+                playable = True,
+                path = plugin.url_for(play_event, event_id=row['liveEventId'], _is_live=True),
+            )
+
+        elif row['type'] in ('LIVE',):  #DONE
+            plot = ''
+            programs = [row['programmingInfo']['currentProgramme'], row['programmingInfo']['nextProgramme']]
+            for epg in programs:
+                start = arrow.get(epg['startDate'])
+                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['episode'])
+
+            item = plugin.Item(
+                label = row['title'],
+                art = {'thumb': row['programmingInfo']['channelLogoUrl'], 'fanart': row['programmingInfo']['currentProgramme']['thumbnailUrl'], },
+                info = {
+                    'plot': plot,
+                },
+                playable = True,
+                path = plugin.url_for(play_event, event_id=row['id'], _is_live=True),
+            )
+
+        elif row['type'] in ('REPLAY',):  #DONE
+            item = plugin.Item(
+                label = row['startDate'].to('local').humanize() + ' - ' + row['episode'],
+                art = {'thumb': row['thumbnailUrl']},
+                info = {
+                    'plot': '[B]{}[/B]\n\n{}'.format(row['channel']['title'], row['description']),
+                    'duration': (row['endDate'] - row['startDate']).total_seconds(),
+                },
+                playable = True,
+                path = plugin.url_for(play_event, event_id=row['channel']['id'], start=row['startDate'].timestamp, _is_live=True),
+            )
+        else:
+            continue
+
+        items.append(item)
+    return items
+
+@plugin.route()
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
-    for row in api.channels():
-        if not row['live']:
-            continue
+    channels = [x for x in api.channels() if x['live']]
+    items = process_rows(channels)
+    folder.add_items(items)
+    return folder
 
-        plot = ''
-        programs = [row['programmingInfo']['currentProgramme'], row['programmingInfo']['nextProgramme']]
-        for epg in programs:
-            start = arrow.get(epg['startDate'])
-            plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), epg['episode'])
+@plugin.route()
+def replays(**kwargs):
+    folder = plugin.Folder(_.REPLAYS)
 
-        folder.add_item(
-            label = row['title'],
-            art = {'thumb': row['programmingInfo']['channelLogoUrl'], 'fanart': row['programmingInfo']['currentProgramme']['thumbnailUrl'], },
-            info = {
-                'plot': plot,
-            },
-            playable = True,
-            path = plugin.url_for(play, event_id=row['id'], _is_live=True),
-        )
+    channels = {str(x['programmingInfo']['channelId']): x for x in api.channels() if x['live']}
 
+    now = arrow.now()
+    start = now.shift(days=-1)
+    epg = api.epg(list(channels.keys()), start, now)
+
+    programs = []
+    for channel_id, rows in epg.items():
+        for row in rows:
+            row['type'] = 'REPLAY'
+            row['channel_id'] = str(channel_id)
+            row['startDate'] = arrow.get(row['startDate'])
+            row['endDate'] = arrow.get(row['endDate'])
+            if row['channel_id'] not in channels or row['endDate'] > now or row['startDate'] < start:
+                continue
+            row['channel'] = channels[row['channel_id']]
+            programs.append(row)
+
+    programs = sorted(programs, key=lambda x: (x['startDate'], x['channel_id']), reverse=True)
+    items = process_rows(programs)
+    folder.add_items(items)
     return folder
 
 @plugin.route()
@@ -122,7 +263,7 @@ def mpd_request(_data, _path, **kwargs):
     root = parseString(_data)
 
     mpd = root.getElementsByTagName("MPD")[0]
-    # Fixes issues of being too close to head and getting 404s
+    # Fixes issues of being too close to head and getting 404 error
     mpd.setAttribute('availabilityStartTime', '1970-01-01T00:00:20Z')
 
     mpd = root.getElementsByTagName("MPD")[0]
@@ -134,8 +275,8 @@ def mpd_request(_data, _path, **kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(event_id, start=None, play_type=None, **kwargs):
-    data, event = api.play(event_id)
+def play_event(event_id, start=None, play_type=None, **kwargs):
+    data, event = api.play_event(event_id)
     is_live = event.get('live', False)
 
     headers = HEADERS
@@ -173,10 +314,34 @@ def play(event_id, start=None, play_type=None, **kwargs):
             if result == -1:
                 return
             elif result == 1:
-                item.resume_from = offset
+                item.resume_from = max(1, offset)
 
         elif play_type == PLAY_FROM_START:
-            item.resume_from = offset
+            item.resume_from = max(1, offset)
+
+    return item
+
+@plugin.route()
+@plugin.login_required()
+def play_vod(vod_id, **kwargs):
+    data, vod = api.play_vod(vod_id)
+
+    headers = HEADERS
+    headers.update({
+        'Authorization': 'Bearer {}'.format(data['dash'][0]['drm']['jwtToken']),
+        'x-drm-info': 'eyJzeXN0ZW0iOiJjb20ud2lkZXZpbmUuYWxwaGEifQ==', #{"system":"com.widevine.alpha"} b64 encoded 
+    })
+
+    item = plugin.Item(
+        path = data['dash'][0]['url'],
+        inputstream = inputstream.Widevine(
+            license_key = data['dash'][0]['drm']['url']
+        ),
+        headers = headers,
+        proxy_data = {
+            'middleware': {data['dash'][0]['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}},
+        }
+    )
 
     return item
 
@@ -193,8 +358,8 @@ def playlist(output, **kwargs):
             event_id = row['id']
             channel_id = row['programmingInfo']['channelId']
 
-            catchup = plugin.url_for(play, event_id=event_id, start='{utc}', duration='{duration}')
+            catchup = plugin.url_for(play_event, event_id=event_id, start='{utc}', duration='{duration}', _is_live=True)
             catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}" catchup="default" catchup-days="1" catchup-source="{catchup}",{name}\n{url}'.format(
-                id=channel_id, logo=row['programmingInfo']['channelLogoUrl'], name=row['title'], url=plugin.url_for(play, event_id=event_id, _is_live=True), catchup=catchup))
+                id=channel_id, logo=row['programmingInfo']['channelLogoUrl'], name=row['title'], url=plugin.url_for(play_event, event_id=event_id, _is_live=True), catchup=catchup))

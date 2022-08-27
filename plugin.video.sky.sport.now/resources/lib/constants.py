@@ -8,3 +8,4 @@ HEADERS = {
 API_URL = 'https://dce-frontoffice.imggaming.com/api{}'
 DEVICE_CODE_URL = 'https://www.skysportnow.co.nz/tv-login'
 EPG_URL = 'https://i.mjh.nz/SkySportNow/epg.xml.gz'
+SEARCH_URL = 'https://h99xldr8mj-dsn.algolia.net/1/indexes/prod-dce.skynz-livestreaming-events/query'

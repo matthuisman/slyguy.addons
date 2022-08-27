@@ -18,6 +18,18 @@ msgctxt "#30000"
 msgid "Live TV"
 msgstr ""
 
+msgctxt "#30001"
+msgid "Home"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Sports"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Replays"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
