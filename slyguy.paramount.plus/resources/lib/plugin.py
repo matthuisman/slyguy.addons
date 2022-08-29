@@ -211,7 +211,7 @@ def featured(slug=None, homegroup=None, **kwargs):
                         )
                 continue
 
-            if row['apiParams']['name'] in ('Keep+Watching', 'My+List', 'On+Now'): # TO DO
+            if row['model'] in ('keepWatching','onnow','schedule','brands'): #TODO
                 continue
 
             folder.add_item(
@@ -224,7 +224,18 @@ def featured(slug=None, homegroup=None, **kwargs):
             continue
 
         folder.title = row['title']
-        for row in api.carousel(row['apiBaseUrl'], params=row['apiParams'])['carousel']:
+        params = row['apiParams']
+        params['rows'] = 20
+        data = api.carousel(row['apiBaseUrl'], params=row['apiParams'])
+
+        if row['model'] == 'brands':
+            rows = data['brands']
+        elif row['model'] == 'schedule':
+            rows = data['listing']
+        else:
+            rows = data['carousel']
+
+        for row in rows:
             if row.get('showId'):
                 folder.add_item(
                     label = row['showTitle'],
@@ -252,6 +263,17 @@ def featured(slug=None, homegroup=None, **kwargs):
                     art = _movie_art(data['thumbnailSet']),
                     path = plugin.url_for(play, video_id=data['contentId']),
                     playable = True,
+                )
+
+            elif row.get('type') == 'brand':
+                folder.add_item(
+                    label = row['title'],
+                    # info = {
+                    #     'plot': row.get('about'),
+                    #     'mediatype': 'tvshow',
+                    # },
+                    # art = _show_art(row['showAssets']),
+                    # path = plugin.url_for(show, show_id=row['showId']),
                 )
 
         break

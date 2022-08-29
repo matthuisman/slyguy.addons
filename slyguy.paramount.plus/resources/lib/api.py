@@ -199,9 +199,9 @@ class API(object):
         self._refresh_token()
         params = {
             'minProximity': 1,
-            'minCarouselItems':5,
-            'maxCarouselItems': 20,
-            'rows': 15,
+            'minCarouselItems': 1,
+            'maxCarouselItems': 1,
+            'rows': 40,
         }
         return self._session.get('/v3.0/androidphone/home/configurator.json', params=self._params(params)).json()['config']
 
