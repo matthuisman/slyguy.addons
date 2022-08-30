@@ -201,7 +201,7 @@ def process_rows(rows, content_id=None):
                 label = row['startDate'].to('local').humanize() + ' - ' + row['episode'],
                 art = {'thumb': row['thumbnailUrl']},
                 info = {
-                    'plot': '[B]{}[/B]\n\n{}'.format(row['channel']['title'], row['description']),
+                    'plot': u'[B]{}[/B]\n\n{}'.format(row['channel']['title'], row['description']),
                     'duration': (row['endDate'] - row['startDate']).total_seconds(),
                 },
                 playable = True,
