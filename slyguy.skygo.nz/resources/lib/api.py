@@ -1,8 +1,6 @@
 from time import time
 
 import arrow
-from bs4 import BeautifulSoup
-from six.moves.urllib_parse import urlparse, parse_qsl
 
 from slyguy import userdata, mem_cache
 from slyguy.session import Session
@@ -81,6 +79,20 @@ class API(object):
         ####
 
         self._set_authentication()
+
+    def login(self, username, password):
+        self.logout()
+
+        payload = {
+            'username': username,
+            'password': password,
+            'scope': 'openid email profile offline_access',
+            'audience': 'https://api.sky.co.nz',
+            'grant_type': 'password',
+            'client_id': CLIENT_ID,
+        }
+
+        self._oauth_token(payload)
 
     @mem_cache.cached(60*5)
     def home(self):
@@ -172,57 +184,6 @@ class API(object):
             log.debug('Stop Linear / VOD Failed')
 
         return data['playbackSource']['streamUri'], data['playbackSource']['drmLicense']['licenseUri']
-
-    def login(self, username, password):
-        self.logout()
-
-        params = {
-            'client_id': CLIENT_ID,
-            'audience': 'https://api.sky.co.nz',
-            'redirect_uri': 'https://www.skygo.co.nz',
-            'connection': 'Sky-Internal-Connection',
-            'scope': 'openid profile email offline_access',
-            'response_type': 'code',
-        }
-
-        resp = self._session.get('https://login.sky.co.nz/authorize', params=params, allow_redirects=False)
-        if not resp.ok:
-            raise APIError(_(_.API_ACCESS_DENIED, code=resp.status_code))
-
-        parsed = urlparse(resp.headers['location'])
-        payload = dict(parse_qsl(parsed.query))
-        payload.update({
-            'username': username,
-            'password': password,
-            'tenant': 'skynz-prod',
-            'client_id': CLIENT_ID,
-            'client': None,
-        })
-
-        resp = self._session.post('https://login.sky.co.nz/usernamepassword/login', json=payload)
-        if not resp.ok:
-            data = resp.json()
-            raise APIError(_(_.LOGIN_ERROR, msg=data['message']))
-
-        soup = BeautifulSoup(resp.text, 'html.parser')
-
-        payload = {}
-        for e in soup.find_all('input'):
-            if 'name' in e.attrs:
-                payload[e.attrs['name']] = e.attrs.get('value')
-
-        resp = self._session.post('https://login.sky.co.nz/login/callback', data=payload)
-        parsed = urlparse(resp.url)
-        data = dict(parse_qsl(parsed.query))
-
-        payload = {
-            'code': data['code'],
-            'client_id': CLIENT_ID,
-            'grant_type': 'authorization_code',
-            'redirect_uri': 'https://www.skygo.co.nz'
-        }
-
-        self._oauth_token(payload)
 
     def logout(self):
         userdata.delete('access_token')
