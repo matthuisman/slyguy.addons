@@ -42,7 +42,8 @@ class API(object):
             data = {}
 
             for e in form.find_all('input'):
-                data[e.attrs['name']] = e.attrs.get('value')
+                if 'name' in e.attrs:
+                    data[e.attrs['name']] = e.attrs.get('value')
 
             if 'signin[email]' in data:
                 break
