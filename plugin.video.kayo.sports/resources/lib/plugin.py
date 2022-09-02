@@ -89,7 +89,7 @@ def _email_password():
 def _live_channels():
     panel_id = None
     for row in api.landing('sports'):
-        if row['title'].lower() == 'live channels':
+        if 'channels' in row['title'].lower():
             panel_id = row['id']
             break
 
