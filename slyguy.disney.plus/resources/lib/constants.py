@@ -4,6 +4,7 @@ CLIENT_VERSION = '6.1.0' #6.5.0
 API_VERSION = '5.1'
 API_KEY = 'ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA'
 CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v3.0/{}/android/v{}/google/tv/prod.json'.format(CLIENT_ID, CLIENT_VERSION)
+DEVICE_CODE_URL = 'https://www.disneyplus.com/begin'
 PAGE_SIZE_SETS = 15
 PAGE_SIZE_CONTENT = 30
 SEARCH_QUERY_TYPE = 'ge'

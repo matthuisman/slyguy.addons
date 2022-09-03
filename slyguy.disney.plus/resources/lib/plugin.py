@@ -4,6 +4,7 @@ from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION
 from slyguy.drm import is_wv_secure
+from slyguy.util import async_tasks
 
 from .api import API
 from .constants import *
@@ -52,7 +53,7 @@ def index(**kwargs):
 def login(**kwargs):
     options = [
         [_.EMAIL_PASSWORD, _email_password],
-        #[_.DEVICE_CODE, _device_code],
+     #   [_.DEVICE_CODE, _device_code],
     ]
 
     index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
@@ -62,20 +63,20 @@ def login(**kwargs):
     _select_profile()
     gui.refresh()
 
-# def _device_code():
-#     monitor = xbmc.Monitor()
-#     code = api.device_code()
-#     timeout = 600
+def _device_code():
+    monitor = xbmc.Monitor()
+    code = api.device_code()
+    timeout = 600
 
-#     with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_CODE_URL), heading=_.DEVICE_CODE) as progress:
-#         for i in range(timeout):
-#             if progress.iscanceled() or monitor.waitForAbort(1):
-#                 return
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_CODE_URL), heading=_.DEVICE_CODE) as progress:
+        for i in range(timeout):
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
 
-#             progress.update(int((i / float(timeout)) * 100))
+            progress.update(int((i / float(timeout)) * 100))
 
-#             if i % 5 == 0 and api.device_login(code):
-#                 return True
+            if i % 5 == 0 and api.device_login(code):
+                return True
 
 def _email_password():
     email = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
@@ -173,7 +174,7 @@ def collection(slug, content_class, label=None, **kwargs):
     data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection' if slug == 'home' else 'StandardCollection')
     folder = plugin.Folder(label or _get_text(data, 'title', 'collection'), thumb=_get_art(data).get('fanart'))
 
-    for row in data['containers']:
+    def process_row(row):
         _set = row.get('set')
         _style = row.get('style')
         ref_type = _set['refType'] if _set['type'] == 'SetRef' else _set['type']
@@ -184,10 +185,10 @@ def collection(slug, content_class, label=None, **kwargs):
             set_id = _set.get('setId')
 
         if not set_id:
-            return None
+            return
 
         if slug == 'home' and (_style in ('brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
-            continue
+            return
 
         title = _get_text(_set, 'title', 'set')
         if not title or '${' in title:
@@ -196,9 +197,14 @@ def collection(slug, content_class, label=None, **kwargs):
             #     continue
             title = _get_text(data, 'title', 'set')
 
+        return title, plugin.url_for(sets, set_id=set_id, set_type=ref_type)
+
+    tasks = [lambda row=row: process_row(row) for row in data['containers']]
+    results = [x for x in async_tasks(tasks) if x]
+    for row in results:
         folder.add_item(
-            label = title,
-            path = plugin.url_for(sets, set_id=set_id, set_type=ref_type),
+            label = row[0],
+            path = row[1],
         )
 
     return folder
