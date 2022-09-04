@@ -179,7 +179,7 @@ def process_rows(rows, content_id=None):
                 path = plugin.url_for(play_event, event_id=row['liveEventId'], _is_live=True),
             )
 
-        elif row['type'] in ('LIVE',):  #DONE
+        elif row['type'] in ('LIVE',) and 'programmingInfo' in row:  #DONE
             plot = ''
             programs = [row['programmingInfo']['currentProgramme'], row['programmingInfo']['nextProgramme']]
             for epg in programs:
