@@ -144,7 +144,7 @@ def play(channel_id=None, vod_id=None, **kwargs):
     })
 
     return plugin.Item(
-        path = asset['Path'],
+        path = asset['Path'] + '?' + asset['CdnTicket'],
         inputstream = inputstream.Widevine(license_key=WV_LICENSE_URL),
         headers = _headers,
     )
