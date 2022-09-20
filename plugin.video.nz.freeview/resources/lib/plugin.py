@@ -84,27 +84,17 @@ def play(slug, **kwargs):
 
     return item
 
-def get_channels():
-    url = M3U8_URL
-    if settings.getBool('use_new_mjh', True):
-        url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
-    return get_url_channels(url)
-
 @cached(60*5)
-def get_url_channels(url):
-    return Session().gz_json(url)
+def get_channels():
+    return Session().gz_json(M3U8_URL)
 
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
     channels = get_channels()
 
-    url = EPG_URL
-    if settings.getBool('use_new_mjh', True):
-        url = url.lower().replace('i.mjh.nz', 'new.mjh.nz')
-
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(url))
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for slug in sorted(channels, key=lambda k: (float(channels[k].get('channel', 'inf')), channels[k]['name'])):
             channel = channels[slug]

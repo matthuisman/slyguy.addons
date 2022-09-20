@@ -5,10 +5,6 @@ msgctxt "#30000"
 msgid "Live TV"
 msgstr ""
 
-msgctxt "#30001"
-msgid "Use (new.mjh.nz) improved data source"
-msgstr ""
-
 msgctxt "#30002"
 msgid "Show Mini EPG"
 msgstr ""
