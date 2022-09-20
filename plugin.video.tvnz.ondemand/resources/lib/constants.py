@@ -1,7 +1,6 @@
 HEADERS = {
     'User-Agent': 'Android/Ondemand/609',
     'x-tvnz-api-client-id': 'androidphone/2.64.3.609',
-    'X-Forwarded-For' : '202.89.4.222',
 }
 
 API_URL = 'https://apis-public-prod.tech.tvnz.co.nz{}'
