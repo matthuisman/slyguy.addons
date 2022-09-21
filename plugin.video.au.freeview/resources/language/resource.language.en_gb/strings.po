@@ -41,10 +41,6 @@ msgctxt "#30009"
 msgid "Live TV"
 msgstr ""
 
-msgctxt "#30010"
-msgid "Use (new.mjh.nz) improved data source"
-msgstr ""
-
 msgctxt "#30011"
 msgid "Show Mini EPG"
 msgstr ""
