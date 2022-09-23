@@ -131,7 +131,7 @@ def _parse_episodes(rows):
         }
 
         if info['episode'] or not info['season']:
-            search = '{} {} {}'.format(row['name'], row.get('synopsis', ''), row.get('cust_params', ''))
+            search = u'{} {} {}'.format(row['name'], row.get('synopsis', ''), row.get('cust_params', ''))
             patterns = ['Season ([0-9]+) Ep ([0-9]+)', 'S([0-9]+) Ep([0-9]+)', 'season([0-9]+)ep([0-9]+)']
             for pattern in patterns:
                 result = re.search(pattern, search)
