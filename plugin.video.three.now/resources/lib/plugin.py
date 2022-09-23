@@ -1,6 +1,8 @@
 import re
 import string
 
+import arrow
+
 from slyguy import plugin, gui, settings, userdata, inputstream
 
 from .api import API
@@ -194,9 +196,15 @@ def play(id, **kwargs):
 def play_channel(channel, **kwargs):
     for row in api.live():
         if row['title'] == channel:
+
+            if 'lsai' in row['videoRenditions']['videoCloud']:
+                url = row['videoRenditions']['videoCloud']['lsai']['url'].replace('/session/', '/master/')
+            else:
+                url = row['videoRenditions']['videoCloud']['hlsUrl']
+
             return plugin.Item(
                 inputstream = inputstream.HLS(live=True),
-                path = row['videoRenditions']['videoCloud']['hlsUrl'],
+                path = url,
             )
 
 @plugin.route()
@@ -208,10 +216,27 @@ def search(query, page, **kwargs):
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE)
 
+    now = arrow.now()
+    epg_count = 5
+
+    for row in api.live():
+        plot = u''
+        count = 0
+        for program in row.get('broadcasts', []):
+            start = arrow.get(program['startDate'])
+            stop = arrow.get(program['endDate'])
+
+            if (now > start and now < stop) or start > now:
+                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), program['title'])
+                count += 1
+                if count == epg_count:
+                    break
+
     for row in api.live():
         folder.add_item(
             label = row['displayName'],
             art = {'thumb': row.get('logo','').split('?')[0]},
+            info = {'plot': plot},
             path = plugin.url_for(play_channel, channel=row['title'], _is_live=True),
             playable = True,
         )
