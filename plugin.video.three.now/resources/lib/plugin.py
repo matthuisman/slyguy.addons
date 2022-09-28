@@ -232,7 +232,6 @@ def live(**kwargs):
                 if count == epg_count:
                     break
 
-    for row in api.live():
         folder.add_item(
             label = row['displayName'],
             art = {'thumb': row.get('logo','').split('?')[0]},
