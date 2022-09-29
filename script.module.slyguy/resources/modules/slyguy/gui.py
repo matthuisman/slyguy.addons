@@ -11,7 +11,7 @@ from . import settings
 from .constants import *
 from .router import add_url_args
 from .language import _
-from .dns import get_dns_rewrites
+from .smart_urls import get_dns_rewrites
 from .util import fix_url, set_kodi_string, hash_6
 
 def _make_heading(heading=None):
