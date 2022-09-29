@@ -152,7 +152,7 @@ class RawSession(requests.Session):
 
             elif session_data['resolver'] and session_data['resolver'][0] == host:
                 host = session_data['resolver'][1].query(host)[0].to_text()
-                print('DNS Resolver: {} -> {} -> {}'.format(orig_host, resolver.nameservers[0], host))
+                log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, session_data['resolver'][1].nameservers[0], host))
 
             if host in self._dns_cache:
                 return self._dns_cache[host]
