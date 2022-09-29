@@ -8,8 +8,7 @@ from .mem_cache import cached
 from .constants import ADDON_PROFILE, ADDON_ID, COMMON_ADDON
 
 def get_dns_rewrites(dns_rewrites=None):
-    rewrites = []
-    rewrites.extend(_load_rewrites(ADDON_PROFILE))
+    rewrites = _load_rewrites(ADDON_PROFILE)
 
     if COMMON_ADDON.getAddonInfo('id') != ADDON_ID:
         rewrites.extend(_load_rewrites(COMMON_ADDON.getAddonInfo('profile')))
@@ -19,6 +18,12 @@ def get_dns_rewrites(dns_rewrites=None):
 
     if rewrites:
         log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
+
+    rewrites.extend([
+        ['r:8.8.8.8', 'dai.google.com'],
+        ['r:1.1.1.1', 'mjh.nz'],
+        ['r:1.1.1.1', 'slyguy.xyz'],
+    ])
 
     return rewrites
 

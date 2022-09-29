@@ -125,7 +125,7 @@ class RawSession(requests.Session):
                         session_data['proxy'] = entry[1]
                     elif entry[0] == 'dns':
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
-                    elif entry[0] == 'resolver':
+                    elif entry[0] == 'resolver' and entry[1]:
                         resolver = dns.resolver.Resolver()
                         resolver.cache = dns.resolver.Cache()
                         resolver.nameservers = [entry[1],]
