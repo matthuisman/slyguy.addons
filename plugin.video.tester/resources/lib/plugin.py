@@ -24,7 +24,6 @@ def play_video(index, **kwargs):
 
     item = plugin.Item(
         path = video['url'],
-        use_proxy = False,
     )
 
     if video['type'] == 'ia_hls':
