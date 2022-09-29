@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.54.9">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.55.0">
   <requires>
     <import addon="slyguy.dependencies"/>
   </requires>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Allow !(not) operator for languages in addon settings</news>
+    <news>Added ability to set dns resolvers in smart urls</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
