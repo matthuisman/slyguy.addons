@@ -19,12 +19,6 @@ def get_dns_rewrites(dns_rewrites=None):
     if rewrites:
         log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
 
-    rewrites.extend([
-        ['r:8.8.8.8', 'dai.google.com'],
-        ['r:1.1.1.1', 'mjh.nz'],
-        ['r:1.1.1.1', 'slyguy.xyz'],
-    ])
-
     return rewrites
 
 @cached(expires=60*5)
