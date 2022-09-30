@@ -45,7 +45,11 @@ if sys.platform == 'win32':
     try:
         import winreg as _winreg
     except ImportError:
-        import _winreg  # pylint: disable=import-error
+        try:
+            import _winreg  # pylint: disable=import-error
+        except ImportError:
+            # UWP
+            _winreg = None
 
 class NXDOMAIN(dns.exception.DNSException):
     """The DNS query name does not exist."""
@@ -540,7 +544,8 @@ class Resolver(object):
         self.reset()
         if configure:
             if sys.platform == 'win32':
-                self.read_registry()
+                if _winreg:
+                    self.read_registry()
             elif filename:
                 self.read_resolv_conf(filename)
 
