@@ -1,5 +1,6 @@
 import json
 import socket
+import shutil
 import re
 from gzip import GzipFile
 
@@ -16,7 +17,7 @@ from .smart_urls import get_dns_rewrites
 from .log import log
 from .language import _
 from .exceptions import SessionError
-from .constants import DEFAULT_USERAGENT, CHUNK_SIZE
+from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -32,6 +33,18 @@ def json_override(func, error_msg):
 
 orig_getaddrinfo = socket.getaddrinfo
 
+CIPHERS_STRING = '@SECLEVEL=1:'+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS
+class SSLAdapter(requests.adapters.HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=CIPHERS_STRING)
+        kwargs['ssl_context'] = context
+        return super(SSLAdapter, self).init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, *args, **kwargs):
+        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=CIPHERS_STRING)
+        kwargs['ssl_context'] = context
+        return super(SSLAdapter, self).proxy_manager_for(*args, **kwargs)
+
 class RawSession(requests.Session):
     def __init__(self, verify=None, timeout=None):
         super(RawSession, self).__init__()
@@ -42,6 +55,10 @@ class RawSession(requests.Session):
         self._rewrites = []
         self._proxy = None
         self._cert = None
+
+        # Py3 only. Py2 works without and this breaks it
+        if KODI_VERSION > 18:
+            self.mount('https://', SSLAdapter())
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
@@ -74,21 +91,19 @@ class RawSession(requests.Session):
     def _get_cert(self):
         if not self._cert:
             return None
-        pem, key = self._cert
-        if pem.lower().startswith('http'):
-            log.debug('Downloading pem: {}'.format(pem))
-            resp = requests.get(pem)
-            pem = xbmc.translatePath('special://temp/temp.pem')
-            with open(pem, 'wb') as f:
-                f.write(resp.content)
-        if key.lower().startswith('http'):
-            log.debug('Downloading key: {}'.format(key))
-            resp = requests.get(key)
-            key = xbmc.translatePath('special://temp/temp.key')
-            with open(key, 'wb') as f:
-                f.write(resp.content)
-        self._cert = (xbmc.translatePath(pem), xbmc.translatePath(key))
-        return self._cert
+
+        if self._cert.lower().startswith('http'):
+            url = self._cert
+            self._cert = None
+
+            log.debug('Downloading cert: {}'.format(url))
+            resp = self.request('get', url, stream=True)
+
+            self._cert = xbmc.translatePath('special://temp/temp.pem')
+            with open(self._cert, 'wb') as f:
+                shutil.copyfileobj(resp.raw, f)
+
+        return xbmc.translatePath(self._cert)
 
     def set_proxy(self, proxy):
         self._proxy = proxy
