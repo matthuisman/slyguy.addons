@@ -813,12 +813,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return string[1:-1]
             return string
 
-        def _process_media(line, prefix):
+        def _process_media(line, prefix, remove_quotes=False):
             attribs = {}
 
             for row in ATTRIBUTELISTPATTERN.split(line.replace(prefix+':', ''))[1::2]:
                 name, value = row.split('=', 1)
-                attribs[name.upper()] = _remove_quotes(value.strip()) if prefix == '#EXT-X-MEDIA' else value.strip()
+                attribs[name.upper()] = _remove_quotes(value.strip()) if remove_quotes else value.strip()
 
             return attribs
 
@@ -850,7 +850,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 continue
 
             if line.startswith('#EXT-X-MEDIA'):
-                attribs = _process_media(line, '#EXT-X-MEDIA')
+                attribs = _process_media(line, '#EXT-X-MEDIA', remove_quotes=True)
                 if not attribs:
                     continue
 
@@ -878,10 +878,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             elif stream_inf and not line.startswith('#'):
                 attribs = _process_media(stream_inf, '#EXT-X-STREAM-INF')
 
-                codecs = [x for x in attribs.get('CODECS', '').split(',') if x]
-                bandwidth = int(attribs.get('BANDWIDTH') or 0)
-                resolution = attribs.get('RESOLUTION', '')
-                frame_rate = attribs.get('FRAME-RATE', '')
+                codecs = [x for x in _remove_quotes(attribs.get('CODECS', '')).split(',') if x]
+                bandwidth = int(_remove_quotes(attribs.get('BANDWIDTH')) or 0)
+                resolution = _remove_quotes(attribs.get('RESOLUTION', ''))
+                frame_rate = _remove_quotes(attribs.get('FRAME-RATE', ''))
 
                 url = line
                 if '://' in url:
