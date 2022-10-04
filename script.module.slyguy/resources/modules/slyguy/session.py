@@ -50,7 +50,6 @@ class RawSession(requests.Session):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
-        self._dns_cache = {}
         self._session_cache = {}
         self._rewrites = []
         self._proxy = None
@@ -169,15 +168,11 @@ class RawSession(requests.Session):
                 host = session_data['resolver'][1].query(host)[0].to_text()
                 log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, session_data['resolver'][1].nameservers[0], host))
 
-            if host in self._dns_cache:
-                return self._dns_cache[host]
-
             try:
                 addresses = orig_getaddrinfo(host, port, socket.AF_INET, _type, proto, flags)
             except socket.gaierror:
                 addresses = orig_getaddrinfo(host, port, socket.AF_INET6, _type, proto, flags)
 
-            self._dns_cache[host] = addresses
             return addresses
 
         if session_data['url'] != url:
