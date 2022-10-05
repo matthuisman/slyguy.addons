@@ -6,9 +6,11 @@ from kodi_six import xbmcplugin
 from slyguy import plugin, gui, settings, userdata, inputstream
 from slyguy.constants import ROUTE_LIVE_TAG
 from slyguy.util import pthms_to_seconds
+from slyguy.session import Session
+from slyguy.log import log
 
 from .api import API
-from .constants import HEADERS
+from .constants import HEADERS, EPG_URL
 from .language import _
 
 api = API()
@@ -325,13 +327,49 @@ def _parse_row(row):
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
+    try:
+        data = Session().gz_json(EPG_URL)
+        channel_map = {
+            'tvnz-1': 'mjh-tvnz-1',
+            'tvnz-2': 'mjh-tvnz-2',
+            'tvnz-duke': 'mjh-tvnz-duke',
+        }
+    except Exception as e:
+        log.exception(e)
+        log.debug('failed to get epg data')
+        channel_map = {}
+
+    now = arrow.now()
+    epg_count = 5
+
     for row in api.channels():
+        slug = row['href'].split('/')[-1]
+
+        plot = u''
+        count = 0
+        if epg_count and slug in channel_map and channel_map[slug] in data:
+            channel = data[channel_map[slug]]
+
+            for index, program in enumerate(channel.get('programs', [])):
+                start = arrow.get(program[0])
+                try: stop = arrow.get(channel['programs'][index+1][0])
+                except: stop = start.shift(hours=1)
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), program[1])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if not plot:
+            plot = row['_embedded']['synopsis']
+
         folder.add_item(
             label = row['_embedded']['title'],
-            info = {'plot': row['_embedded']['synopsis']},
+            info = {'plot': plot},
             art = {'thumb': _get_image(row['_embedded']['tileImage'])},
             playable = True,
-            path = plugin.url_for(play, channel=row['href'].split('/')[-1], _is_live=True),
+            path = plugin.url_for(play, channel=slug, _is_live=True),
         )
 
     return folder

@@ -5,6 +5,7 @@ HEADERS = {
 
 API_URL = 'https://apis-public-prod.tech.tvnz.co.nz{}'
 IMG_BASE = 'https://api.tvnz.co.nz{}'
+EPG_URL = 'https://i.mjh.nz/nz/tv.json.gz'
 PAGE_LIMIT = 4
 
 BRIGHTCOVE_URL = 'https://edge.api.brightcove.com/playback/v1/accounts/{}/videos/{}'
