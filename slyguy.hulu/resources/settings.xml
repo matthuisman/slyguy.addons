@@ -24,6 +24,8 @@
         <setting label="30009" type="bool" id="secondary_audio" default="false"/>
         <setting label="30006" type="bool" id="h265" default="true"/>
         <setting label="30008" type="bool" id="4k" default="true" visible="eq(-1,true)"/>
+        <setting label="30036" type="bool" id="enable_hdr" default="true" visible="Integer.IsGreaterOrEqual(Window(10000).Property(hdcp_level),22)+eq(-2,true)"/>
+        <setting label="30037" type="bool" id="dolby_vision" default="false" visible="Integer.IsGreaterOrEqual(Window(10000).Property(hdcp_level),22)+eq(-3,true)"/>
 
         <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/>

@@ -37,5 +37,7 @@ class Language(BaseLanguage):
     KIDS             = 30033
     HIDE_KIDS        = 30034
     HIDE_LIVE        = 30035
+    ENABLE_HDR       = 30036
+    DOLBY_VISION     = 30037
 
 _ = Language()

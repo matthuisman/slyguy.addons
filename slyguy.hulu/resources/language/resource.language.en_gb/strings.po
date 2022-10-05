@@ -143,6 +143,14 @@ msgctxt "#30035"
 msgid "Hide Live"
 msgstr ""
 
+msgctxt "#30036"
+msgid "HDR"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Dolby Vision"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

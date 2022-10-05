@@ -5,5 +5,5 @@ HEADERS = {
 DEVICE_ACTIVATE_URL = 'https://hulu.com/activate'
 API_URL = 'https://discover.hulu.com{}'
 
-DEEJAY_DEVICE_ID = 188
-DEEJAY_KEY_VERSION = 17
+DEEJAY_DEVICE_ID = 210
+DEEJAY_KEY_VERSION = 1

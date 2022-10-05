@@ -8,6 +8,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import get_system_arch, chunked
 from slyguy.log import log
+from slyguy.drm import req_hdcp_level, HDCP_2_2, is_wv_secure
 
 from .constants import *
 from .language import _
@@ -368,8 +369,9 @@ class API(object):
                 'version': 2,
                 'video': {'codecs':{'values':vid_types, 'selection_mode':'ALL'}},
                 'audio': {'codecs':{'values':aud_types, 'selection_mode':'ALL'}},
-                'drm': {'values':[{'type':'WIDEVINE', 'version':'MODULAR', 'security_level': 'L1'}], 'selection_mode':'ALL'},
+                'drm': {'values':[{'type':'WIDEVINE', 'version':'MODULAR', 'security_level': 'L1' if is_wv_secure() else 'L3'}], 'selection_mode':'ALL'},
                 'manifest': {'type':'DASH', 'https':True, 'multiple_cdns':False, 'patch_updates':patch_updates, 'hulu_types':False, 'live_dai':False, 'multiple_periods':False, 'xlink':False, 'secondary_audio':secondary_audio, 'live_fragment_delay':live_segment_delay},
+                'trusted_execution_environment': True,
                 'segments': {'values':[{'type':'FMP4','encryption':{'mode':'CENC','type':'CENC'},'https':True}], 'selection_mode':'ONE'}
             },
             # 'interface_version': '1.12.1',
@@ -380,6 +382,10 @@ class API(object):
             # 'device_ad_id': device_id,
             # 'cp_session_id': device_id,
         }
+
+        if (settings.getBool('enable_hdr', True) or settings.getBool('dolby_vision', False)) and req_hdcp_level(HDCP_2_2): # also need WV L1?
+            payload['playback']['video']['dynamic_range'] = 'DOLBY_VISION' if not settings.getBool('enable_hdr', True) else 'HDR'
+            payload['playback']['drm']['multi_key'] = True
 
         payload.update(self._lat_long())
 
