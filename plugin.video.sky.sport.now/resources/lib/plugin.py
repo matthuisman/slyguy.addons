@@ -31,7 +31,7 @@ def home(**kwargs):
 
         folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, content_id='home', label=_.HOME))
         folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(content, content_id='browse', label=_.SPORTS))
-        folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
+       # folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -265,9 +265,12 @@ def mpd_request(_data, _path, **kwargs):
     mpd = root.getElementsByTagName("MPD")[0]
     # Fixes issues of being too close to head and getting 404 error
     mpd.setAttribute('availabilityStartTime', '1970-01-01T00:00:20Z')
+    # remove 24 hour buffer
+    mpd.setAttribute('timeShiftBufferDepth', 'PT30S')
 
+    # remove all periods except last
     mpd = root.getElementsByTagName("MPD")[0]
-    for period in root.getElementsByTagName('Period')[1:]:
+    for period in root.getElementsByTagName('Period')[:-1]:
         period.parentNode.removeChild(period)
 
     with open(_path, 'wb') as f:
@@ -301,6 +304,8 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
     else:
         start = int(start)
         play_type = PLAY_FROM_START
+
+    play_type = PLAY_FROM_LIVE #override due to broken replay due to multi-period
 
     offset = arrow.now().timestamp - start
     if is_live and offset > 0:
@@ -358,8 +363,16 @@ def playlist(output, **kwargs):
             event_id = row['id']
             channel_id = row['programmingInfo']['channelId']
 
-            catchup = plugin.url_for(play_event, event_id=event_id, start='{utc}', duration='{duration}', _is_live=True)
-            catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
+            #catchup = plugin.url_for(play_event, event_id=event_id, start='{utc}', duration='{duration}', _is_live=True)
+            #catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
+            catchup = None
 
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}" catchup="default" catchup-days="1" catchup-source="{catchup}",{name}\n{url}'.format(
-                id=channel_id, logo=row['programmingInfo']['channelLogoUrl'], name=row['title'], url=plugin.url_for(play_event, event_id=event_id, _is_live=True), catchup=catchup))
+            if catchup:
+                catchup = ' catchup="default" catchup-days="1" catchup-source="{}"'.format(catchup)
+            else:
+                catchup = ''
+
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}"{catchup},{name}\n{url}'.format(
+                id=channel_id, logo=row['programmingInfo']['channelLogoUrl'], name=row['title'], 
+                catchup=catchup, url=plugin.url_for(play_event, event_id=event_id, _is_live=True),
+            ))
