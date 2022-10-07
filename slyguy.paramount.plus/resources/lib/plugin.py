@@ -448,6 +448,13 @@ def show(show_id, config=None, **kwargs):
                     specialsort = 'bottom',
                 )
 
+            elif row['page_type'] == 'channel' and row.get('currentListingsSize'):
+                folder.add_item(
+                    label = row['title'],
+                    path = plugin.url_for(live_tv, channel_slug=row['channel_slug']),
+                    specialsort = 'bottom',
+                )
+
         return folder
 
     config = api.show_config(show_id, config)
@@ -522,11 +529,11 @@ def season(show_id, section, season, **kwargs):
     return folder
 
 @plugin.route()
-def live_tv(**kwargs):
+def live_tv(channel_slug=None, **kwargs):
     folder = plugin.Folder(_.LIVE_TV)
 
     for row in api.live_channels():
-        if not row['currentListing']:
+        if not row['currentListing'] or (channel_slug and row['slug'] != channel_slug):
             continue
 
         for listing in row['currentListing']:

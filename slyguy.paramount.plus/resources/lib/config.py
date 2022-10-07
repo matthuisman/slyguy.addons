@@ -114,8 +114,7 @@ class Config(object):
         return self._config['movies']
 
     def has_live_tv(self):
-        #todo
-        return self.region == REGION_US and self._config['live_tv']
+        return self._config['live_tv']
 
     def has_news(self):
         #todo
