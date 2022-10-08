@@ -96,7 +96,7 @@ class API(object):
 
         self._parse_token(data['AuthenticationResult'])
 
-    def play(self, asset, from_start=False):
+    def play(self, asset, from_start=False, use_cmaf=False):
         self._check_token()
 
         params = {
@@ -110,7 +110,7 @@ class API(object):
             'osVersion': '11',
             'playerName': 'ExoPlayer',
             'playerVersion': '2.6.508',
-            'appVersion': '1.6.508', #2.0.0+ uses cmaf
+            'appVersion': '2.6.508' if use_cmaf else '1.6.508',
             'advertConsent': 'false',
             'advertIdType': '',
             'deviceId': '',

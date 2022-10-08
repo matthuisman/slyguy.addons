@@ -189,7 +189,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
     if play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START)):
         from_start = True
 
-    stream = api.play(asset, True)
+    stream = api.play(asset, True, use_cmaf=inputstream.require_version('20.3.1'))
 
     item = plugin.Item(
         path = stream['url'],
