@@ -285,9 +285,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             b_bandwidth = b['bandwidth']
 
             if a_rank > b_rank:
-                a_bandwidth += int(0.15*a_bandwidth)
+                a_bandwidth += 3000000
             elif a_rank < b_rank:
-                b_bandwidth += int(0.15*b_bandwidth)
+                b_bandwidth += 3000000
 
             # Same codec rank - compare bandwidth
             if a_bandwidth and b_bandwidth:
