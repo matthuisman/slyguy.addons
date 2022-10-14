@@ -403,7 +403,7 @@ def play(slug, **kwargs):
 
     item = plugin.Item(
         path = url,
-        inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs),
+        inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG) if inputstream.require_version('20.3.2') else None,
     )
 
     for idx, row in enumerate(subtitles):
