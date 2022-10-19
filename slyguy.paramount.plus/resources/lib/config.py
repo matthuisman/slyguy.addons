@@ -10,7 +10,7 @@ LINK_PLATFORM_URL = 'http://link.theplatform.com/s/dJ5BDC/media/guid/2198311517/
 CONFIG = {
     REGION_US: {
         'base_url': 'https://www.paramountplus.com',
-        'at_token': 'ABCqWNNSwhIqINWIIAG+DFzcFUvF8/vcN6cNyXFFfNzWAIvXuoVgX+fK4naOC7V8MLI=',
+        'at_token': 'ABC+2JjrOUYWbaaqKmzwPdppq0RDB2WdufcFmIsSnJDmDEQpVgyAjQpqpEDksKZNMKQ=',
         'device_link': True,
     },
     REGION_INTL: {
