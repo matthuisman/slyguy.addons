@@ -72,10 +72,10 @@ class API(object):
         self._parse_tokens(data['accessToken'], data['idToken'])
 
     def profiles(self):
-        return self._request_json('v6/profiles')['items']
+        return self._request_json('/cs-mobile/v6/profiles')['items']
 
     def _get_auth(self):
-        data = self._request_json('user-manager/v5/vod-authorisation;productId={product};platformId={platform};deviceType={device_type};'.format(
+        data = self._request_json('/cs-mobile/user-manager/v5/vod-authorisation;productId={product};platformId={platform};deviceType={device_type};'.format(
             product = PRODUCT_ID, platform = PLATFORM_ID, device_type = DEVICE_TYPE), type='post')
 
         return data
@@ -111,21 +111,21 @@ class API(object):
     def content(self, tags, sort, category='', page=1, pagesize=24):
         category = 'filter={};'.format(category) if category else ''
 
-        data = self._request_json('now-content/v6/catalogueByPackageAndCountry;videoAssetsFilter=HasStream;productId={product};platformId={platform};tags={tags};subscriptionPackage={package};country={country};{category}sort={sort};page={page};pageSize={pagesize}'.format(
+        data = self._request_json('/cs-mobile/now-content/v6/catalogueByPackageAndCountry;videoAssetsFilter=HasStream;productId={product};platformId={platform};tags={tags};subscriptionPackage={package};country={country};{category}sort={sort};page={page};pageSize={pagesize}'.format(
             product=PRODUCT_ID, platform=PLATFORM_ID, tags=tags, country=userdata.get('country', DEFAULT_COUNTRY), package=userdata.get('package', DEFAULT_PACKAGE), sort=sort, category=category, page=page-1, pagesize=pagesize,
         ))
 
         return data
 
     def search(self, query):
-        data = self._request_json('now-content/v6/search;platformId={platform};searchTerm={query}'.format(
+        data = self._request_json('/cs-mobile/now-content/v6/search;platformId={platform};searchTerm={query}'.format(
             platform=PLATFORM_ID, query=query
         ))
 
         return data['items'][0]['editorialItems']
 
     def channels(self, events=2):
-        data = self._request_json('v7/epg-service/channels/events;genre={genre};platformId={platform};country={country};packageId={package};count={events};utcOffset=+00:00'.format(
+        data = self._request_json('/cs-mobile/v7/epg-service/channels/events;genre={genre};platformId={platform};country={country};packageId={package};count={events};utcOffset=+00:00'.format(
             genre='ALL', platform=PLATFORM_ID, country=userdata.get('country', DEFAULT_COUNTRY), package=userdata.get('package', DEFAULT_PACKAGE), events=events
         ))
 
@@ -136,7 +136,7 @@ class API(object):
 
         for i in range(attempts):
             try:
-                data = self._request_json('epg/v7/getEpgSchedulesByTag;channelTags={tag};startDate={start};endDate={end}'.format(
+                data = self._request_json('/cs-mobile/epg/v7/getEpgSchedulesByTag;channelTags={tag};startDate={start};endDate={end}'.format(
                     tag=tag, start=start_date.format('YYYY-MM-DDT00:00:00ZZ'), end=end_date.format('YYYY-MM-DDT00:00:00ZZ')
                 ), attempts=1)
             except:
@@ -148,14 +148,14 @@ class API(object):
         return data['items']
 
     def series(self, id):
-        data = self._request_json('now-content/v6/getCatalogue;productId={product};platformId={platform};programId={id}'.format(
+        data = self._request_json('/cs-mobile/now-content/v6/getCatalogue;productId={product};platformId={platform};programId={id}'.format(
             product = PRODUCT_ID, platform = PLATFORM_ID, id = id
         ))
 
         return data['items'][0]['program']
 
     def get_video(self, id):
-        data = self._request_json('now-content/v6/getCatalogue;productId={product};platformId={platform};videoId={id}'.format(
+        data = self._request_json('/cs-mobile/now-content/v6/getCatalogue;productId={product};platformId={platform};videoId={id}'.format(
             product = PRODUCT_ID, platform = PLATFORM_ID, id = id
         ))
 
@@ -167,6 +167,9 @@ class API(object):
                 return channel
 
         raise APIError(_(_.CHANNEL_NOT_FOUND, id=id))
+
+    def stream_token(self, channel_tag):
+        return self._request_json('/dstv_now/play_stream/access_token?channel_tag={}'.format(channel_tag), type='post')['access_token']
 
     def play_channel(self, id):
         channel = self.get_channel(id)
@@ -180,10 +183,12 @@ class API(object):
         if not stream_url:
             raise APIError(_.STREAM_ERROR)
 
-        parsed     = urlparse(stream_url)
+        parsed = urlparse(stream_url)
         content_id = parse_qs(parsed.query)['contentId'][0]
 
-        return self.play_asset(stream_url, content_id)
+        stream_url, license_url, headers = self.play_asset(stream_url, content_id)
+        stream_url += '{}hdnts={}'.format('&' if '?' in stream_url else '?', self.stream_token(channel['id']))
+        return stream_url, license_url, headers
 
     def play_video(self, id):
         video = self.get_video(id)
@@ -196,8 +201,8 @@ class API(object):
         return self.play_asset(stream_url, content_id)
 
     def play_asset(self, stream_url, content_id):
-        auth       = self._get_auth()
-        session    = auth.get('irdetoSession')
+        auth = self._get_auth()
+        session = auth.get('irdetoSession')
 
         if '.isml' in stream_url:
             stream_url = stream_url.replace('.isml', '.isml/.mpd')
@@ -208,7 +213,7 @@ class API(object):
             raise APIError(data.get('errorMessage'))
 
         session_id = session['sessionId']
-        ticket     = session['ticket']
+        ticket = session['ticket']
 
         license_url = LICENSE_URL.format(content_id, session_id, ticket)
 
@@ -236,7 +241,7 @@ class API(object):
             'deviceId': device_id,
         }
 
-        data = self._request_json(DEVICE_REGISTER, type='post', json=payload, refresh_token=False)
+        data = self._request_json('/lean-back-otp/device/registration', type='post', json=payload, refresh_token=False)
         code = data['userCode']
 
         log.debug('Device ID: {} | Device Code: {}'.format(device_id, code))
