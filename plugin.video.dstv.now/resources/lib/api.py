@@ -11,7 +11,7 @@ from slyguy import userdata, settings
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.exceptions import Error
-from slyguy.util import jwt_data, get_system_arch
+from slyguy.util import jwt_data, get_system_arch, add_url_args
 
 from .language import _
 from .constants import *
@@ -187,7 +187,7 @@ class API(object):
         content_id = parse_qs(parsed.query)['contentId'][0]
 
         stream_url, license_url, headers = self.play_asset(stream_url, content_id)
-        stream_url += '{}hdnts={}'.format('&' if '?' in stream_url else '?', self.stream_token(channel['id']))
+        stream_url = add_url_args(stream_url, {'hdnts': self.stream_token(channel['id'])})
         return stream_url, license_url, headers
 
     def play_video(self, id):
