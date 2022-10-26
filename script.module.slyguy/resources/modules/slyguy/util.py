@@ -18,6 +18,7 @@ from contextlib import closing
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 from six.moves import queue, range
 from six.moves.urllib.parse import urlparse, urlunparse
+from requests.models import PreparedRequest
 from six import PY2
 import requests
 
@@ -44,6 +45,11 @@ def fix_url(url):
     parse = urlparse(url)
     parse = parse._replace(path=re.sub('/{2,}','/',parse.path))
     return urlunparse(parse)
+
+def add_url_args(url, params=None):
+    req = PreparedRequest()
+    req.prepare_url(url, params)
+    return req.url
 
 def check_port(port=0, default=False):
     try:
