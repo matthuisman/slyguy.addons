@@ -79,7 +79,15 @@ class API(object):
             # Supports multiple devices and multiple IP address as long (as others also using password)
             data = userdata.get('login_data')
             data = self._session.post(data.pop('url'), data=data).json()
-
+            auth_token = data['result']['newAuthToken']
+            device_token = data['result']['deviceAuthToken']
+            selected = userdata.get('device_data')
+            data = {
+                'name': selected['name'],
+                'casDeviceId': selected['uniqueDeviceId'],
+                'type': selected['type'],
+            }
+            data = self._session.post('proxy/casAuth', data=data, headers={'X-AN-WebService-CustomerAuthToken': auth_token, 'X-AN-WebService-DeviceAuthToken': device_token}).json()
         else:
             raise APIError('Unable to persist session. Try logout and login again.')
 
@@ -249,13 +257,18 @@ class API(object):
         if settings.getEnum('login_type', choices=LOGIN_TYPE, default=LOGIN_MULTI_IP) == LOGIN_PASSWORD:
             login_data['url'] = login_url
             userdata.set('login_data', login_data)
+            userdata.set('device_data', selected)
 
     @mem_cache.cached(60*10, key='channels')
     def channels(self):
         self._create_session()
 
+        payload = {
+            'languageId': 'eng',
+        }
+
         channels = []
-        for row in self._session.post('proxy/listChannels').json()['result']['channels']:
+        for row in self._session.post('proxy/listChannels', data=payload).json()['result']['channels']:
             row['logo'] = '{}proxy/imgdata?objectId=75_{}&type=102'.format(self._config['alpha_networks_dash'][REGION]['platform_url'], row['idChannel'])
             channels.append(row)
 
