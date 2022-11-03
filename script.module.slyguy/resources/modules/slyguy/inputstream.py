@@ -232,7 +232,8 @@ def install_widevine(reinstall=False):
     userdata.set('_wv_last_check', int(time.time()))
 
     log.debug('Downloading wv versions: {}'.format(IA_MODULES_URL))
-    widevine = Session().gz_json(IA_MODULES_URL)['widevine']
+    with Session() as session:
+        widevine = session.gz_json(IA_MODULES_URL)['widevine']
     wv_versions = widevine['platforms'].get(system + arch, [])
 
     if not wv_versions:
@@ -321,23 +322,24 @@ def _download(url, dst_path, md5=None):
 
     log.debug('Widevine - Downloading: {} to {}'.format(url, dst_path))
     with gui.progress(_(_.IA_DOWNLOADING_FILE, url=filename), heading=_.IA_WIDEVINE_DRM) as progress:
-        resp = Session().get(url, stream=True)
-        if resp.status_code != 200:
-            raise InputStreamError(_(_.ERROR_DOWNLOADING_FILE, filename=filename))
+        with Session() as session:
+            resp = session.get(url, stream=True)
+            if resp.status_code != 200:
+                raise InputStreamError(_(_.ERROR_DOWNLOADING_FILE, filename=filename))
 
-        total_length = float(resp.headers.get('content-length', 1))
+            total_length = float(resp.headers.get('content-length', 1))
 
-        with open(dst_path, 'wb') as f:
-            for chunk in resp.iter_content(chunk_size=CHUNK_SIZE):
-                f.write(chunk)
-                downloaded += len(chunk)
-                percent = int(downloaded*100/total_length)
+            with open(dst_path, 'wb') as f:
+                for chunk in resp.iter_content(chunk_size=CHUNK_SIZE):
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    percent = int(downloaded*100/total_length)
 
-                if progress.iscanceled():
-                    progress.close()
-                    resp.close()
+                    if progress.iscanceled():
+                        progress.close()
+                        resp.close()
 
-                progress.update(percent)
+                    progress.update(percent)
 
     if progress.iscanceled():
         remove_file(dst_path)

@@ -20,7 +20,8 @@ def _check_news():
 
     settings.setInt('_last_news_check', _time)
 
-    news = Session(timeout=15).gz_json(NEWS_URL)
+    with Session(timeout=15) as session:
+        news = session.gz_json(NEWS_URL)
     if not news:
         return
 

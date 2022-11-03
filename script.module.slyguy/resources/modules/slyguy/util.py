@@ -167,52 +167,6 @@ def user_country():
         log.debug('Unable to get users country')
         return ''
 
-def gdrivedl(url, dst_path):
-    if 'drive.google.com' not in url.lower():
-        raise Error('Not a gdrive url')
-
-    ID_PATTERNS = [
-        re.compile('/file/d/([0-9A-Za-z_-]{10,})(?:/|$)', re.IGNORECASE),
-        re.compile('id=([0-9A-Za-z_-]{10,})(?:&|$)', re.IGNORECASE),
-        re.compile('([0-9A-Za-z_-]{10,})', re.IGNORECASE)
-    ]
-    FILE_URL = 'https://docs.google.com/uc?export=download&id={id}&confirm={confirm}'
-    CONFIRM_PATTERN = re.compile("download_warning[0-9A-Za-z_-]+=([0-9A-Za-z_-]+);", re.IGNORECASE)
-    FILENAME_PATTERN = re.compile('attachment;filename="(.*?)"', re.IGNORECASE)
-
-    id = None
-    for pattern in ID_PATTERNS:
-        match = pattern.search(url)
-        if match:
-            id = match.group(1)
-            break
-
-    if not id:
-        raise Error('No file ID find in gdrive url')
-
-    session = requests.session()
-    resp = session.get(FILE_URL.format(id=id, confirm=''), stream=True)
-    if not resp.ok:
-        raise Error('Gdrive url no longer exists')
-
-    if 'ServiceLogin' in resp.url:
-        raise Error('Gdrive url does not have link sharing enabled')
-
-    cookies = resp.headers.get('Set-Cookie') or ''
-    if 'download_warning' in cookies:
-        confirm = CONFIRM_PATTERN.search(cookies)
-        resp = session.get(FILE_URL.format(id=id, confirm=confirm.group(1)), stream=True)
-
-    filename = FILENAME_PATTERN.search(resp.headers.get('content-disposition')).group(1)
-    dst_path = dst_path if os.path.isabs(dst_path) else os.path.join(dst_path, filename)
-
-    resp.raise_for_status()
-    with open(dst_path, 'wb') as f:
-        for chunk in resp.iter_content(CHUNK_SIZE):
-            f.write(chunk)
-
-    return filename
-
 def FileIO(file_name, method, chunksize=CHUNK_SIZE):
     if xbmc.getCondVisibility('System.Platform.Android'):
         file_obj = io.FileIO(file_name, method)

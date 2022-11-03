@@ -11,12 +11,12 @@ from six.moves.urllib_parse import urlparse
 from kodi_six import xbmc
 import dns.resolver
 
-from . import userdata, settings
+from . import userdata, settings, signals
 from .util import get_kodi_proxy
 from .smart_urls import get_dns_rewrites
 from .log import log
 from .language import _
-from .exceptions import SessionError
+from .exceptions import SessionError, Error
 from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -45,8 +45,15 @@ class SSLAdapter(requests.adapters.HTTPAdapter):
         kwargs['ssl_context'] = context
         return super(SSLAdapter, self).proxy_manager_for(*args, **kwargs)
 
+
+SESSIONS = []
+@signals.on(signals.AFTER_DISPATCH)
+def close_sessions():
+    for session in SESSIONS:
+        session.close()
+
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -54,6 +61,8 @@ class RawSession(requests.Session):
         self._rewrites = []
         self._proxy = None
         self._cert = None
+        if auto_close:
+            SESSIONS.append(self)
 
         # Py3 only. Py2 works without and this breaks it
         if KODI_VERSION > 18:
@@ -111,6 +120,9 @@ class RawSession(requests.Session):
         if self._proxy and self._proxy.lower().strip() == 'kodi':
             self._proxy = get_kodi_proxy()
         return self._proxy
+
+    def __del__(self):
+        self.close()
 
     def request(self, method, url, **kwargs):
         req = requests.Request(method, url, params=kwargs.pop('params', None))
@@ -222,9 +234,9 @@ class RawSession(requests.Session):
         return result
 
 class Session(RawSession):
-    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None):
+    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True):
         super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
-            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout)
+            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key
@@ -316,3 +328,49 @@ class Session(RawSession):
                 f.write(chunk)
 
         return resp
+
+def gdrivedl(url, dst_path):
+    if 'drive.google.com' not in url.lower():
+        raise Error('Not a gdrive url')
+
+    ID_PATTERNS = [
+        re.compile('/file/d/([0-9A-Za-z_-]{10,})(?:/|$)', re.IGNORECASE),
+        re.compile('id=([0-9A-Za-z_-]{10,})(?:&|$)', re.IGNORECASE),
+        re.compile('([0-9A-Za-z_-]{10,})', re.IGNORECASE)
+    ]
+    FILE_URL = 'https://docs.google.com/uc?export=download&id={id}&confirm={confirm}'
+    CONFIRM_PATTERN = re.compile("download_warning[0-9A-Za-z_-]+=([0-9A-Za-z_-]+);", re.IGNORECASE)
+    FILENAME_PATTERN = re.compile('attachment;filename="(.*?)"', re.IGNORECASE)
+
+    id = None
+    for pattern in ID_PATTERNS:
+        match = pattern.search(url)
+        if match:
+            id = match.group(1)
+            break
+
+    if not id:
+        raise Error('No file ID find in gdrive url')
+
+    with Session() as session:
+        resp = session.get(FILE_URL.format(id=id, confirm=''), stream=True)
+        if not resp.ok:
+            raise Error('Gdrive url no longer exists')
+
+        if 'ServiceLogin' in resp.url:
+            raise Error('Gdrive url does not have link sharing enabled')
+
+        cookies = resp.headers.get('Set-Cookie') or ''
+        if 'download_warning' in cookies:
+            confirm = CONFIRM_PATTERN.search(cookies)
+            resp = session.get(FILE_URL.format(id=id, confirm=confirm.group(1)), stream=True)
+
+        filename = FILENAME_PATTERN.search(resp.headers.get('content-disposition')).group(1)
+        dst_path = dst_path if os.path.isabs(dst_path) else os.path.join(dst_path, filename)
+
+        resp.raise_for_status()
+        with open(dst_path, 'wb') as f:
+            for chunk in resp.iter_content(CHUNK_SIZE):
+                f.write(chunk)
+
+    return filename

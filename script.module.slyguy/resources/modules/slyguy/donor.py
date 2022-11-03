@@ -10,7 +10,8 @@ def check_donor():
     if not donor_id:
         return False
 
-    result = Session().head(DONOR_URL.format(id=donor_id), attempts=1, log_url=DONOR_URL.format(id='xxxx')).status_code == 200
+    with Session() as session:
+        result = session.head(DONOR_URL.format(id=donor_id), attempts=1, log_url=DONOR_URL.format(id='xxxx')).status_code == 200
 
     if result:
         set_kodi_string(KEY, '1')
