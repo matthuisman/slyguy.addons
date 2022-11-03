@@ -26,6 +26,8 @@ def play_channel(slug, **kwargs):
     split = channel.url.split('|')
 
     headers = {
+        'seekable': '0',
+        'referer': '%20',
         'user-agent': DEFAULT_USERAGENT,
     }
 

@@ -10,8 +10,8 @@ from six.moves.urllib.parse import unquote_plus
 
 from slyguy import settings, database, gui
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, gdrivedl, run_plugin, safe_copy
-from slyguy.session import Session
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, run_plugin, safe_copy
+from slyguy.session import Session, gdrivedl
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
 
