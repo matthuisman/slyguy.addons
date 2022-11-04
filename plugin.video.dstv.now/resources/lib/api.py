@@ -217,7 +217,21 @@ class API(object):
 
         license_url = LICENSE_URL.format(content_id, session_id, ticket)
 
-        return stream_url, license_url, self._session.headers
+        return stream_url, license_url, HEADERS
+
+    # def play_asset(self, stream_url, content_id):
+    #     LICENSE_URL = 'https://licensev2.dstv.com/licenseServer/widevine/v1/afl/license?contentId={}&ls_session={}'
+    #     if '.isml' in stream_url:
+    #         stream_url = stream_url.replace('.isml', '.isml/.mpd')
+    #     elif '.ism' in stream_url:
+    #         stream_url = stream_url.replace('.ism', '.ism/.mpd')
+
+    #     payload = {"device_id":"awc4v2ga2kcmedbgtkxb34t7168gd0f6","device_type":"web","session_type":"streaming","device_name":"chrome","platform_id":"32faad53-5e7b-4cc0-9f33-000092e85950","os":"Windows","os_version":"10.0","drm":"widevine","hdcp":"NA","security_level":"NA"}
+
+    #     session = self._request_json('/vod-auth/entitlement/session', json=payload, type='post')
+    #     license_url = LICENSE_URL.format(content_id, session['session'])
+
+    #     return stream_url, license_url, HEADERS
 
     def _device_id(self):
         def _format_id(string):
