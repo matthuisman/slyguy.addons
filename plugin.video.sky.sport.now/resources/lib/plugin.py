@@ -31,7 +31,7 @@ def home(**kwargs):
 
         folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, content_id='home', label=_.HOME))
         folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(content, content_id='browse', label=_.SPORTS))
-       # folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
+        folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -264,14 +264,7 @@ def mpd_request(_data, _path, **kwargs):
 
     mpd = root.getElementsByTagName("MPD")[0]
     # Fixes issues of being too close to head and getting 404 error
-    mpd.setAttribute('availabilityStartTime', '1970-01-01T00:00:20Z')
-    # remove 24 hour buffer
-    mpd.setAttribute('timeShiftBufferDepth', 'PT30S')
-
-    # remove all periods except last
-    mpd = root.getElementsByTagName("MPD")[0]
-    for period in root.getElementsByTagName('Period')[:-1]:
-        period.parentNode.removeChild(period)
+    mpd.setAttribute('availabilityStartTime', '1970-01-01T00:00:30Z')
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
@@ -298,14 +291,13 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
             'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}},
         }
     )
+    item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     if start is None:
         start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
     else:
         start = int(start)
         play_type = PLAY_FROM_START
-
-    play_type = PLAY_FROM_LIVE #override due to broken replay due to multi-period
 
     offset = arrow.now().timestamp - start
     if is_live and offset > 0:
@@ -323,6 +315,9 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
 
         elif play_type == PLAY_FROM_START:
             item.resume_from = max(1, offset)
+
+    if not item.resume_from:
+        item.resume_from = 24*60*60
 
     return item
 
@@ -363,9 +358,8 @@ def playlist(output, **kwargs):
             event_id = row['id']
             channel_id = row['programmingInfo']['channelId']
 
-            #catchup = plugin.url_for(play_event, event_id=event_id, start='{utc}', duration='{duration}', _is_live=True)
-            #catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
-            catchup = None
+            catchup = plugin.url_for(play_event, event_id=event_id, start='{utc}', duration='{duration}', _is_live=True)
+            catchup = catchup.replace('%7Butc%7D', '{utc}').replace('%7Bduration%7D', '{duration}')
 
             if catchup:
                 catchup = ' catchup="default" catchup-days="1" catchup-source="{}"'.format(catchup)
