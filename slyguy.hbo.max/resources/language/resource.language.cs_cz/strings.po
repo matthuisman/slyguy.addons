@@ -26,7 +26,7 @@ msgstr "Požadavek API se nezdařil\n"
 
 msgctxt "#30005"
 msgid "Go to Series"
-msgstr "Přejít na sérii"
+msgstr "Přejít na Seriály"
 
 msgctxt "#30006"
 msgid "Unable to find a video for this content\n"
@@ -82,7 +82,7 @@ msgstr "Doporučené"
 
 msgctxt "#30020"
 msgid "Series"
-msgstr "Série"
+msgstr "Seriály"
 
 msgctxt "#30021"
 msgid "Movies"
