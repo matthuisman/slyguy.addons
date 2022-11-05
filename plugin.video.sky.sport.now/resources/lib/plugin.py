@@ -291,7 +291,6 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
             'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}},
         }
     )
-    item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     if start is None:
         start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
