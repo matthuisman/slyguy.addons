@@ -540,6 +540,10 @@ def live_tv(channel_slug=None, **kwargs):
             start = arrow.get(listing['startTimestamp'])
             plot = u'[{}] {}\n'.format(start.to('local').format('h:mma'), listing['title'])
 
+            if row['upcomingListing']:
+                start = arrow.get(row['upcomingListing'][0]['startTimestamp'])
+                plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row['upcomingListing'][0]['title'])
+
             folder.add_item(
                 label = row['channelName'].strip(),
                 info = {

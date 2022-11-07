@@ -407,7 +407,7 @@ class API(object):
         data = self._session.get('/v3.0/androidphone/home/configurator/channels.json', params=self._params(params)).json()
 
         channels = []
-        for row in data['carousel']:
+        for row in data.get('carousel', []):
             if row['dma'] and dma:
                 row['dma'] = dma['tokenDetails']
 
@@ -459,21 +459,3 @@ class API(object):
         mem_cache.empty()
         self.new_session(self._config)
 
-# https://github.com/matthuisman/slyguy.addons/issues/136
-# import base64
-# import os
-# import pyaes
-# import time
-
-# aes_key = '302a6a0d70a7e9b967f91d39fef3e387816e3095925ae4537bce96063311f9c5'
-# tv_secret = '6c70b33080758409'
-
-# def at_token():
-#    payload = '{}|{}'.format(int(time.time())*1000, tv_secret)
-#    key = bytes.fromhex(aes_key)
-#    iv = os.urandom(16)
-#    encrypter = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
-#    ciphertext = encrypter.feed(payload)
-#    ciphertext += encrypter.feed()
-#    ciphertext = b'\x00\x10' + iv + ciphertext
-#    return base64.b64encode(ciphertext).decode('utf8')

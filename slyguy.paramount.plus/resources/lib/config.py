@@ -150,7 +150,7 @@ class Config(object):
             'region': region,
             'country': app_version['clientRegion'],
             'mvpd': app_version['clientRegion'] in app_config.get('mvpd_enabled_countries', []),
-            'live_tv': app_config.get('livetv_disabled') != 'false',
+            'live_tv': app_config.get('livetv_disabled') != 'true',
             'feed_id': app_config.get('live_tv_national_feed_content_id'),
             'home': True if region == REGION_US else app_config.get('homepage_configurator_enabled') == 'true',
             'movies': True if region == REGION_US else app_config.get('movies_enabled') == 'true',
@@ -166,6 +166,7 @@ class Config(object):
 
         return config
 
+    # # https://github.com/matthuisman/slyguy.addons/issues/136
     # def _at_token(self):
     #     payload = '{}|{}'.format(int(time())*1000, CONFIG[self.region]['aes_secret'])
 
