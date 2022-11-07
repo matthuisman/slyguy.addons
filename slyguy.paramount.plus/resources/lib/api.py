@@ -349,7 +349,6 @@ class API(object):
 
         url = self._config.get_link_platform_url(video_id)
         resp = self._session.get(url, params=params)
-
         root = parseString(resp.content)
 
         videos = root.getElementsByTagName('video')
@@ -376,7 +375,7 @@ class API(object):
                 continue
 
         data = {
-            'url': videos[0].getAttribute('src'),
+            'url': ref.getAttribute('src'),
             'type': 'DASH' if ref.getAttribute('type') == 'application/dash+xml' else 'HLS',
             'widevine': ref.getAttribute('security') == 'widevine',
             'license_url': session['url'],
