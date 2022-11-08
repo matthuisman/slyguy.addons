@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.optus.sport" name="Optus Sport" provider-name="SlyGuy" version="0.7.7">
+<addon id="plugin.video.optus.sport" name="Optus Sport" provider-name="SlyGuy" version="0.7.8">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Support CMAF for IA version 20.3.1 (Kodi 20) or higher</news>
+    <news>Add Device Code login</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

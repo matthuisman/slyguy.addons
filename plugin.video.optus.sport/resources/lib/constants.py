@@ -13,3 +13,4 @@ SERVICE_TIME = 270
 DEFAULT_IMG = 'https://sport.optus.com.au/images/OS_LOGO_YES_NAVY_4K_640_360.jpg'
 LINEAR_ID = 'home_linear_channels'
 EPG_URL = 'https://i.mjh.nz/Optus/epg.xml.gz'
+UUID_NAMESPACE = 'ecb8e31a-cbc1-4f88-a507-5a00e13c7793'

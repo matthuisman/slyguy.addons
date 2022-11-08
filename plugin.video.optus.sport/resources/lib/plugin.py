@@ -1,7 +1,9 @@
 import codecs
 import re
+import time
 
 import arrow
+from kodi_six import xbmc
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, MIDDLEWARE_PLUGIN
@@ -111,6 +113,18 @@ def editorial(id, title, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
+    options = [
+        [_.DEVICE_CODE, _device_code],
+        [_.EMAIL_PASSWORD, _email_password],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    gui.refresh()
+
+def _email_password():
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
     if not username:
         return
@@ -122,7 +136,24 @@ def login(**kwargs):
         return
 
     api.login(username=username, password=password)
-    gui.refresh()
+
+    return True
+
+def _device_code():
+    start = time.time()
+    data = api.device_code()
+    monitor = xbmc.Monitor()
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verificationUri'], code=data['userCode']), heading=_.DEVICE_CODE) as progress:
+        while (time.time() - start) < data['expiresIn']:
+            for i in range(data['interval']):
+                if progress.iscanceled() or monitor.waitForAbort(1):
+                    return
+
+                progress.update(int(((time.time() - start) / data['expiresIn']) * 100))
+
+            if api.device_login(data['deviceCode']):
+                return True
 
 @plugin.route()
 def logout(**kwargs):

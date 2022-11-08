@@ -1,11 +1,12 @@
+import uuid
 import time
 
 from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import jwt_data
+from slyguy.util import jwt_data, get_system_arch
 
-from .constants import HEADERS, API_URL, AWS_URL, AWS_CLIENT_ID
+from .constants import HEADERS, API_URL, AWS_URL, AWS_CLIENT_ID, UUID_NAMESPACE
 from .language import _
 
 class APIError(Error):
@@ -44,9 +45,9 @@ class API(object):
         self.logout()
 
         payload = {
-            "username": username,
-            "password": password,
-            "rememberMe": "false"
+            'username': username,
+            'password': password,
+            'rememberMe': 'false'
         }
 
         r = self._session.post('/userauth/login', json=payload)
@@ -60,6 +61,54 @@ class API(object):
         data = r.json()
         userdata.set('user_id', data['userId'])
         self._parse_token(data['result'])
+
+    def _device_id(self, string):
+        def _format_id():
+            try:
+                mac_address = uuid.getnode()
+                if mac_address != uuid.getnode():
+                    mac_address = ''
+            except:
+                mac_address = ''
+
+            system, arch = get_system_arch()
+            return str(string.format(mac_address=mac_address, system=system).strip())
+
+        return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _format_id()))
+
+    def device_code(self):
+        self.logout()
+
+        deviceid = self._device_id('{mac_address}')
+
+        payload = {
+            'deviceId': deviceid,
+            'deviceName': 'Shield',
+            'vendor': 'Nvidia',
+            'model': 'Shield',
+            'osName': 'android',
+            'osVersion': '11'
+        }
+
+        data = self._session.post('/auth/devicelogin/ctv/initiate', json=payload).json()
+        if not data['success']:
+            raise APIError(_(_.LOGIN_ERROR, msg=data['error'].get('message')))
+
+        return data['data']
+
+    def device_login(self, device_code):
+        payload = {
+            'deviceCode': device_code,
+        }
+
+        data = self._session.post('/auth/devicelogin/ctv/poll', json=payload).json()
+        if not data['success']:
+            return False
+
+        userdata.set('user_id', data['data']['userId'])
+        self._parse_token(data['data'])
+
+        return True
 
     def _parse_token(self, data):
         userdata.set('id_token', data['IdToken'])
