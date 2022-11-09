@@ -1,5 +1,5 @@
 # slyguy.addons
-mirror of https://k.slyguy.xyz/.repo/
+mirror of https://slyguy.uk/.repo/
 
 **Add-ons must be installed via repo below.  
 They will not work if installed via zip due to required dependencies**
