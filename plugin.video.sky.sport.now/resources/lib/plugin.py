@@ -310,7 +310,7 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
 
     offset = arrow.now().timestamp - start
     if is_live and offset > 0:
-        offset = (24*3600 - 20) - offset
+        offset = (24*3600 + 20) - offset
 
         if play_type is None:
             play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
