@@ -264,7 +264,7 @@ msgstr "Źródło dodatku nie powiodło się\n"
 msgctxt "#30064"
 msgid "Local path not found\n"
 "{path}"
-msgstr "Nie znaleziono ścieżki lokalnej\w"
+msgstr "Nie znaleziono ścieżki lokalnej\n"
 "{path}"
 
 msgctxt "#30065"
