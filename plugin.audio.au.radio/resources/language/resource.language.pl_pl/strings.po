@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Region"
+msgstr "Region"
+
+msgctxt "#30001"
+msgid "Sydney"
+msgstr "Sydney"
+
+msgctxt "#30002"
+msgid "Melbourne"
+msgstr "Melbourne"
+
+msgctxt "#30003"
+msgid "Brisbane"
+msgstr "Brisbane"
+
+msgctxt "#30004"
+msgid "Perth"
+msgstr "Perth"
+
+msgctxt "#30005"
+msgid "Adelaide"
+msgstr "Adelaide"
+
+msgctxt "#30006"
+msgid "Darwin"
+msgstr "Darwin"
+
+msgctxt "#30007"
+msgid "Hobart"
+msgstr "Hobart"
+
+msgctxt "#30008"
+msgid "Canberra"
+msgstr "Canberra"
+
+msgctxt "#30009"
+msgid "Stations"
+msgstr "Stacje"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Pytaj"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Najlepsza"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Najniższa"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Pomiń"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Własna"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Wyłączone"
