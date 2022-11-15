@@ -1,0 +1,32 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Stations"
+msgstr "Stacje"
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr "Pytaj"
+
+msgctxt "#32043"
+msgid "Best"
+msgstr "Najlepsza"
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr "Najniższa"
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr "Pomiń"
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr "Własna"
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr "Wyłączone"
