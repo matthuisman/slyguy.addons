@@ -271,10 +271,12 @@ def mpd_request(_data, _path, **kwargs):
         utc_time = arrow.get(utc[0].getAttribute('value'))
         seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
 
-    seconds_diff += 30
-    avail_start = arrow.get(mpd.getAttribute('availabilityStartTime'))
-    avail_start = avail_start.shift(seconds=seconds_diff)
-    mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
+    avail = mpd.getAttribute('availabilityStartTime')
+    if avail:
+        seconds_diff += 30
+        avail_start = arrow.get(mpd.getAttribute('availabilityStartTime'))
+        avail_start = avail_start.shift(seconds=seconds_diff)
+        mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
