@@ -274,8 +274,7 @@ def mpd_request(_data, _path, **kwargs):
     avail = mpd.getAttribute('availabilityStartTime')
     if avail:
         seconds_diff += 30
-        avail_start = arrow.get(mpd.getAttribute('availabilityStartTime'))
-        avail_start = avail_start.shift(seconds=seconds_diff)
+        avail_start = arrow.get(avail).shift(seconds=seconds_diff)
         mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
 
     with open(_path, 'wb') as f:
