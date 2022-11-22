@@ -1,4 +1,5 @@
 import json
+import time
 
 from kodi_six import xbmc
 from threading import Thread
@@ -19,8 +20,14 @@ class Player(xbmc.Player):
         play_time = 0
         last_play_time = int(self.getTime())
         last_callback = None
+        last_callback_ts = int(time.time())
 
         while not monitor.waitForAbort(1) and self.isPlaying() and self.getPlayingFile() == self._playing_file:
+            if self._callback and self._callback['type'] == 'interval_ts' and int(time.time()) - last_callback_ts >= self._callback['interval']:
+                callback = add_url_args(self._callback['callback'], _time=play_time)
+                xbmc.executebuiltin('RunPlugin({})'.format(callback))
+                last_callback_ts = int(time.time())
+
             play_time = int(self.getTime())
 
             diff = abs(play_time - last_play_time)
