@@ -289,6 +289,22 @@ class API(object):
         url = self._session._base_url.format('arkena/askLicenseWV?' + urlencode(params))
         return url, self._auth_headers
 
+    def heartbeat(self, channel_id):
+        self._create_session()
+
+        payload = {
+            'idChannel': channel_id,
+            'streamAction': 'play',
+            'authToken': userdata.get('auth_token'),
+            'streamRate': 0,
+            'isTimeshiftUsed': 'true',
+            'type': 'AndroidPhone',
+        }
+
+        data = self._session.post('proxy/viewRights', data=payload, headers=self._auth_headers).json()
+        if 'newAuthToken' in data['result']:
+            self._set_auth(data['result']['newAuthToken'])
+
     def play(self, channel_id):
         self._create_session(force=True)
 

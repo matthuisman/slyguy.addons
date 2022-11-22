@@ -83,10 +83,14 @@ def license_request(channel_id, **kwargs):
     return {'url': url, 'headers': headers}
 
 @plugin.route()
+@plugin.no_error_gui()
+def heartbeat(channel_id, **kwargs):
+    api.heartbeat(channel_id)
+
+@plugin.route()
 @plugin.login_required()
 def play(channel_id, **kwargs):
     url = api.play(channel_id)
-
     license_path = plugin.url_for(license_request, channel_id=channel_id)
 
     return plugin.Item(
@@ -97,6 +101,11 @@ def play(channel_id, **kwargs):
             'default_language': settings.get('default_language'),
             'middleware': {license_path: {'type': MIDDLEWARE_REGEX, 'pattern': '<LICENSE>(.*?)</LICENSE>'}},
         },
+        callback = {
+            'type':'interval_ts',
+            'interval': 60*5,
+            'callback': plugin.url_for(heartbeat, channel_id=channel_id),
+        }
     )
 
 @plugin.route()
