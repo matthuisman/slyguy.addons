@@ -281,13 +281,16 @@ class API(object):
         params = {
             'wskey': self._session.headers['X-AN-WebService-IdentityKey'],
             'playerName': PLAYER_NAME,
-            'playerVersion': app_version,
             'checksum': self._checksum(channel_id, app_version),
+            'playerVersion': app_version,
             'idChannel': channel_id,
         }
 
+        headers = self._auth_headers
+        headers['X-Idviu-Widevine-Key-Id'] = 'eue7pcj4RyyWZF+Srip5kQ=='
+
         url = self._session._base_url.format('arkena/askLicenseWV?' + urlencode(params))
-        return url, self._auth_headers
+        return url, headers
 
     def heartbeat(self, channel_id):
         self._create_session()
@@ -333,8 +336,8 @@ class API(object):
         data = {
             '$and': [
                 {'id_channel': {'$in': ids}},
-                {'startutc': {'$ge': start.timestamp}},
-                {'startutc': {'$lt': end.timestamp}},
+                start,
+                end,
             ]
         }
 
@@ -347,7 +350,15 @@ class API(object):
         if data['error']:
             raise APIError(data['error']['message'])
 
-        return data['result']['epg']
+        epg = {}
+        for key in data['result']['epg']:
+            for row in data['result']['epg'][key]:
+                channel_id = row.pop('id_channel')
+                if channel_id not in epg:
+                    epg[channel_id] = []
+                epg[channel_id].append(row)
+
+        return epg
 
     def _checksum(self, channel_id, app_version):
         checksum = userdata.get('auth_token', '') + str(channel_id) + app_version

@@ -4,7 +4,7 @@ from xml.sax.saxutils import escape
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
-from slyguy.constants import MIDDLEWARE_REGEX
+from slyguy.constants import MIDDLEWARE_REGEX, KODI_VERSION
 
 from .api import API
 from .language import _
@@ -59,17 +59,48 @@ def login(**kwargs):
     api.login(username, password, _type=options[index][1])
     gui.refresh()
 
+def _live_channels():
+    channels = []
+    for row in api.channels():
+        if not api.logged_in and not row['isFta']:
+            continue
+        channels.append(row)
+    return channels
+
 @plugin.route()
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE_CHANNELS)
 
-    for row in api.channels():
-        if not api.logged_in and not row['isFta']:
-            continue
+    start = arrow.utcnow().shift(hours=2)
+    end = arrow.utcnow()
+
+    channels = _live_channels()
+    ids = [x['idChannel'] for x in channels]
+    epg = api.epg(ids, {'startutc': {'$le': start.timestamp}}, {'endutc': {'$ge': end.timestamp}})
+
+    now = arrow.now()
+    epg_count = 5
+    for row in channels:
+        plot = u''
+        count = 0
+        if epg_count:
+            for program in epg.get(row['idChannel'], []):
+                start = arrow.get(program['startutc'])
+                stop = arrow.get(program['endutc'])
+
+                if (now > start and now < stop) or start > now:
+                    plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), program['title'])
+                    count += 1
+                    if count == epg_count:
+                        break
+
+        if not plot:
+            plot = row.get('synopsis')
 
         folder.add_item(
             label = row['name'],
             art = {'thumb': row.get('logo')},
+            info = {'plot': plot},
             path = plugin.url_for(play, channel_id=row['idChannel'], _is_live=True),
             playable = True,
         )
@@ -90,6 +121,9 @@ def heartbeat(channel_id, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(channel_id, **kwargs):
+    if channel_id == '267' and KODI_VERSION < 20:
+        gui.ok('This stream requires Kodi 20 to playback correctly')
+
     url = api.play(channel_id)
     license_path = plugin.url_for(license_request, channel_id=channel_id)
 
@@ -141,32 +175,26 @@ def epg(output, **kwargs):
         f.write(u'<?xml version="1.0" encoding="utf-8" ?><tv>')
 
         ids = []
-        for row in api.channels():
-            if not api.logged_in and not row['isFta']:
-                continue
-
+        for row in _live_channels():
             f.write(u'<channel id="{}"><display-name>{}</display-name><icon src="{}"/></channel>'.format(
                 row['idChannel'], escape(row['name']), escape(row.get('logo'))))
-
             ids.append(row['idChannel'])
 
         start = arrow.utcnow().shift(hours=-12)
         end = arrow.utcnow().shift(days=settings.getInt('epg_days', 3))
-        chunksize = 5
+        chunksize = 10
 
         def chunks(lst, n):
             for i in range(0, len(lst), n):
                 yield lst[i:i + n]
 
         for chunk in chunks(ids, chunksize):
-            data = api.epg(chunk, start, end)
+            epg = api.epg(chunk, {'startutc': {'$ge': start.timestamp}}, {'startutc': {'$lt': end.timestamp}})
 
-            for channel in data:
-                for event in data[channel]:
-                    genre = event.get('genre')
-
+            for channel_id in epg:
+                for event in epg[channel_id]:
                     f.write(u'<programme channel="{}" start="{}" stop="{}"><title>{}</title><desc>{}</desc>{}</programme>'.format(
-                        event['id_channel'], arrow.get(event['startutc']).format('YYYYMMDDHHmmss Z'), arrow.get(event['endutc']).format('YYYYMMDDHHmmss Z'),
-                            escape(event.get('title')), escape(event.get('synopsis')), u'<category>{}</category>'.format(escape(genre)) if genre else '',))
+                        channel_id, arrow.get(event['startutc']).format('YYYYMMDDHHmmss Z'), arrow.get(event['endutc']).format('YYYYMMDDHHmmss Z'),
+                            escape(event.get('title') or ''), escape(event.get('synopsis') or ''), u'<category>{}</category>'.format(escape(event.get('genre') or ''))))
 
         f.write(u'</tv>')
