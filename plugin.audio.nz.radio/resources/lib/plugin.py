@@ -33,12 +33,10 @@ def _stations():
         channel = channels[slug]
 
         folder.add_item(
-            label    = channel['name'],
-            path     = plugin.url_for(play, slug=slug, _is_live=True),
-            info     = {'plot': channel.get('description')},
-            video    = channel.get('video', {}),
-            audio    = channel.get('audio', {}),
-            art      = {'thumb': channel.get('logo')},
+            label = channel['name'],
+            path = plugin.url_for(play, slug=slug, _is_live=True),
+            info = {'plot': channel.get('description')},
+            art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
             playable = True,
         )
 
@@ -50,12 +48,10 @@ def play(slug, **kwargs):
     url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
-        path     = url or channel['mjh_master'],
-        headers  = channel['headers'],
-        info     = {'plot': channel.get('description')},
-        video    = channel.get('video', {}),
-        audio    = channel.get('audio', {}),
-        art      = {'thumb': channel.get('logo')},
+        path = url or channel['mjh_master'],
+        headers = channel['headers'],
+        info = {'plot': channel.get('description')},
+        art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
         use_proxy = False,
     )
 
