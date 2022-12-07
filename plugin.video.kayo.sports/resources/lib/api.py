@@ -182,7 +182,7 @@ class API(object):
         if sport:
             params['sport'] = sport
 
-        return self._session.get('{host}/content/types/carousel/keys/{id}'.format(host=self._config()['endPoints']['contentAPI'], id=id), params=params, headers=self._auth_header).json()[0]
+        return self._session.get('{host}/v2/content/types/carousel/keys/{id}'.format(host=self._config()['endPoints']['contentAPI'], id=id), params=params, headers=self._auth_header).json()[0]
 
     #show has episodes and panels
     def show(self, show_id, season_id=None):
