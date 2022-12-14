@@ -53,10 +53,6 @@ msgctxt "#30012"
 msgid "Region"
 msgstr ""
 
-msgctxt "#30013"
-msgid "Auto"
-msgstr ""
-
 msgctxt "#30014"
 msgid "Hide Suggested"
 msgstr ""
@@ -95,10 +91,6 @@ msgstr ""
 
 msgctxt "#30023"
 msgid "TAS"
-msgstr ""
-
-msgctxt "#30024"
-msgid "Live TV - {region}"
 msgstr ""
 
 ## COMMON SETTINGS ##

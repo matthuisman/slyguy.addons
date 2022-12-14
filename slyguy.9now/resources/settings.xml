@@ -3,7 +3,7 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30011" type="bool" id="flatten_single_season" default="true"/>
         <setting label="30014" type="bool" id="hide_suggested" default="false"/>
-        <setting label="30012" type="enum" id="region" default="0" lvalues="30013|30016|30017|30018|30019|30020|30021|30022|30023" />
+        <setting label="30012" type="enum" id="region" default="0" lvalues="30016|30017|30018|30019|30020|30021|30022|30023" />
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

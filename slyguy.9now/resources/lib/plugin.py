@@ -246,7 +246,7 @@ def search(query, page, **kwargs):
     return items, False
 
 def _channels():
-    region = settings.getEnum('region', REGIONS, default=AUTO)
+    region = settings.getEnum('region', REGIONS, default=NSW)
     return api.channels(region)
 
 @plugin.route()
@@ -282,7 +282,7 @@ def live_tv(**kwargs):
     data = _channels()
     now = arrow.now()
 
-    folder = plugin.Folder(_(_.LIVE_TV_REGION, region=data['localRegion']['state']))
+    folder = plugin.Folder(_.LIVE_TV)
 
     for row in data['channels']:
         plot = u''
@@ -301,7 +301,7 @@ def live_tv(**kwargs):
             label = row['name'],
             info = {'plot': plot},
             art = {'thumb': row['image']['sizes']['w768']},
-            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=True),
+            path = plugin.url_for(play_channel, reference=row['referenceId'], _is_live=True),
             playable = True,
         )
 
@@ -323,6 +323,21 @@ def play(reference, **kwargs):
         item.inputstream.live = True
 
     return item
+
+@plugin.route()
+def play_channel(reference, **kwargs):
+    data = _channels()
+
+    url = None
+    for row in data['channels']:
+        if row['referenceId'] == reference:
+            url = row['stream']['url'].split('?')[0]
+            break
+
+    return plugin.Item(
+        path = url,
+        inputstream = inputstream.HLS(live=True),
+    )
 
 def _parse_show(row):
     if not row['episodeCount']:
@@ -363,12 +378,13 @@ def _parse_episode(row):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = _channels()
+    region = settings.getEnum('region', REGIONS, default=NSW)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U')
+        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in data['channels']:
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=row['slug'], name=row['name'], logo=row['image']['sizes']['w768'],
-                    url=plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId'])), _is_live=True),
+                id=row['slug']+'-'+region, name=row['name'], logo=row['image']['sizes']['w768'],
+                    url=plugin.url_for(play_channel, reference=row['referenceId']), _is_live=True),
             )

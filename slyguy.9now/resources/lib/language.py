@@ -14,7 +14,7 @@ class Language(BaseLanguage):
     CLIPS                  = 30010
     FLATTEN_SINGLE_SEASONS = 30011
     REGION                 = 30012
-    AUTO                   = 30013
+
     HIDE_SUGGESTED         = 30014
     EVENT_COUNT            = 30015
     NSW                    = 30016
@@ -25,6 +25,5 @@ class Language(BaseLanguage):
     NT                     = 30021
     WA                     = 30022
     TAS                    = 30023
-    LIVE_TV_REGION         = 30024
 
 _ = Language()
