@@ -336,7 +336,7 @@ def play_channel(reference, **kwargs):
 
     return plugin.Item(
         path = url,
-        inputstream = inputstream.HLS(live=True),
+       # inputstream = inputstream.HLS(live=True),
     )
 
 def _parse_show(row):
