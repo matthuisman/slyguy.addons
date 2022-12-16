@@ -38,6 +38,9 @@ def live_tv(**kwargs):
         plot = u''
         count = 0
         if epg_count:
+            if channel.get('epg_id') and not channel.get('programs'):
+                channel['programs'] = channels.get(channel['epg_id'], {}).get('programs', [])
+
             for index, row in enumerate(channel.get('programs', [])):
                 start = arrow.get(row[0])
                 try: stop = arrow.get(channel['programs'][index+1][0])
@@ -56,9 +59,7 @@ def live_tv(**kwargs):
             label = channel['name'],
             path = plugin.url_for(play, slug=slug, _is_live=True),
             info = {'plot': plot},
-            video = channel.get('video', {}),
-            audio = channel.get('audio', {}),
-            art = {'thumb': channel.get('logo')},
+            art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
             playable = True,
         )
 
@@ -73,9 +74,7 @@ def play(slug, **kwargs):
         path = url or channel['mjh_master'],
         headers = channel['headers'],
         info = {'plot': channel.get('description')},
-        video = channel.get('video', {}),
-        audio = channel.get('audio', {}),
-        art = {'thumb': channel.get('logo')},
+        art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
         proxy_data = {'cert': channel.get('cert')},
     )
 
@@ -100,5 +99,5 @@ def playlist(output, **kwargs):
             channel = channels[slug]
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=slug, logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
+                id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
                     url=plugin.url_for(play, slug=slug, _is_live=True)))
