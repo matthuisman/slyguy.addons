@@ -728,12 +728,8 @@ class Folder(object):
         #     self.content = data[1]
 
         if self.content == 'AUTO':
-            if content_type == 'movies':
-                self.content = 'movies'
-            elif content_type in ('tvshows', 'seasons'):
-                self.content = 'tvshows'
-            elif content_type == 'episodes':
-                self.content = 'tvshows'
+            if content_type in ('movies', 'tvshows', 'seasons', 'episodes'):
+                self.content = content_type
             else:
                 self.content = 'videos'
 
