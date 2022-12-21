@@ -730,6 +730,8 @@ class Folder(object):
         if self.content == 'AUTO':
             if content_type in ('movies', 'tvshows', 'seasons', 'episodes'):
                 self.content = content_type
+            else:
+                self.content = 'videos'
 
         if self.content: xbmcplugin.setContent(handle, self.content)
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)
