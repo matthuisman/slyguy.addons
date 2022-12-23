@@ -337,7 +337,9 @@ class Merger(object):
 
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = is_visible(channel)
-                    channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(channel.epg_id or channel.url.lower().strip()))
+
+                    channel_id = channel.attribs.get('channel-id') or channel.epg_id or channel.url.lower().strip()
+                    channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(channel_id))
                     channel.order = added_count + 1
 
                     count = 1
