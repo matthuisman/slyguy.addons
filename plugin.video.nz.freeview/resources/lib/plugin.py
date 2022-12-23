@@ -98,6 +98,6 @@ def playlist(output, **kwargs):
         for slug in sorted(channels, key=lambda k: (float(channels[k].get('channel', 'inf')), channels[k]['name'])):
             channel = channels[slug]
 
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
+            f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
+                channel_id=slug, epg_id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
                     url=plugin.url_for(play, slug=slug, _is_live=True)))
