@@ -173,40 +173,37 @@ def mpd_request(url, _data, _path, **kwargs):
     if '/OptusSport1/' in url:
         to_add = r'''\1\n
         <Representation id="1" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
-        <Representation id="7" width="896" height="504" frameRate="50/1" bandwidth="3686399" codecs="avc1.640020"/>
-        <Representation id="2" width="640" height="360" frameRate="50/1" bandwidth="2454399" codecs="avc1.640020"/>
-        <Representation id="6" width="384" height="216" frameRate="50/1" bandwidth="1345630" codecs="avc1.640020"/>
-        <Representation id="3" width="256" height="144" frameRate="50/1" bandwidth="852830" codecs="avc1.640020"/>
         '''
         if settings.getBool('h265', True):
-            to_add += '<Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>\n<Representation id="5" width="1024" height="576" frameRate="50/1" bandwidth="3932799" codecs="hvc1.1.6.H120.B0"/>'
+            to_add += '<Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
         _data = re.sub('(<Representation id="9" width="1280".*?>)', to_add, _data, 1)
 
     ## OS2 HACK
     elif '/OptusSport2/' in url:
         to_add = r'''\1\n
         <Representation id="7" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
-        <Representation id="2" width="896" height="504" frameRate="50/1" bandwidth="3686399" codecs="avc1.640020"/>
-        <Representation id="3" width="640" height="360" frameRate="50/1" bandwidth="2454399" codecs="avc1.640020"/>
-        <Representation id="4" width="384" height="216" frameRate="50/1" bandwidth="1345630" codecs="avc1.640020"/>
-        <Representation id="5" width="256" height="144" frameRate="50/1" bandwidth="852830" codecs="avc1.640020"/>
         '''
         if settings.getBool('h265', True):
-            to_add += '<Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>\n<Representation id="1" width="1024" height="576" frameRate="50/1" bandwidth="3932799" codecs="hvc1.1.6.H120.B0"/>'
+            to_add += '<Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
         _data = re.sub('(<Representation id="13" width="1280".*?>)', to_add, _data, 1)
 
-    ## OS11/12 HACK
-    elif '/OptusSport11/' in url or '/OptusSport12/' in url:
+    ## OS11 HACK
+    elif '/OptusSport11/' in url:
         to_add = r'''\1\n
-        <Representation id="2" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
-        <Representation id="4" width="896" height="504" frameRate="50/1" bandwidth="3686399" codecs="avc1.640020"/>
-        <Representation id="5" width="640" height="360" frameRate="50/1" bandwidth="2454399" codecs="avc1.640020"/>
-        <Representation id="6" width="384" height="216" frameRate="50/1" bandwidth="1345630" codecs="avc1.640020"/>
-        <Representation id="7" width="256" height="144" frameRate="50/1" bandwidth="852830" codecs="avc1.640020"/>
+        <Representation id="1" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
         '''
         if settings.getBool('h265', True):
-            to_add += '<Representation id="1" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>\n<Representation id="3" width="1024" height="576" frameRate="50/1" bandwidth="3932799" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation id="9" width="1280".*?>)', to_add, _data, 1)
+           to_add += '<Representation id="7" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
+        _data = re.sub('(<Representation id="11" width="1280".*?>)', to_add, _data, 1)
+
+    ## OS12 HACK
+    elif '/OptusSport12/' in url:
+        to_add = r'''\1\n
+        <Representation id="1" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
+        '''
+        if settings.getBool('h265', True):
+           to_add += '<Representation id="11" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
+        _data = re.sub('(<Representation id="12" width="1280".*?>)', to_add, _data, 1)
 
     with open(_path, 'wb') as f:
         f.write(_data.encode('utf8'))
@@ -221,6 +218,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
         from_start = True
 
     stream = api.play(asset, True, use_cmaf=inputstream.require_version('20.3.1'))
+    stream['url'] = stream['url'].strip()
 
     item = plugin.Item(
         path = stream['url'],
@@ -233,7 +231,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
     if stream['protocol'] == 'CMAF':
         item.inputstream.manifest_type = 'hls'
         item.inputstream.mimetype = 'application/vnd.apple.mpegurl'
-    elif 'v6/OptusSport' in stream['url']:
+    elif 'v6/OptusSport' in stream['url'] or 'v7/OptusSport' in stream['url']:
         item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request, url=stream['url'])}}
 
     drm_data = stream['license'].get('drmData')
