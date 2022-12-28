@@ -16,7 +16,7 @@ from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
 
 from .constants import *
-from .models import Source, Playlist, EPG, Channel, merge_info
+from .models import Source, Playlist, EPG, Channel, merge_info, parse_attribs
 from .language import _
 from . import iptv_manager
 
@@ -264,10 +264,7 @@ class Merger(object):
                     valid_file = True
 
                     #if not playlist.ignore_playlist_epg:
-                    attribs = {}
-                    for key, value in re.findall('([\w-]+)="([^"]*)"', line):
-                        attribs[key] = value.strip()
-
+                    attribs = parse_attribs(line)
                     xml_urls = attribs.get('x-tvg-url', '').split(',')
                     xml_urls.extend(attribs.get('url-tvg', '').split(','))
 
@@ -338,7 +335,7 @@ class Merger(object):
                     channel.groups = [x for x in channel.groups if x.strip()]
                     channel.visible = is_visible(channel)
 
-                    channel_id = channel.attribs.get('channel-id') or channel.epg_id or channel.url.lower().strip()
+                    channel_id = channel.attribs.get('channel-id') or channel.attribs.get('channelID') or channel.epg_id or channel.url.lower().strip()
                     channel.slug = slug = '{}.{}'.format(playlist.id, hash_6(channel_id))
                     channel.order = added_count + 1
 

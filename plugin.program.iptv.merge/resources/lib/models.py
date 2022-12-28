@@ -20,6 +20,20 @@ from slyguy.log import log
 from .constants import *
 from .language import _
 
+ATTRIBUTELISTPATTERN = re.compile(r'''([\w\-]+)=([^,"' ]+|"[^"]*"|'[^']*')''')
+
+def strip_quotes(string):
+    quotes = ('"', "'")
+    if string.startswith(quotes) and string.endswith(quotes):
+        string = string[1:-1]
+    return string
+
+def parse_attribs(line):
+    attribs = {}
+    for key, value in ATTRIBUTELISTPATTERN.findall(line):
+        attribs[key.lower()] = strip_quotes(value.strip())
+    return attribs
+
 @plugin.route()
 def play_channel(slug, **kwargs):
     channel = Channel.get_by_id(slug)
@@ -490,11 +504,13 @@ class Channel(database.Model):
 
         attribs = self.attribs.copy()
         attribs.update({
-            'tvg-id':      self.epg_id,
+            'channel-id': self.slug,
+            'tvg-name': self.name,
+            'tvg-id': self.epg_id,
             'group-title': ';'.join([x for x in self.groups if x.strip()]) if self.groups else None,
-            'tvg-chno':    self.chno,
-            'tvg-logo':    self.logo,
-            'radio'   :    'true' if self.radio else None,
+            'tvg-chno': self.chno,
+            'tvg-logo': self.logo,
+            'radio': 'true' if self.radio else None,
         })
 
         for key in sorted(attribs.keys()):
@@ -606,10 +622,7 @@ class Channel(database.Model):
         if colon >= 0 and comma >= 0 and comma > colon:
             self.name = extinf[comma+1:].strip()
 
-        attribs = {}
-        for key, value in re.findall('([\w-]+)="([^"]*)"', extinf):
-            attribs[key.lower()] = value.strip()
-
+        attribs = parse_attribs(extinf)
         self.radio = attribs.pop('radio', 'false').lower() == 'true'
 
         try:
