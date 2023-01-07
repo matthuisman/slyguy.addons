@@ -504,8 +504,6 @@ class Channel(database.Model):
 
         attribs = self.attribs.copy()
         attribs.update({
-            'channel-id': self.slug,
-            'tvg-name': self.name,
             'tvg-id': self.epg_id,
             'group-title': ';'.join([x for x in self.groups if x.strip()]) if self.groups else None,
             'tvg-chno': self.chno,
