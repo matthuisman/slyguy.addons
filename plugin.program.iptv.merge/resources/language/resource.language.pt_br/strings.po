@@ -355,10 +355,6 @@ msgctxt "#30080"
 msgid "HTTP Request Forces Merge"
 msgstr "Requisição HTTP força união"
 
-msgctxt "#30081"
-msgid "Remove EPG Orphans"
-msgstr "Remover EPG órfãos"
-
 # # COMMON SETTINGS ##
 msgctxt "#32055"
 msgid "Ask"

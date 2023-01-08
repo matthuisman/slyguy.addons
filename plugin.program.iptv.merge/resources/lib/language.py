@@ -82,7 +82,7 @@ class Language(BaseLanguage):
     GROUP_ORDER            = 30078
     HTTP_SETTING           = 30079
     HTTP_FORCE_SETTING     = 30080
-    REMOVE_EPG_ORPHANS     = 30081
+
     CONFIGURE_ADDON        = 30082
     USE_STARTING_CHNO      = 30083
     CONF_DELETE_PLAYLIST   = 30084

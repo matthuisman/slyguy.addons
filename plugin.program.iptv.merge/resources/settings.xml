@@ -13,7 +13,6 @@
         <setting label="30079" id="http_api" type="bool" default="false"/>
         <setting label="30080" id="http_force_merge" type="bool" default="true" visible="eq(-1,true)"/>
         <setting label="30070" id="start_ch_no" type="number" default="1"/>
-        <setting label="30081" id="remove_epg_orphans" type="bool" default="false"/>
         <setting label="30097" id="hide_groups" type="text" default=""/>
         <setting label="30095" id="disable_groups" type="bool" default="false"/>
         <setting label="30078" id="group_order" type="text" default="" enable="eq(-1,false)"/>

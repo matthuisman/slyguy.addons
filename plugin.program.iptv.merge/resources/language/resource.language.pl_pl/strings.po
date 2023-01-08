@@ -337,10 +337,6 @@ msgctxt "#30080"
 msgid "HTTP Request Forces Merge"
 msgstr ""
 
-msgctxt "#30081"
-msgid "Remove EPG Orphans"
-msgstr "Usuń osierocone EPG"
-
 msgctxt "#30082"
 msgid "Configure Source"
 msgstr "Konfiguruj źródło"
