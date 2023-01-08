@@ -642,6 +642,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                     default_languages.append(language)
                     adap_set.removeAttribute('default')
 
+                for elem in adap_set.getElementsByTagName('Role'):
+                    if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011' and elem.getAttribute('value') == 'main':
+                        default_languages.append(language)
+                        elem.parentNode.removeChild(elem)
+
                 is_audio_description = any([elem for elem in adap_set.getElementsByTagName('Accessibility') if elem.getAttribute('schemeIdUri') == 'urn:tva:metadata:cs:AudioPurposeCS:2007'])
                 #any([elem for elem in adap_set.getElementsByTagName('Role') if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011' and elem.getAttribute('value') == 'description'])
                 if is_audio_description:
@@ -667,6 +672,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if default == 'true':
                     default_subtitles.append(language)
                     adap_set.removeAttribute('default')
+
+                for elem in adap_set.getElementsByTagName('Role'):
+                    if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011' and elem.getAttribute('value') == 'forced-subtitle':
+                        adap_set.setAttribute('forced', 'true')
+
+                    elif elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011' and elem.getAttribute('value') == 'main':
+                        default_languages.append(language)
+                        elem.parentNode.removeChild(elem)
 
                 subs.append([language, adap_set])
 
