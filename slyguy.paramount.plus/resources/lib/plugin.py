@@ -260,7 +260,7 @@ def featured(slug=None, homegroup=None, **kwargs):
                         'mediatype': 'movie',
                         'trailer': plugin.url_for(play, video_id=row['trailerContentId']) if row.get('trailerContentId') else None,
                     },
-                    art = _movie_art(data['thumbnailSet']),
+                    art = _movie_art(data['thumbnailSet'], row.get('movieAssets')),
                     path = plugin.url_for(play, video_id=data['contentId']),
                     playable = True,
                 )
@@ -332,7 +332,7 @@ def movies(genre=None, title=None, page=1, **kwargs):
                 'mediatype': 'movie',
                 'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
             },
-            art = _movie_art(movie['thumbnailSet']),
+            art = _movie_art(movie['thumbnailSet'], row.get('movieAssets')),
             path = plugin.url_for(play, video_id=movie['contentId']),
             playable = True,
         )
@@ -557,6 +557,7 @@ def live_tv(channel_slug=None, **kwargs):
     return folder
 
 def _show_art(assets):
+    assets = assets or {}
     art = {}
 
     if 'filepath_show_browse_poster' in assets:
@@ -577,11 +578,20 @@ def _get_thumb(thumbs, _type='PosterArt', dimensions='w400'):
 
     return None
 
-def _movie_art(thumbs):
+def _movie_art(thumbs, assets=None):
+    assets = assets or {}
+
     art = {
         'thumb': _get_thumb(thumbs, 'PosterArt'),
         'fanart': _get_thumb(thumbs, 'Thumbnail', 'w1920-q80'),
     }
+
+    if not art['thumb'] and 'filepath_movie_poster' in assets:
+        art['thumb'] = config.image(assets['filepath_movie_poster'])
+
+    if not art['fanart'] and 'filepath_movie_hero_sky' in assets:
+        art['fanart'] = config.image(assets['filepath_movie_hero_sky'], 'w1920-q80')
+
     return art
 
 @plugin.route()
@@ -618,34 +628,34 @@ def search(query, page, **kwargs):
                     'mediatype': 'movie',
                     'trailer': plugin.url_for(play, video_id=row['movie_trailer_id']) if row.get('movie_trailer_id') else None,
                 },
-                art = _movie_art(data['thumbnailSet']),
+                art = _movie_art(data['thumbnailSet'], row.get('movieAssets')),
                 path = plugin.url_for(play, video_id=data['contentId']),
                 playable = True,
             ))
 
     return items, False
 
-def _parse_item(row):
-    if row['mediaType'] == 'Standalone':
-        row['mediaType'] = 'Movie'
-    elif row['mediaType'] == 'Clip':
-        row['mediaType'] = 'Trailer'
+# def _parse_item(row):
+#     if row['mediaType'] == 'Standalone':
+#         row['mediaType'] = 'Movie'
+#     elif row['mediaType'] == 'Clip':
+#         row['mediaType'] = 'Trailer'
 
-    if row['mediaType'] in ('Movie', 'Trailer'):
-        return plugin.Item(
-            label = row['title'],
-            info = {
-                'aired': row['_airDateISO'],
-                'dateadded': row['_pubDateISO'],
-                'genre': row['genre'],
-                'plot': row['shortDescription'],
-                'duration': row['duration'],
-                'mediatype': 'movie' if row['mediaType'] == 'Movie' else 'video',
-            },
-            art = _movie_art(row['thumbnailSet']) if row['mediaType'] == 'Movie' else {'thumb': _get_thumb(row['thumbnailSet'], 'Thumbnail')},
-        )
+#     if row['mediaType'] in ('Movie', 'Trailer'):
+#         return plugin.Item(
+#             label = row['title'],
+#             info = {
+#                 'aired': row['_airDateISO'],
+#                 'dateadded': row['_pubDateISO'],
+#                 'genre': row['genre'],
+#                 'plot': row['shortDescription'],
+#                 'duration': row['duration'],
+#                 'mediatype': 'movie' if row['mediaType'] == 'Movie' else 'video',
+#             },
+#             art = _movie_art(row['thumbnailSet']) if row['mediaType'] == 'Movie' else {'thumb': _get_thumb(row['thumbnailSet'], 'Thumbnail')},
+#         )
 
-    return plugin.Item()
+#     return plugin.Item()
 
 @plugin.route()
 @plugin.plugin_middleware()
