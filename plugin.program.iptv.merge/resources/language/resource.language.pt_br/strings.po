@@ -355,6 +355,10 @@ msgctxt "#30080"
 msgid "HTTP Request Forces Merge"
 msgstr "Requisição HTTP força união"
 
+msgctxt "#30081"
+msgid "Remove EPG entries without matching playlist tvg-id"
+msgstr ""
+
 # # COMMON SETTINGS ##
 msgctxt "#32055"
 msgid "Ask"
