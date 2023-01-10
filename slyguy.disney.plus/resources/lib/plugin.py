@@ -194,8 +194,10 @@ def collection(slug, content_class, label=None, **kwargs):
         if not title or '${' in title:
             data = api.set_by_id(set_id, ref_type, page_size=0)
             # if not data['meta']['hits']:
-            #     continue
+            #     return
             title = _get_text(data, 'title', 'set')
+            if not title or '${' in title:
+                return
 
         return title, plugin.url_for(sets, set_id=set_id, set_type=ref_type)
 
@@ -642,7 +644,14 @@ def _play(content_id=None, family_id=None, **kwargs):
 
     playback_url = video['mediaMetadata']['playbackUrls'][0]['href']
     playback_data = api.playback_data(playback_url, ia.wv_secure)
-    media_stream = playback_data['stream']['complete'][0]['url']
+
+    try:
+        #v6
+        media_stream = playback_data['stream']['sources'][0]['complete']['url']
+    except KeyError:
+        #v5
+        media_stream = playback_data['stream']['complete'][0]['url']
+
     original_language = video.get('originalLanguage') or 'en'
 
     headers = api.session.headers

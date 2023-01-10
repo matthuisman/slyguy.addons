@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.12.7">
+<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.13.0">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
@@ -23,7 +23,7 @@ Je nutné předplatné.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news></news>
+    <news>Support for new ad-tier logins. Support Atmos and h265 for L3 widevine devices</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

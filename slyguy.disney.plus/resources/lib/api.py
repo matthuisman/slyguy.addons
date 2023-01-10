@@ -215,13 +215,17 @@ class API(object):
     def _endpoint(self, href, **kwargs):
         profile, session = self.profile()
 
+        self._cache['basic_tier'] = 'DISNEY_PLUS_NO_ADS' not in session['entitlements']
         region = session['portabilityLocation']['countryCode'] if session['portabilityLocation'] else session['location']['countryCode']
         maturity = session['preferredMaturityRating']['impliedMaturityRating'] if session['preferredMaturityRating'] else 1850
         kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
         appLanguage = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
 
+        # on the app, this changes based on endpoint
+        api_version = '5.1'
+
         _args = {
-            'apiVersion': API_VERSION,
+            'apiVersion': api_version,
             'region': region,
             'impliedMaturityRating': maturity,
             'kidsModeEnabled': 'true' if kids_mode else 'false',
@@ -331,28 +335,64 @@ class API(object):
     def playback_data(self, playback_url, wv_secure=False):
         self._set_token()
 
-        config = self.get_config()
-        scenario = config['services']['media']['extras']['restrictedPlaybackScenario']
+       # scenario = 'ctr-high'
+       # scenario = 'ctr-regular'
 
+        # h265 L3 possible but don't know how to do codecs: {} yet, so for now use the available scenarios
         if wv_secure:
-            #scenario = config['services']['media']['extras']['playbackScenarioDefault']
-            scenario = 'tv-drm-ctr'
+            scenario = 'android-tv-drm-ctr'
+        else:
+            scenario = 'android-tablet-sw-drm-ctr'
+            max_res = '1280x720'
 
-            if settings.getBool('h265', False):
-                scenario += '-h265'
+        if settings.getBool('h265', False):
+            scenario += '-h265'
 
-                if settings.getBool('dolby_vision', False):
-                    scenario += '-dovi'
-                elif settings.getBool('hdr10', False):
-                    scenario += '-hdr10'
+            if wv_secure and settings.getBool('dolby_vision', False):
+                scenario += '-dovi'
+            elif wv_secure and settings.getBool('hdr10', False):
+                scenario += '-hdr10'
+            else:
+                scenario += '-sdr'
 
-                if settings.getBool('dolby_atmos', False):
-                    scenario += '-atmos'
+        headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
-        headers = {'accept': 'application/vnd.media-service+json; version=5', 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
+        payload = {
+            "playback": {
+                "attributes": {
+                   # "codecs": {},
+                    "protocol": "HTTPS",
+                    #"ads": "",
+                    #"frameRates": [60,],
+                    "assetInsertionStrategy": "SGAI" if self._cache['basic_tier'] else "NONE",
+                    "playbackInitializationContext": "online"
+                },
+            }
+        }
+
+        max_res = None
+        video_ranges = []
+        audio_types = []
+
+        # atmos not yet supported on version=6 (basic tier) but add it in-case it starts working
+        if settings.getBool('dolby_atmos', False):
+            audio_types.append('atmos')
+
+        if wv_secure and settings.getBool('dolby_vision', False):
+            video_ranges.append('DOLBY_VISION')
+
+        if wv_secure and settings.getBool('hdr10', False):
+            video_ranges.append('HDR10')
+
+        if audio_types:
+            payload['playback']['attributes']['audioTypes'] = audio_types
+        if video_ranges:
+            payload['playback']['attributes']['videoRanges'] = video_ranges
+        if max_res:
+            payload['playback']['attributes']['resolution'] = {'max': max_res}
 
         endpoint = playback_url.format(scenario=scenario)
-        playback_data = self._session.get(endpoint, headers=headers).json()
+        playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
         self._check_errors(playback_data)
 
         return playback_data
@@ -364,3 +404,34 @@ class API(object):
         userdata.delete('access_token') #LEGACY
         userdata.delete('expires') #LEGACY
         self.new_session()
+
+"""
+private final <PLAYABLE> String N(PLAYABLE playable) {
+    if (playable instanceof db.c) {
+        return "live";
+    }
+    return playable instanceof u ? "offline" : "onDemand";
+}
+
+private final Map<String, String> O() {
+    Map<String, String> map = (Map) this.f33103a.e("playback", "contentToAssetInsertionStrategyMap");
+    return map == null ? p0.l(t.a("live", PaymentPeriod.NONE), t.a("offline", "SSAI"), t.a("onDemand", "SGAI")) : map;
+}
+
+private final Map<String, String> P() {
+    Map<String, String> map = (Map) this.f33103a.e("playback", "contentToPlaylistMap");
+    return map == null ? p0.l(t.a("liveLinear", "SLIDE"), t.a("liveEvent", "COMPLETE"), t.a("onDemand", "COMPLETE")) : map;
+}
+
+private final boolean R() {
+    Boolean bool = (Boolean) this.f33103a.e("playback", "jumpToLivePointOnForeground");
+    if (bool != null) {
+        return bool.booleanValue();
+    }
+    return true;
+}
+
+private final <PLAYABLE> String S(PLAYABLE playable) {
+    boolean z11 = playable instanceof db.c;
+    return (!z11 || !playable.M1()) ? z11 ? "liveEvent" : "onDemand" : "liveLinear";
+"""
