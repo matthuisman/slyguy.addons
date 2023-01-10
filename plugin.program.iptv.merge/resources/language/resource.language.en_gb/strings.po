@@ -1,5 +1,18 @@
+# Language file for IPTV Merge Add-on for Kodi
+# Addon Name: IPTV Merge
+# Addon id: plugin.program.iptv.merge
+# Addon Provider: SlyGuy
 msgid ""
 msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30001"
 msgid "Output Directory"
