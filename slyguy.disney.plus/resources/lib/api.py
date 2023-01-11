@@ -221,11 +221,8 @@ class API(object):
         kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
         appLanguage = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
 
-        # on the app, this changes based on endpoint
-        api_version = '5.1'
-
         _args = {
-            'apiVersion': api_version,
+            'apiVersion': '{apiVersion}',
             'region': region,
             'impliedMaturityRating': maturity,
             'kidsModeEnabled': 'true' if kids_mode else 'false',
@@ -234,7 +231,14 @@ class API(object):
         }
         _args.update(**kwargs)
 
-        return href.format(**_args)
+        href = href.format(**_args)
+
+        # on the app, this changes based on endpoint
+        api_version = '5.1' # [3.0, 3.1, 3.2, 5.0, 3.3, 5.1, 6.0, 5.2]
+        # if '/CuratedSet/' in href or '/RecommendationSet/' in href or '/TrendingSet/' in href or '/WatchlistSet/' in href:
+        #     api_version = '3.1' #3.1 has description
+
+        return href.format(apiVersion=api_version)
 
     def profile(self):
         session = self._cache.get('session')
@@ -335,25 +339,12 @@ class API(object):
     def playback_data(self, playback_url, wv_secure=False):
         self._set_token()
 
-       # scenario = 'ctr-high'
+        scenario = 'ctr-high'
        # scenario = 'ctr-regular'
 
-        # h265 L3 possible but don't know how to do codecs: {} yet, so for now use the available scenarios
-        if wv_secure:
-            scenario = 'android-tv-drm-ctr'
-        else:
-            scenario = 'android-tablet-sw-drm-ctr'
-            max_res = '1280x720'
-
-        if settings.getBool('h265', False):
-            scenario += '-h265'
-
-            if wv_secure and settings.getBool('dolby_vision', False):
-                scenario += '-dovi'
-            elif wv_secure and settings.getBool('hdr10', False):
-                scenario += '-hdr10'
-            else:
-                scenario += '-sdr'
+        # h265 L3 possible but unsure how to do codecs: {}, use scenario for now
+        if not wv_secure and settings.getBool('hevc', False):
+            scenario = 'android-tablet-sw-drm-ctr-h265-sdr'
 
         headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
@@ -374,7 +365,7 @@ class API(object):
         video_ranges = []
         audio_types = []
 
-        # atmos not yet supported on version=6 (basic tier) but add it in-case it starts working
+        # atmos not yet supported on version=6 (basic tier). Add in-case support is added
         if settings.getBool('dolby_atmos', False):
             audio_types.append('atmos')
 
@@ -404,34 +395,3 @@ class API(object):
         userdata.delete('access_token') #LEGACY
         userdata.delete('expires') #LEGACY
         self.new_session()
-
-"""
-private final <PLAYABLE> String N(PLAYABLE playable) {
-    if (playable instanceof db.c) {
-        return "live";
-    }
-    return playable instanceof u ? "offline" : "onDemand";
-}
-
-private final Map<String, String> O() {
-    Map<String, String> map = (Map) this.f33103a.e("playback", "contentToAssetInsertionStrategyMap");
-    return map == null ? p0.l(t.a("live", PaymentPeriod.NONE), t.a("offline", "SSAI"), t.a("onDemand", "SGAI")) : map;
-}
-
-private final Map<String, String> P() {
-    Map<String, String> map = (Map) this.f33103a.e("playback", "contentToPlaylistMap");
-    return map == null ? p0.l(t.a("liveLinear", "SLIDE"), t.a("liveEvent", "COMPLETE"), t.a("onDemand", "COMPLETE")) : map;
-}
-
-private final boolean R() {
-    Boolean bool = (Boolean) this.f33103a.e("playback", "jumpToLivePointOnForeground");
-    if (bool != null) {
-        return bool.booleanValue();
-    }
-    return true;
-}
-
-private final <PLAYABLE> String S(PLAYABLE playable) {
-    boolean z11 = playable instanceof db.c;
-    return (!z11 || !playable.M1()) ? z11 ? "liveEvent" : "onDemand" : "liveLinear";
-"""

@@ -1,0 +1,30 @@
+"""
+private final <PLAYABLE> String N(PLAYABLE playable) {
+    if (playable instanceof db.c) {
+        return "live";
+    }
+    return playable instanceof u ? "offline" : "onDemand";
+}
+
+private final Map<String, String> O() {
+    Map<String, String> map = (Map) this.f33103a.e("playback", "contentToAssetInsertionStrategyMap");
+    return map == null ? p0.l(t.a("live", PaymentPeriod.NONE), t.a("offline", "SSAI"), t.a("onDemand", "SGAI")) : map;
+}
+
+private final Map<String, String> P() {
+    Map<String, String> map = (Map) this.f33103a.e("playback", "contentToPlaylistMap");
+    return map == null ? p0.l(t.a("liveLinear", "SLIDE"), t.a("liveEvent", "COMPLETE"), t.a("onDemand", "COMPLETE")) : map;
+}
+
+private final boolean R() {
+    Boolean bool = (Boolean) this.f33103a.e("playback", "jumpToLivePointOnForeground");
+    if (bool != null) {
+        return bool.booleanValue();
+    }
+    return true;
+}
+
+private final <PLAYABLE> String S(PLAYABLE playable) {
+    boolean z11 = playable instanceof db.c;
+    return (!z11 || !playable.M1()) ? z11 ? "liveEvent" : "onDemand" : "liveLinear";
+"""
