@@ -28,6 +28,8 @@ def play_video(index, **kwargs):
 
     if video['type'] == 'ia_hls':
         item.inputstream = inputstream.HLS(force=True, live=False)
+    elif video['type'] == 'ia_widevine_hls':
+        item.inputstream = inputstream.Widevine(video.get('license_key'), manifest_type='hls')
     elif video['type'] == 'ia_mpd':
         item.inputstream = inputstream.MPD()
     elif video['type'] == 'ia_widevine':
