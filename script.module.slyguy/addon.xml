@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.56.7">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.56.8">
   <requires>
     <import addon="slyguy.dependencies"/>
   </requires>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Fixed content views. Thanks @drinfernoo</news>
+    <news>Add Ignore Display Resolution logic and setting</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

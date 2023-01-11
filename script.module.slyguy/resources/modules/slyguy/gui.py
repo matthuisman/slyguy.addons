@@ -469,6 +469,12 @@ class Item(object):
             elif mimetype == 'application/dash+xml':
                 proxy_data['type'] = 'mpd'
 
+            if settings.common_settings.getBool('ignore_display_resolution', False) is False:
+                proxy_data.update({
+                    'max_width': int(xbmc.getInfoLabel('System.ScreenWidth')),
+                    'max_height': int(xbmc.getInfoLabel('System.ScreenHeight')),
+                })
+
             proxy_data.update(self.proxy_data)
 
             for key in ['default_language', 'default_subtitle']:

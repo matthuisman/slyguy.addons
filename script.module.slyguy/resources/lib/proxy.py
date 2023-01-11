@@ -272,10 +272,15 @@ class RequestHandler(BaseHTTPRequestHandler):
             return highest
 
         def compare(a, b):
-            if a['resolution'] and b['resolution']:
-                if int(a['resolution'].split('x')[0]) > int(b['resolution'].split('x')[0]):
+            if a['res_ok'] > b['res_ok']:
+                return 1
+            elif a['res_ok'] < b['res_ok']:
+                return -1
+
+            if a['width'] and b['width']:
+                if a['width'] > b['width']:
                     return 1
-                elif int(a['resolution'].split('x')[0]) < int(b['resolution'].split('x')[0]):
+                elif a['width'] < b['width']:
                     return -1
 
             # Same resolution - compare codecs
@@ -312,7 +317,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             index = codec_rank(stream['codecs'])
             codec_string = CODECS[index][1] if index >= 0 else ''
 
-            return _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution=stream['resolution'], fps=fps, codecs=codec_string).replace('  ', ' ')
+            label = _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution='{width}x{height}'.format(**stream), fps=fps, codecs=codec_string, _color='blue' if stream['res_ok'] else 'orange').replace('  ', ' ')
+
+            return label
 
         if self._session.get('selected_quality') is not None:
             if self._session['selected_quality'] == QUALITY_EXIT:
@@ -323,10 +330,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 return qualities[self._session['selected_quality']]
 
-        quality_compare = cmp_to_key(compare)
-
         quality = int(self._session.get('quality', QUALITY_ASK))
+
+        quality_compare = cmp_to_key(compare)
         streams = sorted(qualities, key=quality_compare, reverse=True)
+        not_res_ok = [x for x in streams if not x['res_ok']]
 
         if not streams:
             quality = QUALITY_DISABLED
@@ -338,20 +346,26 @@ class RequestHandler(BaseHTTPRequestHandler):
             options.append([QUALITY_BEST, _.QUALITY_BEST])
 
             for x in streams:
-                options.append([x, _stream_label(x)])
+                if x['res_ok']:
+                    options.append([x, _stream_label(x)])
 
             options.append([QUALITY_LOWEST, _.QUALITY_LOWEST])
+
+            for x in not_res_ok:
+                options.append([x, _stream_label(x)])
+
             options.append([QUALITY_SKIP, _.QUALITY_SKIP])
 
             values = [x[0] for x in options]
             labels = [x[1] for x in options]
 
             default = 0
-            remove = None
+            current = None
             for quality in PROXY_GLOBAL['last_qualities']:
                 if quality[0] == self._session['slug']:
-                    remove = quality
-                    default = quality[1]
+                    current = quality
+                    if current[1] in values:
+                        default = values.index(quality[1])
                     break
 
             index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=5000)
@@ -361,21 +375,23 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             quality = values[index]
 
-            if remove:
-                PROXY_GLOBAL['last_qualities'].remove(remove)
+            if current:
+               PROXY_GLOBAL['last_qualities'].remove(current)
 
-            if index != default:
-                PROXY_GLOBAL['last_qualities'].insert(0, [self._session['slug'], index])
-                PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
+            PROXY_GLOBAL['last_qualities'].insert(0, [self._session['slug'], quality])
+            PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
+
+        best = streams[0]
+        worst = streams[-(len(not_res_ok)+1)]
 
         if quality in (QUALITY_DISABLED, QUALITY_SKIP):
             quality = quality
         elif quality == QUALITY_BEST:
-            quality = streams[0]
+            quality = best
         elif quality == QUALITY_LOWEST:
-            quality = streams[-1]
+            quality = worst
         elif quality not in streams:
-            options = [streams[-1]]
+            options = [worst]
             for stream in streams:
                 if quality >= stream['bandwidth']:
                     options.append(stream)
@@ -441,6 +457,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
         default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
+        max_width = self._session.get('max_width', float('inf'))
+        max_height = self._session.get('max_height', float('inf'))
 
         if audio_whitelist:
             audio_whitelist.extend(default_languages)
@@ -530,10 +548,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                         is_video = True
 
-                        resolution = ''
-                        if 'width' in attribs and 'height' in attribs:
-                            resolution = '{}x{}'.format(attribs['width'], attribs['height'])
-
                         frame_rate = ''
                         if 'frameRate'in attribs:
                             frame_rate = attribs['frameRate']
@@ -547,7 +561,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                         codecs = [x for x in attribs.get('codecs', '').split(',') if x]
                         if is_hdr:
                             codecs.append('hdr')
-                        stream = {'bandwidth': bandwidth, 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream}
+
+                        stream = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream, 'res_ok': True}
+                        if stream['width'] > max_width or stream['height'] > max_height:
+                            stream['res_ok'] = False
+
                         all_streams.append(stream)
                         rep_index += 1
 
@@ -563,6 +581,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                     video_sets.append([highest_bandwidth, adap_set, adap_parent])
                 else:
                     audio_sets.append([highest_bandwidth, adap_set, adap_parent])
+
+        ## Get selected quality
+        selected = self._quality_select(streams)
+        if selected:
+            for stream in all_streams:
+                if stream['rep_index'] != selected['rep_index']:
+                    stream['elem'].parentNode.removeChild(stream['elem'])
+        #################
 
         video_sets.sort(key=lambda  x: x[0], reverse=True)
         audio_sets.sort(key=lambda  x: x[0], reverse=True)
@@ -771,14 +797,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 log.debug('Dash Fix: presentationTimeOffset removed')
         ###############
 
-        ## Get selected quality
-        selected = self._quality_select(streams)
-        if selected:
-            for stream in all_streams:
-                if stream['rep_index'] != selected['rep_index']:
-                    stream['elem'].parentNode.removeChild(stream['elem'])
-        #################
-
         ## Remove empty adaption sets
         for adap_set in root.getElementsByTagName('AdaptationSet'):
             if not adap_set.getElementsByTagName('Representation'):
@@ -851,6 +869,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         original_language = self._session.get('original_language', '').lower().strip()
         default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
+        max_width = self._session.get('max_width', float('inf'))
+        max_height = self._session.get('max_height', float('inf'))
 
         if audio_whitelist:
             audio_whitelist.extend(default_languages)
@@ -904,6 +924,13 @@ class RequestHandler(BaseHTTPRequestHandler):
                 frame_rate = _remove_quotes(attribs.get('FRAME-RATE', ''))
                 video_range = _remove_quotes(attribs.get('VIDEO-RANGE', ''))
 
+                try:
+                    width, height = resolution.lower().split('x')
+                    width = int(width)
+                    height = int(height)
+                except:
+                    width = height = 0
+
                 url = line
                 if '://' in url:
                     url = '/'+'/'.join(url.lower().split('://')[1].split('/')[1:])
@@ -911,18 +938,29 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if video_range == 'PQ':
                     codecs.append('hdr')
 
-                stream = {'bandwidth': int(bandwidth), 'resolution': resolution, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video)}
-                all_streams.append(stream)
-                video.append([attribs, line])
+                stream = {'bandwidth': int(bandwidth), 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True}
+                if stream['width'] > max_width or stream['height'] > max_height:
+                    stream['res_ok'] = False
 
                 if stream['url'] not in urls and stream_inf not in metas:
                     streams.append(stream)
                     urls.append(stream['url'])
                     metas.append(stream_inf)
 
+                all_streams.append(stream)
+                video.append([attribs, line])
                 stream_inf = None
             else:
                 new_lines.append(line)
+
+        # select quality
+        selected = self._quality_select(streams)
+        if selected:
+            adjust = 0
+            for stream in all_streams:
+                if stream['url'] != selected['url']:
+                    video.pop(stream['index']-adjust)
+                    adjust += 1
 
         def set_default_laguage(defaults, rows):
             found = False
@@ -974,14 +1012,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if attribs[key] is not None:
                     new_line += u'{}="{}",'.format(key, attribs[key])
             new_lines.append(new_line.rstrip(','))
-
-        selected = self._quality_select(streams)
-        if selected:
-            adjust = 0
-            for stream in all_streams:
-                if stream['url'] != selected['url']:
-                    video.pop(stream['index']-adjust)
-                    adjust += 1
 
         for stream in video:
             attribs = stream[0]
