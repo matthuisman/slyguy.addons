@@ -20,7 +20,7 @@ from pycaption import detect_format, WebVTTWriter
 from slyguy import settings, gui, inputstream
 from slyguy.log import log
 from slyguy.constants import *
-from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
+from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language, replace_kids
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
@@ -272,6 +272,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             return highest
 
         def compare(a, b):
+            if a['compatible'] > b['compatible']:
+                return 1
+            elif a['compatible'] < b['compatible']:
+                return -1
+
             if a['res_ok'] > b['res_ok']:
                 return 1
             elif a['res_ok'] < b['res_ok']:
@@ -317,7 +322,14 @@ class RequestHandler(BaseHTTPRequestHandler):
             index = codec_rank(stream['codecs'])
             codec_string = CODECS[index][1] if index >= 0 else ''
 
-            label = _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution='{width}x{height}'.format(**stream), fps=fps, codecs=codec_string, _color='blue' if stream['res_ok'] else 'orange').replace('  ', ' ')
+            if not stream['compatible']:
+                color = 'red'
+            elif not stream['res_ok']:
+                color = 'orange'
+            else:
+                color = 'blue'
+
+            label = _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution='{width}x{height}'.format(**stream), fps=fps, codecs=codec_string, _color=color).replace('  ', ' ')
 
             return label
 
@@ -334,7 +346,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         quality_compare = cmp_to_key(compare)
         streams = sorted(qualities, key=quality_compare, reverse=True)
-        not_res_ok = [x for x in streams if not x['res_ok']]
+
+        ok_streams = [x for x in streams if x['compatible'] and x['res_ok']]
+        not_compatible = [x for x in streams if not x['compatible']]
+        not_res_ok = [x for x in streams if not x['res_ok'] and x not in not_compatible]
 
         if not streams:
             quality = QUALITY_DISABLED
@@ -345,13 +360,15 @@ class RequestHandler(BaseHTTPRequestHandler):
             options = []
             options.append([QUALITY_BEST, _.QUALITY_BEST])
 
-            for x in streams:
-                if x['res_ok']:
-                    options.append([x, _stream_label(x)])
+            for x in ok_streams:
+                options.append([x, _stream_label(x)])
 
             options.append([QUALITY_LOWEST, _.QUALITY_LOWEST])
 
             for x in not_res_ok:
+                options.append([x, _stream_label(x)])
+
+            for x in not_compatible:
                 options.append([x, _stream_label(x)])
 
             options.append([QUALITY_SKIP, _.QUALITY_SKIP])
@@ -382,7 +399,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
 
         best = streams[0]
-        worst = streams[-(len(not_res_ok)+1)]
+        worst = streams[-(len(not_res_ok)+len(not_compatible)+1)]
 
         if quality in (QUALITY_DISABLED, QUALITY_SKIP):
             quality = quality
@@ -452,13 +469,21 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         audio_description = self._session.get('audio_description', True)
         remove_framerate = self._session.get('remove_framerate', False)
+        h265_enabled = self._session.get('h265', False)
+        hdr_enabled = self._session.get('hdr', False)
+        dv_enabled = self._session.get('dolby_vision', False)
+        atmos_enabled = self._session.get('dolby_atmos', False)
+        ac3_enabled = self._session.get('ac3', False)
+        ec3_enabled = self._session.get('ec3', False)
+
         original_language = self._session.get('original_language', '')
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
         default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
-        max_width = self._session.get('max_width', float('inf'))
-        max_height = self._session.get('max_height', float('inf'))
+        max_width = self._session.get('max_width') or float('inf')
+        max_height = self._session.get('max_height') or float('inf')
+        max_channels = self._session.get('max_channels') or 0
 
         if audio_whitelist:
             audio_whitelist.extend(default_languages)
@@ -480,7 +505,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                     ## Make sure Representation are last in adaptionset
                     adap_set.removeChild(stream)
-                    adap_set.appendChild(stream)
                     #######
 
                     for key in list(adap_set.attributes.keys()):
@@ -503,14 +527,26 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if 'audio' in attribs.get('mimeType', ''):
                         is_atmos = False
                         atmos_channels = None
-                        for supelem in stream.getElementsByTagName('SupplementalProperty'):
-                            if supelem.getAttribute('value') == 'JOC':
+                        codecs = attribs.get('codecs', '')
+                        channels = 0
+
+                        for supplem in stream.getElementsByTagName('AudioChannelConfiguration'):
+                            if 'audio_channel_configuration' in supplem.getAttribute('schemeIdUri'):
+                                try:
+                                    channels = supplem.getAttribute('value').replace('F801','6').replace('FE01','8')
+                                except:
+                                    channels = 0
+
+                        for supplem in stream.getElementsByTagName('SupplementalProperty'):
+                            if supplem.getAttribute('value') == 'JOC':
                                 is_atmos = True
-                            if 'EC3_ExtensionComplexityIndex' in (supelem.getAttribute('schemeIdUri') or ''):
-                                atmos_channels = supelem.getAttribute('value')
+                            if 'EC3_ExtensionComplexityIndex' in (supplem.getAttribute('schemeIdUri') or ''):
+                                atmos_channels = supplem.getAttribute('value')
+
+                        if (not atmos_enabled and is_atmos) or (not ac3_enabled and codecs == 'ac-3') or (not ec3_enabled and codecs == 'ec-3') or (max_channels and channels > max_channels):
+                            continue
 
                         if is_atmos:
-                            adap_set.removeChild(stream)
                             new_set = adap_set.cloneNode(deep=True)
 
                             new_set.setAttribute('name', 'ATMOS')
@@ -541,8 +577,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                     if 'video' in attribs.get('mimeType', '') and not is_trick:
                         is_hdr = False
-                        for supelem in adap_set.getElementsByTagName('SupplementalProperty'):
-                            if supelem.getAttribute('schemeIdUri') == 'http://dashif.org/metadata/hdr':
+                        for supplem in adap_set.getElementsByTagName('SupplementalProperty'):
+                            if supplem.getAttribute('schemeIdUri') == 'http://dashif.org/metadata/hdr':
                                 is_hdr = True
                                 break
 
@@ -562,15 +598,29 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if is_hdr:
                             codecs.append('hdr')
 
-                        stream = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream, 'res_ok': True}
+                        stream = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream, 'res_ok': True, 'compatible': True}
                         if stream['width'] > max_width or stream['height'] > max_height:
                             stream['res_ok'] = False
+
+                        for codec in codecs:
+                            if not hdr_enabled and codec.startswith(('hdr',)):
+                                stream['compatible'] = False
+                            if not h265_enabled and codec.startswith(('hev','hvc','hdr')):
+                                stream['compatible'] = False
+                            if not dv_enabled and codec.startswith('dvh'):
+                                stream['compatible'] = False
+
+                        if not stream['compatible']:
+                            continue
 
                         all_streams.append(stream)
                         rep_index += 1
 
                         if period_index == 0:
                             streams.append(stream)
+
+                    # add rep to end of adap set
+                    adap_set.appendChild(stream)
 
                 adap_parent.removeChild(adap_set)
 
@@ -803,6 +853,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 adap_set.parentNode.removeChild(adap_set)
         #################
 
+        ## Fix of cenc pssh to only contain kids still present
+        kids = []
+        for elem in root.getElementsByTagName('ContentProtection'):
+            kids.append(elem.getAttribute('cenc:default_KID'))
+
+        if kids:
+            for elem in root.getElementsByTagName('ContentProtection'):
+                if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                    for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                        current_cenc = elem2.firstChild.nodeValue
+                        new_cenc = replace_kids(current_cenc, kids, version0=True)
+                        if current_cenc != new_cenc:
+                            elem2.firstChild.nodeValue = new_cenc
+                            log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+        ################################################
+
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')
             mpd = b"\n".join([ll.rstrip() for ll in mpd.splitlines() if ll.strip()])
@@ -860,17 +926,25 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             return attribs
 
-        audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
-        subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
         subs_forced = self._session.get('subs_forced', True)
         subs_non_forced = self._session.get('subs_non_forced', True)
         audio_description = self._session.get('audio_description', True)
         remove_framerate = self._session.get('remove_framerate', False)
+        h265_enabled = self._session.get('h265', False)
+        hdr_enabled = self._session.get('hdr', False)
+        dv_enabled = self._session.get('dolby_vision', False)
+        atmos_enabled = self._session.get('dolby_atmos', False)
+        ac3_enabled = self._session.get('ac3', False)
+        ec3_enabled = self._session.get('ec3', False)
+        max_channels = self._session.get('max_channels') or 0
+
+        audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
+        subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
         original_language = self._session.get('original_language', '').lower().strip()
         default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
-        max_width = self._session.get('max_width', float('inf'))
-        max_height = self._session.get('max_height', float('inf'))
+        max_width = self._session.get('max_width') or float('inf')
+        max_height = self._session.get('max_height') or float('inf')
 
         if audio_whitelist:
             audio_whitelist.extend(default_languages)
@@ -884,6 +958,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         subs = []
         video = []
         new_lines = []
+        audio_groups = {}
 
         for line in m3u8.splitlines():
             if not line.strip():
@@ -924,6 +999,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 frame_rate = _remove_quotes(attribs.get('FRAME-RATE', ''))
                 video_range = _remove_quotes(attribs.get('VIDEO-RANGE', ''))
 
+                audio_group = _remove_quotes(attribs.get('AUDIO', ''))
+                audio_groups[audio_group] = codecs
+
                 try:
                     width, height = resolution.lower().split('x')
                     width = int(width)
@@ -938,9 +1016,21 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if video_range == 'PQ':
                     codecs.append('hdr')
 
-                stream = {'bandwidth': int(bandwidth), 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True}
+                stream = {'bandwidth': int(bandwidth), 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True, 'compatible': True}
                 if stream['width'] > max_width or stream['height'] > max_height:
                     stream['res_ok'] = False
+
+                for codec in codecs:
+                    if not hdr_enabled and codec.startswith(('hdr',)):
+                        stream['compatible'] = False
+                    if not h265_enabled and codec.startswith(('hev','hvc','hdr')):
+                        stream['compatible'] = False
+                    if not dv_enabled and codec.startswith('dvh'):
+                        stream['compatible'] = False
+
+                if not stream['compatible']:
+                    stream_inf = None
+                    continue
 
                 if stream['url'] not in urls and stream_inf not in metas:
                     streams.append(stream)
@@ -987,8 +1077,25 @@ class RequestHandler(BaseHTTPRequestHandler):
                 continue
 
             if 'JOC' in attribs.get('CHANNELS', ''):
+                if not atmos_enabled:
+                    continue
+
                 attribs['NAME'] = _(_.ATMOS, name=attribs['NAME'])
                 attribs['CHANNELS'] = attribs['CHANNELS'].split('/')[0]
+
+            try:
+                channels = int(attribs['CHANNELS'])
+            except:
+                channels = 0
+
+            if max_channels and channels > max_channels:
+                continue
+
+            codecs = audio_groups.get(attribs.get('GROUP-ID'))
+            if not ec3_enabled and 'ec-3' in codecs:
+                continue
+            if not ac3_enabled and 'ac-3' in codecs:
+                continue
 
             new_line = '#EXT-X-MEDIA:' if attribs else ''
             for key in attribs:

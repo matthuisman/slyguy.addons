@@ -458,11 +458,34 @@ class Item(object):
                 'quality': QUALITY_DISABLED,
                 'middleware': {},
                 'type': None,
+                'h265': settings.common_settings.getBool('h265', False),
+                'hdr10': settings.common_settings.getBool('hdr10', False),
+                'dolby_vision': settings.common_settings.getBool('dolby_vision', False),
+                'dolby_atmos': settings.common_settings.getBool('dolby_atmos', False),
+                'ac3': settings.common_settings.getBool('ac3', False),
+                'ec3': settings.common_settings.getBool('ec3', False),
                 'verify': settings.common_settings.getBool('verify_ssl', True),
                 'timeout': settings.common_settings.getInt('http_timeout', 30),
                 'dns_rewrites': get_dns_rewrites(self.dns_rewrites),
                 'proxy_server': settings.get('proxy_server') or settings.common_settings.get('proxy_server'),
+                'max_width': settings.common_settings.getInt('max_width', 0),
+                'max_height': settings.common_settings.getInt('max_width', 0),
+                'max_channels': settings.common_settings.getInt('max_channels', 0),
             }
+            
+            # backwards compat. override with addon settings if set
+            if settings.getBool('hevc', None) is not None:
+                proxy_data['h265'] = settings.getBool('hevc')
+
+            if settings.getBool('hdr10', None) is not None:
+                proxy_data['hdr10'] = settings.getBool('hdr10')
+
+            if settings.getBool('dolby_vision', None) is not None:
+                proxy_data['dolby_vision'] = settings.getBool('dolby_vision')
+
+            if settings.getBool('dolby_atmos', None) is not None:
+                proxy_data['dolby_atmos'] = settings.getBool('dolby_atmos')
+            #########################################
 
             if mimetype == 'application/vnd.apple.mpegurl':
                 proxy_data['type'] = 'm3u8'
@@ -470,10 +493,18 @@ class Item(object):
                 proxy_data['type'] = 'mpd'
 
             if settings.common_settings.getBool('ignore_display_resolution', False) is False:
-                proxy_data.update({
-                    'max_width': int(xbmc.getInfoLabel('System.ScreenWidth')),
-                    'max_height': int(xbmc.getInfoLabel('System.ScreenHeight')),
-                })
+                screen_width = int(xbmc.getInfoLabel('System.ScreenWidth') or 0)
+                screen_height = int(xbmc.getInfoLabel('System.ScreenHeight') or 0)
+                if screen_width:
+                    if not proxy_data['max_width']:
+                        proxy_data['max_width'] = screen_width
+                    else:
+                        proxy_data['max_width'] = min(screen_width, proxy_data['max_width'])
+                if screen_height:
+                    if not proxy_data['max_height']:
+                        proxy_data['max_height'] = screen_height
+                    else:
+                        proxy_data['max_height'] = min(screen_height, proxy_data['max_height'])
 
             proxy_data.update(self.proxy_data)
 

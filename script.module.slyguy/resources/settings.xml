@@ -17,8 +17,17 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="30005" id="proxy_enabled" type="bool" default="true"/>
-        <setting label="30022" id="ignore_display_resolution" type="bool" default="false" enable="eq(-1,true)"/>
+        <setting label="30005" id="proxy_enabled" type="bool" default="true" visible="false"/>
+        <setting label="30022" id="ignore_display_resolution" type="bool" default="true"/>
+        <setting label="30025" id="max_width" type="number" default="0"/>
+        <setting label="30026" id="max_height" type="number" default="0"/>
+        <setting label="30027" id="h265" type="bool" default="false"/>
+        <setting label="30028" id="hdr10" type="bool" default="false"/>
+        <setting label="30029" id="dolby_vision" type="bool" default="false"/>
+        <setting label="30030" id="dolby_atmos" type="bool" default="false"/>
+        <setting label="30031" id="ac3" type="bool" default="true"/>
+        <setting label="30032" id="ec3" type="bool" default="true"/>
+        <setting label="30033" id="max_channels" type="number" default="0"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
