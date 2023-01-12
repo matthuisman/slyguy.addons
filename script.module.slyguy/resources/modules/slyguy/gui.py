@@ -477,6 +477,9 @@ class Item(object):
             if settings.getBool('hevc', None) is not None:
                 proxy_data['h265'] = settings.getBool('hevc')
 
+            if settings.getBool('h265', None) is not None:
+                proxy_data['h265'] = settings.getBool('h265')
+
             if settings.getBool('hdr10', None) is not None:
                 proxy_data['hdr10'] = settings.getBool('hdr10')
 
@@ -485,6 +488,19 @@ class Item(object):
 
             if settings.getBool('dolby_atmos', None) is not None:
                 proxy_data['dolby_atmos'] = settings.getBool('dolby_atmos')
+
+            if settings.getBool('atmos_enabled', None) is not None:
+                proxy_data['dolby_atmos'] = settings.getBool('atmos_enabled')
+
+            if settings.getBool('4k_enabled', None) == False:
+                proxy_data['max_width'] = 1920
+                proxy_data['max_height'] = 1080
+
+            if settings.getBool('ac3_enabled', None) is not None:
+                proxy_data['ac3'] = settings.getBool('ac3_enabled')
+
+            if settings.getBool('ec3_enabled', None) is not None:
+                proxy_data['ec3'] = settings.getBool('ec3_enabled')
             #########################################
 
             if mimetype == 'application/vnd.apple.mpegurl':
