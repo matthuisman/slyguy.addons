@@ -598,26 +598,26 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if is_hdr:
                             codecs.append('hdr')
 
-                        stream = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream, 'res_ok': True, 'compatible': True}
-                        if stream['width'] > max_width or stream['height'] > max_height:
-                            stream['res_ok'] = False
+                        stream_data = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream, 'res_ok': True, 'compatible': True}
+                        if stream_data['width'] > max_width or stream_data['height'] > max_height:
+                            stream_data['res_ok'] = False
 
                         for codec in codecs:
                             if not hdr_enabled and codec.startswith(('hdr',)):
-                                stream['compatible'] = False
+                                stream_data['compatible'] = False
                             if not h265_enabled and codec.startswith(('hev','hvc','hdr')):
-                                stream['compatible'] = False
+                                stream_data['compatible'] = False
                             if not dv_enabled and codec.startswith('dvh'):
-                                stream['compatible'] = False
+                                stream_data['compatible'] = False
 
-                        if not stream['compatible']:
+                        if not stream_data['compatible']:
                             continue
 
-                        all_streams.append(stream)
+                        all_streams.append(stream_data)
                         rep_index += 1
 
                         if period_index == 0:
-                            streams.append(stream)
+                            streams.append(stream_data)
 
                     # add rep to end of adap set
                     adap_set.appendChild(stream)
