@@ -339,29 +339,23 @@ class API(object):
     def playback_data(self, playback_url, wv_secure=False):
         self._set_token()
 
-        scenario = 'ctr-high'
-       # scenario = 'ctr-regular'
-
-        # h265 L3 possible but unsure how to do codecs: {}, use scenario for now
-        if not wv_secure and settings.getBool('hevc', False):
-            scenario = 'android-tablet-sw-drm-ctr-h265-sdr'
-
         headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         payload = {
             "playback": {
                 "attributes": {
-                   # "codecs": {},
+                    "codecs": {
+                        'supportsMultiCodecMaster': False, #if true outputs all codecs and resoultion in single playlist
+                    },
                     "protocol": "HTTPS",
                     #"ads": "",
-                    #"frameRates": [60,],
+                    "frameRates": [60],
                     "assetInsertionStrategy": "SGAI" if self._cache['basic_tier'] else "NONE",
                     "playbackInitializationContext": "online"
                 },
             }
         }
 
-        max_res = None
         video_ranges = []
         audio_types = []
 
@@ -375,13 +369,19 @@ class API(object):
         if wv_secure and settings.getBool('hdr10', False):
             video_ranges.append('HDR10')
 
+        if settings.getBool('hevc', False):
+            payload['playback']['attributes']['codecs'] = {'video': ['h264', 'h265']}
+
         if audio_types:
             payload['playback']['attributes']['audioTypes'] = audio_types
+
         if video_ranges:
             payload['playback']['attributes']['videoRanges'] = video_ranges
-        if max_res:
-            payload['playback']['attributes']['resolution'] = {'max': max_res}
 
+        if not wv_secure:
+            payload['playback']['attributes']['resolution'] = {'max': ['1280x720']}
+
+        scenario = 'ctr-high' if wv_secure else 'ctr-regular'
         endpoint = playback_url.format(scenario=scenario)
         playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
         self._check_errors(playback_data)
