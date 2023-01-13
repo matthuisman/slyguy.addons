@@ -550,30 +550,6 @@ def play_channel(channel_id, **kwargs):
     return _play(epg_data[channel_id][0]['eab'], **kwargs)
 
 @plugin.route()
-@plugin.plugin_middleware()
-def mpd_request(_data, _path, **kwargs):
-    root = parseString(_data)
-
-    dolby_vison = settings.getBool('dolby_vision', False)
-
-    for adap_set in root.getElementsByTagName('AdaptationSet'):
-        for elem in adap_set.getElementsByTagName('Representation'):
-            parent = elem.parentNode
-            codecs = elem.getAttribute('codecs').lower()
-
-            if not dolby_vison and (codecs.startswith('dvh1') or codecs.startswith('dvhe')):
-                parent.removeChild(elem)
-
-    ## Remove empty adaption sets
-    for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not adap_set.getElementsByTagName('Representation'):
-            adap_set.parentNode.removeChild(adap_set)
-    #################
-
-    with open(_path, 'wb') as f:
-        f.write(root.toprettyxml(encoding='utf-8'))
-
-@plugin.route()
 @plugin.login_required()
 def play(id, **kwargs):
     return _play(id, **kwargs)
@@ -601,7 +577,6 @@ def _play(id, **kwargs):
         ),
         headers = HEADERS,
     )
-    item.proxy_data['middleware'] = {data['stream_url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
 
     if ROUTE_LIVE_TAG in kwargs:
         item.resume_from = LIVE_HEAD
