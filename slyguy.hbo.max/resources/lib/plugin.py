@@ -542,13 +542,6 @@ def mpd_request(_data, _path, **kwargs):
 
     root = parseString(data.encode('utf8'))
 
-    dolby_vison = wv_secure and settings.getBool('dolby_vision', False)
-    enable_4k = wv_secure and settings.getBool('4k_enabled', True)
-    h265 = settings.getBool('h265', False)
-    enable_ac3 = settings.getBool('ac3_enabled', False)
-    enable_ec3 = settings.getBool('ec3_enabled', False)
-    enable_atmos = enable_ec3 and settings.getBool('atmos_enabled', False)
-
     def fix_sub(adap_set):
         lang = adap_set.getAttribute('lang')
         _type = 'sub'
@@ -591,56 +584,6 @@ def mpd_request(_data, _path, **kwargs):
             else:
                 adap_set.parentNode.removeChild(adap_set)
                 continue
-
-        for elem in adap_set.getElementsByTagName('Representation'):
-            parent = elem.parentNode
-            codecs = elem.getAttribute('codecs').lower()
-            height = int(elem.getAttribute('height') or 0)
-            width = int(elem.getAttribute('width') or 0)
-
-            if not dolby_vison and (codecs.startswith('dvh1') or codecs.startswith('dvhe')):
-                parent.removeChild(elem)
-
-            elif not h265 and (codecs.startswith('hvc') or codecs.startswith('hev')):
-                parent.removeChild(elem)
-
-            elif not enable_4k and (height > 1080 or width > 1920):
-                parent.removeChild(elem)
-
-            elif not enable_ac3 and codecs == 'ac-3':
-                parent.removeChild(elem)
-
-            elif (not enable_ec3 or not enable_atmos) and codecs == 'ec-3':
-                is_atmos = False
-                for supelem in elem.getElementsByTagName('SupplementalProperty'):
-                    if supelem.getAttribute('value') == 'JOC':
-                        is_atmos = True
-                        break
-
-                if not enable_ec3 or (not enable_atmos and is_atmos):
-                    parent.removeChild(elem)
-
-    ## Remove empty adaption sets
-    for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if not adap_set.getElementsByTagName('Representation'):
-            adap_set.parentNode.removeChild(adap_set)
-    #################
-
-    ## Fix of cenc pssh to only contain kids still present
-    kids = []
-    for elem in root.getElementsByTagName('ContentProtection'):
-        kids.append(elem.getAttribute('cenc:default_KID'))
-
-    if kids:
-        for elem in root.getElementsByTagName('ContentProtection'):
-            if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
-                for elem2 in elem.getElementsByTagName('cenc:pssh'):
-                    current_cenc = elem2.firstChild.nodeValue
-                    new_cenc = replace_kids(current_cenc, kids, version0=True)
-                    if current_cenc != new_cenc:
-                        elem2.firstChild.nodeValue = new_cenc
-                        log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
-    ################################################
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
