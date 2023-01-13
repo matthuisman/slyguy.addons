@@ -610,8 +610,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                             if not dv_enabled and codec.startswith('dvh'):
                                 stream_data['compatible'] = False
 
-                        if not stream_data['compatible']:
-                            continue
+                        # if not stream_data['compatible']:
+                        #     continue
 
                         all_streams.append(stream_data)
                         rep_index += 1
@@ -1028,9 +1028,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if not dv_enabled and codec.startswith('dvh'):
                         stream['compatible'] = False
 
-                if not stream['compatible']:
-                    stream_inf = None
-                    continue
+                # if not stream['compatible']:
+                #     stream_inf = None
+                #     continue
 
                 if stream['url'] not in urls and stream_inf not in metas:
                     streams.append(stream)
