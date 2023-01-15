@@ -27,14 +27,19 @@ from slyguy.router import add_url_args
 
 from .language import _
 
+H264 = 'H.264'
+H265 = 'H.265'
+HDR = 'H.265 HDR'
+DOLBY_VISION = 'H.265 Dolby Vision'
+
 CODECS = [
     ['mp4v', 'MPEG-4'],
     ['mp4s', 'MPEG-4'],
-    ['avc', 'H.264'],
-    ['hvc', 'H.265'],
-    ['hev', 'H.265'],
-    ['hdr', 'H.265 HDR'],
-    ['dvh', 'H.265 Dolby Vision'],
+    ['avc', H264],
+    ['hvc', H265],
+    ['hev', H265],
+    ['hdr', HDR],
+    ['dvh', DOLBY_VISION],
 ]
 
 ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
@@ -94,6 +99,17 @@ middlewares = {
     MIDDLEWARE_PLUGIN: middleware_plugin,
 }
 
+def codec_rank(_codecs):
+    highest = -1
+
+    for codec in _codecs:
+        for _codec in CODECS:
+            if codec.lower().startswith(_codec[0].lower()):
+                rank = CODECS.index(_codec)
+                if not highest or rank > highest:
+                    highest = rank
+
+    return highest
 class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         try:
@@ -259,18 +275,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         self._output_response(response)
 
     def _quality_select(self, qualities):
-        def codec_rank(_codecs):
-            highest = -1
-
-            for codec in _codecs:
-                for _codec in CODECS:
-                    if codec.lower().startswith(_codec[0].lower()):
-                        rank = CODECS.index(_codec)
-                        if not highest or rank > highest:
-                            highest = rank
-
-            return highest
-
         def compare(a, b):
             if a['compatible'] > b['compatible']:
                 return 1
@@ -398,17 +402,14 @@ class RequestHandler(BaseHTTPRequestHandler):
             PROXY_GLOBAL['last_qualities'].insert(0, [self._session['slug'], quality])
             PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
 
-        best = streams[0]
-        worst = streams[-(len(not_res_ok)+len(not_compatible)+1)]
-
         if quality in (QUALITY_DISABLED, QUALITY_SKIP):
             quality = quality
         elif quality == QUALITY_BEST:
-            quality = best
+            quality = streams[0]
         elif quality == QUALITY_LOWEST:
-            quality = worst
+            quality = streams[len(ok_streams)-1]
         elif quality not in streams:
-            options = [worst]
+            options = [streams[len(ok_streams)-1]]
             for stream in streams:
                 if quality >= stream['bandwidth']:
                     options.append(stream)
@@ -470,8 +471,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         audio_description = self._session.get('audio_description', True)
         remove_framerate = self._session.get('remove_framerate', False)
         h265_enabled = self._session.get('h265', False)
-        hdr_enabled = self._session.get('hdr', False)
-        dv_enabled = self._session.get('dolby_vision', False)
+        hdr_enabled = self._session.get('hdr10', False)
+        dolby_vision_enabled = self._session.get('dolby_vision', False)
         atmos_enabled = self._session.get('dolby_atmos', False)
         ac3_enabled = self._session.get('ac3', False)
         ec3_enabled = self._session.get('ec3', False)
@@ -602,13 +603,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if stream_data['width'] > max_width or stream_data['height'] > max_height:
                             stream_data['res_ok'] = False
 
-                        for codec in codecs:
-                            if not hdr_enabled and codec.startswith(('hdr',)):
-                                stream_data['compatible'] = False
-                            if not h265_enabled and codec.startswith(('hev','hvc','hdr')):
-                                stream_data['compatible'] = False
-                            if not dv_enabled and codec.startswith('dvh'):
-                                stream_data['compatible'] = False
+                        index = codec_rank(stream['codecs'])
+                        codec_string = CODECS[index][1] if index >= 0 else ''
+
+                        if not dolby_vision_enabled and codec_string == DOLBY_VISION:
+                            stream['compatible'] = False
+
+                        if not hdr_enabled and codec_string == HDR:
+                            stream['compatible'] = False
+
+                        if not h265_enabled and codec_string == H265:
+                            stream['compatible'] = False
 
                         # if not stream_data['compatible']:
                         #     continue
@@ -931,8 +936,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         audio_description = self._session.get('audio_description', True)
         remove_framerate = self._session.get('remove_framerate', False)
         h265_enabled = self._session.get('h265', False)
-        hdr_enabled = self._session.get('hdr', False)
-        dv_enabled = self._session.get('dolby_vision', False)
+        hdr_enabled = self._session.get('hdr10', False)
+        dolby_vision_enabled = self._session.get('dolby_vision', False)
         atmos_enabled = self._session.get('dolby_atmos', False)
         ac3_enabled = self._session.get('ac3', False)
         ec3_enabled = self._session.get('ec3', False)
@@ -1020,13 +1025,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if stream['width'] > max_width or stream['height'] > max_height:
                     stream['res_ok'] = False
 
-                for codec in codecs:
-                    if not hdr_enabled and codec.startswith(('hdr',)):
-                        stream['compatible'] = False
-                    if not h265_enabled and codec.startswith(('hev','hvc','hdr')):
-                        stream['compatible'] = False
-                    if not dv_enabled and codec.startswith('dvh'):
-                        stream['compatible'] = False
+                index = codec_rank(stream['codecs'])
+                codec_string = CODECS[index][1] if index >= 0 else ''
+
+                if not dolby_vision_enabled and codec_string == DOLBY_VISION:
+                    stream['compatible'] = False
+
+                if not hdr_enabled and codec_string == HDR:
+                    stream['compatible'] = False
+
+                if not h265_enabled and codec_string == H265:
+                    stream['compatible'] = False
 
                 # if not stream['compatible']:
                 #     stream_inf = None
