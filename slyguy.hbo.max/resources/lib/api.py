@@ -1,5 +1,6 @@
 import uuid
 from time import time
+from six.moves.urllib_parse import quote
 
 from kodi_six import xbmc
 
@@ -410,7 +411,7 @@ class API(object):
         return main
 
     def search(self, query):
-        key = 'urn:hbo:flexisearch:{}'.format(query)
+        key = 'urn:hbo:flexisearch:{}'.format(quote(query))
         data = self.content([{'id': key}])
 
         for key in data:
