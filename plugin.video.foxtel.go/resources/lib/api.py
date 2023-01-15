@@ -126,7 +126,7 @@ class API(object):
 
         system, arch = get_system_arch()
 
-        return string.format(username=userdata.get('username'), mac_address=mac_address, system=system).strip()
+        return string.replace('{username}', str(userdata.get('username'))).replace('{mac_address}', str(mac_address)).replace('{system}', str(system)).strip()
 
     def _hex_password(self, password, device_id):
         nickname = settings.get('device_name').strip()
@@ -256,9 +256,6 @@ class API(object):
             'deviceId': userdata.get('deviceid'),
             'format': 'json',
         }
-
-        vod_token = None
-        live_token = None
 
         data = self._session.post('/userCatalog.class.api.php/getSyncTokens/{site_id}'.format(site_id=VOD_SITEID), params=params, data=payload).json()
 
