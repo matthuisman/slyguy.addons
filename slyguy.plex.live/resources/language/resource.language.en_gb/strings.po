@@ -6,7 +6,7 @@ msgid "Live TV"
 msgstr ""
 
 msgctxt "#30001"
-msgid "No video url found"
+msgid "Show Channel Numbers"
 msgstr ""
 
 msgctxt "#30002"
@@ -31,6 +31,30 @@ msgstr ""
 
 msgctxt "#30007"
 msgid "No regions selected to be merged"
+msgstr ""
+
+msgctxt "#30008"
+msgid "My Channels"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Add to My Channels"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Remove from My Channels"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Added to My Channels"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Show Groups"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Show Countries"
 msgstr ""
 
 ## COMMON SETTINGS ##

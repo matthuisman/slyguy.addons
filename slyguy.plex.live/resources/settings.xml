@@ -2,7 +2,7 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32139]">
         <setting label="30004" id="show_epg" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

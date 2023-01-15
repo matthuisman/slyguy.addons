@@ -14,6 +14,7 @@ def home(**kwargs):
     folder = plugin.Folder()
 
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.MY_CHANNELS, _bold=True), path=plugin.url_for(live_tv, code=MY_CHANNELS))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
     if settings.getBool('bookmarks', True):
@@ -23,6 +24,29 @@ def home(**kwargs):
 
     return folder
 
+@plugin.route()
+def add_favourite(id, **kwargs):
+    data = _app_data()
+    channel = data['regions'][ALL]['channels'].get(id)
+    if not channel:
+        return
+
+    favourites = userdata.get('favourites') or []
+    if id not in favourites:
+        favourites.append(id)
+
+    userdata.set('favourites', favourites)
+    gui.notification(_.MY_CHANNEL_ADDED, heading=channel['name'], icon=channel['logo'])
+
+@plugin.route()
+def del_favourite(id, **kwargs):
+    favourites = userdata.get('favourites') or []
+    if id in favourites:
+        favourites.remove(id)
+
+    userdata.set('favourites', favourites)
+    gui.refresh()
+
 @mem_cache.cached(60*15)
 def _data():
     return Session().gz_json(DATA_URL)
@@ -30,21 +54,46 @@ def _data():
 def _app_data():
     data = _data()
 
+    favourites = userdata.get('favourites') or []
+    my_channels = {'logo': None, 'name': _.MY_CHANNELS, 'channels': {}, 'sort': 0}
+    all_channels = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 1}
     for key in data['regions']:
-        data['regions'][key]['sort'] = 1
-        data['regions'][key]['channels'] = {}
+        data['regions'][key]['sort'] = 2
+        for id in data['regions'][key]:
+            all_channels[id] = data['regions'][key]['channels'][id]
+            data['regions'][key][id]['region'] = data['regions'][key]['name']
+            if id in favourites:
+                my_channels[id] = data['regions'][key][id]
 
-    data['regions'][ALL] = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 0}
+    data['regions'][ALL] = all_channels
+    data['regions'][MY_CHANNELS] = my_channels
+    return data
+
+def _app_data():
+    data = _data()
+
+    favourites = userdata.get('favourites') or []
+    my_channels = {'logo': None, 'name': _.MY_CHANNELS, 'channels': {}, 'sort': 0}
+    all_channels = {'logo': None, 'name':_.ALL, 'channels': {}, 'sort': 1}
+
+    for key in data['regions']:
+        data['regions'][key]['sort'] = 2
+        data['regions'][key]['channels'] = {}
 
     for id in data['channels']:
         channel = data['channels'][id]
+        all_channels['channels'][id] = channel
+        if id in favourites:
+            my_channels['channels'][id] = channel
         for code in channel['regions']:
             data['regions'][code]['channels'][id] = channel
-            data['regions'][ALL]['channels'][id] = channel
+
+    data['regions'][ALL] = all_channels
+    data['regions'][MY_CHANNELS] = my_channels
 
     return data
 
-def _process_channels(channels, query=None):
+def _process_channels(channels, query=None, region=ALL):
     items = []
 
     query = query.lower().strip() if query else None
@@ -83,6 +132,7 @@ def _process_channels(channels, query=None):
             art = {'thumb': channel['logo']},
             playable = True,
             path = plugin.url_for(play, id=id, _is_live=True),
+            context = ((_.DEL_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(del_favourite, id=id))),) if region == MY_CHANNELS else ((_.ADD_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(add_favourite, id=id))),),
         )
         items.append(item)
 
@@ -94,6 +144,7 @@ def live_tv(code=None, **kwargs):
 
     if not code:
         folder = plugin.Folder(_.LIVE_TV)
+        data['regions'].pop(MY_CHANNELS)
 
         for code in sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name'])):
             region = data['regions'][code]
@@ -116,7 +167,7 @@ def live_tv(code=None, **kwargs):
     channels = region['channels']
 
     folder = plugin.Folder(region['name'])
-    items = _process_channels(channels)
+    items = _process_channels(channels, region=code)
     folder.add_items(items)
     return folder
 
@@ -200,6 +251,27 @@ def configure_merge(**kwargs):
             preselect.append(index)
 
     indexes = gui.select(heading=_.SELECT_REGIONS, options=options, multi=True, useDetails=True, preselect=preselect)
+    if indexes is None:
+        return
+
+    user_regions = [avail_regions[i] for i in indexes]
+    userdata.set('merge_regions', user_regions)
+
+@plugin.route()
+def configure_merge(**kwargs):
+    data = _app_data()
+    user_regions = userdata.get('merge_regions', [])
+    avail_regions = sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name']))
+
+    options = []
+    preselect = []
+    for index, code in enumerate(avail_regions):
+        region = data['regions'][code]
+        options.append(plugin.Item(label=region['name'], art={'thumb': region['logo']}))
+        if code in user_regions:
+            preselect.append(index)
+
+    indexes = gui.select(heading=_.SELECT_REGIONS, options=options, multi=True, useDetails=False, preselect=preselect)
     if indexes is None:
         return
 
