@@ -603,17 +603,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if stream_data['width'] > max_width or stream_data['height'] > max_height:
                             stream_data['res_ok'] = False
 
-                        index = codec_rank(stream['codecs'])
+                        index = codec_rank(stream_data['codecs'])
                         codec_string = CODECS[index][1] if index >= 0 else ''
 
                         if not dolby_vision_enabled and codec_string == DOLBY_VISION:
-                            stream['compatible'] = False
+                            stream_data['compatible'] = False
 
                         if not hdr_enabled and codec_string == HDR:
-                            stream['compatible'] = False
+                            stream_data['compatible'] = False
 
                         if not h265_enabled and codec_string == H265:
-                            stream['compatible'] = False
+                            stream_data['compatible'] = False
 
                         # if not stream_data['compatible']:
                         #     continue
@@ -1021,32 +1021,32 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if video_range == 'PQ':
                     codecs.append('hdr')
 
-                stream = {'bandwidth': int(bandwidth), 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True, 'compatible': True}
-                if stream['width'] > max_width or stream['height'] > max_height:
-                    stream['res_ok'] = False
+                stream_data = {'bandwidth': int(bandwidth), 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True, 'compatible': True}
+                if stream_data['width'] > max_width or stream_data['height'] > max_height:
+                    stream_data['res_ok'] = False
 
-                index = codec_rank(stream['codecs'])
+                index = codec_rank(stream_data['codecs'])
                 codec_string = CODECS[index][1] if index >= 0 else ''
 
                 if not dolby_vision_enabled and codec_string == DOLBY_VISION:
-                    stream['compatible'] = False
+                    stream_data['compatible'] = False
 
                 if not hdr_enabled and codec_string == HDR:
-                    stream['compatible'] = False
+                    stream_data['compatible'] = False
 
                 if not h265_enabled and codec_string == H265:
-                    stream['compatible'] = False
+                    stream_data['compatible'] = False
 
-                # if not stream['compatible']:
+                # if not stream_data['compatible']:
                 #     stream_inf = None
                 #     continue
 
-                if stream['url'] not in urls and stream_inf not in metas:
-                    streams.append(stream)
-                    urls.append(stream['url'])
+                if stream_data['url'] not in urls and stream_inf not in metas:
+                    streams.append(stream_data)
+                    urls.append(stream_data['url'])
                     metas.append(stream_inf)
 
-                all_streams.append(stream)
+                all_streams.append(stream_data)
                 video.append([attribs, line])
                 stream_inf = None
             else:
