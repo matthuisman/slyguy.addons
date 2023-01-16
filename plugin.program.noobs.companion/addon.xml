@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.noobs.companion" name="NOOBS Companion" provider-name="SlyGuy" version="0.7.5">
+<addon id="plugin.program.noobs.companion" name="NOOBS Companion" provider-name="SlyGuy" version="0.7.6">
   <requires>
     <import addon="script.module.slyguy"/>
   </requires>
