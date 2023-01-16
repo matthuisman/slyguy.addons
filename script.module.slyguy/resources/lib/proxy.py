@@ -351,6 +351,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         quality_compare = cmp_to_key(compare)
         streams = sorted(qualities, key=quality_compare, reverse=True)
 
+
         ok_streams = [x for x in streams if x['compatible'] and x['res_ok']]
         not_compatible = [x for x in streams if not x['compatible']]
         not_res_ok = [x for x in streams if not x['res_ok'] and x not in not_compatible]
@@ -385,9 +386,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             for quality in PROXY_GLOBAL['last_qualities']:
                 if quality[0] == self._session['slug']:
                     current = quality
-                    if current[1] in values:
-                        default = values.index(quality[1])
-                    break
+                    for idx, value in enumerate(values):
+                        try:
+                            if value == quality[1] or value['bandwidth'] == quality[1]['bandwidth']:
+                                default = idx
+                        except:
+                            continue
 
             index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=5000)
             if index < 0:
