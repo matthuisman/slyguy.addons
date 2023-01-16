@@ -20,6 +20,8 @@ COMMON_ADDON    = xbmcaddon.Addon(COMMON_ADDON_ID)
 try: KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split('.')[0])
 except: KODI_VERSION = 18
 
+REPO_DOMAIN = 'https://slyguy.uk'
+
 #### DATABASE #####
 DB_PATH         = os.path.join(ADDON_PROFILE, 'data.db')
 DB_MAX_INSERTS  = 100
@@ -81,7 +83,7 @@ IA_HLS_MIN_VER = '2.0.0'
 IA_PR_MIN_VER = '2.2.19'
 IA_MPD_MIN_VER = '2.2.19'
 IA_WV_MIN_VER = '2.2.27'
-IA_MODULES_URL = 'https://slyguy.uk/.decryptmodules/modules.json.gz'
+IA_MODULES_URL = REPO_DOMAIN+'/.decryptmodules/modules.json.gz'
 IA_CHECK_EVERY = 86400 #24 hours
 IA_LINUX_PACKAGE = 'kodi-inputstream-adaptive'
 ###################
