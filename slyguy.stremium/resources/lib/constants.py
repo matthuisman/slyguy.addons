@@ -8,6 +8,7 @@ TOKEN_URL = 'https://securetoken.googleapis.com/v1/token'
 
 GOOGLE_KEY = 'AIzaSyBhQW6GEk_QKfDAX_mP7sG9Vcnju6kLszg'
 API_URL = 'https://api.stremium.com{}'
+IMAGE_URL = 'https://i.mjh.nz/.images/stremium/'
 
 ALL = '_'
 PUBLIC = 'public'
@@ -17,10 +18,10 @@ MY_CHANNELS = 'my_channels'
 PROVIDER_ART = {
     CUSTOM: None,
     PUBLIC: None,
-    'locast': 'https://k.slyguy.xyz/.images/stremium/locast.png',
-    'philo': 'https://k.slyguy.xyz/.images/stremium/philo.png',
-    'spectrum': 'https://k.slyguy.xyz/.images/stremium/spectrum.png',
-    'frndlytv': 'https://k.slyguy.xyz/.images/stremium/frndlytv.png',
-    'sling': 'https://k.slyguy.xyz/.images/stremium/sling.png',
-    'vidgo': 'https://k.slyguy.xyz/.images/stremium/vidgo.png',
+    'locast': IMAGE_URL+'locast.png',
+    'philo': IMAGE_URL+'philo.png',
+    'spectrum': IMAGE_URL+'spectrum.png',
+    'frndlytv': IMAGE_URL+'frndlytv.png',
+    'sling': IMAGE_URL+'sling.png',
+    'vidgo': IMAGE_URL+'vidgo.png',
 }
