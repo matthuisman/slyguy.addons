@@ -600,7 +600,8 @@ def replace_kids(cenc, kids, version0=False):
 
         data += old_data
     else:
-        data = data
+        data = old_data
+        new_kids = kids
 
     return cenc_init(bytearray.fromhex(data), uuid, new_kids, 0 if version0 else version)
 
