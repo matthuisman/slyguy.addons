@@ -458,7 +458,7 @@ class API(object):
             'id': edit['video'],
             'headers' : {
                 'x-hbo-preferred-blends': 'DASH_WDV,HSS_PR',
-                'x-hbo-video-mlp': True,
+                'x-hbo-video-mlp': False,
             }
         }]
 
