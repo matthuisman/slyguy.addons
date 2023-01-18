@@ -17,7 +17,6 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="30005" id="proxy_enabled" type="bool" default="true" visible="false"/>
         <setting label="30022" id="ignore_display_resolution" type="bool" default="true"/>
         <setting label="30025" id="max_width" type="number" default="0"/>
         <setting label="30026" id="max_height" type="number" default="0"/>
@@ -32,6 +31,7 @@
 
     <category label="$ADDON[script.module.slyguy 32036]">
         <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
+        <setting label="30005" id="proxy_enabled" type="bool" default="true"/>
         <setting label="30007" id="wv_level" type="enum" default="0" lvalues="30008|30009|30010"/>
         <setting label="30011" id="hdcp_level" type="enum" default="0" lvalues="30008|30012|30013|30014|30015"/>
         <setting label="30006" id="persist_cache" type="bool" default="true" visible="false"/>

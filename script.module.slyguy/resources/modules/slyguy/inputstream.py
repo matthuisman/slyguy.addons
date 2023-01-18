@@ -202,7 +202,7 @@ def install_widevine(reinstall=False):
     decryptpath = xbmc.translatePath(ia_addon.getSetting('DECRYPTERPATH') or ia_addon.getAddonInfo('profile'))
     wv_path = os.path.join(decryptpath, DST_FILES[system])
     installed = md5sum(wv_path)
-    log.debug('Widevine - Current wv md5: {}'.format(installed))
+    log.info('Widevine Current MD5: {}'.format(installed))
     last_check = int(userdata.get('_wv_last_check', 0))
 
     if not installed:
@@ -301,7 +301,7 @@ def install_widevine(reinstall=False):
         break
 
     gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
-    log.debug('Widevine - Install ok: {}'.format(selected['ver']))
+    log.info('Widevine - Install ok: {}'.format(selected['ver']))
 
     return True
 
