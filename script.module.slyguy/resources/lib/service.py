@@ -1,3 +1,4 @@
+import sys
 import json
 from time import time
 
@@ -37,6 +38,7 @@ def settings_changed():
 
 def start():
     log.debug('Shared Service: Started')
+    log.info('Python Version: {}'.format(sys.version))
 
     proxy = Proxy()
     player = Player()
@@ -61,7 +63,7 @@ def start():
         log.exception(e)
 
     if is_donor:
-        log.debug('Welcome SlyGuy donor!')
+        log.info('Welcome SlyGuy donor!')
 
     ## Inital wait on boot
     monitor.waitForAbort(5)
