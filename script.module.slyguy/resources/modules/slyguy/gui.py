@@ -482,7 +482,6 @@ class Item(object):
                 'dolby_atmos': ['atmos_enabled',],
                 'ac3': ['ac3_enabled',],
                 'ec3': ['ec3_enabled',],
-                '4k': ['4k_enabled','enable_4k']
             }
 
             for key in legacy_map:
@@ -493,10 +492,6 @@ class Item(object):
                     if val is not None:
                         proxy_data[key] = val
                         break
-
-            if proxy_data.pop('4k', None) == False:
-                proxy_data['max_width'] = 1920
-                proxy_data['max_height'] = 1080
             #########################################
 
             if mimetype == 'application/vnd.apple.mpegurl':
