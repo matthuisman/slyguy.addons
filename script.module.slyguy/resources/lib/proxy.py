@@ -863,19 +863,19 @@ class RequestHandler(BaseHTTPRequestHandler):
         #################
 
         ## Fix of cenc pssh to only contain kids still present
-        # kids = []
-        # for elem in root.getElementsByTagName('ContentProtection'):
-        #     kids.append(elem.getAttribute('cenc:default_KID'))
+        kids = []
+        for elem in root.getElementsByTagName('ContentProtection'):
+            kids.append(elem.getAttribute('cenc:default_KID'))
 
-        # if kids:
-        #     for elem in root.getElementsByTagName('ContentProtection'):
-        #         if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
-        #             for elem2 in elem.getElementsByTagName('cenc:pssh'):
-        #                 current_cenc = elem2.firstChild.nodeValue
-        #                 new_cenc = replace_kids(current_cenc, kids, version0=True)
-        #                 if current_cenc != new_cenc:
-        #                     elem2.firstChild.nodeValue = new_cenc
-        #                     log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+        if kids:
+            for elem in root.getElementsByTagName('ContentProtection'):
+                if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                    for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                        current_cenc = elem2.firstChild.nodeValue
+                        new_cenc = replace_kids(current_cenc, kids, version0=True)
+                        if current_cenc != new_cenc:
+                            elem2.firstChild.nodeValue = new_cenc
+                            log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
         ################################################
 
         if ADDON_DEV:
