@@ -26,13 +26,13 @@
         <setting label="$ADDON[script.module.slyguy 32088]" id="subs_forced" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32089]" id="subs_non_forced" type="bool" default="true"/>
 
-        <setting label="30018" type="bool" id="ac3_enabled" default="false"/>
-        <setting label="30007" type="bool" id="ec3_enabled" default="false"/>
-            <setting label="30031" type="bool" id="atmos_enabled" default="false" visible="eq(-1,true)"/>
         <setting label="30039" type="text" id="playback_language" default="en"/>
-        <setting label="30014" type="bool" id="h265" default="false"/>
-        <setting label="30015" type="bool" id="4k_enabled" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
-        <setting label="30016" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
+        <setting label="$ADDON[script.module.slyguy 30031]" type="bool" id="ac3_enabled" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30032]" type="bool" id="ec3_enabled" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30030]" type="bool" id="atmos_enabled" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30027]" type="bool" id="h265" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30028]" type="bool" id="hdr10" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
+        <setting label="$ADDON[script.module.slyguy 30029]" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="false"/>
