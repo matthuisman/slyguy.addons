@@ -38,6 +38,8 @@ CODECS = [
     ['avc', H264],
     ['hvc', H265],
     ['hev', H265],
+    ['hvc1.2', HDR],
+    ['hev1.2', HDR],
     ['hdr', HDR],
     ['dvh', DOLBY_VISION],
 ]
