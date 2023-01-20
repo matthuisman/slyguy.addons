@@ -136,6 +136,14 @@ msgctxt "#30030"
 msgid "Enter your Profile PIN"
 msgstr ""
 
+msgctxt "#30031"
+msgid "Email address not valid"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Check {email} for 6-digit code and enter it below\n"
+"The code expires in 15 minutes"
+msgstr ""
 
 msgctxt "#30042"
 msgid "Continue Watching"
