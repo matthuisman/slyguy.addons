@@ -380,6 +380,7 @@ class Item(object):
 
             if headers:
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
+                li.setProperty('{}.manifest_headers'.format(self.inputstream.addon_id), headers)
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
