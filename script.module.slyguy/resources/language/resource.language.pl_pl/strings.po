@@ -121,7 +121,7 @@ msgstr "Widok wideo dla wszystkich treści"
 
 msgctxt "#30024"
 msgid "Folders for TV Show and Seasons"
-msgstr "Foldery na programy TV i sezony"
+msgstr "Foldery dla seriali i sezonów"
 
 ## COMMON ##
 
@@ -660,7 +660,7 @@ msgstr "Próba zainstalowania Inputstream Adaptive z apt..."
 
 msgctxt "#32120"
 msgid "(Tv Show Folders setting moved to SlyGuy Common Settings)"
-msgstr "(Ustawienie folderów programu telewizyjnego zostało przeniesione do ustawień wspólnych SlyGuy)"
+msgstr "(Ustawienia folderów seriali zostało przeniesione do ustawień wspólnych SlyGuy)"
 
 msgctxt "#32121"
 msgid "Default Subtitle"
