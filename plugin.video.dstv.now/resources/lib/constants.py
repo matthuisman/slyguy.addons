@@ -1,5 +1,7 @@
 HEADERS = {
-    'User-Agent': 'okhttp/3.4.1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    # 'User-Agent': 'dstv-now-android-2.5.9',
+    # 'api-consumer': 'DStvNowAndroid',
 }
 
 CLIENT_ID = 'dc09de02-de71-4181-9006-2754dc5d3ed3'
