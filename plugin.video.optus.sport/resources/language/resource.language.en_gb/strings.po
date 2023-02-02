@@ -43,6 +43,10 @@ msgctxt "#30010"
 msgid "H265"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Use CMAF for playback (Nexus only)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
