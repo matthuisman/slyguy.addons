@@ -114,6 +114,10 @@ msgctxt "#30021"
 msgid "Show News"
 msgstr "Pokaż wiadomości"
 
+msgctxt "#30022"
+msgid "Ignore Display Resolution"
+msgstr "Ignoruj rozdzielczość wyświetlacza"
+
 
 msgctxt "#30023"
 msgid "Video view for all content"
@@ -122,6 +126,42 @@ msgstr "Widok wideo dla wszystkich treści"
 msgctxt "#30024"
 msgid "Folders for TV Show and Seasons"
 msgstr "Foldery dla seriali i sezonów"
+
+msgctxt "#30025"
+msgid "Max Width"
+msgstr "Maksymalna szerokość"
+
+msgctxt "#30026"
+msgid "Max Height"
+msgstr "Maksymalna wysokość"
+
+msgctxt "#30027"
+msgid "H265/HEVC"
+msgstr "H265/HEVC"
+
+msgctxt "#30028"
+msgid "HDR10"
+msgstr "HDR10"
+
+msgctxt "#30029"
+msgid "Dolby Vision"
+msgstr "Dolby Vision"
+
+msgctxt "#30030"
+msgid "Dolby Atmos"
+msgstr "Dolby Atmos"
+
+msgctxt "#30031"
+msgid "Dolby Digital (AC-3)"
+msgstr "Dolby Digital (AC-3)"
+
+msgctxt "#30032"
+msgid "Dolby Digital Plus (EC-3)"
+msgstr "Dolby Digital Plus (EC-3)"
+
+msgctxt "#30033"
+msgid "Max Audio Channels"
+msgstr "Maksymalna liczba kanałów audio"
 
 ## COMMON ##
 
