@@ -325,6 +325,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             index = codec_rank(stream['codecs'])
             codec_string = CODECS[index][1] if index >= 0 else ''
+            resolution = '{width}x{height}'.format(**stream) if stream['width'] and stream['height'] else ''
 
             if not stream['compatible']:
                 color = 'red'
@@ -333,9 +334,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 color = 'blue'
 
-            label = _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution='{width}x{height}'.format(**stream), fps=fps, codecs=codec_string, _color=color).replace('  ', ' ')
-
-            return label
+            return _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution=resolution, fps=fps, codecs=codec_string, _color=color).replace('  ', ' ')
 
         if self._session.get('selected_quality') is not None:
             if self._session['selected_quality'] == QUALITY_EXIT:
@@ -1031,7 +1030,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if video_range == 'PQ':
                     codecs.append('hdr')
 
-                stream_data = {'bandwidth': int(bandwidth), 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True, 'compatible': True}
+                stream_data = {'bandwidth': bandwidth, 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True, 'compatible': True}
                 if stream_data['width'] > max_width or stream_data['height'] > max_height:
                     stream_data['res_ok'] = False
 
