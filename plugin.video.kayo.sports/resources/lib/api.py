@@ -19,12 +19,8 @@ class API(object):
         self._auth_header = {}
         self._subscribed = None
 
-        self._session = Session(HEADERS)
+        self._session = Session(HEADERS, base_url=API_URL)
         self._set_authentication()
-
-    @mem_cache.cached(60*10)
-    def _config(self):
-        return self._session.get(CONFIG_URL).json()
 
     def _set_authentication(self):
         access_token = userdata.get('access_token')
@@ -46,7 +42,7 @@ class API(object):
         return self._subscribed
 
     def _oauth_token(self, data, _raise=True):
-        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, headers={'User-Agent': 'okhttp/3.10.0'}, error_msg=_.TOKEN_ERROR).json()
+        token_data = self._session.post(AUTH_URL + '/token', json=data, headers={'User-Agent': 'okhttp/3.10.0'}, error_msg=_.TOKEN_ERROR).json()
 
         if 'error' in token_data:
             error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
@@ -64,24 +60,6 @@ class API(object):
         self._set_authentication()
         return True, token_data
 
-    def refresh_token(self):
-        self._refresh_token()
-
-    def _refresh_token(self, force=False):
-        if not force and userdata.get('expires', 0) > time() or not self.logged_in:
-            return
-
-        log.debug('Refreshing token')
-
-        payload = {
-            'client_id': CLIENT_ID,
-            'refresh_token': userdata.get('refresh_token'),
-            'grant_type': 'refresh_token',
-            'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
-        }
-
-        self._oauth_token(payload)
-
     def device_code(self):
         payload = {
             'client_id': CLIENT_ID,
@@ -89,7 +67,7 @@ class API(object):
             'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
         }
 
-        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload).json()
+        return self._session.post(AUTH_URL + '/device/code', data=payload).json()
 
     def device_login(self, device_code):
         payload = {
@@ -109,6 +87,24 @@ class API(object):
         else:
             return False
 
+    def refresh_token(self):
+        self._refresh_token()
+
+    def _refresh_token(self, force=False):
+        if not force and userdata.get('expires', 0) > time() or not self.logged_in:
+            return
+
+        log.debug('Refreshing token')
+
+        payload = {
+            'client_id': CLIENT_ID,
+            'refresh_token': userdata.get('refresh_token'),
+            'grant_type': 'refresh_token',
+            'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
+        }
+
+        self._oauth_token(payload)
+
     def login(self, username, password):
         payload = {
             'client_id': CLIENT_ID,
@@ -125,7 +121,7 @@ class API(object):
 
     def profiles(self):
         self._refresh_token()
-        return self._session.get('{host}/user/profile'.format(host=self._config()['endPoints']['profileAPI']), headers=self._auth_header).json()
+        return self._session.get(PROFILE_URL + '/user/profile', headers=self._auth_header).json()
 
     def add_profile(self, name, avatar_id):
         self._refresh_token()
@@ -136,35 +132,20 @@ class API(object):
             'onboarding_status': 'welcomeScreen',
         }
 
-        return self._session.post('{host}/user/profile'.format(host=self._config()['endPoints']['profileAPI']), json=payload, headers=self._auth_header).json()
+        return self._session.post(PROFILE_URL + '/user/profile', json=payload, headers=self._auth_header).json()
 
     def delete_profile(self, profile):
         self._refresh_token()
 
-        return self._session.delete('{host}/user/profile/{profile_id}'.format(host=self._config()['endPoints']['profileAPI'], profile_id=profile['id']), headers=self._auth_header)
+        return self._session.delete(PROFILE_URL + '/user/profile/' + profile['id'], headers=self._auth_header)
 
     def profile_avatars(self):
-        return self._session.get('{host}/production/avatars/avatars.json'.format(host=self._config()['endPoints']['resourcesAPI'])).json()
+        return self._session.get(RESOURCE_URL + '/production/avatars/avatars.json').json()
 
-    def sport_menu(self):
-        return self._session.get('{host}/production/sport-menu/lists/default.json'.format(host=self._config()['endPoints']['resourcesAPI'])).json()
-
-    def use_cdn(self, live=False, sport=None):
+    def use_cdn(self, live=False):
         live = True #Force live like the website does
-        url = '{host}/web/usecdn/unknown/{media}'.format(host=self._config()['endPoints']['cdnSelectionServiceAPI'], media='LIVE' if live else 'VOD')
-        return self._session.get(url, params={'sport': sport}, headers=self._auth_header).json()
-
-    #landing has heros and panels
-    def landing(self, name, sport=None):
-        params = {
-            'evaluate': 3,
-            'profile': userdata.get('profile_id'),
-        }
-
-        if sport:
-            params['sport'] = sport
-
-        return self._session.get('{host}/content/types/landing/names/{name}'.format(host=self._config()['endPoints']['contentAPI'], name=name), params=params, headers=self._auth_header).json()
+        url = CDN_URL + '/web/usecdn/android/' + 'LIVE' if live else 'VOD'
+        return self._session.get(url, headers=self._auth_header).json()
 
     def channel_data(self):
         try:
@@ -172,28 +153,35 @@ class API(object):
         except:
             return {}
 
-    #panel has shows and episodes
-    def panel(self, id, sport=None):
+    def landing(self, name, sport=None, series=None):
         params = {
             'evaluate': 3,
-            'profile': userdata.get('profile_id'),
         }
 
         if sport:
             params['sport'] = sport
 
-        return self._session.get('{host}/v2/content/types/carousel/keys/{id}'.format(host=self._config()['endPoints']['contentAPI'], id=id), params=params, headers=self._auth_header).json()[0]
+        if series:
+            params['series'] = series
 
-    #show has episodes and panels
+        return self._session.get('/content/types/landing/names/' + name, params=params, headers=self._auth_header).json()
+
+    def panel(self, href):
+        params = {}
+        if '/private/' in href:
+            params['profile'] = userdata.get('profile_id')
+
+        return self._session.get(href, params=params, headers=self._auth_header).json()
+
     def show(self, show_id, season_id=None):
         params = {
             'evaluate': 3,
-            'showCategory': show_id,
-            'seasonCategory': season_id,
-            'profile': userdata.get('profile_id'),
+            'show': show_id,
         }
+        if season_id:
+            params['season'] = season_id
 
-        return self._session.get('{host}/content/types/landing/names/show'.format(host=self._config()['endPoints']['contentAPI']), params=params, headers=self._auth_header).json()
+        return self._session.get('/content/types/landing/names/show', params=params, headers=self._auth_header).json()
 
     def search(self, query, page=1, size=250):
         params = {
@@ -202,24 +190,22 @@ class API(object):
             'page': page,
         }
 
-        return self._session.get('{host}/v2/search'.format(host=self._config()['endPoints']['contentAPI']), params=params).json()
-
-    def event(self, id):
-        params = {
-            'evaluate': 3,
-            'event': id,
-        }
-
-        return self._session.get('{host}/content/types/landing/names/event'.format(host=self._config()['endPoints']['contentAPI']), params=params).json()[0]['contents'][0]['data']['asset']
+        return self._session.get('/search/types/landing', params=params).json()
 
     def stream(self, asset_id):
         self._refresh_token()
 
-        params = {
-            'fields': 'alternativeStreams,assetType,markers,metadata.isStreaming,metadata.drmContentIdAvc,metadata.sport',
+        payload = {
+            'assetId': asset_id,
+            'canPlayHevc': settings.common_settings.getBool('h265', False),
+           # 'contentType': 'application/xml+dash',
+           # 'drm': True,
+            'forceSdQuality': False,
+            'playerName': 'exoPlayerTV',
+            'udid': UDID,
         }
 
-        data = self._session.post('{host}/api/v1/asset/{asset_id}/play'.format(host=self._config()['endPoints']['vimondPlayAPI'], asset_id=asset_id), params=params, json={}, headers=self._auth_header).json()
+        data = self._session.post(PLAY_URL + '/play', json=payload, headers=self._auth_header).json()
         if ('status' in data and data['status'] != 200) or 'errors' in data:
             msg = data.get('detail') or data.get('errors', [{}])[0].get('detail')
             raise APIError(_(_.ASSET_ERROR, msg=msg))

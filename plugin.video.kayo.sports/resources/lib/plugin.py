@@ -27,9 +27,9 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
-        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-        folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(sports))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(landing, title=_.FEATURED, name='home' if api.is_subscribed() else 'free'))
+        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(landing, title=_.SHOWS, name='shows'))
+        folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(landing, title=_.SPORTS, name='sports'))
         folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
@@ -87,17 +87,17 @@ def _email_password():
     return True
 
 def _live_channels():
-    panel_id = None
-    for row in api.landing('sports'):
-        if 'channels' in row['title'].lower():
-            panel_id = row['id']
+    href = None
+    for row in api.landing('sports')['panels']:
+        if 'live channels' in row['title'].lower():
+            href = row['links']['panels']
             break
 
-    if not panel_id:
+    if not href:
         raise PluginError(_.LIVE_PANEL_ID_MISSING)
 
     channels = []
-    data = api.panel(panel_id)
+    data = api.panel(href)
     live_data = api.channel_data()
 
     for row in data.get('contents', []):
@@ -106,9 +106,9 @@ def _live_channels():
 
         row['data']['chno'] = None
         row['data']['epg'] = []
-        if row['data']['asset']['id'] in live_data:
-            row['data']['chno'] = live_data[row['data']['asset']['id']]['chno']
-            row['data']['epg'] = live_data[row['data']['asset']['id']]['epg']
+        if row['data']['id'] in live_data:
+            row['data']['chno'] = live_data[row['data']['id']]['chno']
+            row['data']['epg'] = live_data[row['data']['id']]['epg']
 
         channels.append(row['data'])
 
@@ -167,54 +167,20 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
-def featured(**kwargs):
-    folder = plugin.Folder(_.FEATURED)
-    folder.add_items(_landing('home' if api.is_subscribed() else 'free'))
-    return folder
-
-@plugin.route()
-def shows(**kwargs):
-    folder = plugin.Folder(_.SHOWS)
-    folder.add_items(_landing('shows'))
-    return folder
-
-@plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    data = api.search(query=query, page=page)
-    return _parse_contents(data.get('results', [])), data['pages'] > page
-
-@plugin.route()
-def sports(**kwargs):
-    folder = plugin.Folder(_.SPORTS)
-
-    for row in api.sport_menu():
-        slug = row['url'].split('sport!')[1]
-
-        folder.add_item(
-            label = row['name'],
-            path  = plugin.url_for(sport, slug=slug, title=row['name']),
-            art   = {
-                'thumb': SPORT_LOGO.format(row['sport']),
-            },
-        )
-
-    folder.add_items(_landing('sports'))
-
-    return folder
-
-@plugin.route()
-def sport(slug, title, **kwargs):
-    folder = plugin.Folder(title)
-    folder.add_items(_landing('sport', sport=slug))
-    return folder
+    data = api.search(query=query, page=page)['panels'][0]
+    return _parse_contents(data.get('contents', [])), data['resultCount'] > 250
 
 @plugin.route()
 def season(show_id, season_id, title, **kwargs):
+    return _season(show_id, season_id, title)
+
+def _season(show_id, season_id, title):
     data = api.show(show_id=show_id, season_id=season_id)
     folder = plugin.Folder(title)
 
-    for row in data:
+    for row in data['panels']:
         if row['title'] == 'Episodes':
             folder.add_items(_parse_contents(row.get('contents', [])))
 
@@ -226,28 +192,33 @@ def show(show_id, title, **kwargs):
 
     folder = plugin.Folder(title)
 
-    for row in data:
+    for row in data['panels']:
         if row['title'] == 'Seasons':
+            # flatten
+            if len(row.get('contents', [])) == 1:
+                data = row['contents'][0]['data']
+                return _season(show_id, data['id'], title)
+
             for row2 in row.get('contents', []):
-                asset = row2['data']['asset']
+                data = row2['data']
 
                 folder.add_item(
-                    label = asset['title'],
+                    label = data['contentDisplay']['title']['value'],
                     art  = {
-                        'thumb': _get_image(asset, 'show', 'thumb'),
-                        'fanart': _get_image(asset, 'show', 'fanart'),
+                        'thumb': _get_image(data, 'thumb'),
+                        'fanart': _get_image(data, 'fanart'),
                     },
                     info = {
-                        'plot': asset.get('description-short'),
+                        'plot': data['contentDisplay']['synopsis'] or None,
                     },
-                    path = plugin.url_for(season, show_id=show_id, season_id=asset['id'], title=asset['title']),
+                    path = plugin.url_for(season, show_id=show_id, season_id=data['id'], title=data['contentDisplay']['title']['value']),
                 )
 
     return folder
 
 @plugin.route()
-def panel(id, sport=None, **kwargs):
-    data = api.panel(id, sport=sport)
+def panel(href, **kwargs):
+    data = api.panel(href)
     folder = plugin.Folder(data['title'])
     folder.add_items(_parse_contents(data.get('contents', [])))
     return folder
@@ -293,23 +264,30 @@ def _set_profile(profile, notify=True):
     if notify:
         gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['avatar'])
 
-def _landing(name, sport=None):
-    items = []
+@plugin.route()
+def landing(title, name, sport=None, series=None, **kwargs):
+    folder = plugin.Folder(title)
 
-    for row in api.landing(name, sport=sport):
-        if row['title'].lower() == 'live channels':
-            continue
+    for row in api.landing(name, sport=sport, series=series)['panels']:
+        if 'live channels' in row['title'].lower():
+            folder.add_item(
+                label = row['title'],
+                path  = plugin.url_for(live),
+            )
 
-        if row['panelType'] == 'hero-carousel' and row.get('contents') and settings.getBool('show_hero_contents', True):
-            items.extend(_parse_contents(row['contents']))
+        elif row['panelType'] == 'hero-carousel' and row.get('contents') and settings.getBool('show_hero_contents', True):
+            folder.add_items(_parse_contents(row['contents']))
 
         elif row['panelType'] != 'hero-carousel' and 'id' in row:
-            items.append(plugin.Item(
-                label = row['title'],
-                path  = plugin.url_for(panel, id=row['id'], sport=sport),
-            ))
+            if row['panelType'] == 'nav-menu' and row.get('contents'):
+                folder.add_items(_parse_contents(row['contents']))
+            else:
+                folder.add_item(
+                    label = row['title'],
+                    path  = plugin.url_for(panel, href=row['links']['panels']),
+                )
 
-    return items
+    return folder
 
 def _parse_contents(rows):
     items = []
@@ -323,41 +301,37 @@ def _parse_contents(rows):
 
     return items
 
-def _parse_section(row):
-    # If not asset, we are probably linking directly to a sport or something..
-    if 'asset' not in row or row.get('type') == 'search-icon':
-        return
-
-    asset = row['asset']
+def _parse_section(data):
+    if data['type'] == 'panel':
+        path = plugin.url_for(landing, title=data['clickthrough']['title'], name=data['clickthrough']['type'], sport=data['clickthrough']['sportId'] or None, series=data['clickthrough']['seriesId'] or None)
+    else:
+        path = plugin.url_for(show, show_id=data['id'], title=data['clickthrough']['title'])
 
     return plugin.Item(
-        label = asset['title'],
+        label = data['clickthrough']['title'],
         art = {
-            'thumb': _get_image(asset, 'show', 'thumb'),
-            'fanart': _get_image(asset, 'show', 'fanart'),
+            'thumb': _get_image(data, 'thumb'),
+            'fanart': _get_image(data, 'fanart'),
         },
         info = {
-            'plot': asset.get('description-short'),
+            'plot': data['contentDisplay']['synopsis'] or None,
         },
-        path = plugin.url_for(show, show_id=asset['id'], title=asset['title']),
+        path = path,
     )
 
-def _get_image(asset, media_type, img_type='thumb', width=None):
-    if not asset.get('image-pack'):
-        images = asset.get('images') or {}
-        image_url = images.get('defaultUrl')
-        if not image_url:
-            return None
-    else:
-        image_url = IMG_URL.format(asset['image-pack'])
-
-    image_url += '?location={}&imwidth={}'
+def _get_image(data, img_type='thumb', width=None):
+    thumb_keys = ['tile',]
+    fanart_keys = ['hero-default', 'hero', 'heroPortrait']
 
     if img_type == 'thumb':
-        return image_url.format('carousel-item', width or 415)
+        for key in thumb_keys:
+            if key in data['contentDisplay']['images']:
+                return data['contentDisplay']['images'][key].replace('${WIDTH}', width or '612')
 
     elif img_type == 'fanart':
-        return image_url.format('hero-default', width or 1920)
+        for key in fanart_keys:
+            if key in data['contentDisplay']['images']:
+                return data['contentDisplay']['images'][key].replace('${WIDTH}', width or '1920')
 
 def _makeTime(start=None):
     return start.to('local').format('h:mmA') if start else ''
@@ -390,25 +364,25 @@ def _makeHumanised(now, start=None):
     else:
         return _makeDate(now, start)
 
-def _parse_video(row):
-    asset = row['asset']
-    display = row['contentDisplay']
+def _parse_video(data):
+    clickthrough = data['clickthrough']
+    content = data['contentDisplay']
 
     now = arrow.now()
-    start = arrow.get(asset['transmissionTime'])
+    start = arrow.get(clickthrough['transmissionTime'])
     precheck = start
 
-    if 'preCheckTime' in asset:
-        precheck = arrow.get(asset['preCheckTime'])
+    if clickthrough.get('preCheckTime'):
+        precheck = arrow.get(clickthrough['preCheckTime'])
         if precheck > start:
             precheck = start
 
-    title = display.get('heroTitle') or display['title'] or asset['title']
-    if 'heroHeader' in display:
-        title += ' [' + display['heroHeader'].replace('${DATE_HUMANISED}', _makeHumanised(now, start).upper()).replace('${TIME}', _makeTime(start)) + ']'
+    title = clickthrough['title']
+    if content.get('headline').strip():
+        title += ' [' + content['headline'].replace('${DATE_HUMANISED}', _makeHumanised(now, start).upper()).replace('${TIME}', _makeTime(start)) + ']'
 
     if not api.is_subscribed():
-        is_free = asset.get('isFreemium', False)
+        is_free = content.get('isFreemium', False)
 
         if settings.getBool('hide_locked', False) and not is_free:
             return None
@@ -418,16 +392,14 @@ def _parse_video(row):
     item = plugin.Item(
         label = title,
         art  = {
-            'thumb' : _get_image(asset, 'video', 'thumb'),
-            'fanart': _get_image(asset, 'video', 'fanart'),
+            'thumb' : _get_image(data, 'thumb'),
+            'fanart': _get_image(data, 'fanart'),
         },
         info = {
-            'plot': display.get('description'),
-            'plotoutline': display.get('description'),
+            'plot': content['synopsis'] or None,
             'mediatype': 'video',
         },
         playable = True,
-        is_folder = False,
     )
 
     is_live = False
@@ -440,23 +412,23 @@ def _parse_video(row):
     if now < start:
         is_live = True
 
-    elif asset['assetType'] == 'live-linear':
+    elif data['type'] == 'live-linear':
         is_live = True
         start_from = 0
         play_type = PLAY_FROM_LIVE
 
-    elif asset['isLive'] and asset.get('isStreaming', False):
+    elif data['playback']['info']['playbackType'] == 'LIVE' and clickthrough.get('isStreaming', False):
         is_live = True
 
         item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
-            plugin.url_for(play, id=asset['id'], play_type=PLAY_FROM_LIVE, _is_live=is_live)
+            plugin.url_for(play, id=data['id'], play_type=PLAY_FROM_LIVE, _is_live=is_live)
         )))
 
         item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
-            plugin.url_for(play, id=asset['id'], start_from=start_from, play_type=PLAY_FROM_START, _is_live=is_live)
+            plugin.url_for(play, id=data['id'], start_from=start_from, play_type=PLAY_FROM_START, _is_live=is_live)
         )))
 
-    item.path = plugin.url_for(play, id=asset['id'], start_from=start_from, play_type=play_type, _is_live=is_live)
+    item.path = plugin.url_for(play, id=data['id'], start_from=start_from, play_type=play_type, _is_live=is_live)
 
     return item
 
@@ -487,7 +459,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     if prefer_cdn == CDN_AUTO:
         try:
-            data = api.use_cdn(is_live, sport=asset['metadata'].get('sport'))
+            data = api.use_cdn(is_live)
             prefer_cdn = data['useCDN']
             prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
             if prefer_format.startswith('ssai-'):
@@ -551,8 +523,6 @@ def playlist(output, **kwargs):
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for row in _live_channels():
-            asset = row['asset']
-
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=asset['id'], channel=row['chno'] or '', logo=_get_image(asset, 'video', 'thumb'),
-                    name=asset['title'], url=plugin.url_for(play, id=asset['id'], _is_live=True)))
+            f.write(u'\n#EXTINF:-1 tvg-id="{id}" channel-id="kayo-{id}" tvg-chno="{channel}" tvg-logo="{logo}",{name}\n{url}'.format(
+                id=row['id'], channel=row['chno'] or '', logo=_get_image(row, 'thumb'),
+                    name=row['clickthrough']['title'], url=plugin.url_for(play, id=row['id'], _is_live=True)))
