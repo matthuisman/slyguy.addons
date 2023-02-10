@@ -136,13 +136,13 @@ class API(object):
 
     def delete_profile(self, profile):
         self._refresh_token()
-
         return self._session.delete(PROFILE_URL + '/user/profile/' + profile['id'], headers=self._auth_header)
 
     def profile_avatars(self):
         return self._session.get(RESOURCE_URL + '/production/avatars/avatars.json').json()
 
     def use_cdn(self, live=False):
+        self._refresh_token()
         live = True #Force live like the website does
         url = CDN_URL + '/web/usecdn/android/' + 'LIVE' if live else 'VOD'
         return self._session.get(url, headers=self._auth_header).json()
@@ -154,6 +154,8 @@ class API(object):
             return {}
 
     def landing(self, name, sport=None, series=None):
+        self._refresh_token()
+
         params = {
             'evaluate': 5,
         }
@@ -167,15 +169,17 @@ class API(object):
         return self._session.get('/content/types/landing/names/' + name, params=params, headers=self._auth_header).json()
 
     def panel(self, href):
-        params = {}
+        self._refresh_token()
 
+        params = {}
         if '/private/' in href:
-            self._refresh_token()
             params['profile'] = userdata.get('profile_id')
 
         return self._session.get(href, params=params, headers=self._auth_header).json()
 
     def show(self, show_id, season_id=None):
+        self._refresh_token()
+
         params = {
             'evaluate': 3,
             'show': show_id,
@@ -186,6 +190,8 @@ class API(object):
         return self._session.get('/content/types/landing/names/show', params=params, headers=self._auth_header).json()
 
     def search(self, query, page=1, size=250):
+        self._refresh_token()
+
         params = {
             'q': query,
             'size': size,

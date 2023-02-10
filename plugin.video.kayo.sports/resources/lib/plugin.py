@@ -268,8 +268,10 @@ def _set_profile(profile, notify=True):
 def landing(title, name, sport=None, series=None, **kwargs):
     folder = plugin.Folder(title)
 
-    for row in api.landing(name, sport=sport, series=series)['panels']:
-        if 'id' not in row or (row['title'].lower() == 'hero' and not settings.getBool('show_hero_contents', True)):
+    for index, row in enumerate(api.landing(name, sport=sport, series=series)['panels']):
+        is_hero = row['panelType'] == 'hero-carousel' and ('hero' in row['title'].lower() or index == 0)
+        
+        if 'id' not in row or (is_hero and not settings.getBool('show_hero_contents', True)):
             continue
 
         if 'live channels' in row['title'].lower():
@@ -278,7 +280,7 @@ def landing(title, name, sport=None, series=None, **kwargs):
                 path  = plugin.url_for(live),
             )
 
-        elif row['panelType'] == 'nav-menu' or row['title'].lower() == 'hero':
+        elif is_hero or row['panelType'] == 'nav-menu':
             row['contents'] = row.get('contents') or api.panel(row['links']['panels']).get('contents', [])
             folder.add_items(_parse_contents(row['contents']))
 
