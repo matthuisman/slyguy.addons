@@ -155,7 +155,7 @@ class API(object):
 
     def landing(self, name, sport=None, series=None):
         params = {
-            'evaluate': 3,
+            'evaluate': 5,
         }
 
         if sport:
@@ -168,7 +168,9 @@ class API(object):
 
     def panel(self, href):
         params = {}
+
         if '/private/' in href:
+            self._refresh_token()
             params['profile'] = userdata.get('profile_id')
 
         return self._session.get(href, params=params, headers=self._auth_header).json()

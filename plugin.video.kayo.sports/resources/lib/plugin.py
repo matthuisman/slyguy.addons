@@ -269,23 +269,24 @@ def landing(title, name, sport=None, series=None, **kwargs):
     folder = plugin.Folder(title)
 
     for row in api.landing(name, sport=sport, series=series)['panels']:
+        if 'id' not in row or (row['title'].lower() == 'hero' and not settings.getBool('show_hero_contents', True)):
+            continue
+
         if 'live channels' in row['title'].lower():
             folder.add_item(
                 label = row['title'],
                 path  = plugin.url_for(live),
             )
 
-        elif row['panelType'] == 'hero-carousel' and row.get('contents') and settings.getBool('show_hero_contents', True):
+        elif row['panelType'] == 'nav-menu' or row['title'].lower() == 'hero':
+            row['contents'] = row.get('contents') or api.panel(row['links']['panels']).get('contents', [])
             folder.add_items(_parse_contents(row['contents']))
 
-        elif row['panelType'] != 'hero-carousel' and 'id' in row:
-            if row['panelType'] == 'nav-menu' and row.get('contents'):
-                folder.add_items(_parse_contents(row['contents']))
-            else:
-                folder.add_item(
-                    label = row['title'],
-                    path  = plugin.url_for(panel, href=row['links']['panels']),
-                )
+        else:
+            folder.add_item(
+                label = row['title'],
+                path  = plugin.url_for(panel, href=row['links']['panels']),
+            )
 
     return folder
 
