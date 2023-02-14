@@ -265,10 +265,10 @@ def _set_profile(profile, notify=True):
         gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['avatar'])
 
 @plugin.route()
-def landing(title, name, sport=None, series=None, **kwargs):
+def landing(title, name, sport=None, series=None, team=None, **kwargs):
     folder = plugin.Folder(title)
 
-    for index, row in enumerate(api.landing(name, sport=sport, series=series)['panels']):
+    for index, row in enumerate(api.landing(name, sport=sport, series=series, team=team)['panels']):
         is_hero = row['panelType'] == 'hero-carousel' and ('hero' in row['title'].lower() or index == 0)
         
         if 'id' not in row or (is_hero and not settings.getBool('show_hero_contents', True)):
@@ -284,7 +284,7 @@ def landing(title, name, sport=None, series=None, **kwargs):
             row['contents'] = row.get('contents') or api.panel(row['links']['panels']).get('contents', [])
             folder.add_items(_parse_contents(row['contents']))
 
-        else:
+        elif row['panelType'] not in ('nav-menu-sticky',):
             folder.add_item(
                 label = row['title'],
                 path  = plugin.url_for(panel, href=row['links']['panels']),
@@ -306,7 +306,13 @@ def _parse_contents(rows):
 
 def _parse_section(data):
     if data['type'] == 'panel':
-        path = plugin.url_for(landing, title=data['clickthrough']['title'], name=data['clickthrough']['type'], sport=data['clickthrough']['sportId'] or None, series=data['clickthrough']['seriesId'] or None)
+        path = plugin.url_for(landing,
+                title = data['clickthrough']['title'],
+                name = data['clickthrough']['type'],
+                sport = data['clickthrough']['sportId'] or None,
+                series = data['clickthrough']['seriesId'] or None,
+                team = data['clickthrough']['teamId'] or None,
+                )
     else:
         path = plugin.url_for(show, show_id=data['id'], title=data['clickthrough']['title'])
 

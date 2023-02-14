@@ -153,7 +153,7 @@ class API(object):
         except:
             return {}
 
-    def landing(self, name, sport=None, series=None):
+    def landing(self, name, sport=None, series=None, team=None):
         self._refresh_token()
 
         params = {
@@ -165,6 +165,9 @@ class API(object):
 
         if series:
             params['series'] = series
+
+        if team:
+            params['team'] = team
 
         return self._session.get('/content/types/landing/names/' + name, params=params, headers=self._auth_header).json()
 
