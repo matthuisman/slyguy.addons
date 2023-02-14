@@ -418,6 +418,10 @@ msgctxt "#30099"
 msgid "Hour of day (24h)"
 msgstr ""
 
+msgctxt "#30100"
+msgid "Due to changes in IPTV Simple Client v20.8.0, you will need to manually setup IPTV Simple Client to point to IPTV Merge output files (playlist and EPG)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

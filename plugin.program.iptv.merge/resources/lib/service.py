@@ -1,4 +1,5 @@
 import time
+from distutils.version import LooseVersion
 
 from kodi_six import xbmc, xbmcvfs, xbmcaddon
 from six.moves.urllib.parse import unquote_plus
@@ -66,10 +67,16 @@ def start():
         if restart_queued and settings.getBool('restart_pvr', False):
             if forced: progress = gui.progressbg(heading='Reloading IPTV Simple Client')
 
-            if KODI_VERSION > 18:
+            try:
+                addon = xbmcaddon.Addon(IPTV_SIMPLE_ID)
+                if LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
+                    raise Exception('20.8.0 introduced multi-instance settings which can not be set through python yet')
+            except Exception as e:
+                addon = None
+
+            if addon and KODI_VERSION > 18:
                 restart_queued = False
-                try: xbmcaddon.Addon(IPTV_SIMPLE_ID).setSetting('m3uPathType', '0')
-                except Exception as e: pass
+                addon.setSetting('m3uPathType', '0')
 
             elif forced or (not xbmc.getCondVisibility('Pvr.IsPlayingTv') and not xbmc.getCondVisibility('Pvr.IsPlayingRadio')):
                 restart_queued = False

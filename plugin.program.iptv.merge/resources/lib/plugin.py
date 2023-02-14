@@ -1,5 +1,6 @@
 import os
 from difflib import SequenceMatcher
+from distutils.version import LooseVersion
 
 from kodi_six import xbmc, xbmcvfs
 
@@ -546,6 +547,11 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
     addon = get_addon(IPTV_SIMPLE_ID, required=not check_only, install=not check_only)
     if not addon:
         return False
+
+    if LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
+        if not check_only:
+            gui.ok(_.MANUALLY_SETUP)
+        return True
 
     output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
     playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
