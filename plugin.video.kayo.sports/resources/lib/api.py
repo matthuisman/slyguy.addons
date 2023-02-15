@@ -42,7 +42,7 @@ class API(object):
         return self._subscribed
 
     def _oauth_token(self, data, _raise=True):
-        token_data = self._session.post(AUTH_URL + '/token', json=data, headers={'User-Agent': 'okhttp/3.10.0'}, error_msg=_.TOKEN_ERROR).json()
+        token_data = self._session.post(AUTH_URL + '/token', json=data, headers={'User-Agent': 'okhttp/4.9.3'}, error_msg=_.TOKEN_ERROR).json()
 
         if 'error' in token_data:
             error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
