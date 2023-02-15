@@ -9,8 +9,8 @@
         <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
         <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
 
-        <setting label="30010" type="bool" id="h265" default="true"/>
-        <setting label="30011" type="bool" id="use_cmaf" default="true"/>
+        <setting label="30010" type="bool" id="h265" default="false"/>
+        <!-- <setting label="30011" type="bool" id="use_cmaf" default="true"/> -->
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="false" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
