@@ -31,20 +31,21 @@ def json_override(func, error_msg):
     except Exception as e:
         raise SessionError(error_msg or _.JSON_ERROR)
 
-orig_getaddrinfo = socket.getaddrinfo
-
-CIPHERS_STRING = '@SECLEVEL=1:'+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS
 class SSLAdapter(requests.adapters.HTTPAdapter):
+    def __init__(self, ciphers=None, options=None):
+        self._ciphers = ciphers
+        self._options = options #0 disables default ssl options
+        super(SSLAdapter, self).__init__()
+
     def init_poolmanager(self, *args, **kwargs):
-        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=CIPHERS_STRING)
+        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self._ciphers, options=self._options)
         kwargs['ssl_context'] = context
         return super(SSLAdapter, self).init_poolmanager(*args, **kwargs)
 
     def proxy_manager_for(self, *args, **kwargs):
-        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=CIPHERS_STRING)
+        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self._ciphers, options=self._options)
         kwargs['ssl_context'] = context
         return super(SSLAdapter, self).proxy_manager_for(*args, **kwargs)
-
 
 SESSIONS = []
 @signals.on(signals.AFTER_DISPATCH)
@@ -53,7 +54,7 @@ def close_sessions():
         session.close()
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_options=0):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -64,9 +65,8 @@ class RawSession(requests.Session):
         if auto_close:
             SESSIONS.append(self)
 
-        # Py3 only. Py2 works without and this breaks it
-        if KODI_VERSION > 18:
-            self.mount('https://', SSLAdapter())
+        ciphers = '@SECLEVEL=1:'+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS if KODI_VERSION > 18 else None
+        self.mount('https://', SSLAdapter(ciphers=ciphers, options=ssl_options))
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
@@ -234,9 +234,9 @@ class RawSession(requests.Session):
         return result
 
 class Session(RawSession):
-    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True):
+    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, ssl_options=0):
         super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
-            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close)
+            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ssl_options=ssl_options)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key
