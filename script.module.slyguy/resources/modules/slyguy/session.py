@@ -34,7 +34,7 @@ def json_override(func, error_msg):
 class SSLAdapter(requests.adapters.HTTPAdapter):
     def __init__(self, ciphers=None, options=None):
         self._ciphers = ciphers
-        self._options = options #0 disables default ssl options
+        self._options = options
         super(SSLAdapter, self).__init__()
 
     def init_poolmanager(self, *args, **kwargs):
@@ -54,7 +54,7 @@ def close_sessions():
         session.close()
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_options=0):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_options=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -65,7 +65,7 @@ class RawSession(requests.Session):
         if auto_close:
             SESSIONS.append(self)
 
-        ciphers = '@SECLEVEL=1:'+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS if KODI_VERSION > 18 else None
+        ciphers = 'ALL:@SECLEVEL=1' if KODI_VERSION > 18 else None
         self.mount('https://', SSLAdapter(ciphers=ciphers, options=ssl_options))
 
     def set_dns_rewrites(self, rewrites):
