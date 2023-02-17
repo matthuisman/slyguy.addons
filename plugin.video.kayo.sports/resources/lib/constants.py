@@ -1,9 +1,16 @@
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
 }
 
-API_URL = 'https://api.kayosports.com.au/v3{}'
+AUTH_HEADERS = {
+    'user-agent': HEADERS['user-agent'],
+    'referer': 'https://kayosports.com.au/',
+    'auth0-client': 'eyJuYW1lIjoiYXV0aDAtc3BhLWpzIiwidmVyc2lvbiI6IjEuMjAuMSJ9',
+    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+}
+
 AUTH_URL = 'https://auth.streamotion.com.au/oauth'
+API_URL = 'https://api.kayosports.com.au/v3{}'
 PROFILE_URL = 'https://profileapi.streamotion.com.au'
 RESOURCE_URL = 'https://resources.kayosports.com.au'
 CDN_URL = 'https://cdnselectionserviceapi.kayosports.com.au'
