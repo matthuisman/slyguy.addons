@@ -199,6 +199,8 @@ class BaseLanguage(object):
     WV_ISSUES_CONFIRM           = 32146
     PROXY_SERVER                = 32147
     TRAILER_NOT_FOUND           = 32148
+    CONNECTION_ERROR            = 32149
+    CONNECTION_ERROR_PROXY      = 32150
 
     # Kodi strings
     LANGUAGE                    = 304

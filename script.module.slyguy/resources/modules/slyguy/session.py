@@ -226,6 +226,12 @@ class RawSession(requests.Session):
 
             # Do request
             result = super(RawSession, self).request(method, session_data['url'], **kwargs)
+        except requests.exceptions.ConnectionError as e:
+            log.exception(e)
+            if session_data['proxy']:
+                raise SessionError(_(_.CONNECTION_ERROR_PROXY, host=urlparse(session_data['url']).netloc.lower()))
+            else:
+                raise SessionError(_(_.CONNECTION_ERROR, host=urlparse(session_data['url']).netloc.lower()))
         finally:
             # Revert functions to original
             socket.getaddrinfo = orig_getaddrinfo
@@ -241,7 +247,7 @@ class Session(RawSession):
         self._headers = headers or {}
         self._cookies_key = cookies_key
         self._base_url = base_url
-        self._attempts = settings.common_settings.getInt('http_retries', 2) if attempts is None else attempts
+        self._attempts = settings.common_settings.getInt('http_retries', 1) if attempts is None else attempts
         self.before_request = None
         self.after_request = None
 
@@ -285,12 +291,14 @@ class Session(RawSession):
 
             try:
                 resp = super(Session, self).request(method, url, **kwargs)
-            except:
+            except SessionError:
                 resp = None
                 if i == attempts:
                     raise
                 else:
                     continue
+            except:
+                resp = None
 
             if resp is None:
                 raise SessionError(error_msg or _.NO_RESPONSE_ERROR)

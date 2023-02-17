@@ -792,3 +792,13 @@ msgstr ""
 msgctxt "#32148"
 msgid "Trailer not found"
 msgstr ""
+
+msgctxt "#32149"
+msgid "Failed to connect to host: {host}\n"
+"Check your internet connection"
+msgstr ""
+
+msgctxt "#32150"
+msgid "Failed to connect to host: {host}\n"
+"Check your proxy and internet connections"
+msgstr ""
