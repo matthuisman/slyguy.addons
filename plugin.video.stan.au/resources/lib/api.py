@@ -276,7 +276,7 @@ class API(object):
             raise APIError(_(_.PLAYBACK_ERROR, msg=msg))
 
         play_data = data['media']
-        play_data['drm']['init_data'] = self._init_data(play_data['drm']['keyId'])
+        play_data['drm']['init_data'] = self.init_data(play_data['drm']['keyId'])
 
         params = {
             'url': play_data['videoUrl'],
@@ -308,7 +308,7 @@ class API(object):
 
         return program_data, play_data
 
-    def _init_data(self, key):
+    def init_data(self, key):
         key = key.replace('-', '')
         key_len = '{:x}'.format(len(bytearray.fromhex(key)))
         key = '12{}{}'.format(key_len, key)
