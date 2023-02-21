@@ -442,6 +442,12 @@ def _parse_video(data):
     return item
 
 @plugin.route()
+@plugin.plugin_request()
+def license_request(**kwargs):
+    url, headers = api.license_request()
+    return {'url': url, 'headers': headers}
+
+@plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     start_from = int(start_from)
@@ -517,7 +523,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_HEVC):
         item.inputstream = inputstream.Widevine(
-            license_key = LICENSE_URL,
+            license_key=plugin.url_for(license_request),
         )
 
     if start_from and not ROUTE_RESUME_TAG in kwargs:

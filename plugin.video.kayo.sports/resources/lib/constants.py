@@ -3,7 +3,6 @@ HEADERS = {
 }
 
 AUTH_HEADERS = {
-    'user-agent': HEADERS['user-agent'],
     'referer': 'https://kayosports.com.au/',
     'auth0-client': 'eyJuYW1lIjoiYXV0aDAtc3BhLWpzIiwidmVyc2lvbiI6IjEuMjAuMSJ9',
     'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',

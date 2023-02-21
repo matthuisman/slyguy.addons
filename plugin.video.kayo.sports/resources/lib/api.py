@@ -123,6 +123,10 @@ class API(object):
         self._refresh_token()
         return self._session.get(PROFILE_URL + '/user/profile', headers=self._auth_header).json()
 
+    def license_request(self):
+        self._refresh_token()
+        return LICENSE_URL, self._auth_header
+
     def add_profile(self, name, avatar_id):
         self._refresh_token()
 
