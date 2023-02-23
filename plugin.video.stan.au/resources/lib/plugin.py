@@ -5,7 +5,7 @@ from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
-from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, MIDDLEWARE_PLUGIN
+from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
 from .api import API
 from .language import _
@@ -435,24 +435,6 @@ def episodes(url, show_title, fanart, **kwargs):
     return folder
 
 @plugin.route()
-@plugin.plugin_middleware()
-def mpd_request(_data, _path, key, **kwargs):
-    key = key.upper()
-    key = key[0:8] + '-' + key[8:12] + '-' + key[12:16] + '-' + key[16:20] + '-' + key[20:]
-    cenc_init = api.init_data(key)
-
-    _data = _data.decode('utf8')
-    _data = _data.replace('</ContentProtection>',
-				'''</ContentProtection>
-                <ContentProtection xmlns:cenc="urn:mpeg:cenc:2013" schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="{}"/>
-				<ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
-					<cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">{}</cenc:pssh>
-				</ContentProtection>'''.format(key, cenc_init))
-
-    with open(_path, 'wb') as f:
-        f.write(_data.encode('utf8'))
-
-@plugin.route()
 def play(program_id, play_type=PLAY_FROM_LIVE, **kwargs):
     play_type = int(play_type)
     is_live = ROUTE_LIVE_TAG in kwargs
@@ -483,7 +465,6 @@ def play(program_id, play_type=PLAY_FROM_LIVE, **kwargs):
         ),
         resume_from = resume_from,
     )
-    item.proxy_data['middleware'] = {play_data['videoUrl']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request, key=play_data['drm']['keyId'])}}
 
     for row in play_data.get('captions', []):
         item.subtitles.append([row['url'], row['language']])
