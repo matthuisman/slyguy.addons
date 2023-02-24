@@ -674,15 +674,11 @@ def _play(content_id=None, family_id=None, **kwargs):
         media_stream = playback_data['stream']['complete'][0]['url']
 
     original_language = video.get('originalLanguage') or 'en'
-
-    headers = api.session.headers
-    ia.properties['original_audio_language'] = original_language
-
     item = _parse_video(video)
     item.update(
         path = media_stream,
         inputstream = ia,
-        headers = headers,
+        headers = api.session.headers,
         proxy_data = {'original_language': original_language},
     )
 
