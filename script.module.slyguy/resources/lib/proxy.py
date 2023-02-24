@@ -961,12 +961,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         max_width = self._session.get('max_width') or float('inf')
         max_height = self._session.get('max_height') or float('inf')
 
-        if audio_whitelist:
-            audio_whitelist.extend(default_languages)
-
-        if subs_whitelist:
-            subs_whitelist.extend(default_subtitles)
-
         stream_inf = None
         streams, all_streams, urls, metas = [], [], [], []
         audios = []

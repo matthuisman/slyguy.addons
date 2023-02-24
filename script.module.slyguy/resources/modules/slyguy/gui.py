@@ -382,6 +382,9 @@ class Item(object):
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
                 li.setProperty('{}.manifest_headers'.format(self.inputstream.addon_id), headers)
 
+            if 'original_language' in self.proxy_data:
+                li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
+
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
                 license_headers = self.get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
