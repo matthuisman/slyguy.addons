@@ -329,7 +329,7 @@ def edit_epg_value(epg_id, method, **kwargs):
 
 @plugin.route()
 def manager(radio=0, **kwargs):
-    radio  = int(radio)
+    radio = int(radio)
 
     if radio:
         folder = plugin.Folder(_.MANAGE_RADIO)
@@ -338,29 +338,29 @@ def manager(radio=0, **kwargs):
 
     for playlist in Playlist.select().where(Playlist.enabled == True).order_by(Playlist.order):
         folder.add_item(
-            label   = playlist.label,
-            art     = {'thumb': playlist.thumb},
-            path    = plugin.url_for(playlist_channels, playlist_id=playlist.id, radio=radio),
+            label = playlist.label,
+            art = {'thumb': playlist.thumb},
+            path = plugin.url_for(playlist_channels, playlist_id=playlist.id, radio=radio),
         )
 
     folder.add_item(
         label = _(_.ALL_CHANNELS, _bold=True),
-        path  = plugin.url_for(channels, radio=radio),
+        path = plugin.url_for(channels, radio=radio),
     )
 
     folder.add_item(
         label = _(_.SEARCH, _bold=True),
-        path  = plugin.url_for(search_channel, radio=radio),
+        path = plugin.url_for(search_channel, radio=radio),
     )
 
     # folder.add_item(
     #     label = 'Groups',
-    #     path  = plugin.url_for(group_manager, radio=radio),
+    #     path = plugin.url_for(group_manager, radio=radio),
     # )
 
     # folder.add_item(
     #     label = 'EPG',
-    #     path  = plugin.url_for(epg_manager, radio=radio),
+    #     path = plugin.url_for(epg_manager, radio=radio),
     # )
 
     return folder
@@ -369,8 +369,8 @@ def manager(radio=0, **kwargs):
 def channels(radio=0, page=1, **kwargs):
     folder = plugin.Folder(_.ALL_CHANNELS)
 
-    radio     = int(radio)
-    page      = int(page)
+    radio = int(radio)
+    page = int(page)
     page_size = settings.getInt('page_size', 0)
 
     query = Channel.channel_list(radio=radio, page=page, page_size=page_size)
@@ -381,7 +381,7 @@ def channels(radio=0, page=1, **kwargs):
     if len(items) == page_size:
         folder.add_item(
             label = _(_.NEXT_PAGE, page=page+1, _bold=True),
-            path  = plugin.url_for(channels, radio=radio, page=page+1),
+            path = plugin.url_for(channels, radio=radio, page=page+1),
         )
 
     return folder
@@ -400,9 +400,6 @@ def _process_channels(query):
         if not channel.visible:
             label = _(_.CHANNEL_HIDDEN, label=label)
 
-        if channel.url:
-            context.append((_.PLAY_CHANNEL, 'PlayMedia({})'.format(channel.get_play_path())))
-
         context.append((_.HIDE_CHANNEL if channel.visible else _.SHOW_CHANNEL,
             'RunPlugin({})'.format(plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.toggle_visible.__name__))))
 
@@ -420,13 +417,12 @@ def _process_channels(query):
             context.append((_.RESET_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(reset_channel, slug=channel.slug))))
 
         items.append(plugin.Item(
-            label     = label,
-            art       = {'thumb': channel.logo},
-            info      = {'plot': channel.plot},
-          #  path      = plugin.url_for(edit_channel, slug=channel.slug),
-            path      = plugin.url_for(edit_channel_value, slug=channel.slug, method=Override.toggle_visible.__name__),
-            context   = context,
-            is_folder = True,
+            label = label,
+            art = {'thumb': channel.logo},
+            info = {'plot': channel.plot},
+            path = channel.get_play_path(force_proxy=True),
+            context = context,
+            is_folder = False,
         ))
 
     return items
@@ -465,8 +461,8 @@ def edit_channel_value(slug, method, **kwargs):
 
 @plugin.route()
 def search_channel(query=None, radio=0, page=1, **kwargs):
-    radio  = int(radio)
-    page   = int(page)
+    radio = int(radio)
+    page = int(page)
 
     if not query:
         query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
@@ -494,15 +490,15 @@ def search_channel(query=None, radio=0, page=1, **kwargs):
 @plugin.route()
 def playlist_channels(playlist_id, radio=0, page=1, **kwargs):
     playlist_id = int(playlist_id)
-    radio       = int(radio)
-    page        = int(page)
+    radio = int(radio)
+    page = int(page)
 
-    playlist    = Playlist.get_by_id(playlist_id)
+    playlist = Playlist.get_by_id(playlist_id)
 
     folder = plugin.Folder(playlist.label)
 
     page_size = settings.getInt('page_size', 0)
-    db_query  = Channel.channel_list(playlist_id=playlist_id, radio=radio, page=page, page_size=page_size)
+    db_query = Channel.channel_list(playlist_id=playlist_id, radio=radio, page=page, page_size=page_size)
 
     items = _process_channels(db_query)
     folder.add_items(items)

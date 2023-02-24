@@ -39,11 +39,14 @@ def play_channel(slug, **kwargs):
     channel = Channel.get_by_id(slug)
     split = channel.url.split('|')
 
-    headers = {
-        'seekable': '0',
-        'referer': '%20',
-        'user-agent': DEFAULT_USERAGENT,
-    }
+    if settings.getBool('iptv_merge_proxy', True):
+        headers = {
+            'seekable': '0',
+            'referer': '%20',
+            'user-agent': DEFAULT_USERAGENT,
+        }
+    else:
+        headers = {}
 
     if len(split) > 1:
         _headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
@@ -70,11 +73,15 @@ def play_channel(slug, **kwargs):
         path = split[0],
         properties = channel.properties,
         headers = headers,
+        use_proxy = False,
         playable = True,
     )
 
-    if channel.radio:
-        item.use_proxy = False
+    if not settings.getBool('iptv_merge_proxy', True):
+        return item
+
+    if not channel.radio:
+        item.use_proxy = True
 
     if manifest_type.lower() == 'mpd':
         item.mimetype = 'application/dash+xml'
@@ -493,8 +500,8 @@ class Channel(database.Model):
 
         return plot
 
-    def get_play_path(self):
-        if not self.radio and self.url.lower().startswith('http') and settings.getBool('iptv_merge_proxy', True):
+    def get_play_path(self, force_proxy=False):
+        if force_proxy or (not self.radio and self.url.lower().startswith('http') and settings.getBool('iptv_merge_proxy', True)):
             return plugin.url_for(play_channel, slug=self.slug)
         else:
             return self.url
