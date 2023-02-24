@@ -1,4 +1,0 @@
-{
-    "playlist": "plugin://$ID/?_=playlist&output=$FILE",
-    "configure": "plugin://$ID/?_=configure_merge"
-}
