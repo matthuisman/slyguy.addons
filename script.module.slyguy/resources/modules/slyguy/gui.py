@@ -459,6 +459,7 @@ class Item(object):
                 'quality': QUALITY_DISABLED,
                 'middleware': {},
                 'type': None,
+                'skip_next_channel': settings.common_settings.getBool('skip_next_channel', False),
                 'h265': settings.common_settings.getBool('h265', False),
                 'hdr10': settings.common_settings.getBool('hdr10', False),
                 'dolby_vision': settings.common_settings.getBool('dolby_vision', False),

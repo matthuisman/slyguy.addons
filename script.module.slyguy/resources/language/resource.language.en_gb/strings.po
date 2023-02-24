@@ -156,6 +156,10 @@ msgctxt "#30033"
 msgid "Max Audio Channels"
 msgstr ""
 
+msgctxt "#30034"
+msgid "PVR: Autoskip Bad Channels"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"
