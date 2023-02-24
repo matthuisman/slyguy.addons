@@ -727,8 +727,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 if lang_allowed(language, [original_language]):
                     adap_set.setAttribute('original', 'true')
+
                 # only remove languages that are not original and not in whitelist or default languages
-                elif not lang_allowed(language, audio_whitelist + default_languages):
+                if audio_whitelist and not lang_allowed(language, audio_whitelist + default_languages + [original_language]):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed audio adapt set: {}'.format(adap_set.getAttribute('id')))
                     continue
@@ -766,8 +767,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 if lang_allowed(language, [original_language]):
                     adap_set.setAttribute('original', 'true')
-                # only remove subs that are not original and not in whitelist or default languages
-                elif not lang_allowed(language, subs_whitelist + default_subtitles):
+
+                # only remove subs that are not in whitelist or default subs
+                if subs_whitelist and not lang_allowed(language, subs_whitelist + default_subtitles):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
                     continue
@@ -961,12 +963,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         max_width = self._session.get('max_width') or float('inf')
         max_height = self._session.get('max_height') or float('inf')
 
-        if audio_whitelist:
-            audio_whitelist.extend(default_languages)
-
-        if subs_whitelist:
-            subs_whitelist.extend(default_subtitles)
-
         stream_inf = None
         streams, all_streams, urls, metas = [], [], [], []
         audios = []
@@ -986,21 +982,21 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 language = attribs.get('LANGUAGE','')
 
-                if attribs.get('TYPE') == 'AUDIO' and lang_allowed(language, audio_whitelist):
-                    # not yet supported (https://github.com/xbmc/inputstream.adaptive/issues/1021)
-                    # if lang_allowed(language, [original_language]):
-                    #     attribs['ORIGINAL'] = 'YES'
-
-                    audios.append(attribs)
+                if attribs.get('TYPE') == 'AUDIO':
                     if attribs.get('DEFAULT') == 'YES':
                         attribs['DEFAULT'] = 'NO'
                         default_languages.append(language)
 
+                    if not audio_whitelist or lang_allowed(language, audio_whitelist + default_languages + [original_language]):
+                        audios.append(attribs)
+
                 elif attribs.get('TYPE') == 'SUBTITLES' and lang_allowed(language, subs_whitelist):
-                    subs.append(attribs)
                     if attribs.get('DEFAULT') == 'YES':
                         attribs['DEFAULT'] = 'NO'
                         default_subtitles.append(language)
+
+                    if not subs_whitelist or lang_allowed(language, subs_whitelist + default_subtitles):
+                        subs.append(attribs)
 
             elif line.startswith('#EXT-X-STREAM-INF'):
                 stream_inf = line
