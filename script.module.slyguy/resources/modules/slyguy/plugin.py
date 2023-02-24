@@ -14,7 +14,8 @@ from .constants import *
 from .log import log
 from .language import _
 from .exceptions import Error, PluginError
-from .util import set_kodi_string, get_addon, remove_file, user_country
+from .util import set_kodi_string, get_addon, remove_file, user_country, hash_6
+from .smart_urls import get_dns_rewrites
 
 ## SHORTCUTS
 url_for = router.url_for
@@ -675,6 +676,17 @@ class Folder(object):
                     is_folder = False,
                 ))
 
+        proxy_path = settings.common_settings.get('_proxy_path')
+        proxy_data = {
+            'session_type': 'image',
+            'session_id': hash_6(time.time()),
+            'verify': settings.common_settings.getBool('verify_ssl', True),
+            'timeout': settings.common_settings.getInt('http_timeout', 30),
+            'dns_rewrites': get_dns_rewrites(),
+            'proxy_server': settings.get('proxy_server') or settings.common_settings.get('proxy_server'),
+        }
+        headers = gui.get_url_headers({'_proxy_data': json.dumps(proxy_data)})
+
         count = 0.0
         for item in items:
             if self.thumb and not item.art.get('thumb'):
@@ -697,6 +709,10 @@ class Folder(object):
 
                 item_types[media_type] += 1
                 count += 1
+
+            for key in item.art:
+                if item.art[key].lower().startswith('http') or item.art[key].lower().startswith('plugin'):
+                    item.art[key] = proxy_path + item.art[key] + '|' + headers
 
             li = item.get_li()
             xbmcplugin.addDirectoryItem(handle, item.path, li, item.is_folder)

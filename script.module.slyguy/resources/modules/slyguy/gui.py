@@ -233,19 +233,6 @@ class Item(object):
     def is_folder(self, value):
         self._is_folder = value
 
-    def get_url_headers(self, headers=None, cookies=None):
-        string = ''
-        if headers:
-            for key in headers:
-                string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
-
-        if cookies:
-            string += 'Cookie='
-            for key in cookies:
-                string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
-
-        return string.strip().strip('&')
-
     def get_li(self):
         proxy_path = settings.common_settings.get('_proxy_path')
 
@@ -317,8 +304,6 @@ class Item(object):
             for key in self.art:
                 if self.art[key] and self.art[key].lower().startswith('http'):
                     self.art[key] = self.art[key].replace(' ', '%20')
-                elif self.art[key] and self.art[key].lower().startswith('plugin'):
-                    self.art[key] = proxy_path + self.art[key]
 
             li.setArt(self.art)
 
@@ -347,7 +332,7 @@ class Item(object):
             if 'referer' not in [x.lower() for x in self.headers]:
                 self.headers['referer'] = '%20'
 
-        headers = self.get_url_headers(self.headers, self.cookies)
+        headers = get_url_headers(self.headers, self.cookies)
         mimetype = self.mimetype
         if not mimetype and self.inputstream:
             mimetype = self.inputstream.mimetype
@@ -387,7 +372,7 @@ class Item(object):
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
-                license_headers = self.get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
+                license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}{headers}|{challenge}|{response}'.format(
                     url = get_url(self.inputstream.license_key),
                     content_type = self.inputstream.content_type,
@@ -539,7 +524,7 @@ class Item(object):
 
                 li.setSubtitles(list(subs))
 
-            set_kodi_string('_slyguy_quality', json.dumps(proxy_data))
+            set_kodi_string('_proxy_data', json.dumps(proxy_data))
 
             self.path = get_url(self.path)
             if headers and '|' not in self.path:
@@ -557,3 +542,16 @@ class Item(object):
     def play(self):
         li = self.get_li()
         xbmc.Player().play(self.path, li)
+
+def get_url_headers(headers=None, cookies=None):
+    string = ''
+    if headers:
+        for key in headers:
+            string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
+
+    if cookies:
+        string += 'Cookie='
+        for key in cookies:
+            string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
+
+    return string.strip().strip('&')
