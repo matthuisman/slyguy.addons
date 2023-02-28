@@ -46,7 +46,7 @@ ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
 PROXY_GLOBAL = {
     'last_qualities': [],
-    'sessions': {},
+    'session': {},
     'error_count': 0,
 }
 
@@ -128,10 +128,20 @@ class RequestHandler(BaseHTTPRequestHandler):
         url = self.path.lstrip('/').strip('\\')
         log.debug('{} IN: {}'.format(method, url))
 
+        self._session = PROXY_GLOBAL['session']
         self.proxy_path = 'http://{}/'.format(self.headers.get('Host'))
 
-        session_type = 'default'
-        self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
+        try:
+            proxy_data = json.loads(get_kodi_string('_slyguy_quality'))
+            if self._session.get('session_id') != proxy_data['session_id']:
+                self._session = {}
+
+            self._session.update(proxy_data)
+            set_kodi_string('_slyguy_quality', '')
+        except:
+            pass
+
+        PROXY_GLOBAL['session'] = self._session
 
         self._headers = {}
         for header in self.headers:
@@ -140,23 +150,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
-
-        proxy_string = self._headers.pop('_proxy_data', None)
-        if not proxy_string:
-            proxy_string = get_kodi_string('_proxy_data')
-            if proxy_string:
-                set_kodi_string('_proxy_data', '')
-
-        if proxy_string:
-            proxy_data = json.loads(proxy_string)
-            session_type = proxy_data.get('session_type') or 'default'
-            self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
-            if self._session.get('session_id', -1) != proxy_data.get('session_id', -2):
-                self._session = {}
-
-            self._session.update(proxy_data)
-
-        PROXY_GLOBAL['sessions'][session_type] = self._session
 
         length = int(self._headers.get('content-length', 0))
         self._post_data = self.rfile.read(length) if length else None
