@@ -163,6 +163,10 @@ msgctxt "#30033"
 msgid "Max Audio Channels"
 msgstr "Maksymalna liczba kanałów audio"
 
+msgctxt "#30034"
+msgid "PVR: Autoskip Bad Channels"
+msgstr "PVR: Autopomijanie błędnych kanałów"
+
 ## COMMON ##
 
 msgctxt "#32000"
