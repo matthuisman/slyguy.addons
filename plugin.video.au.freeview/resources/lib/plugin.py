@@ -27,6 +27,7 @@ def live_tv(**kwargs):
     channels = get_channels(region)
 
     folder = plugin.Folder(_(_.REGIONS[region]))
+    show_chnos = settings.getBool('show_chnos', False)
 
     if settings.getBool('show_epg', True):
         now = arrow.now()
@@ -34,7 +35,7 @@ def live_tv(**kwargs):
     else:
         epg_count = None
 
-    for slug in sorted(channels, key=lambda k: (channels[k].get('network', 'zzzzzzz'), float(channels[k].get('channel', 'inf')), channels[k].get('name', 'zzzzzzz'))):
+    for slug in sorted(channels, key=lambda k: (channels[k].get('chno') is None, channels[k].get('network', 'zzzzzzz') if not show_chnos else None, float(channels[k].get('chno', 'inf')), channels[k].get('name', 'zzzzzzz'))):
         channel = channels[slug]
 
         plot = u''
@@ -57,13 +58,18 @@ def live_tv(**kwargs):
         if not count:
             plot += channel.get('description', '')
 
-        folder.add_item(
+        item = plugin.Item(
             label = channel['name'],
             path = plugin.url_for(play, slug=slug, _is_live=True),
             info = {'plot': plot},
             art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
             playable = True,
         )
+
+        if channel.get('chno') and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
+
+        folder.add_items(item)
 
     return folder
 
@@ -74,6 +80,7 @@ def play(slug, **kwargs):
     url = Session().head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
+        label = channel['name'],
         path = url or channel['mjh_master'],
         headers = channel.get('headers'),
         info = {'plot': channel.get('description')},
@@ -81,7 +88,11 @@ def play(slug, **kwargs):
         proxy_data = {'cert': channel.get('cert')},
     )
 
-    if channel.get('hls', True):
+    manifest = channel.get('manifest', 'hls')
+
+    if manifest == 'mpd':
+        item.inputstream = inputstream.MPD()
+    elif manifest == 'hls' and channel.get('hls', True):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
@@ -103,7 +114,7 @@ def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL.format(region=region)))
 
-        for slug in sorted(channels, key=lambda k: (channels[k].get('network', ''), channels[k].get('name', ''))):
+        for slug in sorted(channels, key=lambda k: (channels[k].get('chno') is None, channels[k].get('network', 'zzzzzzz'), float(channels[k].get('chno', 'inf')), channels[k].get('name', 'zzzzzzz'))):
             channel = channels[slug]
 
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(

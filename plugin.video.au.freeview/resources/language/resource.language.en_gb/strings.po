@@ -45,6 +45,14 @@ msgctxt "#30011"
 msgid "Show Mini EPG"
 msgstr ""
 
+msgctxt "#30012"
+msgid "Show Channel Numbers"
+msgstr ""
+
+msgctxt "#30013"
+msgid "{chno} | {label}"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
