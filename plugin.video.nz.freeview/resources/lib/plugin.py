@@ -64,8 +64,8 @@ def live_tv(**kwargs):
             playable = True,
         )
 
-        if channel.get('channel') and show_chnos:
-            item.label = _(_.LIVE_CHNO, chno=channel['channel'], label=item.label)
+        if channel.get('chno') and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
 
         folder.add_items(item)
 
@@ -110,5 +110,5 @@ def playlist(output, **kwargs):
             channel = channels[slug]
 
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
-                channel_id=slug, epg_id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
+                channel_id=slug, epg_id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),
                     url=plugin.url_for(play, slug=slug, _is_live=True)))
