@@ -24,6 +24,7 @@ def home(**kwargs):
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
+    show_chnos = settings.getBool('show_chnos', True)
 
     if settings.getBool('show_epg', True):
         now = arrow.now()
@@ -55,13 +56,18 @@ def live_tv(**kwargs):
         if not count:
             plot += channel.get('description', '')
 
-        folder.add_item(
+        item = plugin.Item(
             label = channel['name'],
             path = plugin.url_for(play, slug=slug, _is_live=True),
             info = {'plot': plot},
             art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
             playable = True,
         )
+
+        if channel.get('channel') and show_chnos:
+            item.label = _(_.LIVE_CHNO, chno=channel['channel'], label=item.label)
+
+        folder.add_items(item)
 
     return folder
 
@@ -71,6 +77,7 @@ def play(slug, **kwargs):
     url = Session().head(channel['mjh_master']).headers.get('location', '')
 
     item = plugin.Item(
+        label = channel['name'],
         path = url or channel['mjh_master'],
         headers = channel['headers'],
         info = {'plot': channel.get('description')},
@@ -78,7 +85,11 @@ def play(slug, **kwargs):
         proxy_data = {'cert': channel.get('cert')},
     )
 
-    if channel.get('hls', True):
+    manifest = channel.get('manifest', 'hls')
+
+    if manifest == 'mpd':
+        item.inputstream = inputstream.MPD()
+    elif manifest == 'hls' and channel.get('hls', True):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
