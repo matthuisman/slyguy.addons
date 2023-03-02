@@ -367,6 +367,8 @@ class Item(object):
             else:
                 li.setProperty('inputstream', self.inputstream.addon_id)
 
+            self.inputstream.set_setting('HDCPOVERRIDE', 'true')
+
             if self.inputstream.server_certificate and not self.inputstream.flags:
                 self.inputstream.flags = 'persistent_storage'
 

@@ -54,6 +54,9 @@ class InputstreamItem(object):
     def addon_id(self):
         return get_id()
 
+    def set_setting(self, key, value):
+        set_settings({key: value})
+
     def do_check(self):
         return False
 
