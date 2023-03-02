@@ -73,5 +73,5 @@ def playlist(output, **kwargs):
             channel = channels[slug]
 
             f.write(u'#EXTINF:-1 tvg-id="{id}" tvg-chno="{chno}" tvg-logo="{logo}" radio="true",{name}\n{path}\n'.format(
-                id=slug, logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('channel', ''),
+                id=slug, logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),
                     path=plugin.url_for(play, slug=slug, _is_live=True)))
