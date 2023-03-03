@@ -548,9 +548,11 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
     playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
     epg_path = os.path.join(output_dir, EPG_FILE_NAME)
     addon_path = xbmc.translatePath(addon.getAddonInfo('profile'))
-    instance_filepath = os.path.join(addon_path, 'instance-settings-90.xml')
 
-    if LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
+    is_multi_instance = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0')
+    instance_filepath = os.path.join(addon_path, 'instance-settings-1.xml')
+
+    if is_multi_instance:
         try:
             with open(instance_filepath) as f:
                 data = f.read()
@@ -576,44 +578,51 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
         kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
         monitor.waitForAbort(2)
 
+        ## IMPORT ANY CURRENT URL SOURCES ##
+        cur_epg_url = addon.getSetting('epgUrl')
+        cur_epg_type = addon.getSetting('epgPathType')
+        if cur_epg_url:
+            epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
+            try: epg.save()
+            except: pass
+
+        cur_m3u_url = addon.getSetting('m3uUrl')
+        cur_m3u_type = addon.getSetting('m3uPathType')
+        start_chno = int(addon.getSetting('startNum') or 1)
+        #user_agent = addon.getSetting('userAgent')
+        if cur_m3u_url:
+            playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
+            if start_chno != 1:
+                playlist.use_start_chno = True
+                playlist.start_chno = start_chno
+
+            try: playlist.save()
+            except: pass
+        ################################
+
         addon.setSetting('epgPath', epg_path)
         addon.setSetting('m3uPath', playlist_path)
         addon.setSetting('epgUrl', '')
         addon.setSetting('m3uUrl', '')
         addon.setSetting('m3uPathType', '0')
         addon.setSetting('epgPathType', '0')
-        addon.setSetting('m3uRefreshMode', '1')
-        addon.setSetting('m3uRefreshIntervalMins', '10')
-
-        set_kodi_setting('epg.futuredaystodisplay', 7)
-        #  set_kodi_setting('epg.ignoredbforclient', True)
-        set_kodi_setting('pvrmanager.syncchannelgroups', True)
-        set_kodi_setting('pvrmanager.preselectplayingchannel', True)
-        set_kodi_setting('pvrmanager.backendchannelorder', True)
-        set_kodi_setting('pvrmanager.usebackendchannelnumbers', True)
 
         # newer PVR Simple uses instance settings that can't yet be set via python api
         # so do a workaround where we leverage the migration when no instance settings found
-        if LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
-            xbmcvfs.delete(instance_filepath)
+        if is_multi_instance:
+            addon.setSetting('m3uRefreshMode', '1')
+            addon.setSetting('m3uRefreshIntervalMins', '10')
 
             for file in os.listdir(addon_path):
                 if file.startswith('instance-settings-') and file.endswith('.xml'):
-                    file_path = os.path.join(addon_path, file)
-                    with open(file_path) as f:
-                        data = f.read()
-                    # ensure no duplication in other instances
-                    if 'id="m3uPath">{}</setting>'.format(playlist_path) in data or 'id="epgPath">{}</setting>'.format(epg_path) in data:
-                        xbmcvfs.delete(os.path.join(addon_path, file_path))
-                    else:
-                        safe_copy(file_path, file_path+'.bu', del_src=True)
+                    xbmcvfs.delete(os.path.join(addon_path, file))
 
             kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': True})
             monitor.waitForAbort(1)
 
             # wait for migration to occur
             max_wait = 10
-            while not os.path.exists(os.path.join(addon_path, 'instance-settings-1.xml')):
+            while not os.path.exists(os.path.join(addon_path, instance_filepath)):
                 monitor.waitForAbort(1)
                 max_wait -= 1
                 if max_wait <= 0:
@@ -622,37 +631,20 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
             kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
             monitor.waitForAbort(2)
 
-            safe_copy(os.path.join(addon_path, 'instance-settings-1.xml'), instance_filepath, del_src=True)
             with open(instance_filepath, 'r') as f:
                 data = f.read()
+
+            data = data.replace('Migrated Add-on Config', ADDON_NAME)
+            data = data.replace('<setting id="m3uPathType" default="true">1</setting>', '<setting id="m3uPathType">0</setting>') #IPTV Simple 20.8.0 bug
             with open(instance_filepath, 'w') as f:
-                f.write(data.replace('Migrated Add-on Config', ADDON_NAME))
+                f.write(data)
 
-            for file in os.listdir(addon_path):
-                if file.endswith('.bu'):
-                    safe_copy(os.path.join(addon_path, file), os.path.join(addon_path, file[:-3]), del_src=True)
-        else:
-            ## IMPORT ANY CURRENT URL SOURCES ##
-            cur_epg_url = addon.getSetting('epgUrl')
-            cur_epg_type = addon.getSetting('epgPathType')
-            if cur_epg_url:
-                epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
-                try: epg.save()
-                except: pass
-
-            cur_m3u_url  = addon.getSetting('m3uUrl')
-            cur_m3u_type = addon.getSetting('m3uPathType')
-            start_chno = int(addon.getSetting('startNum') or 1)
-            #user_agent = addon.getSetting('userAgent')
-            if cur_m3u_url:
-                playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
-                if start_chno != 1:
-                    playlist.use_start_chno = True
-                    playlist.start_chno = start_chno
-
-                try: playlist.save()
-                except: pass
-            ################################
+        set_kodi_setting('epg.futuredaystodisplay', 7)
+        #  set_kodi_setting('epg.ignoredbforclient', True)
+        set_kodi_setting('pvrmanager.syncchannelgroups', True)
+        set_kodi_setting('pvrmanager.preselectplayingchannel', True)
+        set_kodi_setting('pvrmanager.backendchannelorder', True)
+        set_kodi_setting('pvrmanager.usebackendchannelnumbers', True)
 
         kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': True})
         monitor.waitForAbort(2)

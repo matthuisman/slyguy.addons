@@ -69,12 +69,15 @@ def start():
 
             try:
                 addon = xbmcaddon.Addon(IPTV_SIMPLE_ID)
-                if LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
-                    raise Exception('20.8.0 introduced multi-instance settings which can not be set through python yet')
             except Exception as e:
                 addon = None
 
-            if addon and KODI_VERSION > 18:
+            if addon and not forced and LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
+                # Do nothing. rely on iptv simple reload every 10mins as we can't set settings on multi-instance yet
+                restart_queued = False
+
+            elif addon and LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('4.3.0'):
+                # IPTV Simple version 4.3.0 added auto reload on settings change
                 restart_queued = False
                 addon.setSetting('m3uPathType', '0')
 
