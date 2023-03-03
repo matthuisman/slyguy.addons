@@ -69,20 +69,24 @@ def start():
 
             try:
                 addon = xbmcaddon.Addon(IPTV_SIMPLE_ID)
+                addon_version = LooseVersion(addon.getAddonInfo('version'))
             except Exception as e:
                 addon = None
 
-            if addon and not forced and LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0'):
+            if addon and not forced and addon_version >= LooseVersion('20.8.0'):
+                log.info('Merge complete. IPTV Simple should reload upaded playlist within 10mins')
                 # Do nothing. rely on iptv simple reload every 10mins as we can't set settings on multi-instance yet
                 restart_queued = False
 
-            elif addon and LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('4.3.0'):
+            elif addon and LooseVersion('4.3.0') <= addon_version < LooseVersion('20.8.0'):
                 # IPTV Simple version 4.3.0 added auto reload on settings change
+                log.info('Merge complete. IPTV Simple should reload immediately')
                 restart_queued = False
                 addon.setSetting('m3uPathType', '0')
 
             elif forced or (not xbmc.getCondVisibility('Pvr.IsPlayingTv') and not xbmc.getCondVisibility('Pvr.IsPlayingRadio')):
                 restart_queued = False
+                log.info('Merge complete. Reloading IPTV Simple using legacy enable/disable method')
                 kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
 
                 wait_delay = 4
