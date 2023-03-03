@@ -703,3 +703,7 @@ def get_kodi_proxy():
         return None
 
     return proxy_address
+
+def unique(sequence):
+    seen = set()
+    return [x for x in sequence if not (x in seen or seen.add(x))]
