@@ -909,9 +909,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             if 'com.apple.streamingkeydelivery' in line and 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed' in m3u8:
                 return False
 
-            # Remove x-disc lines
-            if line.startswith('#EXT-X-DISCONTINUITY'):
-                return False
+            # Remove x-disc lines (BREAKS DISNEY)
+            # if line.startswith('#EXT-X-DISCONTINUITY'):
+            #     return False
 
             return True
 
