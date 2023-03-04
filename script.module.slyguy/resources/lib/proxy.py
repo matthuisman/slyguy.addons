@@ -902,7 +902,6 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _parse_m3u8_sub(self, m3u8, url):
         lines = []
         segments = []
-        ignores = {'#EXT-X-DISCONTINUITY', '#EXT-X-DISCONTINUITY-SEQUENCE', '#EXT-X-CUE-OUT-CONT', '#EXT-X-PROGRAM-DATE-TIME', '#EXT-OATCLS-SCTE35', '#EXT-X-CUE-OUT'}
 
         def line_ok(line):
             # Remove sample-aes apple streaming
@@ -911,7 +910,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return False
 
             # Remove x-disc lines
-            if any([line.startswith(ignore) for ignore in ignores]):
+            if line.startswith('#EXT-X-DISCONTINUITY'):
                 return False
 
             return True
