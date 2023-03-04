@@ -1,12 +1,16 @@
 __license__ = "MIT"
 
 from pdb import set_trace
-import collections
 import re
 import sys
 import six
 import warnings
 from bs4.dammit import EntitySubstitution
+
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
 
 DEFAULT_OUTPUT_ENCODING = "utf-8"
 PY3K = (sys.version_info[0] > 2)
@@ -1607,7 +1611,7 @@ class SoupStrainer(object):
             markup = markup_name
             markup_attrs = markup
         call_function_with_tag_data = (
-            isinstance(self.name, collections.Callable)
+            isinstance(self.name, Callable)
             and not isinstance(markup_name, Tag))
 
         if ((not self.name)
@@ -1693,7 +1697,7 @@ class SoupStrainer(object):
             # True matches any non-None value.
             return markup is not None
 
-        if isinstance(match_against, collections.Callable):
+        if isinstance(match_against, Callable):
             return match_against(markup)
 
         # Custom callables take the tag as an argument, but all
