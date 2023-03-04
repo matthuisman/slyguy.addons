@@ -84,7 +84,7 @@ IA_PR_MIN_VER = '2.2.19'
 IA_MPD_MIN_VER = '2.2.19'
 IA_WV_MIN_VER = '2.2.27'
 IA_MODULES_URL = REPO_DOMAIN+'/.decryptmodules/modules.json.gz'
-IA_CHECK_EVERY = 86400 #24 hours
+IA_CHECK_EVERY = 3600 #1hour
 IA_LINUX_PACKAGE = 'kodi-inputstream-adaptive'
 ###################
 

@@ -12,7 +12,7 @@ from .session import Session
 from .log import log
 from .constants import *
 from .language import _
-from .util import md5sum, remove_file, get_system_arch, get_addon
+from .util import md5sum, remove_file, get_system_arch, get_addon, hash_6
 from .exceptions import InputStreamError
 from .drm import is_wv_secure
 
@@ -242,7 +242,7 @@ def install_widevine(reinstall=False):
     if not wv_versions:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
-    new_wv_md5 = md5sum(json.dumps([x for x in wv_versions if not x.get('hidden')]))
+    new_wv_hash = hash_6(json.dumps([x for x in wv_versions if not x.get('hidden')]))
 
     current = None
     has_compatible = False
@@ -268,10 +268,10 @@ def install_widevine(reinstall=False):
         elif wv['compatible'] and not wv.get('hidden'):
             has_compatible = True
 
-    current_wv_md5 = userdata.get('_wv_latest_md5')
-    userdata.set('_wv_latest_md5', new_wv_md5)
+    current_wv_hash = userdata.get('_wv_latest_md5')
+    userdata.set('_wv_latest_md5', new_wv_hash)
 
-    if new_wv_md5 != current_wv_md5 and (current and not current['compatible'] and has_compatible):
+    if new_wv_hash != current_wv_hash and (current and not current['compatible'] and has_compatible):
         reinstall = True
 
     if not reinstall:
