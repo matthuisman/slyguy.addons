@@ -10,6 +10,9 @@ class Error(Exception):
         self.heading = heading or _(_.PLUGIN_ERROR, addon=ADDON_NAME)
         super(Error, self).__init__(message)
 
+class CancelDialog(Exception):
+    pass
+
 class InputStreamError(Error):
     pass
 

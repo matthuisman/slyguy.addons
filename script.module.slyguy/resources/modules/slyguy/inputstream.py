@@ -2,18 +2,19 @@ import os
 import time
 import struct
 import json
+import shutil
 from distutils.version import LooseVersion
 
 from kodi_six import xbmc
 
 from . import gui, settings
-from .userdata import Userdata
+from .settings import common_settings
 from .session import Session
 from .log import log
 from .constants import *
 from .language import _
 from .util import md5sum, remove_file, get_system_arch, get_addon, hash_6
-from .exceptions import InputStreamError
+from .exceptions import InputStreamError, CancelDialog
 from .drm import is_wv_secure
 
 def get_id():
@@ -117,7 +118,9 @@ class Widevine(InputstreamItem):
         self.license_headers = license_headers
 
     def do_check(self):
-        return install_widevine()
+        # for widevine we always want to continue
+        install_widevine()
+        return True
 
 def set_bandwidth_bin(bps):
     addon = get_ia_addon(install=False)
@@ -201,12 +204,11 @@ def install_widevine(reinstall=False):
     if system not in DST_FILES:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
 
-    userdata = Userdata(COMMON_ADDON)
     decryptpath = xbmc.translatePath(ia_addon.getSetting('DECRYPTERPATH') or ia_addon.getAddonInfo('profile'))
     wv_path = os.path.join(decryptpath, DST_FILES[system])
     installed = md5sum(wv_path)
     log.info('Widevine Current MD5: {}'.format(installed))
-    last_check = int(userdata.get('_wv_last_check', 0))
+    last_check = int(common_settings.get('_wv_last_check', 0))
 
     if not installed:
         if system == 'UWP':
@@ -217,9 +219,6 @@ def install_widevine(reinstall=False):
 
         elif system == 'TVOS':
             raise InputStreamError(_.IA_TVOS_ERROR)
-
-        # elif system == 'Linux' and arch == 'arm64':
-        #     raise InputStreamError(_.IA_AARCH64_ERROR)
 
         elif arch == 'armv6':
             raise InputStreamError(_.IA_ARMV6_ERROR)
@@ -232,8 +231,6 @@ def install_widevine(reinstall=False):
         return True
 
     ## DO INSTALL ##
-    userdata.set('_wv_last_check', int(time.time()))
-
     log.debug('Downloading wv versions: {}'.format(IA_MODULES_URL))
     with Session() as session:
         widevine = session.gz_json(IA_MODULES_URL)['widevine']
@@ -241,8 +238,6 @@ def install_widevine(reinstall=False):
 
     if not wv_versions:
         raise InputStreamError(_(_.IA_NOT_SUPPORTED, system=system, arch=arch, kodi_version=KODI_VERSION))
-
-    new_wv_hash = hash_6(json.dumps([x for x in wv_versions if not x.get('hidden')]))
 
     current = None
     has_compatible = False
@@ -268,43 +263,40 @@ def install_widevine(reinstall=False):
         elif wv['compatible'] and not wv.get('hidden'):
             has_compatible = True
 
-    current_wv_hash = userdata.get('_wv_latest_md5')
-    userdata.set('_wv_latest_md5', new_wv_hash)
-
-    if new_wv_hash != current_wv_hash and (current and not current['compatible'] and has_compatible):
+    new_wv_hash = hash_6(json.dumps([x for x in wv_versions if not x.get('hidden')]))
+    if new_wv_hash != common_settings.get('_wv_latest_hash') and (current and not current['compatible'] and has_compatible):
         reinstall = True
 
-    if not reinstall:
-        log.debug('Widevine - Installed wv version already suitable')
-        return True
+    if reinstall:
+        if installed and not current:
+            wv_versions.insert(0, {
+                'ver': installed[:6],
+                'label': _(_.WV_INSTALLED, label=_(_.WV_UNKNOWN, label=str(installed[:6]))),
+            })
 
-    if installed and not current:
-        wv_versions.insert(0, {
-            'ver': installed[:6],
-            'label': _(_.WV_INSTALLED, label=_(_.WV_UNKNOWN, label=str(installed[:6]))),
-        })
+        display_versions = [x for x in wv_versions if not x.get('hidden')]
 
-    display_versions = [x for x in wv_versions if not x.get('hidden')]
+        while True:
+            index = gui.select(_.SELECT_WV_VERSION, options=[x['label'] for x in display_versions])
+            if index < 0:
+                raise CancelDialog('Widevine - Install cancelled')
 
-    while True:
-        index = gui.select(_.SELECT_WV_VERSION, options=[x['label'] for x in display_versions])
-        if index < 0:
-            log.debug('Widevine - Install cancelled')
-            return False
-
-        selected = display_versions[index]
-        if selected.get('confirm') and not gui.yes_no(selected['confirm']):
-            continue
-
-        if 'src' in selected:
-            url = widevine['base_url'] + selected['src']
-            if not _download(url, wv_path, selected['md5']):
+            selected = display_versions[index]
+            if selected.get('confirm') and not gui.yes_no(selected['confirm']):
                 continue
 
-        break
+            if 'src' in selected:
+                url = widevine['base_url'] + selected['src']
+                if not _download(url, wv_path, selected['md5']):
+                    continue
 
-    gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
-    log.info('Widevine - Install ok: {}'.format(selected['ver']))
+            break
+
+        gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
+        log.info('Widevine - Install ok: {}'.format(selected['ver']))
+
+    common_settings.set('_wv_last_check', int(time.time()))
+    common_settings.set('_wv_latest_hash', new_wv_hash)
 
     return True
 
@@ -313,17 +305,17 @@ def _download(url, dst_path, md5=None):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
-    filename   = url.split('/')[-1]
+    filename = url.split('/')[-1]
     downloaded = 0
 
     if os.path.exists(dst_path):
         if md5 and md5sum(dst_path) == md5:
             log.debug('Widevine - MD5 of local file {} same. Skipping download'.format(filename))
             return True
-        else:
-            remove_file(dst_path)
 
     log.debug('Widevine - Downloading: {} to {}'.format(url, dst_path))
+
+    tmp_path = dst_path + '.downloading'
     with gui.progress(_(_.IA_DOWNLOADING_FILE, url=filename), heading=_.IA_WIDEVINE_DRM) as progress:
         with Session() as session:
             resp = session.get(url, stream=True)
@@ -332,7 +324,7 @@ def _download(url, dst_path, md5=None):
 
             total_length = float(resp.headers.get('content-length', 1))
 
-            with open(dst_path, 'wb') as f:
+            with open(tmp_path, 'wb') as f:
                 for chunk in resp.iter_content(chunk_size=CHUNK_SIZE):
                     f.write(chunk)
                     downloaded += len(chunk)
@@ -345,13 +337,15 @@ def _download(url, dst_path, md5=None):
                     progress.update(percent)
 
     if progress.iscanceled():
-        remove_file(dst_path)
+        remove_file(tmp_path)
         log.debug('Widevine - Download canceled')
         return False
 
-    checksum = md5sum(dst_path)
+    checksum = md5sum(tmp_path)
     if checksum != md5:
-        remove_file(dst_path)
+        remove_file(tmp_path)
         raise InputStreamError(_(_.MD5_MISMATCH, filename=filename, local_md5=checksum, remote_md5=md5))
 
+    remove_file(dst_path)
+    shutil.move(tmp_path, dst_path)
     return True

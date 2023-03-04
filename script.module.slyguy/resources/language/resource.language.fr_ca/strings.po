@@ -544,9 +544,7 @@ msgid "This Widevine versions has been revoked by Google\n"
 msgstr ""
 
 msgctxt "#32124"
-msgid "Widevine license request failed\n"
-"Usual cause is Google revoking older Widevine versions\n"
-"Select Yes to check for new Widevine versions"
+msgid "Widevine license request failed"
 msgstr ""
 
 msgctxt "#32125"

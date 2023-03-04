@@ -1316,13 +1316,23 @@ class RequestHandler(BaseHTTPRequestHandler):
         response = self._proxy_request('HEAD', url)
         self._output_response(response)
 
-    def do_POST(self):
+    def do_POST(self, retry=True):
         url = self._get_url('POST')
         response = self._proxy_request('POST', url)
 
-        if response.status_code in (406,) and url == self._session.get('license_url') and not xbmc.getCondVisibility('System.Platform.Android') and gui.yes_no(_.WV_FAILED):
-            thread = threading.Thread(target=inputstream.install_widevine, kwargs={'reinstall': True})
-            thread.start()
+        if url == self._session.get('license_url'):
+            license_data = response.stream.content
+
+            if not self._session.get('license_init') and (not response.ok or not license_data):
+                # force wv install on next attempt
+                settings.set('_wv_last_check', 0)
+                settings.set('_wv_latest_hash', '')
+                log.error(license_data)
+                if not license_data:
+                    license_data = b'None'
+                gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
+
+            self._session['license_init'] = True
 
         self._output_response(response)
 

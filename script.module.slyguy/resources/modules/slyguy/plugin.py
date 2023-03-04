@@ -13,7 +13,7 @@ from . import router, gui, settings, userdata, inputstream, signals, migrate, bo
 from .constants import *
 from .log import log
 from .language import _
-from .exceptions import Error, PluginError
+from .exceptions import Error, PluginError, CancelDialog
 from .util import set_kodi_string, get_addon, remove_file, user_country
 
 ## SHORTCUTS
@@ -281,8 +281,12 @@ def _exception(e):
     mem_cache.empty()
     _close()
 
-    log.exception(e)
-    gui.exception()
+    if not isinstance(e, CancelDialog):
+        log.exception(e)
+        gui.exception()
+    else:
+        log.debug(e)
+
     resolve()
 
 @route('')

@@ -160,6 +160,13 @@ msgctxt "#30034"
 msgid "PVR: Autoskip Bad Channels"
 msgstr ""
 
+msgctxt "#30035"
+msgid "Please check your Widevine CDM is upto date\n"
+"A Widevine CDM update dialog will appear when you play this content again\n\n"
+"Widevine Server Response:\n"
+"{error}"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"
@@ -688,9 +695,7 @@ msgid "This Widevine versions has been revoked by Google\n"
 msgstr ""
 
 msgctxt "#32124"
-msgid "Widevine license request failed\n"
-"Usual cause is Google revoking older Widevine versions\n"
-"Select Yes to check for new Widevine versions"
+msgid "Widevine license request failed"
 msgstr ""
 
 msgctxt "#32125"
