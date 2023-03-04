@@ -16,7 +16,7 @@ from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
 
 from .constants import *
-from .models import Source, Playlist, EPG, Channel, merge_info, parse_attribs
+from .models import Source, Playlist, EPG, Channel, merge_info, parse_attribs, strip_quotes
 from .language import _
 from . import iptv_manager
 
@@ -255,7 +255,8 @@ class Merger(object):
             for line in infile:
                 line = line.strip()
 
-                if not line:
+                # allow empty lines before extm3u8
+                if not valid_file and not line:
                     continue
 
                 if not valid_file and '#EXTM3U' not in line:
@@ -281,6 +282,7 @@ class Merger(object):
 
                 if not channel:
                     channel = Channel()
+                    extgroups = []
 
                 if line.startswith('#EXTINF'):
                     channel.load_extinf(line)
@@ -291,7 +293,7 @@ class Merger(object):
                 elif line.startswith('#EXTGRP'):
                     value = line.split(':',1)[1].strip()
                     if value:
-                        self._extgroups.extend(value.split(';'))
+                        extgroups.extend([strip_quotes(x) for x in value.split(';')])
 
                 elif line.startswith('#KODIPROP') or line.startswith('#EXTVLCOPT'):
                     value = line.split(':',1)[1].strip()
@@ -306,11 +308,13 @@ class Merger(object):
 
                 elif not line.startswith('#'):
                     if not line:
+                        self._extgroups.extend(extgroups)
                         channel = None
                         continue
 
                     channel.url = line
                     channel.playlist = playlist
+                    channel.groups.extend(extgroups)
 
                     if playlist.skip_playlist_groups:
                         channel.groups = []
@@ -435,7 +439,7 @@ class Merger(object):
             groups_disabled = settings.getBool('disable_groups', False)
 
             with codecs.open(working_path, 'w', encoding='utf8') as outfile:
-                outfile.write(u'#EXTM3U')
+                outfile.write(u'#EXTM3U\n')
 
                 groups = []
                 group_order = settings.get('group_order')
@@ -443,9 +447,8 @@ class Merger(object):
                     groups.extend(group_order.split(';'))
 
                 groups.extend(self._extgroups)
-                groups = unique([x.strip() for x in groups if x.strip()])
-                if groups:
-                    outfile.write(u'\n\n#EXTGRP:{}'.format(';'.join(groups)))
+                for group in unique([x.strip() for x in groups if x.strip()]):
+                    outfile.write(u'\n#EXTGRP:"{}"'.format(group))
 
                 chno = starting_ch_no
                 tv_groups = []
