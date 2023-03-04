@@ -428,6 +428,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def _parse_dash(self, response):
         data = response.stream.content.decode('utf8')
+        response.stream.content = b''
 
         ## SUPPORT NEW DOLBY FORMAT https://github.com/xbmc/inputstream.adaptive/pull/466
         data = data.replace('tag:dolby.com,2014:dash:audio_channel_configuration:2011', 'urn:dolby:dash:audio_channel_configuration:2011')
@@ -901,13 +902,31 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _parse_m3u8_sub(self, m3u8, url):
         lines = []
         segments = []
+        ignores = {'#EXT-X-DISCONTINUITY', '#EXT-X-DISCONTINUITY-SEQUENCE', '#EXT-X-CUE-OUT-CONT', '#EXT-X-PROGRAM-DATE-TIME', '#EXT-OATCLS-SCTE35', '#EXT-X-CUE-OUT'}
+
+        def line_ok(line):
+            # Remove sample-aes apple streaming
+            # See https://github.com/xbmc/inputstream.adaptive/issues/1007
+            if 'com.apple.streamingkeydelivery' in line and 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed' in m3u8:
+                return False
+
+            # Remove x-disc lines
+            if any([line.startswith(ignore) for ignore in ignores]):
+                return False
+
+            return True
 
         for line in m3u8.splitlines():
-            if not line.startswith('#'):
-                line = line.strip()
-                if not line:
-                    continue
+            line = line.strip()
+            if not line:
+                continue
 
+            if line.startswith('#'):
+                if not line_ok(line):
+                    log.debug('Removed: {}'.format(line))
+                    continue
+            else:
+                # below not needed with IA version >= 20.3.3 (https://github.com/xbmc/inputstream.adaptive/pull/1108)
                 segments.append(line.lower())
                 if '/beacon?' in line.lower() or '/beacon/' in line.lower():
                     parse = urlparse(line)
@@ -916,12 +935,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if key.lower() == 'redirect_path' or key.lower() == 'redirect_url':
                             line = params[key]
                             log.debug('M3U8 Fix: Beacon removed')
-
-            # Remove sample-aes apple streaming
-            # See https://github.com/xbmc/inputstream.adaptive/issues/1007
-            elif 'com.apple.streamingkeydelivery' in line and 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed' in m3u8:
-                log.debug('Removed com.apple.streamingkeydelivery EXT-X-KEY')
-                continue
 
             lines.append(line)
 
@@ -1152,6 +1165,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def _parse_m3u8(self, response):
         m3u8 = response.stream.content.decode('utf8')
+        response.stream.content = b''
 
         is_master = False
         if '#EXTM3U' not in m3u8:
