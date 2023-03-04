@@ -2,6 +2,7 @@ import json
 import socket
 import shutil
 import re
+import ssl
 from gzip import GzipFile
 
 import requests
@@ -21,6 +22,11 @@ from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# KODI 17.6/18.9: OpenSSL 1.0.2j  26 Sep 2016
+# KODI 19.5: OpenSSL 1.1.1d  10 Sep 2019
+# KODI 20.0: OpenSSL 1.1.1q  5 Jul 2022
+log.debug(ssl.OPENSSL_VERSION)
+
 DEFAULT_HEADERS = {
     'User-Agent': DEFAULT_USERAGENT,
 }
@@ -32,7 +38,7 @@ def json_override(func, error_msg):
         raise SessionError(error_msg or _.JSON_ERROR)
 
 class SSLAdapter(requests.adapters.HTTPAdapter):
-    def __init__(self, ciphers=None, options=None):
+    def __init__(self, ciphers, options):
         self._ciphers = ciphers
         self._options = options
         super(SSLAdapter, self).__init__()
@@ -54,7 +60,7 @@ def close_sessions():
         session.close()
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_options=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers='ALL', ssl_options=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -65,8 +71,7 @@ class RawSession(requests.Session):
         if auto_close:
             SESSIONS.append(self)
 
-        ciphers = 'ALL:@SECLEVEL=1' if KODI_VERSION > 18 else None
-        self.mount('https://', SSLAdapter(ciphers=ciphers, options=ssl_options))
+        self.mount('https://', SSLAdapter(ciphers=ssl_ciphers, options=ssl_options))
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
