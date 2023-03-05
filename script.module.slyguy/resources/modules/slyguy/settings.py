@@ -25,8 +25,14 @@ def getDict(key, default=None):
     except:
         return default
 
+def getJSON(key, default=None):
+    return getDict(key, default)
+
 def setDict(key, value):
     set(key, json.dumps(value, separators=(',', ':')))
+
+def setJSON(key, value):
+    setDict(key, value)
 
 def getInt(key, default=None):
     try:
@@ -88,11 +94,17 @@ class Settings(object):
         except:
             return default
 
+    def getJSON(self, key, default=None):
+        return self.getDict(key, default)
+
     def reset(self):
         self._addon = xbmcaddon.Addon(self._addon.getAddonInfo('id'))
 
     def setDict(self, key, value):
         self.set(key, json.dumps(value, separators=(',', ':')))
+
+    def setJSON(self, key, value):
+        self.setDict(key, value)
 
     def getInt(self, key, default=None):
         try:
