@@ -2,10 +2,10 @@
 <settings>
 	<category label="30012">
 	    <setting label="30000" type="slider" id="history_length" default="10" range="0,1,100" option="int"/>
-		<setting label="30012" type="bool" id="smart_search" default="true"/>
+		<setting label="30013" type="bool" id="smart_search" default="true"/>
 		<setting label="24140" type="number" id="view" default="50" visible="false"/>
 	</category>
-	<category label="30013">
+	<category label="30014">
 		<setting label="30001" type="bool" id="movies" default="true"/>
 		<setting label="30002" type="bool" id="tvshows" default="true"/>
 		<setting label="30003" type="bool" id="episodes" default="false"/>

@@ -60,11 +60,11 @@ msgctxt "#30011"
 msgid "Search Songs"
 msgstr ""
 
-msgctxt "#30012"
+msgctxt "#30013"
 msgid "Smart Results Ordering"
 msgstr ""
 
-msgctxt "#30013"
+msgctxt "#30014"
 msgid "Search Locations"
 msgstr ""
 
