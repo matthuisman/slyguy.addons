@@ -6,7 +6,8 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 
 LANGUAGE = ADDON.getLocalizedString
 
-ACTION_CANCEL_DIALOG = (9, 10, 92, 216, 247, 257, 275, 61467, 61448,)
+ACTION_EXIT = (10,)
+ACTION_BACK = (9, 92, 216, 247, 257, 275, 61467, 61448,)
 ACTION_CONTEXT_MENU = (117,)
 ACTION_SHOW_INFO = (11,)
 

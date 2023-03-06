@@ -116,6 +116,8 @@ class GUI(xbmcgui.WindowXML):
             rule = cat['rule'].format(query = search)
         self.getControl(SEARCHCATEGORY).setLabel(xbmc.getLocalizedString(cat['label']))
         self.getControl(SEARCHCATEGORY).setVisible(True)
+
+        #TODO: Pagination for faster more responsive results
         json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0", "method":"%s", "params":{"properties":%s, "sort":{"method":"%s"}, %s}, "id": 1}' % (cat['method'], json.dumps(cat['properties']), cat['sort'], rule))
         json_response = json.loads(json_query)
         listitems = []
@@ -127,7 +129,7 @@ class GUI(xbmcgui.WindowXML):
             listitems.append(listitem)
         if 'result' in json_response and(json_response['result'] != None) and cat['content'] in json_response['result']:
             results = json_response['result'][cat['content']]
-            if settings.getBool('smart_search', True):
+            if settings.getBool('smart_search', True) and type(search) == str:
                 results = sorted(results,
                                  key = lambda x: SequenceMatcher(None,
                                                     search.lower().strip().replace(' ', ''),
@@ -704,8 +706,16 @@ class GUI(xbmcgui.WindowXML):
             self._new_search()
 
     def onAction(self, action):
-        if action.getId() in ACTION_CANCEL_DIALOG:
+        if action.getId() in ACTION_EXIT:
             self._close()
+
+        elif action.getId() in ACTION_BACK:
+            if self.level <= 1:
+                self._close()
+            else:
+                self.level -= 1
+                self._nav_back()
+
         elif action.getId() in ACTION_CONTEXT_MENU or action.getId() in ACTION_SHOW_INFO:
             controlId = self.getFocusId()
             if controlId == self.getCurrentContainerId():
@@ -720,6 +730,7 @@ class GUI(xbmcgui.WindowXML):
                         media = listitem.getMusicInfoTag().getMediaType()
                     if media != '' and media != 'season':
                         self._show_info(listitem)
+
         elif self.getFocusId() == MENU and action.getId() in (1, 2, 3, 4, 107):
             item = self.menu.getSelectedItem().getProperty('type')
             content = self.menu.getSelectedItem().getProperty('content')
