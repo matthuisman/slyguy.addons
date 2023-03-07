@@ -8,7 +8,7 @@ from .defs import *
 from slyguy import settings
 from slyguy.log import log
 from slyguy.constants import ADDON_ID, ADDON_VERSION
-
+from slyguy.mem_cache import cached
 
 class GUI(xbmcgui.WindowXML):
     def __init__(self, *args, **kwargs):
@@ -105,6 +105,10 @@ class GUI(xbmcgui.WindowXML):
         self.history[self.level] = {'cats':cats, 'search':self.searchstring}
         self._check_focus()
 
+    @cached(60*5)
+    def _cached_json_rpc(self, command):
+        return json.loads(xbmc.executeJSONRPC(command))
+
     def _get_items(self, cat, search):
         if cat['content'] == 'livetv':
             self._fetch_channelgroups(cat)
@@ -118,8 +122,7 @@ class GUI(xbmcgui.WindowXML):
         self.getControl(SEARCHCATEGORY).setVisible(True)
 
         #TODO: Pagination for faster more responsive results
-        json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0", "method":"%s", "params":{"properties":%s, "sort":{"method":"%s"}, %s}, "id": 1}' % (cat['method'], json.dumps(cat['properties']), cat['sort'], rule))
-        json_response = json.loads(json_query)
+        json_response = self._cached_json_rpc('{"jsonrpc":"2.0", "method":"%s", "params":{"properties":%s, "sort":{"method":"%s"}, %s}, "id": 1}' % (cat['method'], json.dumps(cat['properties']), cat['sort'], rule))
         listitems = []
         actors = {}
         directors = {}
@@ -268,8 +271,7 @@ class GUI(xbmcgui.WindowXML):
         self.getControl(SEARCHCATEGORY).setLabel(xbmc.getLocalizedString(19069))
         self.getControl(SEARCHCATEGORY).setVisible(True)
         channelgrouplist = []
-        json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0", "method":"PVR.GetChannelGroups", "params":{"channeltype":"tv"}, "id":1}')
-        json_response = json.loads(json_query)
+        json_response = self._cached_json_rpc('{"jsonrpc":"2.0", "method":"PVR.GetChannelGroups", "params":{"channeltype":"tv"}, "id":1}')
         if('result' in json_response) and(json_response['result'] != None) and('channelgroups' in json_response['result']):
             for item in json_response['result']['channelgroups']:
                 channelgrouplist.append(item['channelgroupid'])
@@ -280,8 +282,7 @@ class GUI(xbmcgui.WindowXML):
         # get all channel id's
         channellist = []
         for channelgroupid in channelgrouplist:
-            json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0", "method":"PVR.GetChannels", "params":{"channelgroupid":%i, "properties":["channel", "thumbnail"]}, "id":1}' % channelgroupid)
-            json_response = json.loads(json_query)
+            json_response = self._cached_json_rpc('{"jsonrpc":"2.0", "method":"PVR.GetChannels", "params":{"channelgroupid":%i, "properties":["channel", "thumbnail"]}, "id":1}' % channelgroupid)
             if('result' in json_response) and(json_response['result'] != None) and('channels' in json_response['result']):
                 for item in json_response['result']['channels']:
                     channellist.append(item)
@@ -299,8 +300,7 @@ class GUI(xbmcgui.WindowXML):
             channelid = channel['channelid']
             channelname = channel['label']
             channelthumb = channel['thumbnail']
-            json_query = xbmc.executeJSONRPC('{"jsonrpc":"2.0", "method":"PVR.GetBroadcasts", "params":{"channelid":%i, "properties":["starttime", "endtime", "runtime", "genre", "plot"]}, "id":1}' % channelid)
-            json_response = json.loads(json_query)
+            json_response = self._cached_json_rpc('{"jsonrpc":"2.0", "method":"PVR.GetBroadcasts", "params":{"channelid":%i, "properties":["starttime", "endtime", "runtime", "genre", "plot"]}, "id":1}' % channelid)
             if('result' in json_response) and(json_response['result'] != None) and('broadcasts' in json_response['result']):
                 for item in json_response['result']['broadcasts']:
                     broadcastname = item['label']
