@@ -146,3 +146,5 @@ MIDDLEWARE_REGEX = 'regex'
 MIDDLEWARE_PLUGIN = 'plugin'
 
 DONOR_URL = 'https://d.mjh.nz/donors/{id}'
+UPDATE_TIME_LIMIT = 86400 #24 hours
+REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, 'slyguy.dependencies', 'repository.slyguy']

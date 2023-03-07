@@ -3,11 +3,12 @@ from distutils.version import LooseVersion
 
 from kodi_six import xbmc
 
-from slyguy import settings
+from slyguy import settings, gui
 from slyguy.log import log
 from slyguy.session import Session
 from slyguy.util import kodi_rpc, get_addon
 
+from .language import _
 from .constants import *
 
 def get_slyguy_addons():
@@ -29,24 +30,31 @@ def check_updates(force=False):
 
     settings.set('_addon_md5', new_md5)
 
-    updates = []
+    pending_updates = {}
     slyguy_addons = get_slyguy_addons()
     slyguy_installed = [x['addonid'] for x in kodi_rpc('Addons.GetAddons', {'installed': True, 'enabled': True})['addons'] if x['addonid'] in slyguy_addons]
 
+    update_times = settings.getDict('_updates', {})
+    new_update_times = {}
     for addon_id in slyguy_installed:
         addon = get_addon(addon_id, install=False)
         if not addon:
             continue
 
+        name = addon.getAddonInfo('name')
         cur_version = addon.getAddonInfo('version')
         new_version = slyguy_addons[addon_id]['version']
 
         if LooseVersion(cur_version) < LooseVersion(new_version):
-            updates.append([addon, cur_version, new_version])
+            pending_updates[addon_id] = {'name': name, 'cur': cur_version, 'new': new_version}
+            new_update_times[addon_id] = [cur_version, _time]
+            if addon_id in update_times and update_times[addon_id][0] == cur_version:
+                new_update_times[addon_id][1] = update_times[addon_id][1]
 
-    if not force and not updates:
+    settings.setDict('_updates', new_update_times)
+    if not force and not pending_updates:
         return 0
 
-    log.debug('Updating repos due to {} addon updates'.format(len(updates)))
+    log.debug('Updating repos due to {} addon updates'.format(len(pending_updates)))
     xbmc.executebuiltin('UpdateAddonRepos')
-    return updates
+    return pending_updates

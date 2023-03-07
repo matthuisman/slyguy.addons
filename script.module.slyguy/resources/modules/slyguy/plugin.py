@@ -59,6 +59,8 @@ def route(url=None):
     def decorator(f, url):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            require_update()
+
             item = f(*args, **kwargs)
 
             autoplay = kwargs.get(ROUTE_AUTOPLAY_TAG, None)
@@ -755,7 +757,7 @@ class Folder(object):
 
     def add_item(self, *args, **kwargs):
         position = kwargs.pop('_position', None)
-        kiosk    = kwargs.pop('_kiosk', None)
+        kiosk = kwargs.pop('_kiosk', None)
 
         if kiosk == False and settings.getBool('kiosk', False):
             return False
@@ -779,6 +781,24 @@ class Folder(object):
             self.items.append(items)
         else:
             raise Exception('add_items only accepts an Item or list of Items')
+
+def require_update():
+    updates = settings.common_settings.getDict('_updates')
+    if not updates:
+        return
+
+    need_updated = []
+    for addon_id in REQUIRED_UPDATE:
+        if addon_id in updates:
+            try: addon = xbmcaddon.Addon(addon_id)
+            except: continue
+
+            cur_version = addon.getAddonInfo('version')
+            if updates[addon_id][0] == cur_version and time.time() > updates[addon_id][1] + UPDATE_TIME_LIMIT:
+                need_updated.append([addon_id, addon.getAddonInfo('name'), cur_version])
+
+    if need_updated:
+        raise PluginError(_(_.UPDATES_REQUIRED, updates_required='\n'.join(['[B]{} ({})[/B]'.format(entry[1], entry[2]) for entry in need_updated])))
 
 def process_news():
     news = settings.common_settings.get('_news')

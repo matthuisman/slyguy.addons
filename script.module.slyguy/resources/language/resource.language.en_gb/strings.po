@@ -811,3 +811,8 @@ msgctxt "#32150"
 msgid "Failed to connect to host: {host}\n"
 "Check your proxy and internet connections"
 msgstr ""
+
+msgctxt "#32151"
+msgid "The below addons are old and must be updated to use this add-on\n\n"
+"{updates_required}"
+msgstr ""

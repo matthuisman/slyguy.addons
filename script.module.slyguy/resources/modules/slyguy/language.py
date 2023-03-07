@@ -201,6 +201,7 @@ class BaseLanguage(object):
     TRAILER_NOT_FOUND           = 32148
     CONNECTION_ERROR            = 32149
     CONNECTION_ERROR_PROXY      = 32150
+    UPDATES_REQUIRED            = 32151
 
     # Kodi strings
     LANGUAGE                    = 304

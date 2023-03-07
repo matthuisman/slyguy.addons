@@ -24,8 +24,9 @@ def update_addons(**kwargs):
         auto_updates = False
 
     text = u''
-    for update in updates:
-        text += u'{} {} > {}\n'.format(update[0].getAddonInfo('name'), update[1], update[2])
+    for addon_id in updates:
+        update = updates[addon_id]
+        text += u'{} {} > {}\n'.format(update['name'], update['cur'], update['new'])
     text = text.rstrip()
 
     if auto_updates:

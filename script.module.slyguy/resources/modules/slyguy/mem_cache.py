@@ -57,7 +57,10 @@ def get(key, default=None):
         return deepcopy(row[0])
 
 def delete(key):
-    return int(cache.data.pop(key, None) != None)
+    if int(cache.data.pop(key, None) != None):
+        log('Cache Delete: {}'.format(key))
+        return True
+    return False
 
 def empty():
     deleted = len(cache.data)
@@ -99,13 +102,14 @@ def cached(*args, **kwargs):
     def decorator(f, expires=CACHE_EXPIRY, key=None):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            _key = key or _build_key(f.__name__, *args, **kwargs)
+            _key = key or kwargs.pop('_cache_key', None) or _build_key(f.__name__, *args, **kwargs)
             if callable(_key):
                 _key = _key(*args, **kwargs)
 
             if not kwargs.pop('_skip_cache', False):
                 value = get(_key)
                 if value != None:
+                    log('Cache Hit: {}'.format(_key))
                     return value
 
             value = f(*args, **kwargs)
