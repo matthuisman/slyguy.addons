@@ -100,7 +100,8 @@ class RawSession(requests.Session):
 
     def set_cert(self, cert):
         self._cert = cert
-        log.debug('Cert set to: {}'.format(cert))
+        if cert:
+            log.debug('SSL CERT SET TO: {}'.format(cert))
 
     def _get_cert(self):
         if not self._cert:

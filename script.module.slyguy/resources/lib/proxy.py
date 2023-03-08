@@ -125,8 +125,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.request.settimeout(5)
 
     def _get_url(self, method):
-        url = self.path.lstrip('/').strip('\\')
-        log.debug('{} IN: {}'.format(method, url))
+        self._url = url = self.path.lstrip('/').strip('\\')
+        log.debug('REQUEST IN: {} ({})'.format(url, method))
 
         self._session = PROXY_GLOBAL['session']
         self.proxy_path = 'http://{}/'.format(self.headers.get('Host'))
@@ -393,10 +393,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                         except:
                             continue
 
+            log.debug('CHOOSE QUALITY')
             index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=5000)
             if index < 0:
                 self._session['selected_quality'] = QUALITY_EXIT
                 raise Exit('Cancelled quality select')
+            log.debug('CHOOSE QUALITY DONE')
 
             quality = values[index]
 
@@ -443,8 +445,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             pretty = b"\n".join([ll.rstrip() for ll in pretty.splitlines() if ll.strip()])
             with open(xbmc.translatePath('special://temp/in.mpd'), 'wb') as f:
                 f.write(pretty)
-
-            start = time.time()
 
         mpd = root.getElementsByTagName("MPD")[0]
         mpd_attribs = list(mpd.attributes.keys())
@@ -890,8 +890,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')
             mpd = b"\n".join([ll.rstrip() for ll in mpd.splitlines() if ll.strip()])
-
-            log.debug('Time taken: {}'.format(time.time() - start))
             with open(xbmc.translatePath('special://temp/out.mpd'), 'wb') as f:
                 f.write(mpd)
         else:
@@ -1177,7 +1175,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             file_name = 'sub'
 
         if ADDON_DEV:
-            start = time.time()
             _m3u8 = m3u8.encode('utf8')
             _m3u8 = b"\n".join([ll.rstrip() for ll in _m3u8.splitlines() if ll.strip()])
             with open(xbmc.translatePath('special://temp/'+file_name+'-in.m3u8'), 'wb') as f:
@@ -1200,7 +1197,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if ADDON_DEV:
             m3u8 = b"\n".join([ll.rstrip() for ll in m3u8.splitlines() if ll.strip()])
-            log.debug('Time taken: {}'.format(time.time() - start))
             with open(xbmc.translatePath('special://temp/'+file_name+'-out.m3u8'), 'wb') as f:
                 f.write(m3u8)
 
@@ -1244,6 +1240,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         retries = 3
         # some reason we get connection errors every so often when using a session. something to do with the socket
         for i in range(retries):
+            log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
             try:
                 response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
             except ConnectionError as e:
@@ -1254,11 +1251,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 log.exception(e)
                 raise
             else:
+                log.debug('RESPONSE IN: {} ({})'.format(url, response.status_code))
                 break
 
         response.stream = ResponseStream(response)
-
-        log.debug('{} OUT: {} ({})'.format(method.upper(), url, response.status_code))
 
         headers = {}
         for header in response.headers:
@@ -1294,6 +1290,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def _output_response(self, response):
+        log.debug('RESPONSE OUT: {} ({})'.format(self._url, response.status_code))
         self._output_headers(response)
 
         if ADDON_DEV:
