@@ -69,8 +69,12 @@ class RawSession(requests.Session):
         self._rewrites = []
         self._proxy = None
         self._cert = None
+
         if auto_close:
             SESSIONS.append(self)
+
+        if KODI_VERSION > 18:
+            ssl_ciphers += '@SECLEVEL=1'
 
         self.mount('https://', SSLAdapter(ciphers=ssl_ciphers, options=ssl_options))
 
