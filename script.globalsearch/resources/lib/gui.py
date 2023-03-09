@@ -519,12 +519,6 @@ class GUI(xbmcgui.WindowXML):
         if self.focusset == 'false':
             self.getControl(NORESULTS).setVisible(True)
             self.setFocus(self.getControl(SEARCHBUTTON))
-            dialog = xbmcgui.Dialog()
-            ret = dialog.yesno(xbmc.getLocalizedString(284), LANGUAGE(32298))
-            if ret:
-                ret = self._new_search()
-            if not ret:
-                self._close()
 
     def _context_menu(self, controlId, listitem):
         labels = ()
@@ -672,7 +666,9 @@ class GUI(xbmcgui.WindowXML):
                 movieid = listitem.getVideoInfoTag().getDbId()
                 self._play_item('movieid', movieid, listitem)
             elif media == 'tvshow':
-                self._get_allitems('tvshowseasons', listitem)
+                dbid = listitem.getVideoInfoTag().getDbId()
+                path = "videodb://tvshows/titles/%s/" % dbid
+                xbmc.executebuiltin('ReplaceWindow(Videos,{},return)'.format(path))
             elif media == 'season':
                 self._get_allitems('seasonepisodes', listitem)
             elif media == 'episode':
