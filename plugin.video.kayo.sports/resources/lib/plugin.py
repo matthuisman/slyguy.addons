@@ -465,6 +465,8 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     asset = api.stream(id)
     streams = [asset['recommendedStream']]
     streams.extend(asset['alternativeStreams'])
+    log.debug('Available stream formats: {}'.format(set([x['mediaFormat'] for x in streams])))
+    log.debug('Supported stream formats: {}'.format(SUPPORTED_FORMATS))
     streams = [s for s in streams if s['mediaFormat'] in SUPPORTED_FORMATS]
     if not streams:
         raise PluginError(_.NO_STREAM)
@@ -476,7 +478,11 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         try:
             data = api.use_cdn(is_live)
             prefer_cdn = data['useCDN']
-            prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data['ssai'] else data['mediaFormat']
+
+            prefer_format = data['drm_mediaformat'] if data['drm_enabled'] else data['mediaFormat']
+            if data['ssai']:
+                prefer_format = 'ssai-' + prefer_format
+
             if prefer_format.startswith('ssai-'):
                 log.debug('Stream Format: Ignoring prefer ssai format')
                 prefer_format = prefer_format[5:]
@@ -506,7 +512,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     if stream['provider'] == CDN_CLOUDFRONT and start_from:
         start_from = 1
 
-    if stream['mediaFormat'] == FORMAT_DASH:
+    if stream['mediaFormat'] in (FORMAT_DASH, FORMAT_DASH_SSAI):
         item.inputstream = inputstream.MPD()
 
     elif stream['mediaFormat'] in (FORMAT_HLS_TS, FORMAT_HLS_TS_SSAI):
@@ -521,7 +527,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
         if not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
-    elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_HEVC):
+    elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_SSAI, FORMAT_DRM_DASH_HEVC, FORMAT_DRM_DASH_HEVC_SSAI):
         item.inputstream = inputstream.Widevine(
             license_key=plugin.url_for(license_request),
         )
