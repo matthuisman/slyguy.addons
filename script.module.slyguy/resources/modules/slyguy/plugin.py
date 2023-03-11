@@ -736,6 +736,8 @@ class Folder(object):
         if self.content == 'AUTO':
             if content_type in ('movies', 'tvshows', 'seasons', 'episodes'):
                 self.content = content_type
+            elif content_type == 'mixed':
+                self.content = 'movies'
             else:
                 self.content = 'videos'
 
