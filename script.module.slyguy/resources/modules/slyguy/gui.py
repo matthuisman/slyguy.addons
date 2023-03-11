@@ -259,8 +259,9 @@ class Item(object):
             if not (self.info.get('plot') or '').strip():
                 self.info['plot'] = '[B][/B]'
 
-            if not self.info.get('title'):
-                self.info['title'] = self.label
+            # setting title overwrites pvr program title etc
+            # if not self.info.get('title'):
+            #     self.info['title'] = self.label
 
         if self.info:
             info = self.info.copy()
