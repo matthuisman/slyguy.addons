@@ -7,7 +7,7 @@ from kodi_six import xbmc
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.exceptions import PluginError
-from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG, LIVE_HEAD
 
 from .api import API
 from .language import _
@@ -534,6 +534,10 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     if start_from and not ROUTE_RESUME_TAG in kwargs:
         item.resume_from = start_from
+
+    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
+        ## Need below to seek to live over multi-periods
+        item.resume_from = LIVE_HEAD
 
     return item
 
