@@ -254,17 +254,17 @@ class Item(object):
         else:
             li = xbmcgui.ListItem(offscreen=True)
 
+        info = self.info.copy()
         if self.label:
             li.setLabel(self.label)
-            if not (self.info.get('plot') or '').strip():
-                self.info['plot'] = '[B][/B]'
 
-            # setting title overwrites pvr program title etc
-            # if not self.info.get('title'):
-            #     self.info['title'] = self.label
+        if not (info.get('plot') or '').strip():
+            info['plot'] = '[B][/B]'
 
-        if self.info:
-            info = self.info.copy()
+        if info:
+            if not info.get('title') and self.label and info.get('mediatype'):
+                info['title'] = self.label
+
             if info.get('mediatype') in ('tvshow','season') and settings.common_settings.getBool('show_series_folders', False):
                 info.pop('mediatype')
 
