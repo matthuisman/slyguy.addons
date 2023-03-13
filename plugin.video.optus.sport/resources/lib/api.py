@@ -155,34 +155,34 @@ class API(object):
           #  'vendor': 'NVIDIA',
            # 'model': 'SHIELD Android TV',
             'yspSdk': 'false',
-            'osName': 'android',
-            'osVersion': '11',
-            'playerName': 'ExoPlayer',
-            'playerVersion': '2.6.508',
-            'appVersion': '2.6.508' if use_cmaf else '1.6.508',
+          #  'osName': 'android',
+          #  'osVersion': '11',
+          #  'playerName': 'ExoPlayer',
+          #  'playerVersion': '2.6.508',
+          #  'appVersion': '1.6.508',
             'advertConsent': 'false',
             'advertIdType': '',
             'deviceId': '',
             'advertId': '',
-            'platform': 'androidtv',
-            'device': 'android',
+          #  'platform': 'androidtv',
+          #  'device': 'android',
             'sdksInitialised': 'false',
             'watchMode': 'startover' if from_start else 'live',
         }
 
         r = self._session.get('/playback/generalPlayback/ctv/users/{user_id}/assets/{asset_id}'.format(user_id=userdata.get('user_id'), asset_id=asset), params=params)
-
-        if not r.ok:
-            if r.status_code == 403:
-                raise APIError(_.GEO_BLOCKED)
-            else:
-                raise APIError(r.json()['error'].get('description'))
+        if r.status_code == 403:
+            raise APIError(_.GEO_BLOCKED)
 
         try:
             data = r.json()
+            if 'error' in data:
+                raise APIError(r.json()['error'].get('description'))
             stream = data['playback']['items']['item']
             if type(stream) is list:
                 stream = stream[0]
+        except APIError:
+            raise
         except:
             stream = None
 
