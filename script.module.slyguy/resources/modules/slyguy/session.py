@@ -61,7 +61,7 @@ def close_sessions():
         session.close()
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=CIPHERS, ssl_options=0):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=CIPHERS, ssl_options=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -251,7 +251,7 @@ class RawSession(requests.Session):
         return result
 
 class Session(RawSession):
-    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, ssl_options=0):
+    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, ssl_options=None):
         super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
             timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ssl_options=ssl_options)
 
