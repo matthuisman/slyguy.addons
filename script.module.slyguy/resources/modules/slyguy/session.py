@@ -208,7 +208,7 @@ class RawSession(requests.Session):
             # remove username, password from proxy for logging
             parsed = urlparse(session_data['proxy'])
             replaced = parsed._replace(netloc="{}:{}@{}".format('username', 'password', parsed.hostname) if parsed.username else parsed.hostname)
-            log.debug("Proxy: {}".format(replaced.geturl()))
+            log.debug("Proxy: {}:{}".format(replaced.geturl(), parsed.port))
 
             kwargs['proxies'] = {
                 'http': session_data['proxy'],
