@@ -202,7 +202,7 @@ class RawSession(requests.Session):
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
                         if entry[1].lower().startswith('http'):
-                            session = RawSession(verify=self._verify, proxy=self._get_proxy())
+                            session = RawSession(verify=False)
                             resolver = DOHResolver(session)
                         else:
                             resolver = dns.resolver.Resolver(configure=False)
