@@ -26,5 +26,6 @@ class Language(BaseLanguage):
     MOVIE_FOLDERS     = 30023
     SHOW_FOLDERS      = 30024
     CHECK_WV_CDM      = 30035
+    ARCH_CHANGED      = 30036
 
 _ = Language()

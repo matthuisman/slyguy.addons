@@ -167,6 +167,12 @@ msgid "Please check your Widevine CDM is upto date\n"
 "{error}"
 msgstr ""
 
+msgctxt "#30036"
+msgid "WARNING: System architecture change detected ({old} -> {new})\n"
+"This may cause issues with binary addons as Kodi repo will still use {old}\n"
+"If you have issues, try revert back to Kodi {old}"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

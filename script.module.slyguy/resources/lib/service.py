@@ -1,18 +1,21 @@
 import sys
 import json
+import uuid
 from time import time
 
-from slyguy import settings, signals
+from slyguy import settings, signals, gui
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.drm import set_drm_level
 from slyguy.donor import check_donor
+from slyguy.util import get_system_arch
 
 from .proxy import Proxy
 from .player import Player
 from .util import check_updates
 from .constants import *
+from .language import _
 
 def _check_news():
     _time = int(time())
@@ -31,6 +34,20 @@ def _check_news():
 
     settings.set('_last_news_id', news['id'])
     settings.set('_news', json.dumps(news))
+
+def _check_arch():
+    arch = get_system_arch()[1]
+    mac = str(uuid.getnode())
+
+    prev_mac = settings.get('_mac')
+    prev_arch = settings.get('_arch')
+    settings.set('_arch', arch)
+    settings.set('_mac', mac)
+    if not prev_mac or not prev_arch:
+        return
+
+    if prev_mac == mac and prev_arch != arch:
+        gui.ok(_(_.ARCH_CHANGED, old=prev_arch, new=arch))
 
 @signals.on(signals.ON_SETTINGS_CHANGE)
 def settings_changed():
@@ -64,6 +81,12 @@ def start():
 
     if is_donor:
         log.info('Welcome SlyGuy donor!')
+
+    try:
+        _check_arch()
+    except Exception as e:
+        log.error('Failed to check arch')
+        log.exception(e)
 
     ## Inital wait on boot
     monitor.waitForAbort(5)
