@@ -754,8 +754,8 @@ msgid "Look & Feel"
 msgstr "Kinézet"
 
 msgctxt "#32140"
-msgid "Donate at [B]www.matthuisman.nz/donate[/B]"
-msgstr "Adományozás [B]www.matthuisman.nz/donate[/B]"
+msgid "Donate at [B]https://donate.slyguy.uk[/B]"
+msgstr "Adományozás [B]https://donate.slyguy.uk[/B]"
 
 msgctxt "#32141"
 msgid "Season {number}"

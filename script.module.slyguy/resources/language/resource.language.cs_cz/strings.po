@@ -752,7 +752,7 @@ msgid "Look & Feel"
 msgstr "Chování"
 
 msgctxt "#32140"
-msgid "Donate at [B]www.matthuisman.nz/donate[/B]"
+msgid "Donate at [B]https://donate.slyguy.uk[/B]"
 msgstr ""
 
 msgctxt "#32141"

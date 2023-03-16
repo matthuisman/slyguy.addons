@@ -753,8 +753,8 @@ msgid "Look & Feel"
 msgstr "Utseende och känsla"
 
 msgctxt "#32140"
-msgid "Donate at [B]www.matthuisman.nz/donate[/B]"
-msgstr "Donera via [B]www.matthuisman.nz/donate[/B]"
+msgid "Donate at [B]https://donate.slyguy.uk[/B]"
+msgstr "Donera via [B]https://donate.slyguy.uk[/B]"
 
 msgctxt "#32141"
 msgid "Season {number}"
