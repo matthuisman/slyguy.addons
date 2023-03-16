@@ -174,7 +174,7 @@ class API(object):
 
     def assets(self, asset_type, _filter=None, showall=False):
         params = {
-            'showall': showall,
+            'showall': 'true' if showall else 'false',
             'plt': PLT_DEVICE,
             'entitlementToken': self._entitlement_token(),
             'sort': 'latest',
@@ -186,7 +186,7 @@ class API(object):
         if _filter:
             params['filters'] = _filter
 
-        return self._session.get('/categoryTree.class.api.php/GOgetAssets/{site_id}/{asset_type}'.format(site_id=VOD_SITEID, asset_type=asset_type), params=params, timeout=20).json()
+        return self._session.get('/categoryTree.class.api.php/GOgetAssets/{site_id}/{asset_type}'.format(site_id=VOD_SITEID, asset_type=asset_type), params=params).json()
 
     def live_channels(self, _filter=None):
         params = {
