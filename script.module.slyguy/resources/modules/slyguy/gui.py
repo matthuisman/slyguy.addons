@@ -552,7 +552,7 @@ class Item(object):
 
                 li.setSubtitles(list(subs))
 
-            set_kodi_string('_slyguy_quality', json.dumps(proxy_data))
+            set_kodi_string('_slyguy_proxy_data', json.dumps(proxy_data))
 
             self.path = get_url(self.path)
             if headers and '|' not in self.path:

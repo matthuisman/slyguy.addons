@@ -132,12 +132,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.proxy_path = 'http://{}/'.format(self.headers.get('Host'))
 
         try:
-            proxy_data = json.loads(get_kodi_string('_slyguy_quality'))
+            proxy_data = json.loads(get_kodi_string('_slyguy_proxy_data'))
+            set_kodi_string('_slyguy_proxy_data', '')
+
             if self._session.get('session_id') != proxy_data['session_id']:
                 self._session = {}
 
-            self._session.update(proxy_data)
-            set_kodi_string('_slyguy_quality', '')
+            if not self._session:
+                log.debug('Session created from proxy data')
+                self._session.update(proxy_data)
         except:
             pass
 
@@ -1230,6 +1233,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
             self._session['session'].set_proxy(self._session.get('proxy_server'))
             self._session['session'].set_cert(self._session.get('cert'))
+            self._session['session'].cookies.update(self._session.pop('cookies', {}))
         else:
             self._session['session'].headers.clear()
             #self._session['session'].cookies.clear() #lets handle cookies in session
@@ -1373,6 +1377,15 @@ class ResponseStream(object):
 
                 yield chunk
 
+def save_session():
+    # persist session across service restarts
+    session = PROXY_GLOBAL['session']
+    requests_session = session.pop('session', None)
+    if requests_session:
+        session['cookies'] = requests_session.cookies.get_dict()
+    set_kodi_string('_slyguy_proxy_data', json.dumps(session))
+    log.debug('Session saved')
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
@@ -1408,5 +1421,12 @@ class Proxy(object):
         self._server.socket.close()
         self._httpd_thread.join()
         self.started = False
+
+        try:
+            save_session()
+        except Exception as e:
+            log.error('Failed to save proxy session')
+            log.exception(e)
+
         settings.set('_proxy_path', '')
         log.debug("Proxy: Stopped")
