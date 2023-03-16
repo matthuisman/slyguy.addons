@@ -20,8 +20,10 @@ from .drm import is_wv_secure
 def get_id():
     return IA_ADDON_ID
 
-def get_ia_addon(required=False, install=True):
+def get_ia_addon(required=False, install=False):
     addon_id = get_id()
+    if required:
+        install = True
 
     addon = get_addon(addon_id, required=False, install=install)
     if not addon and required:
@@ -123,7 +125,7 @@ class Widevine(InputstreamItem):
         return True
 
 def set_bandwidth_bin(bps):
-    addon = get_ia_addon(install=False)
+    addon = get_ia_addon()
     if not addon:
         return
 
@@ -140,7 +142,7 @@ def set_bandwidth_bin(bps):
     log.debug('IA Set Bandwidth Bin: {} bps'.format(bps))
 
 def set_settings(settings):
-    addon = get_ia_addon(install=False)
+    addon = get_ia_addon()
     if not addon:
         return
 
@@ -150,7 +152,7 @@ def set_settings(settings):
         addon.setSetting(key, str(settings[key]))
 
 def get_settings(keys):
-    addon = get_ia_addon(install=False)
+    addon = get_ia_addon()
     if not addon:
         return None
 
@@ -161,7 +163,7 @@ def get_settings(keys):
     return settings
 
 def open_settings():
-    ia_addon = get_ia_addon()
+    ia_addon = get_ia_addon(install=True)
     if ia_addon:
         ia_addon.openSettings()
 

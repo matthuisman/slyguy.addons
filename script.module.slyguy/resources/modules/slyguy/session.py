@@ -12,7 +12,7 @@ from six.moves.urllib_parse import urlparse
 from kodi_six import xbmc
 import dns.resolver
 
-from . import userdata, settings, signals
+from . import userdata, settings, signals, mem_cache
 from .util import get_kodi_proxy
 from .smart_urls import get_dns_rewrites
 from .log import log
@@ -31,6 +31,7 @@ DEFAULT_HEADERS = {
     'User-Agent': DEFAULT_USERAGENT,
 }
 CIPHERS = 'TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA'
+DNS_CACHE = dns.resolver.Cache()
 
 def json_override(func, error_msg):
     try:
@@ -60,14 +61,48 @@ def close_sessions():
     for session in SESSIONS:
         session.close()
 
+class DOHResolver(object):
+    def __init__(self, session, nameservers=None):
+        self.session = session
+        self.nameservers = nameservers or []
+
+    def query(self, host):
+        class DNSResultWrapper(object):
+            def __init__(self, answer):
+                self.answer = answer
+
+            def to_text(self):
+                return self.answer
+
+        for server in self.nameservers:
+            key = (server, host)
+            ips = mem_cache.get(key)
+
+            if not ips:
+                headers = {'accept': 'application/dns-json'}
+                params = {'name': host, 'dns': host}
+                log.debug("DOH Request: {} for {}".format(server, host))
+                try:
+                    data = self.session.get(server, params=params, headers=headers).json()
+                except:
+                    continue
+                ttl = min([x['TTL'] for x in data['Answer']])
+                ips = [x['data'] for x in data['Answer']]
+                mem_cache.set(key, ips, expires=ttl)
+
+            if ips:
+                return [DNSResultWrapper(ip) for ip in ips]
+
+        raise SessionError('Unable to resolve host: {} with nameservers: {}'.format(host, self.nameservers))
+
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=CIPHERS, ssl_options=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=CIPHERS, ssl_options=None, proxy=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
         self._session_cache = {}
         self._rewrites = []
-        self._proxy = None
+        self._proxy = proxy
         self._cert = None
 
         if auto_close:
@@ -163,8 +198,13 @@ class RawSession(requests.Session):
                     elif entry[0] == 'dns':
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
-                        resolver = dns.resolver.Resolver(configure=False)
-                        resolver.cache = dns.resolver.Cache()
+                        if entry[1].lower().startswith('http'):
+                            session = RawSession(verify=self._verify, proxy=self._get_proxy())
+                            resolver = DOHResolver(session)
+                        else:
+                            resolver = dns.resolver.Resolver(configure=False)
+                            resolver.cache = DNS_CACHE
+
                         resolver.nameservers = [entry[1],]
                         session_data['resolver'] = [urlparse(session_data['url']).netloc.lower(), resolver]
                 break
