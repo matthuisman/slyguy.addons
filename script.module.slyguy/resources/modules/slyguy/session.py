@@ -84,10 +84,12 @@ class DOHResolver(object):
                 log.debug("DOH Request: {} for {}".format(server, host))
                 try:
                     data = self.session.get(server, params=params, headers=headers).json()
-                except:
+                except Exception as e:
+                    log.debug(e)
                     continue
+
                 ttl = min([x['TTL'] for x in data['Answer']])
-                ips = [x['data'] for x in data['Answer']]
+                ips = [x['data'] for x in data['Answer'] if x['type'] in (1,)]
                 mem_cache.set(key, ips, expires=ttl)
 
             if ips:
