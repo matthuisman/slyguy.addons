@@ -88,8 +88,9 @@ class DOHResolver(object):
                     log.debug(e)
                     continue
 
-                ttl = min([x['TTL'] for x in data['Answer']])
-                ips = [x['data'] for x in data['Answer'] if x['type'] in (1,)]
+                suitable = [x for x in data['Answer'] if x['type'] in (1,)]
+                ttl = min([x['TTL'] for x in suitable])
+                ips = [x['data'] for x in suitable]
                 mem_cache.set(key, ips, expires=ttl)
 
             if ips:
