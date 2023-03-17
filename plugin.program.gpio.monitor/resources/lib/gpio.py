@@ -6,11 +6,11 @@ import shutil
 from six import PY3
 from kodi_six import xbmc
 
-from slyguy import gui, database, userdata
+from slyguy import gui, database
 from slyguy.constants import ADDON_PATH, ADDON_ID
 from slyguy.log import log
 from slyguy.exceptions import Error
-from slyguy.util import get_system_arch, set_kodi_string, get_kodi_string, remove_file, md5sum
+from slyguy.util import set_kodi_string, get_kodi_string, remove_file, md5sum
 
 from .constants import *
 from .language import _
@@ -141,13 +141,13 @@ def service():
                         bounce_time=btn.bounce_time or None, hold_time=btn.hold_time, hold_repeat=btn.hold_repeat)
 
                     if btn.when_pressed:
-                        button.when_pressed  = lambda function=btn.when_pressed: callback(function)
+                        button.when_pressed = lambda function=btn.when_pressed: callback(function)
 
                     if btn.when_released:
                         button.when_released = lambda function=btn.when_released: callback(function)
 
                     if btn.when_held:
-                        button.when_held     = lambda function=btn.when_held: callback(function)
+                        button.when_held = lambda function=btn.when_held: callback(function)
                 except Exception as e:
                     log.exception(e)
                     btn.status = Button.Status.ERROR
