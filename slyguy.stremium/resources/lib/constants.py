@@ -2,7 +2,6 @@ HEADERS = {
     'user-agent': 'okhttp/3.12.1',
 }
 
-REGISTER_URL = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser'
 LOGIN_URL = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword'
 TOKEN_URL = 'https://securetoken.googleapis.com/v1/token'
 

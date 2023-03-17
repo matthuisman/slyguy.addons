@@ -9,17 +9,6 @@ msgctxt "#30001"
 msgid "Password"
 msgstr ""
 
-msgctxt "#30002"
-msgid "Register"
-msgstr ""
-
-msgctxt "#30003"
-msgid "Confirm Password"
-msgstr ""
-
-msgctxt "#30004"
-msgid "Passwords did not match"
-msgstr ""
 
 msgctxt "#30005"
 msgid "Live TV"

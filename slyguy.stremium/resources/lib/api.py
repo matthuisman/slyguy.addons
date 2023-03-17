@@ -116,7 +116,7 @@ class API(object):
 
         return self._session.get('/programGuide', params=params).json()
 
-    def login(self, email, password, register=False):
+    def login(self, email, password):
         self.logout()
 
         params = {
@@ -129,7 +129,7 @@ class API(object):
             'returnSecureToken': True,
         }
 
-        data = self._session.post(REGISTER_URL if register else LOGIN_URL, params=params, json=payload).json()
+        data = self._session.post(LOGIN_URL, params=params, json=payload).json()
         if 'error' in data:
             raise APIError(data['error']['message'])
 

@@ -24,7 +24,6 @@ def home(**kwargs):
 
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
-        folder.add_item(label=_(_.REGISTER, _bold=True), path=plugin.url_for(login, register=1))
     else:
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
         if not settings.getBool('hide_my_channels', False):
@@ -167,9 +166,7 @@ def search(query, page, **kwargs):
     return _process_channels(provider['channels'], query=query), False
 
 @plugin.route()
-def login(register=0, **kwargs):
-    register = int(register)
-
+def login(**kwargs):
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
     if not username:
         return
@@ -180,10 +177,7 @@ def login(register=0, **kwargs):
     if not password:
         return
 
-    if register and gui.input(_.CONFIRM_PASSWORD, hide_input=True).strip() != password:
-        raise PluginError(_.PASSWORD_NOT_MATCH)
-
-    api.login(username, password, register=register)
+    api.login(username, password)
     gui.refresh()
 
 @plugin.route()
