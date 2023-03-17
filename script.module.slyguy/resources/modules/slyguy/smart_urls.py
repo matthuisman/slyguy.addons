@@ -19,8 +19,6 @@ def get_dns_rewrites(dns_rewrites=None):
     # add some defaults that are often blocked by networkwide dns
     rewrites.extend([
         ['r:https://cloudflare-dns.com/dns-query', 'dai.google.com'],
-        ['r:https://cloudflare-dns.com/dns-query', 'slyguy.uk'],
-        ['r:https://cloudflare-dns.com/dns-query', 'i.mjh.nz'],
     ])
 
     if rewrites:
