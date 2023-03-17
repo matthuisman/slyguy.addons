@@ -212,12 +212,13 @@ def collection(slug, content_class, label=None, **kwargs):
             return
 
         title = _get_text(_set, 'title', 'set')
-        if not title or '${' in title:
+
+        if not title or '{title}' in title:
             data = api.set_by_id(set_id, ref_type, page_size=0)
             # if not data['meta']['hits']:
             #     return
             title = _get_text(data, 'title', 'set')
-            if not title or '${' in title:
+            if not title or '{title}' in title:
                 return
 
         return title, plugin.url_for(sets, set_id=set_id, set_type=ref_type)
