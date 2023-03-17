@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.slyguy" name="SlyGuy Repository (slyguy.uk)" provider-name="SlyGuy" version="0.0.4">
+<addon id="repository.slyguy" name="SlyGuy Repository (slyguy.uk)" provider-name="SlyGuy" version="0.0.8">
   <extension point="xbmc.addon.repository" name="SlyGuy Repository (slyguy.uk)">
     <dir>
       <info compressed="false">https://slyguy.uk/.repo/addons.xml</info>
