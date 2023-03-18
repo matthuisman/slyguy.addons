@@ -59,8 +59,6 @@ def route(url=None):
     def decorator(f, url):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            require_update()
-
             item = f(*args, **kwargs)
 
             autoplay = kwargs.get(ROUTE_AUTOPLAY_TAG, None)
@@ -137,6 +135,7 @@ def merge():
         def decorated_function(*args, **kwargs):
             result = False
             try:
+                require_update()
                 message = f(*args, **kwargs) or ''
             except Error as e:
                 log.debug(e, exc_info=True)
@@ -661,6 +660,9 @@ class Folder(object):
         self.show_news = show_news
 
     def display(self):
+        if self.show_news:
+            require_update()
+
         handle = _handle()
         items = [i for i in self.items if i]
 
