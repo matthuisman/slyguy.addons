@@ -544,7 +544,7 @@ default_thumb  = ADDON_ICON
 default_fanart = ADDON_FANART
 
 def resume_from(seconds):
-    if not seconds or seconds < 0:
+    if not seconds or seconds < 60:
         return 0
 
     minutes = seconds // 60
