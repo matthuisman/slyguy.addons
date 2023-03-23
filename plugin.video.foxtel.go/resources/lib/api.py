@@ -328,13 +328,13 @@ class API(object):
 
         params = {
             'rate': 'WIREDHIGH',
-            'plt': 'ipstb', #andr_phone causes the -negative seek
-            'appID': 'PLAY2',
+            'plt': 'ipstb', #andr_phone can include ssai which breaks playback
+            'appID': 'GO2',
             'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
 
-        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
         if error:
@@ -345,19 +345,8 @@ class API(object):
             raise APIError(_.NO_STREAM_ERROR)
 
         playback_url = streams[0]['url']
-        playback_url = playback_url.replace('cm=yes&','') #without this = bad widevine key
+        playback_url = playback_url.replace('cm=yes&','') # removes ad injection which breaks playback
         license_url = data['fullLicenceUrl']
-
-        ## Get L3 License URL
-        if not is_wv_secure():
-            try:
-                params['plt'] = PLT_DEVICE
-                params['appID'] = 'GO2'
-                l3_data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
-                license_url = l3_data['fullLicenceUrl']
-            except:
-                log.debug('Failed to get L3 license url')
-        #########
 
         params = {
             'sessionId': data['general']['sessionID'],
