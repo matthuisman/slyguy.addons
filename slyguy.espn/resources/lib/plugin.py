@@ -3,7 +3,7 @@ from slyguy import plugin, gui, signals, inputstream, settings, userdata
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
-from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, ROUTE_LIVE_TAG
+from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, ROUTE_LIVE_TAG, LIVE_HEAD
 
 from .language import _
 from .api import API
@@ -288,6 +288,10 @@ def play(content_id=None, event_id=None, network_id=None, **kwargs):
 
         elif play_type == PLAY_FROM_START:
             item.resume_from = offset
+
+    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
+        ## Need below to seek to live over multi-periods
+        item.resume_from = LIVE_HEAD
 
     return item
 
