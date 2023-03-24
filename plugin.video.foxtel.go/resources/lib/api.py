@@ -333,7 +333,6 @@ class API(object):
             'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
-
         data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
 
         error = data.get('errorMessage')
@@ -346,7 +345,18 @@ class API(object):
 
         playback_url = streams[0]['url']
         playback_url = playback_url.replace('cm=yes&','') # removes ad injection which breaks playback
+
+        # get license url
+        params = {
+            'rate': 'WIREDHIGH',
+            'plt': 'web',
+            'appID': 'GO2',
+            'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L3').encode('utf8')).hexdigest().lower(),
+            'format': 'json',
+        }
+        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
         license_url = data['fullLicenceUrl']
+        #
 
         params = {
             'sessionId': data['general']['sessionID'],
