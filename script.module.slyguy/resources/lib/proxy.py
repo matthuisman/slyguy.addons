@@ -1241,14 +1241,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Fix any double // in url
         url = fix_url(url)
 
-        retries = 3
+        retries = 5
         # some reason we get connection errors every so often when using a session. something to do with the socket
         for i in range(retries):
             log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
             try:
-                response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
-            except ConnectionError as e:
-                if 'Connection aborted' not in str(e) or i == retries-1:
+                response = self._session['session'].request(
+                    method=method, url=url, headers=self._headers, timeout=5,
+                    data=self._post_data, allow_redirects=False, stream=True)
+            except RequestException as e:
+                if i == retries-1:
                     log.exception(e)
                     raise
             except Exception as e:
