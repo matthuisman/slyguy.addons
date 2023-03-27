@@ -10,7 +10,7 @@ from xml.dom.minidom import parseString
 from functools import cmp_to_key
 
 import arrow
-from requests import ConnectionError
+from requests import RequestException
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
