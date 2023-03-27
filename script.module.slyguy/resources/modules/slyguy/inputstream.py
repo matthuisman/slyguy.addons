@@ -36,16 +36,16 @@ def get_ia_addon(required=False, install=False):
 
 class InputstreamItem(object):
     manifest_type = ''
-    license_type  = ''
-    license_key   = ''
-    mimetype      = ''
-    checked       = None
-    license_data  = None
-    challenge     = None
-    response      = None
-    properties    = None
-    minversion    = None
-    flags         = None
+    license_type = ''
+    license_key = ''
+    mimetype = ''
+    checked = None
+    license_data = None
+    challenge = None
+    response = None
+    properties = None
+    minversion = None
+    flags = None
     server_certificate = None
 
     def __init__(self, minversion=None, properties=None):
@@ -71,8 +71,8 @@ class InputstreamItem(object):
 
 class HLS(InputstreamItem):
     manifest_type = 'hls'
-    mimetype      = 'application/vnd.apple.mpegurl'
-    minversion    = IA_HLS_MIN_VER
+    mimetype = 'application/vnd.apple.mpegurl'
+    minversion = IA_HLS_MIN_VER
 
     def __init__(self, force=False, live=True, **kwargs):
         super(HLS, self).__init__(**kwargs)
@@ -87,17 +87,17 @@ class HLS(InputstreamItem):
 
 class MPD(InputstreamItem):
     manifest_type = 'mpd'
-    mimetype      = 'application/dash+xml'
-    minversion    = IA_MPD_MIN_VER
+    mimetype = 'application/dash+xml'
+    minversion = IA_MPD_MIN_VER
 
     def do_check(self):
         return require_version(self.minversion, required=True)
 
 class Playready(InputstreamItem):
     manifest_type = 'ism'
-    license_type  = 'com.microsoft.playready'
-    mimetype      = 'application/vnd.ms-sstr+xml'
-    minversion    = IA_PR_MIN_VER
+    license_type = 'com.microsoft.playready'
+    mimetype = 'application/vnd.ms-sstr+xml'
+    minversion = IA_PR_MIN_VER
 
     def do_check(self):
         return require_version(self.minversion, required=True) and KODI_VERSION > 17 and xbmc.getCondVisibility('system.platform.android')

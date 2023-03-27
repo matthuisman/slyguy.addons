@@ -16,11 +16,6 @@ def get_dns_rewrites(dns_rewrites=None):
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
 
-    # add some defaults that are often blocked by networkwide dns
-    rewrites.extend([
-        ['r:https://cloudflare-dns.com/dns-query', 'dai.google.com'],
-    ])
-
     if rewrites:
         log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
 
