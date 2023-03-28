@@ -7,7 +7,7 @@ from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
-from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, PLAY_FROM_LIVE
+from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, PLAY_FROM_LIVE, LIVE_HEAD, ROUTE_LIVE_TAG
 
 from .api import API
 from .language import _
@@ -326,8 +326,9 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
         elif play_type == PLAY_FROM_START:
             item.resume_from = max(1, offset)
 
-    if not item.resume_from:
-        item.resume_from = 24*60*60
+    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
+        ## Need below to seek to live over multi-periods
+        item.resume_from = LIVE_HEAD
 
     return item
 
@@ -378,5 +379,5 @@ def playlist(output, **kwargs):
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}"{catchup},{name}\n{url}'.format(
                 id=channel_id, logo=row['programmingInfo']['channelLogoUrl'], name=row['title'], 
-                catchup=catchup, url=plugin.url_for(play_event, event_id=event_id, _is_live=True),
+                catchup=catchup, url=plugin.url_for(play_event, event_id=event_id, play_type=PLAY_FROM_LIVE, _is_live=True),
             ))
