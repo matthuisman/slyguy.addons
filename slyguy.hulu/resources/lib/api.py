@@ -174,6 +174,8 @@ class API(object):
         params.update(self._lat_long())
 
         data = self._session.get('https://guide.hulu.com/guide/views', params=params).json()
+        self._check_errors(data)
+
         for row in data['views']:
             if row['id'] == 'hulu:guide:all-channels':
                 return row['details']['channels']
@@ -193,6 +195,7 @@ class API(object):
         }
 
         data = self._session.post('https://guide.hulu.com/guide/listing', params=self._lat_long(), json=payload).json()
+        self._check_errors(data)
 
         epg = {}
         for row in data['channels']:
@@ -210,6 +213,8 @@ class API(object):
             }
 
             data = self._session.post('https://guide.hulu.com/guide/details', json=payload).json()
+            self._check_errors(data)
+            
             for row in data['items']:
                 if 'eab' not in row:
                     continue
@@ -217,6 +222,13 @@ class API(object):
                 details[row['eab']] = row
 
         return details
+
+    def _lat_long(self):
+        try:
+            latitude, longitude = settings.get('lat_long').strip().split(',')
+            return {'lat': '{:.7f}'.format(float(latitude)), 'long': '{:.7f}'.format(float(longitude))}
+        except:
+            return {}
 
     def device_code(self):
         self.logout()
@@ -234,13 +246,6 @@ class API(object):
 
         return data['code'], serial
 
-    def _lat_long(self):
-        try:
-            latitude, longitude = settings.get('lat_long').strip().split(',')
-            return {'lat': '{:.7f}'.format(float(latitude)), 'long': '{:.7f}'.format(float(longitude))}
-        except:
-            return {}
-
     def login_device(self, code, serial):
         payload = {
             'code': code,
@@ -257,6 +262,26 @@ class API(object):
             userdata.set('serial', serial)
             self._set_auth(data)
             return True
+
+    def login(self, email, password):
+        self.logout()
+
+        serial = self._get_serial()
+
+        payload = {
+            'user_email': email,
+            'password': password,
+            'serial_number': serial,
+            'friendly_name': 'android',
+            'device_id': '166',
+        }
+
+        data = self._session.post('https://auth.hulu.com/v2/livingroom/password/authenticate', data=payload).json()
+        self._check_errors(data)
+
+        data = data['data']
+        userdata.set('serial', serial)
+        self._set_auth(data)
 
     def profiles(self):
         self._refresh_token()
@@ -393,40 +418,20 @@ class API(object):
         self._check_errors(data)
         return data
 
-    def login(self, email, password):
-        self.logout()
-
-        serial = self._get_serial()
-
-        payload = {
-            'user_email': email,
-            'password': password,
-            'serial_number': serial,
-            'friendly_name': 'android',
-            'device_id': '166',
-        }
-
-        data = self._session.post('https://auth.hulu.com/v1/livingroom/password/authenticate', data=payload).json()
-        self._check_errors(data)
-
-        data = data['data']
-        userdata.set('serial', serial)
-        self._set_auth(data)
-
     def _check_errors(self, data):
         if not type(data) is dict:
             return
 
         if data.get('errorCode'):
-            message = ERROR_MAP.get(data['errorCode']) or data.get('message') or data.get('errorCode')
+            message = ERROR_MAP.get(data['errorCode']) or data.get('message') or data.get('error') or data.get('errorCode')
+            raise APIError(message)
+
+        if data.get('code'):
+            message = ERROR_MAP.get(data['code']) or data.get('message') or data.get('error') or data.get('code')
             raise APIError(message)
 
         if data.get('error'):
             raise APIError(data['error']['message'])
-
-        if data.get('code'):
-            message = ERROR_MAP.get(data['code']) or data.get('message') or data.get('code')
-            raise APIError(message)
 
     def _device_logout(self):
         payload = {
