@@ -1241,7 +1241,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Fix any double // in url
         url = fix_url(url)
 
-        retries = 5
+        retries = 3
         # some reason we get connection errors every so often when using a session. something to do with the socket
         for i in range(retries):
             log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
