@@ -30,7 +30,8 @@ log.debug(ssl.OPENSSL_VERSION)
 DEFAULT_HEADERS = {
     'User-Agent': DEFAULT_USERAGENT,
 }
-CIPHERS = 'TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA'
+SSL_CIPHERS = 'TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA'
+SSL_OPTIONS = ssl.OP_NO_SSLv2|ssl.OP_NO_SSLv3|ssl.OP_NO_COMPRESSION
 DNS_CACHE = dns.resolver.Cache()
 
 def json_override(func, error_msg):
@@ -62,8 +63,7 @@ def close_sessions():
         session.close()
 
 class DOHResolver(object):
-    def __init__(self, session, nameservers=None):
-        self.session = session
+    def __init__(self, nameservers=None):
         self.nameservers = nameservers or []
 
     def query(self, host):
@@ -82,13 +82,14 @@ class DOHResolver(object):
                 headers = {'accept': 'application/dns-json'}
                 params = {'name': host, 'dns': host}
                 log.debug("DOH Request: {} for {}".format(server, host))
+
                 try:
-                    data = self.session.get(server, params=params, headers=headers).json()
+                    data = requests.get(server, params=params, headers=headers).json()
                 except Exception as e:
                     log.debug(e)
                     continue
 
-                suitable = [x for x in data['Answer'] if x['type'] in (1,)]
+                suitable = [x for x in data['Answer'] if x['type'] in (1, 28)] #ipv4 or ipv6
                 ttl = min([x['TTL'] for x in suitable])
                 ips = [x['data'] for x in suitable]
                 mem_cache.set(key, ips, expires=ttl)
@@ -99,7 +100,7 @@ class DOHResolver(object):
         raise SessionError('Unable to resolve host: {} with nameservers: {}'.format(host, self.nameservers))
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=CIPHERS, ssl_options=None, proxy=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -202,8 +203,7 @@ class RawSession(requests.Session):
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
                         if entry[1].lower().startswith('http'):
-                            session = RawSession(verify=False)
-                            resolver = DOHResolver(session)
+                            resolver = DOHResolver()
                         else:
                             resolver = dns.resolver.Resolver(configure=False)
                             resolver.cache = DNS_CACHE
@@ -294,9 +294,9 @@ class RawSession(requests.Session):
         return result
 
 class Session(RawSession):
-    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, ssl_options=None):
+    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True,):
         super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
-            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ssl_options=ssl_options)
+            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key
