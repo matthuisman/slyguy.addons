@@ -86,34 +86,20 @@ def route(url=None):
 
 # @plugin.plugin_middleware()
 def plugin_middleware():
-    def decorator(func):
-        @wraps(func)
-        def decorated_function(*args, **kwargs):
-            kwargs['_path'] = xbmc.translatePath(kwargs['_path'])
-            with open(kwargs['_path'], 'rb') as f:
-                kwargs['_data'] = f.read()
-
-            remove_file(kwargs['_path'])
-
-            try:
-                data = func(*args, **kwargs)
-            except Exception as e:
-                log.exception(e)
-                data = None
-
-            folder = Folder(show_news=False)
-            folder.add_item(
-                path = quote_plus(json.dumps(data or {})),
-            )
-            return folder
-        return decorated_function
-    return lambda func: decorator(func)
+    log.debug('@plugin.plugin_middleware() is deprecated. Use @plugin.plugin_request() instead')
+    return plugin_request()
 
 # @plugin.plugin_request()
 def plugin_request():
     def decorator(func):
         @wraps(func)
         def decorated_function(*args, **kwargs):
+            if '_path' in kwargs:
+                kwargs['_path'] = xbmc.translatePath(kwargs['_path'])
+                with open(kwargs['_path'], 'rb') as f:
+                    kwargs['_data'] = f.read()
+                remove_file(kwargs['_path'])
+
             try:
                 data = func(*args, **kwargs)
             except Exception as e:

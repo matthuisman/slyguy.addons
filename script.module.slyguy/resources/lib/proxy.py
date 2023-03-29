@@ -80,10 +80,11 @@ def middleware_plugin(response, url, **kwargs):
 
     url = add_url_args(url, _path=path)
     dirs, files = run_plugin(url, wait=True)
-    if not files:
+    data = json.loads(unquote_plus(files[0]))
+
+    if not os.path.exists(real_path):
         raise Exception('No data returned from plugin')
 
-    data = json.loads(unquote_plus(files[0]))
     with open(real_path, 'rb') as f:
         response.stream.content = f.read()
 
@@ -179,12 +180,25 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def _plugin_request(self, url):
         log.debug('PLUGIN REQUEST: {}'.format(url))
-        dirs, files = run_plugin(url, wait=True)
-        if not files:
-            raise Exception('No data returned from plugin')
 
+        if self._post_data:
+            path = 'special://temp/proxy.plugin_request'
+            real_path = xbmc.translatePath(path)
+            with open(real_path, 'wb') as f:
+                f.write(self._post_data)
+
+            if ADDON_DEV:
+                shutil.copy(real_path, real_path+'.in')
+
+            url = add_url_args(url, _path=path)
+
+        dirs, files = run_plugin(url, wait=True)
         data = json.loads(unquote_plus(files[0]))
         self._headers.update(data.get('headers', {}))
+
+        if 'url' not in data:
+            raise Exception('No data returned from plugin')
+
         return data['url']
 
     def _middleware(self, url, response):
@@ -1338,7 +1352,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         self._output_response(response)
 
 class Response(object):
-    pass
+    status_code = 200
+
+    @property
+    def ok(self):
+        return self.status_code == 200
 
 class ResponseStream(object):
     def __init__(self, response):
