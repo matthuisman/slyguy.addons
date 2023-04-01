@@ -14,8 +14,10 @@ ADDON_FANART   = ADDON.getAddonInfo('fanart')
 ADDON_DEV      = bool(int(os.environ.get('SLYGUY_DEV', '0')))
 #################
 
+REPO_ADDON_ID = 'repository.slyguy'
+DEPENDENCIES_ADDON_ID = 'slyguy.dependencies'
 COMMON_ADDON_ID = 'script.module.slyguy'
-COMMON_ADDON    = xbmcaddon.Addon(COMMON_ADDON_ID)
+COMMON_ADDON = xbmcaddon.Addon(COMMON_ADDON_ID)
 
 try: KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split('.')[0])
 except: KODI_VERSION = 18
@@ -147,4 +149,4 @@ MIDDLEWARE_PLUGIN = 'plugin'
 
 DONOR_URL = 'https://d.mjh.nz/donors/{id}'
 UPDATE_TIME_LIMIT = 86400 #24 hours
-REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, 'slyguy.dependencies', 'repository.slyguy']
+REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]

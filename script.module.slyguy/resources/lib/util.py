@@ -1,3 +1,4 @@
+import os
 from time import time
 from distutils.version import LooseVersion
 
@@ -6,7 +7,8 @@ from kodi_six import xbmc
 from slyguy import settings, gui
 from slyguy.log import log
 from slyguy.session import Session
-from slyguy.util import kodi_rpc, get_addon
+from slyguy.util import kodi_rpc, get_addon, safe_copy
+from slyguy.constants import UPDATE_TIME_LIMIT, REPO_ADDON_ID, REPO_DOMAIN
 
 from .language import _
 from .constants import *
@@ -47,6 +49,7 @@ def check_updates(force=False):
 
         if LooseVersion(cur_version) < LooseVersion(new_version):
             pending_updates[addon_id] = {'name': name, 'cur': cur_version, 'new': new_version}
+
             new_update_times[addon_id] = [cur_version, _time]
             if addon_id in update_times and update_times[addon_id][0] == cur_version:
                 new_update_times[addon_id][1] = update_times[addon_id][1]
@@ -58,3 +61,21 @@ def check_updates(force=False):
     log.debug('Updating repos due to {} addon updates'.format(len(pending_updates)))
     xbmc.executebuiltin('UpdateAddonRepos')
     return pending_updates
+
+def check_repo():
+    addon = get_addon(REPO_ADDON_ID, install=True, required=True)
+    update_time = settings.getDict('_updates', {}).get(REPO_ADDON_ID)
+    if not update_time or addon.getAddonInfo('version') != update_time[0] or time() < update_time[1] + UPDATE_TIME_LIMIT:
+        return
+
+    log.info('Repo: {} requires force update'.format(REPO_ADDON_ID))
+
+    addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
+
+    session = Session()
+    session.chunked_dl('{}/.repo/{}/addon.xml'.format(REPO_DOMAIN, REPO_ADDON_ID), os.path.join(addon_path, 'addon.xml.downloading'))
+    safe_copy(os.path.join(addon_path, 'addon.xml.downloading'), os.path.join(addon_path, 'addon.xml'), del_src=True)
+    session.chunked_dl('{}/.repo/{}/icon.png'.format(REPO_DOMAIN, REPO_ADDON_ID), os.path.join(addon_path, 'icon.png.downloading'))
+    safe_copy(os.path.join(addon_path, 'icon.png.downloading'), os.path.join(addon_path, 'icon.png'), del_src=True)
+
+    xbmc.executebuiltin('UpdateLocalAddons')

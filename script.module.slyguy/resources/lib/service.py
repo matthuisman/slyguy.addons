@@ -13,7 +13,7 @@ from slyguy.util import get_system_arch
 
 from .proxy import Proxy
 from .player import Player
-from .util import check_updates
+from .util import check_updates, check_repo
 from .constants import *
 from .language import _
 
@@ -94,6 +94,9 @@ def start():
     try:
         while not monitor.abortRequested():
             try: check_updates()
+            except Exception as e: log.exception(e)
+
+            try: check_repo()
             except Exception as e: log.exception(e)
 
             if not is_donor or settings.getBool('show_news'):
