@@ -442,11 +442,11 @@ class API(object):
         }
 
         data = self._session.get('/v3.0/androidphone/dma.json', params=self._params(params)).json()
-        if not data.get('success'):
+        try:
+            return data['dmas'][0]
+        except:
             log.warning('Failed to get local CBS channel for IP address ({}). Server message: {}'.format(ip, data.get('message')))
             return None
-
-        return data['dmas'][0]
 
     def logout(self):
         userdata.delete('profile_img')
@@ -457,4 +457,3 @@ class API(object):
         userdata.delete('expires')
         mem_cache.empty()
         self.new_session(self._config)
-
