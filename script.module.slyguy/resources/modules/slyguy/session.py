@@ -36,6 +36,10 @@ SSL_CIPHERS = 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY13
 SSL_OPTIONS = ssl.OP_NO_SSLv2|ssl.OP_NO_SSLv3#|ssl.OP_CIPHER_SERVER_PREFERENCE
 DNS_CACHE = dns.resolver.Cache()
 
+# Save pointers to original functions
+orig_connection_from_pool_key = urllib3.PoolManager.connection_from_pool_key
+orig_getaddrinfo = socket.getaddrinfo
+
 def json_override(func, error_msg):
     try:
         return func()
@@ -67,6 +71,7 @@ def close_sessions():
 class DOHResolver(object):
     def __init__(self, nameservers=None):
         self.nameservers = nameservers or []
+        self._session = RawSession()
 
     def query(self, host):
         class DNSResultWrapper(object):
@@ -82,11 +87,23 @@ class DOHResolver(object):
 
             if not ips:
                 headers = {'accept': 'application/dns-json'}
+
+                server_host = urlparse(server).netloc.lower()
+                info = orig_getaddrinfo(server_host, 443 if server.lower().startswith('https') else 80)
+                families = [x[0] for x in info]
+
                 params = {'name': host, 'dns': host}
-                log.debug("DOH Request: {} for {}".format(server, host))
+
+                # prefer IPV4
+                if socket.AF_INET in families or socket.AF_INET6 not in families:
+                    params['type'] = 'A'
+                else:
+                    params['type'] = 'AAAA'
+
+                log.debug("DOH Request: {} for {} type {}".format(server, host, params['type']))
 
                 try:
-                    data = requests.get(server, params=params, headers=headers).json()
+                    data = self._session.get(server, params=params, headers=headers).json()
                 except Exception as e:
                     log.debug(e)
                     continue
@@ -233,9 +250,15 @@ class RawSession(requests.Session):
                 log.debug("DNS Rewrite: {} -> {}".format(orig_host, host))
 
             elif session_data['resolver'] and session_data['resolver'][0] == host:
-                host = session_data['resolver'][1].query(host)[0].to_text()
-                log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, session_data['resolver'][1].nameservers[0], host))
+                try:
+                    host = session_data['resolver'][1].query(host)[0].to_text()
+                    log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, session_data['resolver'][1].nameservers[0], host))
+                except Exception as e:
+                    log.exception(e)
+                    log.error('Failed to resolve. Falling back to dns lookup')
+                    host = orig_host
 
+            # prefer ipv4
             try:
                 addresses = orig_getaddrinfo(host, port, socket.AF_INET, _type, proto, flags)
             except socket.gaierror:
@@ -270,16 +293,13 @@ class RawSession(requests.Session):
         if 'timeout' not in kwargs:
             kwargs['timeout'] = self._timeout
 
-        # Save pointers to original functions
-        orig_getaddrinfo = socket.getaddrinfo
-        orig_connection_from_pool_key = urllib3.PoolManager.connection_from_pool_key
+        prev_getaddrinfo = socket.getaddrinfo
+        prev_connection_from_pool = urllib3.PoolManager.connection_from_pool_key
 
+        # Override functions
+        socket.getaddrinfo = getaddrinfo
+        urllib3.PoolManager.connection_from_pool_key = connection_from_pool_key
         try:
-            if session_data['rewrite'] or session_data['resolver']:
-                # Override functions
-                socket.getaddrinfo = getaddrinfo
-                urllib3.PoolManager.connection_from_pool_key = connection_from_pool_key
-
             # Do request
             result = super(RawSession, self).request(method, session_data['url'], **kwargs)
         except requests.exceptions.ConnectionError as e:
@@ -289,9 +309,9 @@ class RawSession(requests.Session):
             else:
                 raise SessionError(_(_.CONNECTION_ERROR, host=urlparse(session_data['url']).netloc.lower()))
         finally:
-            # Revert functions to original
-            socket.getaddrinfo = orig_getaddrinfo
-            urllib3.PoolManager.connection_from_pool_key = orig_connection_from_pool_key
+            # Revert functions to previous
+            socket.getaddrinfo = prev_getaddrinfo
+            urllib3.PoolManager.connection_from_pool_key = prev_connection_from_pool
 
         return result
 
