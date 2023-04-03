@@ -388,6 +388,9 @@ def _parse_contents(rows):
     return items
 
 def _parse_collection(asset):
+    # ignore collections for now
+    return None
+
     return plugin.Item(
         label = asset['title'],
         art  = {
@@ -466,7 +469,7 @@ def _parse_video(asset):
         play_type = PLAY_FROM_START
         item.info['mediatype'] = 'video'
 
-    elif asset['playbackType'] == 'LIVE' and click['isStreaming']:
+    elif asset['playbackType'] == 'LIVE' and asset['isStreaming']:
         is_live = True
 
         item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
