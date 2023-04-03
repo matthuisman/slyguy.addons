@@ -336,6 +336,9 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
 @plugin.login_required()
 def play_vod(vod_id, **kwargs):
     data, vod = api.play_vod(vod_id)
+    
+    print(data)
+    print(vod)
 
     headers = HEADERS
     headers.update({

@@ -68,8 +68,8 @@ class API(object):
         self._set_authentication()
         return True
 
-    def _refresh_token(self):
-        if userdata.get('token_expires', 0) > time.time():
+    def _refresh_token(self, force=False):
+        if not force and userdata.get('token_expires', 0) > time.time():
             return
 
         log.debug('Refreshing token')
@@ -79,6 +79,7 @@ class API(object):
         }
 
         data = self._session.post('/v2/token/refresh', json=payload).json()
+        self._check_errors(data)
         self._parse_auth(data)
 
     def page(self, content_id, last_seen=None):
@@ -97,6 +98,7 @@ class API(object):
         }
 
         data = self._session.get('/v4/content/{}'.format(content_id), params=params).json()
+        self._check_errors(data)
         if data['paging']['moreDataAvailable'] and data['paging']['lastSeen']:
             next_page = self.page(content_id, last_seen=data['paging']['lastSeen'])
             data['buckets'].extend(next_page['buckets'])
@@ -113,7 +115,7 @@ class API(object):
             'lastSeen': last_seen,
         }
         data = self._session.get('/v4/content/{}/bucket/{}'.format(content_id, bucket_id), params=params).json()
-
+        self._check_errors(data)
         return data
 
     def playlist(self, playlist_id, page=1):
@@ -125,6 +127,7 @@ class API(object):
             'displayGeoblocked': 'SHOW',
         }
         data = self._session.get('/v2/vod/playlist/{}'.format(playlist_id), params=params).json()
+        self._check_errors(data)
         if data['videos']['totalPages'] > page:
             next_page = self.playlist(playlist_id, page+1)
             data['videos']['vods'].extend(next_page['videos']['vods'])
@@ -152,12 +155,20 @@ class API(object):
             'params': urlencode(payload_params),
         }
 
-        return self._session.post(SEARCH_URL, params=query_params, json=payload).json()
+        data = self._session.post(SEARCH_URL, params=query_params, json=payload).json()
+        self._check_errors(data)
+        return data
+
+    def _check_errors(self, data):
+        if 'statusCode' in data and data['statusCode'] != 200:
+            error = data.get('message') or data.get('statusText')
+            raise APIError(error)
 
     def channels(self):
         self._refresh_token()
-        params = {'rpp': 25}
+        params = {'rpp': 15}
         data = self._session.get('/v2/event/live', params=params).json()
+        self._check_errors(data)
         return data['events']
 
     def epg(self, channel_ids, start, stop):
@@ -171,20 +182,23 @@ class API(object):
         }
 
         data = self._session.get('/v4/epg/content/programmes', params=params).json()
+        self._check_errors(data)
         return data['channels']
 
     def play_event(self, event_id):
-        self._refresh_token()
+        self._refresh_token(force=True)
         event_data = self._session.get('/v2/event/{}'.format(event_id)).json()
         stream_data = self._session.get('/v2/stream/event/{}'.format(event_id)).json()
         playback_data = self._session.get(stream_data['playerUrlCallback']).json()
+        self._check_errors(playback_data)
         return playback_data, event_data
 
     def play_vod(self, vod_id):
-        self._refresh_token()
+        self._refresh_token(force=True)
         vod_data = self._session.get('/v2/vod/{}'.format(vod_id)).json()
         stream_data = self._session.get('/v3/stream/vod/{}'.format(vod_id)).json()
         playback_data = self._session.get(stream_data['playerUrlCallback']).json()
+        self._check_errors(playback_data)
         return playback_data, vod_data
 
     def logout(self):
