@@ -834,6 +834,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             base_url_parents.append(elem.parentNode)
         ################
 
+        ## Convert Location
+        for elem in root.getElementsByTagName('Location'):
+            url = elem.firstChild.nodeValue
+
+            if url.startswith('/'):
+                url = urljoin(response.url, url)
+
+            if '://' in url:
+                elem.firstChild.nodeValue = self.proxy_path + url
+        ################
+
         ## Convert to proxy paths
         elems = root.getElementsByTagName('SegmentTemplate')
         elems.extend(root.getElementsByTagName('SegmentURL'))
