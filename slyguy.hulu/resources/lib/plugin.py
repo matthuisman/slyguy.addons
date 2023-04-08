@@ -299,13 +299,14 @@ def _parse_view(row, my_stuff, sync, state):
         item.info.pop('duration')
         item.path = _get_play_path(row['personalization']['eab'], play_type=None, _is_live=True)
 
-        item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
-            _get_play_path(row['personalization']['eab'], play_type=PLAY_FROM_LIVE, _is_live=True)
-        )))
+        if settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK) != PLAY_FROM_ASK:
+            item.context.append((_.PLAY_FROM_BEGINNING, "PlayMedia({})".format(
+                _get_play_path(row['personalization']['eab'], play_type=PLAY_FROM_START, _is_live=True)
+            )))
 
-        item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
-            _get_play_path(row['personalization']['eab'], play_type=PLAY_FROM_START, _is_live=True)
-        )))
+            item.context.append((_.PLAY_FROM_LIVE_CONTEXT, "PlayMedia({})".format(
+                _get_play_path(row['personalization']['eab'], play_type=PLAY_FROM_LIVE, _is_live=True)
+            )))
 
     if my_stuff:
         item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
@@ -423,7 +424,7 @@ def _image(url, _type=None):
 
 @plugin.route()
 def live(**kwargs):
-    folder = plugin.Folder(_.LIVE)
+    folder = plugin.Folder(_.LIVE_CHANNELS)
 
     now = arrow.now()
     channels = api.channels()
@@ -595,6 +596,7 @@ def _play(id, play_type, **kwargs):
         if play_type is None:
             play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
 
+        play_type = int(play_type)
         if play_type == PLAY_FROM_START:
             item.resume_from = 1
         elif play_type == PLAY_FROM_ASK:
@@ -605,6 +607,8 @@ def _play(id, play_type, **kwargs):
         if not item.resume_from:
             ## Need below to seek to live over multi-periods
             item.resume_from = LIVE_HEAD
+
+        #item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     if 'transcripts_urls' in data:
         subs = {}
