@@ -4,7 +4,7 @@ class Language(BaseLanguage):
     DEVICE_ID        = 30000
     KIDS_PROFILE     = 30001
     ENTER_PIN        = 30002
-    LIVE             = 30003
+    LIVE_CHANNELS    = 30003
     LAT_LONG         = 30004
 
     H265             = 30006
@@ -39,5 +39,6 @@ class Language(BaseLanguage):
     HIDE_LIVE        = 30035
     ENABLE_HDR       = 30036
     DOLBY_VISION     = 30037
+    LIVE             = 30038
 
 _ = Language()

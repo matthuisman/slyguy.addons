@@ -6,11 +6,11 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32139]">
-        <setting label="30012" type="bool" id="my_stuff" default="true"/>
+        <setting label="30012" type="bool" id="hide_my_stuff" default="false"/>
         <setting label="30023" type="bool" id="hide_locked" default="true"/>
         <setting label="30026" type="bool" id="hide_upcoming" default="false"/>
         <setting label="30034" type="bool" id="hide_kids" default="false"/>
-        <setting label="30035" type="bool" id="hide_live" default="false"/>
+        <setting label="30035" type="bool" id="hide_live_channels" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
     </category>

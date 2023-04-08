@@ -14,7 +14,7 @@ msgid "Enter PIN"
 msgstr ""
 
 msgctxt "#30003"
-msgid "Live"
+msgid "Live Channels"
 msgstr ""
 
 msgctxt "#30004"
@@ -47,7 +47,7 @@ msgid "My Stuff"
 msgstr ""
 
 msgctxt "#30012"
-msgid "Hulu My Stuff"
+msgid "Hide My Stuff"
 msgstr ""
 
 msgctxt "#30013"
@@ -140,7 +140,7 @@ msgid "Hide Kids"
 msgstr ""
 
 msgctxt "#30035"
-msgid "Hide Live"
+msgid "Hide Live Channels"
 msgstr ""
 
 msgctxt "#30036"
@@ -149,6 +149,10 @@ msgstr ""
 
 msgctxt "#30037"
 msgid "Dolby Vision"
+msgstr ""
+
+msgctxt "#30038"
+msgid "{label} [COLOR orange][B][LIVE][/B][/COLOR]"
 msgstr ""
 
 ## COMMON SETTINGS ##

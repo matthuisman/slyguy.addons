@@ -10,7 +10,7 @@ from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.log import log
-from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, MIDDLEWARE_PLUGIN
+from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, MIDDLEWARE_PLUGIN, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK
 
 from .api import API
 from .language import _
@@ -33,8 +33,8 @@ def home(**kwargs):
         if not userdata.get('is_kids', False):
             folder.add_item(label=_(_.HOME, _bold=True), path=_hub_path('home'))
 
-            if not settings.getBool('hide_live', False):
-                folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
+            if not settings.getBool('hide_live_channels', False):
+                folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
 
             folder.add_item(label=_(_.TV, _bold=True), path=_hub_path('tv'))
             folder.add_item(label=_(_.MOVIES, _bold=True), path=_hub_path('movies'))
@@ -44,8 +44,8 @@ def home(**kwargs):
         if not settings.getBool('hide_kids', False) or userdata.get('is_kids', False):
             folder.add_item(label=_(_.KIDS, _bold=True), path=_hub_path('kids'))
 
-        if settings.getBool('my_stuff', False):
-            folder.add_item(label=_(_.MY_STUFF, _bold=True), path=_hub_path('watch-later'))
+        if not settings.getBool('hide_my_stuff', False):
+            folder.add_item(label=_(_.MY_STUFF, _bold=True), path=_hub_path('watch-later', view=0))
 
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
@@ -61,23 +61,19 @@ def home(**kwargs):
 
     return folder
 
-def _hub_path(slug):
+def _hub_path(slug, view=1):
     if slug.lower().startswith('https'):
         slug = '/'.join(slug.split('?')[0].split('/')[6:])
-    return plugin.url_for(hub, slug=slug)
+    return plugin.url_for(hub, slug=slug, view=view)
 
 @plugin.route()
-def hub(slug, page=1, **kwargs):
-    page = int(page)
-    data = api.hub(slug, page=page)
+@plugin.pagination()
+def hub(slug, view=1, page=1, **kwargs):
+    data = api.hub(slug, page=int(page), view=bool(int(view)))
     folder = plugin.Folder(data.get('name'))
 
     if 'components' in data:
         for row in data['components']:
-            ## TODO
-            if 'live' in row['name'].lower() or row['name'] in ('Upcoming'):
-                continue
-
             if row['personalization']['bowie_context'] in ('recordings'):
                 continue
 
@@ -87,21 +83,14 @@ def hub(slug, page=1, **kwargs):
 
                 folder.add_item(
                     label = row['name'],
-                    path = _hub_path(row['href']),
+                    path = _hub_path(row['href'], view=view),
                 )
 
     elif 'items' in data:
         items = _process_rows(data['items'])
         folder.add_items(items)
 
-    if 'pagination' in data and data['pagination'].get('next'):
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(hub, slug=slug, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, 'pagination' in data and data['pagination'].get('next')
 
 def _process_rows(rows, slug=None):
     my_stuff = settings.getBool('my_stuff', False)
@@ -158,13 +147,12 @@ def _process_rows(rows, slug=None):
         if row['upcoming'] and hide_upcoming:
             continue
 
-        ## TODO
-        if not row['upcoming'] and row['bundle'].get('bundle_type') == 'LIVE':
-            continue
-
         if row['_type'] == 'view':
             item = _parse_view(row, my_stuff, sync, state)
             items.append(item)
+            continue
+
+        if not row['upcoming'] and row['bundle'].get('bundle_type') == 'LIVE':
             continue
 
         label = row['name']
@@ -241,7 +229,7 @@ def _process_rows(rows, slug=None):
 
     return items
 
-## ONLY USED IN SEARCH RESULTS
+## USED IN SEARCH RESULTS & HUBS
 def _parse_view(row, my_stuff, sync, state):
     metrics = row['metrics_info']
     entity = row['entity_metadata']
@@ -261,6 +249,8 @@ def _parse_view(row, my_stuff, sync, state):
         label = _(_.LOCKED, label=label)
     elif row['upcoming']:
         label = _(_.UPCOMING, label=label)
+    elif bundle.get('bundle_type') == 'LIVE':
+        label = _(_.LIVE, label=label)
 
     item = plugin.Item(
         label = label,
@@ -291,8 +281,31 @@ def _parse_view(row, my_stuff, sync, state):
         item.playable = True
         item.path = _get_play_path(row['personalization']['eab'])
 
+    elif metrics['target_type'] in ('episode', 'sports_episode'):
+        item.info.update({
+            'season': int(row.get('season', 0)),
+            'episode': int(row.get('number', 0)),
+            'tvshowtitle': row.get('series_name'),
+            'mediatype': 'episode',
+        })
+        item.playable = True
+        item.path = _get_play_path(row['personalization']['eab'])
+        my_stuff = False
+
     else:
         return None
+
+    if not row['upcoming'] and bundle.get('bundle_type') == 'LIVE':
+        item.info.pop('duration')
+        item.path = _get_play_path(row['personalization']['eab'], play_type=None, _is_live=True)
+
+        item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
+            _get_play_path(row['personalization']['eab'], play_type=PLAY_FROM_LIVE, _is_live=True)
+        )))
+
+        item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
+            _get_play_path(row['personalization']['eab'], play_type=PLAY_FROM_START, _is_live=True)
+        )))
 
     if my_stuff:
         item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
@@ -547,14 +560,14 @@ def play_channel(channel_id, **kwargs):
     if not epg_data.get(channel_id, []) or epg_data[channel_id][0].get('availabilityState') != 'available':
         raise PluginError(_.NO_LISTINGS)
 
-    return _play(epg_data[channel_id][0]['eab'], **kwargs)
+    return _play(epg_data[channel_id][0]['eab'], play_type=PLAY_FROM_LIVE, **kwargs)
 
 @plugin.route()
 @plugin.login_required()
-def play(id, **kwargs):
-    return _play(id, **kwargs)
+def play(id, play_type=None, **kwargs):
+    return _play(id, play_type, **kwargs)
 
-def _play(id, **kwargs):
+def _play(id, play_type, **kwargs):
     entities = []
     if '::' not in id or id.endswith('::NULL'):
         result = api.deeplink(id.replace('EAB::', '').split(':')[0])
@@ -579,7 +592,19 @@ def _play(id, **kwargs):
     )
 
     if ROUTE_LIVE_TAG in kwargs:
-        item.resume_from = LIVE_HEAD
+        if play_type is None:
+            play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+
+        if play_type == PLAY_FROM_START:
+            item.resume_from = 1
+        elif play_type == PLAY_FROM_ASK:
+            item.resume_from = plugin.live_or_start()
+            if item.resume_from == -1:
+                return
+
+        if not item.resume_from:
+            ## Need below to seek to live over multi-periods
+            item.resume_from = LIVE_HEAD
 
     if 'transcripts_urls' in data:
         subs = {}

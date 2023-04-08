@@ -108,7 +108,7 @@ class API(object):
     def episodes(self, id, season, **kwargs):
         return self.hub('series/{}/season/{}'.format(id, season), limit=999, **kwargs)
 
-    def hub(self, slug, limit=100, page=1):
+    def hub(self, slug, limit=100, page=1, view=False):
         self._refresh_token()
 
         params = {
@@ -120,7 +120,8 @@ class API(object):
         }
         params.update(self._lat_long())
 
-        data = self._session.get('https://discover.hulu.com/content/v5/hubs/{}'.format(slug), params=params).json()
+        endpoint = 'view_hubs' if view else 'hubs'
+        data = self._session.get('https://discover.hulu.com/content/v5/{}/{}'.format(endpoint, slug), params=params).json()
         self._check_errors(data)
         return data
 
