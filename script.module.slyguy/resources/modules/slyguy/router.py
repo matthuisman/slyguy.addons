@@ -38,6 +38,21 @@ def add_url_args(url, **kwargs):
 
 # @router.parse_url('?_=_settings')
 def parse_url(url):
+    
+    # <-- Enable global path translation for bookmarks (plugin://plugin.id/series/bookmark['label'] -> bookmark['path']
+    from . import bookmarks
+    reqpath = sys.argv[0].replace('plugin://','').split('/') # 0 addonid, 1 path (series|movies), 2 bookmarkname
+    if len(reqpath)>=3:
+        if reqpath[1].lower()=='series':
+            shows=bookmarks.get()
+            for show in shows:
+                if show['folder']==0:
+                    continue
+                if show['label']==reqpath[2]:
+                    url = show['path'].replace('plugin://'+reqpath[0]+'/','')
+                    break
+    # -->
+    
     if url.startswith('?'):
         params = dict(parse_qsl(url.lstrip('?'), keep_blank_values=True))
         for key in params:
