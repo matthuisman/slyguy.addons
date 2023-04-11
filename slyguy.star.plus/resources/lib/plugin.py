@@ -69,12 +69,32 @@ def _email_password():
         return
 
     userdata.set('username', email)
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
+    token = api.register_device()
+    next_step = api.check_email(email, token)
 
-    api.login(email, password)
-    return True
+    if next_step.lower() == 'register':
+        raise PluginError(_.EMAIL_NOT_FOUND)
+
+    elif next_step.lower() == 'otp':
+        api.request_otp(email, token)
+
+        while True:
+            otp = gui.input(_(_.OTP_INPUT, email=email)).strip()
+            if not otp:
+                return
+
+            error = api.login_otp(email, otp, token)
+            if not error:
+                return True
+
+            gui.error(error)
+    else:
+        password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+        if not password:
+            return
+
+        api.login(email, password, token)
+        return True
 
 @plugin.route()
 def hubs(**kwargs):

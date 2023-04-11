@@ -70,7 +70,7 @@ class API(object):
         refresh_token = data.get('refreshToken') or data['refresh_token']
         userdata.set('refresh_token', refresh_token)
 
-    def _register_device(self):
+    def register_device(self):
         self.logout()
 
         payload = {
@@ -94,14 +94,26 @@ class API(object):
         self._check_errors(data)
         return data['extensions']['sdk']['token']['accessToken']
 
-    def login(self, username, password):
-        token = self._register_device()
+    def check_email(self, email, token):
+        payload = {
+            'operationName': 'Check',
+            'variables': {
+                'email': email,
+            },
+            'query': queries.CHECK_EMAIL,
+        }
 
+        endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
+        data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
+        self._check_errors(data)
+        return data['data']['check']['operations'][0]
+
+    def login(self, email, password, token):
         payload = {
             'operationName': 'loginTv',
             'variables': {
                 'input': {
-                    'email': username,
+                    'email': email,
                     'password': password,
                 },
             },
@@ -113,8 +125,61 @@ class API(object):
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk']['token'])
 
+    def request_otp(self, email, token):
+        payload = {
+            'operationName': 'requestOtp',
+            'variables': {
+                'input': {
+                    'email': email,
+                    'reason': 'Login',
+                },
+            },
+            'query': queries.REQUESET_OTP,
+        }
+
+        endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
+        data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
+        self._check_errors(data)
+        return data['data']['requestOtp']['accepted']
+
+    def login_otp(self, email, passcode, token):
+        payload = {
+            'operationName': 'authenticateWithOtp',
+            'variables': {
+                'input': {
+                    'email': email,
+                    'passcode': passcode,
+                },
+            },
+            'query': queries.LOGIN_OTP,
+        }
+
+        endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
+        data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
+        error = self._check_errors(data, raise_on_error=False)
+        if error:
+            return error
+
+        self._login_action_grant(data['data']['authenticateWithOtp']['actionGrant'], token)
+
+    def _login_action_grant(self, action_grant, token):
+        payload = {
+            'operationName': 'loginWithActionGrant',
+            'variables': {
+                'input': {
+                    'actionGrant': action_grant,
+                },
+            },
+            'query': queries.LOGIN_ACTION_GRANT,
+        }
+
+        endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
+        data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
+        self._check_errors(data)
+        self._set_auth(data['extensions']['sdk']['token'])
+
     # def device_code(self):
-    #     token = self._register_device()
+    #     token = self.register_device()
 
     #     payload = {
     #         'variables': {},
@@ -124,10 +189,11 @@ class API(object):
     #     endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
     #     data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
 
-    def _check_errors(self, data, error=_.API_ERROR):
+    def _check_errors(self, data, error=_.API_ERROR, raise_on_error=True):
         if not type(data) is dict:
             return
 
+        error_msg = None
         if data.get('errors'):
             if 'extensions' in data['errors'][0]:
                 code = data['errors'][0]['extensions'].get('code')
@@ -135,14 +201,19 @@ class API(object):
                 code = data['errors'][0].get('code')
 
             error_msg = ERROR_MAP.get(code) or data['errors'][0].get('message') or data['errors'][0].get('description') or code
-            raise APIError(_(error, msg=error_msg))
+            error_msg = _(error, msg=error_msg)
 
         elif data.get('error'):
             error_msg = ERROR_MAP.get(data.get('error_code')) or data.get('error_description') or data.get('error_code')
-            raise APIError(_(error, msg=error_msg))
+            error_msg = _(error, msg=error_msg)
 
         elif data.get('status') == 400:
-            raise APIError(_(error, msg=data.get('message')))
+            error_msg = _(error, msg=data.get('message'))
+
+        if error_msg and raise_on_error:
+            raise APIError(error_msg)
+
+        return error_msg
 
     def _json_call(self, endpoint):
         self._set_token()

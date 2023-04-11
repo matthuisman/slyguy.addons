@@ -35,6 +35,8 @@ class Language(BaseLanguage):
     LIVE                     = 30032
     REAIR                    = 30033
     JUST_ENDED               = 30034
+    EMAIL_NOT_FOUND          = 30035
+    OTP_INPUT                = 30036
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
