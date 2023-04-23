@@ -177,7 +177,7 @@ def mpd_request(url, _data, _path, **kwargs):
         '''
         if settings.getBool('h265', True):
             to_add += '<Representation id="10" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation id="11" width="1280".*?>)', to_add, _data, 1)
+        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
 
     ## OS2 HACK
     elif '/OptusSport2/' in url:
@@ -186,7 +186,7 @@ def mpd_request(url, _data, _path, **kwargs):
         '''
         if settings.getBool('h265', True):
             to_add += '<Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation id="13" width="1280".*?>)', to_add, _data, 1)
+        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
 
     ## OS11 Premier League HACK
     elif '/OptusSport11/' in url:
@@ -196,7 +196,7 @@ def mpd_request(url, _data, _path, **kwargs):
         '''
         if settings.getBool('h265', True):
            to_add += '<Representation id="7" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation id="11" width="1280".*?>)', to_add, _data, 1)
+        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
 
     ## OS12 Laliga HACK
     elif '/OptusSport12/' in url:
@@ -206,7 +206,7 @@ def mpd_request(url, _data, _path, **kwargs):
         '''
         if settings.getBool('h265', True):
            to_add += '<Representation id="11" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation id="12" width="1280".*?>)', to_add, _data, 1)
+        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
 
     with open(_path, 'wb') as f:
         f.write(_data.encode('utf8'))
