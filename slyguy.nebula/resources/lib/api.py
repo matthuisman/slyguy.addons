@@ -215,19 +215,7 @@ class API(object):
 
     def play(self, slug):
         self._refresh_token()
-        
-        data = self._session.get('/video/{slug}/stream/'.format(slug=slug)).json()
-        resp = self._session.head(data['iframe'])
-        url = resp.headers.get('Location').replace('.html', '')
-
-        data = Session(headers=HEADERS).get(url).json()
-        if 'response' not in data:
-            raise APIError('{}'.format(data.get('message', 'unknown error getting playdata')))
-
-        play_url = data['response']['body']['outputs'][0]['url']
-        subtitles = data['response']['body'].get('subtitles', [])
-
-        return play_url, subtitles
+        return self._session.get('/video/{slug}/stream/'.format(slug=slug)).json()
 
     def play_podcast(self, channel, episode):
         self._refresh_token()

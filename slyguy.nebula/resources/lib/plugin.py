@@ -399,15 +399,16 @@ def login(**kwargs):
 @plugin.route()
 @plugin.login_required()
 def play(slug, **kwargs):
-    url, subtitles = api.play(slug)
+    data = api.play(slug)
 
     item = plugin.Item(
-        path = url,
+        path = data['manifest'],
         inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG) if inputstream.require_version('20.3.2') else None,
     )
 
-    for idx, row in enumerate(subtitles):
-        item.subtitles.append([row['file'], row['label']])
+    ## subs seem to be included in manifest now
+    # for idx, row in enumerate(data.get('subtitles', [])):
+    #     item.subtitles.append([row['url'], row['language_code']])
 
     return item
 
