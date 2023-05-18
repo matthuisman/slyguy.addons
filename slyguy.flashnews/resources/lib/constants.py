@@ -9,8 +9,6 @@ EPG_URL = 'https://i.mjh.nz/Flash/epg.xml.gz'
 CLIENT_ID = 'C6eoEMBGpDRnuDaTqRt6KJLdxXvXUuaG'
 UDID = 'bc1e95db-723d-48fc-8012-effa322bdbc8'
 
-LINEAR_CHANNEL_PANEL_ID = '8w2RREoC1U'
-
 FORMAT_HLS_TS = 'hls-ts'
 FORMAT_HLS_TS_SSAI = 'ssai-hls-ts'
 FORMAT_DASH = 'dash'

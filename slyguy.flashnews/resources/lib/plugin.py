@@ -223,8 +223,8 @@ def _set_profile(profile, notify=True):
 @plugin.route()
 @plugin.login_required()
 def play_channel(channel_id, **kwargs):
-    data = api.panel(panel_id=LINEAR_CHANNEL_PANEL_ID, channel_id=channel_id)
-    asset_id = data['contents'][0]['data']['clickthrough']['assetPlay']
+    data = api.landing('channels', params={'channel': channel_id})
+    asset_id = data['panels'][0]['contents'][0]['data']['clickthrough']['assetPlay']
     return _play(asset_id, **kwargs)
 
 def _play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
