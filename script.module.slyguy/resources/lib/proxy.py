@@ -192,6 +192,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             url = add_url_args(url, _path=path)
 
+        url = add_url_args(url, _headers=json.dumps(self._headers))
+
         dirs, files = run_plugin(url, wait=True)
         data = json.loads(unquote_plus(files[0]))
         self._headers.update(data.get('headers', {}))
@@ -1344,15 +1346,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self, retry=True):
         url = self._get_url('POST')
-
-        if url == self._session.get('license_url') and self._session.get('single_license') and self._session.get('license_init'):
-            self.log.debug('Reusing previous license data')
-            response = Response()
-            response.stream = ResponseStream(response)
-            response.stream.content = self._session['license_init']
-            self._output_response(response)
-            return
-
         response = self._proxy_request('POST', url)
 
         if url == self._session.get('license_url'):
@@ -1376,7 +1369,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         self._output_response(response)
 
 class Response(object):
-    status_code = 200
+    def __init__(self):
+        self.headers = {}
+        self.status_code = 200
+        self.content = b''
 
     @property
     def ok(self):

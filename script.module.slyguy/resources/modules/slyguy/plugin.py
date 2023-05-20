@@ -100,6 +100,9 @@ def plugin_request():
                     kwargs['_data'] = f.read()
                 remove_file(kwargs['_path'])
 
+            if '_headers' in kwargs:
+                kwargs['_headers'] = json.loads(kwargs['_headers'])
+
             try:
                 data = func(*args, **kwargs)
             except Exception as e:
