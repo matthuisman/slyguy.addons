@@ -48,34 +48,15 @@ class SSLAdapter(requests.adapters.HTTPAdapter):
     def __init__(self, ciphers=None, options=None):
         self._ciphers = ciphers
         self._options = options
-        self.socket_info = None
         super(SSLAdapter, self).__init__()
 
-    def wrap_socket(self, f, *args, **kwargs):
-        ssl_obj = f(*args, **kwargs)
-        self.socket_info = {
-            'cipher': ssl_obj.cipher()[0],
-            'version': ssl_obj.version(),
-            'protocol': ssl_obj.selected_alpn_protocol(),
-            'compression': ssl_obj.compression(),
-       #     'peercert': ssl_obj.getpeercert(),
-       #     'shared_ciphers': [x[0] for x in ssl_obj.shared_ciphers()],
-        }
-        return ssl_obj
-
     def init_poolmanager(self, *args, **kwargs):
-        self.socket_info = None
         context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self._ciphers, options=self._options)
-        context.orig_wrap_socket = context.wrap_socket
-        context.wrap_socket = lambda *args,**kwargs: self.wrap_socket(context.orig_wrap_socket, *args, **kwargs)
         kwargs['ssl_context'] = context
         return super(SSLAdapter, self).init_poolmanager(*args, **kwargs)
 
     def proxy_manager_for(self, *args, **kwargs):
-        self.socket_info = None
         context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self._ciphers, options=self._options)
-        context.orig_wrap_socket = context.wrap_socket
-        context.wrap_socket = lambda *args,**kwargs: self.wrap_socket(context.orig_wrap_socket, *args, **kwargs)
         kwargs['ssl_context'] = context
         return super(SSLAdapter, self).proxy_manager_for(*args, **kwargs)
 
@@ -281,6 +262,17 @@ class RawSession(requests.Session):
 
             return addresses
 
+        def _ssl_wrap_socket_impl(*args, **kwargs):
+            ssl_obj = prev_ssl_wrap_socket_impl(*args, **kwargs)
+            log.debug('SSL Cipher: {} - {}'.format(urlparse(session_data['url']).netloc.lower(), ssl_obj.cipher()))
+            ## python 3.7 only:
+            # 'version': ssl_obj.version(),
+            # 'compression': ssl_obj.compression(),
+            # 'peercert': ssl_obj.getpeercert(),
+            # 'protocol': ssl_obj.selected_alpn_protocol(),
+            # 'shared_ciphers': [x[0] for x in ssl_obj.shared_ciphers()],
+            return ssl_obj
+
         if session_data['url'] != url:
             log.debug("URL Changed: {}".format(session_data['url']))
 
@@ -310,10 +302,12 @@ class RawSession(requests.Session):
 
         prev_getaddrinfo = socket.getaddrinfo
         prev_connection_from_pool = urllib3.PoolManager.connection_from_pool_key
+        prev_ssl_wrap_socket_impl = urllib3.util.ssl_._ssl_wrap_socket_impl
 
         # Override functions
         socket.getaddrinfo = getaddrinfo
         urllib3.PoolManager.connection_from_pool_key = connection_from_pool_key
+        urllib3.util.ssl_._ssl_wrap_socket_impl = _ssl_wrap_socket_impl
         try:
             # Do request
             result = super(RawSession, self).request(method, session_data['url'], **kwargs)
@@ -327,8 +321,7 @@ class RawSession(requests.Session):
             # Revert functions to previous
             socket.getaddrinfo = prev_getaddrinfo
             urllib3.PoolManager.connection_from_pool_key = prev_connection_from_pool
-            if session_data['url'].lower().startswith('https://'):
-                log.debug(self._ssl_adapter.socket_info)
+            urllib3.util.ssl_._ssl_wrap_socket_impl = prev_ssl_wrap_socket_impl
 
         return result
 
