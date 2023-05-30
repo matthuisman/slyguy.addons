@@ -29,7 +29,7 @@ def get_view_id():
 
 def exception(heading=None):
     if not heading:
-        heading = _(_.PLUGIN_EXCEPTION, addon=ADDON_NAME, version=ADDON_VERSION)
+        heading = _(_.PLUGIN_EXCEPTION, addon=ADDON_NAME, version=ADDON_VERSION, common_version=COMMON_ADDON.getAddonInfo('version'))
 
     exc_type, exc_value, exc_traceback = sys.exc_info()
 

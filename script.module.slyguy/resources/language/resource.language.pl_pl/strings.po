@@ -316,8 +316,8 @@ msgid "No Results"
 msgstr "Brak wyników"
 
 msgctxt "#32032"
-msgid "{addon} ({version}) - Unexpected Error"
-msgstr "{addon} ({version}) - Niespodziewany błąd"
+msgid "{addon} ({version}/{common_version}) - Unexpected Error"
+msgstr "{addon} ({version}/{common_version}) - Niespodziewany błąd"
 
 msgctxt "#32033"
 msgid "Failed to download required file: {filename}"

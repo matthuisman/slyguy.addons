@@ -314,7 +314,7 @@ msgid "No Results"
 msgstr ""
 
 msgctxt "#32032"
-msgid "{addon} ({version}) - Unexpected Error"
+msgid "{addon} ({version}/{common_version}) - Unexpected Error"
 msgstr ""
 
 msgctxt "#32033"
