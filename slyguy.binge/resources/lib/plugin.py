@@ -536,9 +536,9 @@ def _set_profile(profile, notify=True):
 
 @plugin.route()
 @plugin.plugin_request()
-def license_request(**kwargs):
-    url, headers = api.license_request()
-    return {'url': url, 'headers': headers}
+def license_request(license_url=None, **kwargs):
+    headers = api.license_headers()
+    return {'url': license_url or LICENSE_URL, 'headers': headers}
 
 @plugin.route()
 @plugin.login_required()
@@ -611,7 +611,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_HEVC):
         item.inputstream = inputstream.Widevine(
-            license_key=plugin.url_for(license_request),
+            license_key=plugin.url_for(license_request, license_url=stream['drm']['uri'] if 'drm' in stream else None),
         )
 
     if start_from and not ROUTE_RESUME_TAG in kwargs:

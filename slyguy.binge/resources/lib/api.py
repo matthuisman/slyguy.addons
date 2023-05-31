@@ -154,9 +154,9 @@ class API(object):
         self._refresh_token()
         return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
 
-    def license_request(self):
+    def license_headers(self):
         self._refresh_token()
-        return LICENSE_URL, self._auth_header
+        return self._auth_header
 
     def stream(self, asset_id):
         self._refresh_token()
