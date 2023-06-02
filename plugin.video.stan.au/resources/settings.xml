@@ -2,6 +2,7 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30031" type="bool" id="kid_lockdown" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 32143]" id="pagination_multiplier" type="slider" default="1" range="1,1,10" option="int"/>
         <setting label="30038" type="bool" id="hide_sport" default="false"/>
         <setting label="30008" type="bool" id="enable_h265" default="true"/>
         <setting label="30013" type="bool" id="enable_4k" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)+Integer.IsGreaterOrEqual(Window(10000).Property(hdcp_level),22)"/>

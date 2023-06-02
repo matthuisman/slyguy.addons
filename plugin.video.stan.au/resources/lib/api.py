@@ -35,16 +35,18 @@ class API(object):
 
         return []
 
-    def page(self, key):
-        return self.url('/pages/v6/{}.json'.format(key))
+    def page(self, key, page=1):
+        return self.url('/pages/v6/{}.json'.format(key), page=page)
 
-    def url(self, url):
+    def url(self, url, page=1):
         self._check_token()
 
         params = {
             'feedTypes': 'posters,landscapes,hero',
             'jwToken': userdata.get('token'),
         }
+        if page > 1:
+            params['offset'] = 30 * (page-1)
 
         return self._session.get(url, params=params).json()
 
