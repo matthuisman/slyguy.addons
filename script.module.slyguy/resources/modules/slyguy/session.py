@@ -37,6 +37,7 @@ DNS_CACHE = dns.resolver.Cache()
 # Save pointers to original functions
 orig_connection_from_pool_key = urllib3.PoolManager.connection_from_pool_key
 orig_getaddrinfo = socket.getaddrinfo
+orig_ssl_wrap_socket_impl = urllib3.util.ssl_._ssl_wrap_socket_impl
 
 def json_override(func, error_msg):
     try:
@@ -263,8 +264,8 @@ class RawSession(requests.Session):
             return addresses
 
         def _ssl_wrap_socket_impl(*args, **kwargs):
-            ssl_obj = prev_ssl_wrap_socket_impl(*args, **kwargs)
-            log.debug('SSL Cipher: {} - {}'.format(urlparse(session_data['url']).netloc.lower(), ssl_obj.cipher()))
+            ssl_obj = orig_ssl_wrap_socket_impl(*args, **kwargs)
+            log.debug('SSL Cipher: {} - {}'.format(ssl_obj.server_hostname, ssl_obj.cipher()))
             ## python 3.7 only:
             # 'version': ssl_obj.version(),
             # 'compression': ssl_obj.compression(),
