@@ -4,13 +4,14 @@ from .log import log
 from .constants import ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID
 
 log.debug('sys.path: {}'.format(sys.path))
-if DEPENDENCIES_ADDON_ID in sys.path[-1]:
-    if ADDON_ID == DEPENDENCIES_ADDON_ID:
-        index = 1
-    elif ADDON_ID == COMMON_ADDON_ID:
-        index = 2
-    else:
-        index = 3
-    new_path = sys.path[-index:] + sys.path[:-index]
-    log.debug('Fixed sys.path: {}'.format(new_path))
-    sys.path = new_path
+if ADDON_ID not in sys.path[0]:
+    paths = [None, None, None]
+    for path in sys.path:
+        if COMMON_ADDON_ID in path and 'modules' in path:
+            paths[1] = path
+        elif DEPENDENCIES_ADDON_ID in path and 'modules' in path:
+            paths[2] = path
+        elif ADDON_ID in path:
+            paths[0] = path
+    sys.path = [x for x in paths if x] + [x for x in sys.path if x not in paths]
+    log.debug('Fixed sys.path: {}'.format(sys.path))
