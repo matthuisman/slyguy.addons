@@ -115,7 +115,7 @@ def _parse_shows(rows):
 def _parse_episodes(rows):
     items = []
     for row in rows:
-        videoid = row['videoRenditions']['videoCloud']['brightcoveId']
+        videoid = row['externalMediaId']
         thumb = row.get('images', {}).get('videoTile','').split('?')[0]
 
         info = {
