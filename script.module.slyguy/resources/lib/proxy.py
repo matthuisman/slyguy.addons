@@ -155,11 +155,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
 
-        length = int(self._headers.get('content-length', 0))
+        # must remove content-length header as the length can change once we read it / resend it
+        length = int(self._headers.pop('content-length', 0))
         self._post_data = self.rfile.read(length) if length else None
 
         url = self._session.get('path_subs', {}).get(url) or url
-
         if url.lower().startswith('plugin'):
             url = self._update_urls(url, self._plugin_request(url))
 
@@ -196,7 +196,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         dirs, files = run_plugin(url, wait=True)
         data = json.loads(unquote_plus(files[0]))
-        self._headers.update(data.get('headers', {}))
+        for key in data.get('headers', {}):
+            self._headers[key.lower()] = data['headers'][key]
 
         if 'url' not in data:
             raise Exception('No data returned from plugin')
