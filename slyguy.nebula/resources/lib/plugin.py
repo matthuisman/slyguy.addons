@@ -403,7 +403,7 @@ def play(slug, **kwargs):
 
     item = plugin.Item(
         path = data['manifest'],
-        inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG) if inputstream.require_version('20.3.2') else None,
+        inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs) if inputstream.require_version('20.3.2') else None,
     )
 
     ## subs seem to be included in manifest now
