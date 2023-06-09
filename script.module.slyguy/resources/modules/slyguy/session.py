@@ -32,6 +32,7 @@ DEFAULT_HEADERS = {
 }
 
 SSL_CIPHERS = 'ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:ECDH+AESGCM:DH+AESGCM:ECDH+AES:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!eNULL:!MD5'
+SSL_OPTIONS = ssl.OP_NO_SSLv2|ssl.OP_NO_SSLv3|ssl.OP_NO_COMPRESSION
 DNS_CACHE = dns.resolver.Cache()
 
 # Save pointers to original functions
@@ -130,7 +131,7 @@ class RawSession(requests.Session):
         if auto_close:
             SESSIONS.append(self)
 
-        self._ssl_adapter = SSLAdapter(ciphers=ssl_ciphers, options=ssl_options)
+        self._ssl_adapter = SSLAdapter(ciphers=ssl_ciphers, options=SSL_OPTIONS)
         self.mount('https://', self._ssl_adapter)
 
     def set_dns_rewrites(self, rewrites):
