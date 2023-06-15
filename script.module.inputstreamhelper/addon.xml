@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.inputstreamhelper" name="InputStream Helper (Slyguy Wrapper)" version="99.0.0" provider-name="SlyGuy">
+<addon id="script.module.inputstreamhelper" name="InputStream Helper (Slyguy Wrapper)" version="99.0.1" provider-name="SlyGuy">
   <requires>
     <import addon="repository.slyguy"/>
   </requires>
+  <extension point="xbmc.service" library="default.py" start="login" />
   <extension point="xbmc.python.module" library="resources/modules" />
   <extension point="xbmc.addon.metadata">
     <summary lang="en">Replaces Inputstream Helper with Slyguy DRM Helper</summary>
