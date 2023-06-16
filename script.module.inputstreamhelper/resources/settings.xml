@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-
+    <category label="$ADDON[script.module.slyguy 32034]">
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://script.module.slyguy/?_=_ia_install)" option="close" visible="!system.platform.android"/>
+    </category>
 </settings>

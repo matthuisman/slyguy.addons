@@ -1,5 +1,7 @@
-from slyguy import inputstream
+from slyguy import inputstream, gui
+from slyguy.log import log
 from slyguy.util import get_addon
+
 
 INPUTSTREAM_PROTOCOLS = {
     'mpd': 'inputstream.adaptive',
@@ -33,4 +35,9 @@ class Helper:
         if self.ia is None:
             return get_addon(self.inputstream_addon) is not None
 
-        return self.ia.check()
+        try:
+            return self.ia.check()
+        except Exception as e:
+            log.debug(e, exc_info=True)
+            gui.ok(e.message, heading=e.heading)
+            return False
