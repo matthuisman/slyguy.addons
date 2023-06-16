@@ -349,12 +349,7 @@ def _ia_install(**kwargs):
 @route(ROUTE_IA_HELPER)
 def _ia_helper(protocol, drm=None, **kwargs):
     _close()
-    try:
-        result = inputstream.ia_helper(protocol, drm=drm)
-    except Exception as e:
-        _error(e)
-        result = False
-
+    result = inputstream.ia_helper(protocol, drm=drm)
     folder = Folder(show_news=False)
     folder.add_item(
         path = str(result),

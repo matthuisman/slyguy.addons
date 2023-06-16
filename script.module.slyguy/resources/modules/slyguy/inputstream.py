@@ -363,4 +363,6 @@ def ia_helper(protocol, drm=None):
     elif protocol == 'hls':
         return HLS().check()
     elif protocol == 'rtmp':
-        return get_addon('inputstream.rtmp') is not None
+        return get_addon('inputstream.rtmp', required=True) is not None
+    else:
+        raise InputStreamError('Unknown protocol: {}'.format(protocol))
