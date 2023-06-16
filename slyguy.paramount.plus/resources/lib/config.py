@@ -1,5 +1,6 @@
 from slyguy import userdata
 from slyguy.constants import ADDON_VERSION
+from slyguy.mem_cache import cached
 from slyguy.session import Session
 from slyguy.log import log
 
@@ -124,8 +125,18 @@ class Config(object):
         #return self._config['brands']
         return False
 
+    @cached(60 * 5)
     def image(self, image_name, dimensions='w400'):
-        return '{base_url}/thumbnails/photos/{dimensions}/{file}'.format(base_url=CONFIG[self.region]['base_url'], dimensions=dimensions, file=image_name[6:]) if image_name else None
+        if not image_name:
+            return None
+
+        url = '{base_url}/thumbnails/photos/{dimensions}/{file}'.format(base_url=CONFIG[self.region]['base_url'], dimensions=dimensions, file=image_name[6:])
+        headers = []
+
+        for key in self.headers:
+            headers.append("{}={}".format(key, self.headers[key]))
+
+        return "{}|{}".format(url, "&".join(headers))
 
     def thumbnail(self, image_url, dimensions='w400'):
         return image_url.replace('https://thumbnails.cbsig.net/', 'https://thumbnails.cbsig.net/_x/{}/'.format(dimensions))
