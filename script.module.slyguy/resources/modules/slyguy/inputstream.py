@@ -351,3 +351,16 @@ def _download(url, dst_path, md5=None):
     remove_file(dst_path)
     shutil.move(tmp_path, dst_path)
     return True
+
+def ia_helper(protocol, drm=None):
+    protocol = protocol.lower().strip()
+    if protocol == 'ism':
+        return Playready().check()
+    elif drm and 'widevine' in drm.lower().strip():
+        return Widevine().check()
+    elif protocol == 'mpd':
+        return MPD().check()
+    elif protocol == 'hls':
+        return HLS().check()
+    elif protocol == 'rtmp':
+        return get_addon('inputstream.rtmp') is not None

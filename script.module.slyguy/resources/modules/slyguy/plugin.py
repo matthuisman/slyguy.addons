@@ -346,6 +346,21 @@ def _ia_install(**kwargs):
     _close()
     inputstream.install_widevine(reinstall=True)
 
+@route(ROUTE_IA_HELPER)
+def _ia_helper(protocol, drm=None, **kwargs):
+    _close()
+    try:
+        result = inputstream.ia_helper(protocol, drm=drm)
+    except Exception as e:
+        _error(e)
+        result = False
+
+    folder = Folder(show_news=False)
+    folder.add_item(
+        path = str(result),
+    )
+    return folder
+
 @route(ROUTE_SETUP_MERGE)
 def _setup_iptv_merge(**kwargs):
     addon = get_addon(IPTV_MERGE_ID, required=True, install=True)

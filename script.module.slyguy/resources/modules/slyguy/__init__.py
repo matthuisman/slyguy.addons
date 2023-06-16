@@ -1,16 +1,17 @@
 import sys
 
-import xbmc, xbmcaddon
+from .log import log
+from .constants import ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID
 
-xbmc.log('old sys.path: {}'.format(sys.path), xbmc.LOGDEBUG)
-addon_id = xbmcaddon.Addon().getAddonInfo('id')
-paths = [None, None, None]
-for path in sys.path:
-    if 'script.module.slyguy' in path and 'modules' in path:
-        paths[1] = path
-    elif 'slyguy.dependencies' in path and 'modules' in path:
-        paths[2] = path
-    elif addon_id in path:
-        paths[0] = path
-sys.path = [x for x in paths if x] + [x for x in sys.path if x not in paths]
-xbmc.log('new sys.path: {}'.format(sys.path), xbmc.LOGDEBUG)
+log.debug('sys.path: {}'.format(sys.path))
+if ADDON_ID not in sys.path[0]:
+    paths = [None, None, None]
+    for path in sys.path:
+        if COMMON_ADDON_ID in path and 'modules' in path:
+            paths[1] = path
+        elif DEPENDENCIES_ADDON_ID in path and 'modules' in path:
+            paths[2] = path
+        elif ADDON_ID in path:
+            paths[0] = path
+    sys.path = [x for x in paths if x] + [x for x in sys.path if x not in paths]
+    log.debug('Fixed sys.path: {}'.format(sys.path))
