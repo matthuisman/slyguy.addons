@@ -17,7 +17,7 @@ from contextlib import closing
 
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 from six.moves import queue, range
-from six.moves.urllib.parse import urlparse, urlunparse
+from six.moves.urllib.parse import urlparse, urlunparse, quote
 from requests.models import PreparedRequest
 from six import PY2
 import requests
@@ -707,3 +707,16 @@ def get_kodi_proxy():
 def unique(sequence):
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
+
+def get_url_headers(headers=None, cookies=None):
+    string = ''
+    if headers:
+        for key in headers:
+            string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
+
+    if cookies:
+        string += 'Cookie='
+        for key in cookies:
+            string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
+
+    return string.strip().strip('&')

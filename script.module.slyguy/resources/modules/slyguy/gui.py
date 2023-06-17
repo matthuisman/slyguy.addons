@@ -4,7 +4,7 @@ import traceback
 import time
 from contextlib import contextmanager
 
-from six.moves.urllib_parse import quote, urlparse
+from six.moves.urllib_parse import urlparse
 from kodi_six import xbmcgui, xbmc
 
 from . import settings
@@ -12,7 +12,7 @@ from .constants import *
 from .router import add_url_args
 from .language import _
 from .smart_urls import get_dns_rewrites
-from .util import fix_url, set_kodi_string, hash_6
+from .util import fix_url, set_kodi_string, hash_6, get_url_headers
 
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
@@ -233,19 +233,6 @@ class Item(object):
     def is_folder(self, value):
         self._is_folder = value
 
-    def get_url_headers(self, headers=None, cookies=None):
-        string = ''
-        if headers:
-            for key in headers:
-                string += u'{0}={1}&'.format(key, quote(u'{}'.format(headers[key]).encode('utf8')))
-
-        if cookies:
-            string += 'Cookie='
-            for key in cookies:
-                string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
-
-        return string.strip().strip('&')
-
     def get_li(self):
         proxy_path = settings.common_settings.get('_proxy_path')
 
@@ -348,7 +335,7 @@ class Item(object):
             if 'referer' not in [x.lower() for x in self.headers]:
                 self.headers['referer'] = '%20'
 
-        headers = self.get_url_headers(self.headers, self.cookies)
+        headers = get_url_headers(self.headers, self.cookies)
         mimetype = self.mimetype
         if not mimetype and self.inputstream:
             mimetype = self.inputstream.mimetype
@@ -400,7 +387,7 @@ class Item(object):
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
-                license_headers = self.get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
+                license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}{headers}|{challenge}|{response}'.format(
                     url = get_url(self.inputstream.license_key),
                     content_type = self.inputstream.content_type,
