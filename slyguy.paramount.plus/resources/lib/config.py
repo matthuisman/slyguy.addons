@@ -2,6 +2,7 @@ from slyguy import userdata
 from slyguy.constants import ADDON_VERSION
 from slyguy.session import Session
 from slyguy.log import log
+from slyguy.util import get_url_headers
 
 REGION_US = 'US'
 REGION_INTL = 'INTL'
@@ -125,7 +126,7 @@ class Config(object):
         return False
 
     def image(self, image_name, dimensions='w400'):
-        return '{base_url}/thumbnails/photos/{dimensions}/{file}'.format(base_url=CONFIG[self.region]['base_url'], dimensions=dimensions, file=image_name[6:]) if image_name else None
+        return '{base_url}/thumbnails/photos/{dimensions}/{file}|{headers}'.format(base_url=CONFIG[self.region]['base_url'], dimensions=dimensions, file=image_name[6:], headers=get_url_headers(self.headers)) if image_name else None
 
     def thumbnail(self, image_url, dimensions='w400'):
         return image_url.replace('https://thumbnails.cbsig.net/', 'https://thumbnails.cbsig.net/_x/{}/'.format(dimensions))
