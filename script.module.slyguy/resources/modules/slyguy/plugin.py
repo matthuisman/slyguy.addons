@@ -349,7 +349,8 @@ def _ia_install(**kwargs):
 @route(ROUTE_IA_HELPER)
 def _ia_helper(protocol, drm=None, **kwargs):
     _close()
-    result = inputstream.ia_helper(protocol, drm=drm)
+    result = bool(inputstream.ia_helper(protocol, drm=drm))
+    log.debug('IA Helper Result: {}'.format(result))
     folder = Folder(show_news=False)
     folder.add_item(
         path = str(result),

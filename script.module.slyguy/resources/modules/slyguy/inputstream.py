@@ -65,7 +65,7 @@ class InputstreamItem(object):
 
     def check(self):
         if self.checked is None:
-            self.checked = self.do_check()
+            self.checked = bool(self.do_check())
 
         return self.checked
 
@@ -361,7 +361,7 @@ def ia_helper(protocol, drm=None):
     elif protocol == 'mpd':
         return MPD().check()
     elif protocol == 'hls':
-        return HLS().check()
+        return HLS(force=True).check()
     elif protocol == 'rtmp':
         return get_addon('inputstream.rtmp', required=True) is not None
     else:
