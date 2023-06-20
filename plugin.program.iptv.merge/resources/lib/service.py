@@ -73,12 +73,12 @@ def start():
             except Exception as e:
                 addon = None
 
-            if addon and not forced and addon_version >= LooseVersion('20.8.0'):
-                log.info('Merge complete. IPTV Simple should reload upaded playlist within 10mins')
-                # Do nothing. rely on iptv simple reload every 10mins as we can't set settings on multi-instance yet
-                restart_queued = False
+            # if addon and not forced and addon_version >= LooseVersion('20.8.0'):
+            #     log.info('Merge complete. IPTV Simple should reload upaded playlist within 10mins')
+            #     # Do nothing. rely on iptv simple reload every 10mins as we can't set settings on multi-instance yet
+            #     restart_queued = False
 
-            elif addon and LooseVersion('4.3.0') <= addon_version < LooseVersion('20.8.0'):
+            if addon and LooseVersion('4.3.0') <= addon_version < LooseVersion('20.8.0'):
                 # IPTV Simple version 4.3.0 added auto reload on settings change
                 log.info('Merge complete. IPTV Simple should reload immediately')
                 restart_queued = False

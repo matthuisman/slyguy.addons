@@ -610,8 +610,8 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
         # newer PVR Simple uses instance settings that can't yet be set via python api
         # so do a workaround where we leverage the migration when no instance settings found
         if is_multi_instance:
-            addon.setSetting('m3uRefreshMode', '1')
-            addon.setSetting('m3uRefreshIntervalMins', '10')
+            # addon.setSetting('m3uRefreshMode', '1')
+            # addon.setSetting('m3uRefreshIntervalMins', '10')
 
             for file in os.listdir(addon_path):
                 if file.startswith('instance-settings-') and file.endswith('.xml'):

@@ -30,9 +30,10 @@ def strip_quotes(string):
 
 def parse_attribs(line):
     attribs = {}
-    for key, value in ATTRIBUTELISTPATTERN.findall(line):
-        attribs[key.lower()] = strip_quotes(value.strip())
-    return attribs
+    for match in ATTRIBUTELISTPATTERN.finditer(line):
+        line = line.replace(match.group(0), '')
+        attribs[match.group(1).lower().strip()] = strip_quotes(match.group(2).strip())
+    return attribs, line
 
 @plugin.route()
 def play_channel(slug, **kwargs):
@@ -109,29 +110,29 @@ def play_channel(slug, **kwargs):
     return item
 
 class Source(database.Model):
-    ERROR    = 0
-    OK       = 1
+    ERROR = 0
+    OK = 1
 
-    TYPE_URL      = 0
-    TYPE_FILE     = 1
-    TYPE_ADDON    = 2
-    TYPE_CUSTOM   = 3
+    TYPE_URL = 0
+    TYPE_FILE = 1
+    TYPE_ADDON = 2
+    TYPE_CUSTOM = 3
 
-    ARCHIVE_AUTO  = 0
-    ARCHIVE_GZIP  = 1
-    ARCHIVE_XZ    = 2
-    ARCHIVE_NONE  = 3
+    ARCHIVE_AUTO = 0
+    ARCHIVE_GZIP = 1
+    ARCHIVE_XZ = 2
+    ARCHIVE_NONE = 3
 
-    source_type   = peewee.IntegerField()
-    archive_type  = peewee.IntegerField(default=ARCHIVE_AUTO)
+    source_type = peewee.IntegerField()
+    archive_type = peewee.IntegerField(default=ARCHIVE_AUTO)
 
-    path          = peewee.CharField()
-    enabled       = peewee.BooleanField(default=True)
+    path = peewee.CharField()
+    enabled = peewee.BooleanField(default=True)
 
-    results       = database.JSONField(default=list)
+    results = database.JSONField(default=list)
 
-    TYPES         = [TYPE_URL, TYPE_FILE, TYPE_ADDON, TYPE_CUSTOM]
-    TYPE_LABELS   = {
+    TYPES = [TYPE_URL, TYPE_FILE, TYPE_ADDON, TYPE_CUSTOM]
+    TYPE_LABELS = {
         TYPE_URL: _.URL,
         TYPE_FILE: _.FILE,
         TYPE_ADDON: _.ADDON,
@@ -395,17 +396,17 @@ class EPG(Source):
     TYPES = [Source.TYPE_URL, Source.TYPE_FILE, Source.TYPE_ADDON]
 
     start_index = peewee.IntegerField(default=0)
-    end_index   = peewee.IntegerField(default=0)
+    end_index = peewee.IntegerField(default=0)
 
 class Playlist(Source):
-    skip_playlist_chno   = peewee.BooleanField(default=False)
-    use_start_chno       = peewee.BooleanField(default=False)
-    start_chno           = peewee.IntegerField(default=1)
-    default_visible      = peewee.BooleanField(default=True)
+    skip_playlist_chno = peewee.BooleanField(default=False)
+    use_start_chno = peewee.BooleanField(default=False)
+    start_chno = peewee.IntegerField(default=1)
+    default_visible = peewee.BooleanField(default=True)
     skip_playlist_groups = peewee.BooleanField(default=False)
-    group_name           = peewee.CharField(null=True)
-    order                = peewee.IntegerField()
-    #ignore_playlist_epg  = peewee.BooleanField(default=False)
+    group_name = peewee.CharField(null=True)
+    order = peewee.IntegerField()
+    #ignore_playlist_epg = peewee.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.order:
@@ -456,24 +457,24 @@ class Playlist(Source):
         Override.clean()
 
 class Channel(database.Model):
-    slug         = peewee.CharField(primary_key=True)
-    playlist     = peewee.ForeignKeyField(Playlist, backref="channels", on_delete='cascade')
-    url          = peewee.CharField()
-    order        = peewee.IntegerField()
-    chno         = peewee.IntegerField(null=True)
-    name         = peewee.CharField(null=True)
-    custom       = peewee.BooleanField(default=False)
+    slug = peewee.CharField(primary_key=True)
+    playlist = peewee.ForeignKeyField(Playlist, backref="channels", on_delete='cascade')
+    url = peewee.CharField()
+    order = peewee.IntegerField()
+    chno = peewee.IntegerField(null=True)
+    name = peewee.CharField(null=True)
+    custom = peewee.BooleanField(default=False)
 
-    groups       = database.JSONField(default=list)
-    radio        = peewee.BooleanField(default=False)
-    epg_id       = peewee.CharField(null=True)
-    logo         = peewee.CharField(null=True)
-    attribs      = database.JSONField(default=dict)
-    properties   = database.JSONField(default=dict)
-    visible      = peewee.IntegerField(default=True)
-    is_live      = peewee.BooleanField(default=True)
+    groups = database.JSONField(default=list)
+    radio = peewee.BooleanField(default=False)
+    epg_id = peewee.CharField(null=True)
+    logo = peewee.CharField(null=True)
+    attribs = database.JSONField(default=dict)
+    properties = database.JSONField(default=dict)
+    visible = peewee.IntegerField(default=True)
+    is_live = peewee.BooleanField(default=True)
 
-    modified     = peewee.BooleanField(default=False)
+    modified = peewee.BooleanField(default=False)
 
     @property
     def label(self):
@@ -523,7 +524,7 @@ class Channel(database.Model):
             if value is not None:
                 lines += u' {}="{}"'.format(key, value)
 
-        lines += u',{}\n'.format(self.name if self.name else '')
+        lines += u' , {}\n'.format(self.name if self.name else '')
 
         if not self.is_live:
             lines += u'#EXT-X-PLAYLIST-TYPE:VOD\n'
@@ -621,13 +622,14 @@ class Channel(database.Model):
         )
 
     def load_extinf(self, extinf):
-        colon = extinf.find(':', 0)
-        comma = extinf.rfind(',', 0)
+        extinf = extinf.replace('#EXTINF:', '')
+        attribs, extinf = parse_attribs(extinf)
+        chunks = extinf.split(',', 1)
+        if len(chunks) == 2:
+            name = chunks[1].strip()
+            if name:
+                self.name = name
 
-        if colon >= 0 and comma >= 0 and comma > colon:
-            self.name = extinf[comma+1:].strip()
-
-        attribs = parse_attribs(extinf)
         self.radio = attribs.pop('radio', 'false').lower() == 'true'
 
         try:

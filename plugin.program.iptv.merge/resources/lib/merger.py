@@ -236,7 +236,6 @@ class Merger(object):
         if playlist.use_start_chno:
             chnos = {'tv': playlist.start_chno, 'radio': playlist.start_chno}
 
-        valid_file = False
         default_attribs = {}
         hide_groups = [x.strip() for x in settings.get('hide_groups', '').split(';') if x.strip()]
 
@@ -254,19 +253,12 @@ class Merger(object):
         with codecs.open(file_path, 'r', encoding='utf8', errors='replace') as infile:
             for line in infile:
                 line = line.strip()
-
-                # allow empty lines before extm3u8
-                if not valid_file and not line:
+                if not line:
                     continue
 
-                if not valid_file and '#EXTM3U' not in line:
-                    raise Error('Invalid playlist - Does not start with #EXTM3U')
-
                 if '#EXTM3U' in line:
-                    valid_file = True
-
                     #if not playlist.ignore_playlist_epg:
-                    attribs = parse_attribs(line)
+                    attribs = parse_attribs(line)[0]
                     xml_urls = attribs.get('x-tvg-url', '').split(',')
                     xml_urls.extend(attribs.get('url-tvg', '').split(','))
 
@@ -357,9 +349,6 @@ class Merger(object):
 
                     channel = None
                     added_count += 1
-
-        if not valid_file:
-            raise Error('Invalid playlist - Does not start with #EXTM3U')
 
         Channel.bulk_create_lazy(to_create, force=True)
         to_create.clear()
@@ -492,6 +481,8 @@ class Merger(object):
 
                 if count == 0:
                     outfile.write(u'\n\n#EXTINF:-1,EMPTY PLAYLIST\nhttp')
+
+                outfile.write(u'\n')
 
             log.debug('Wrote {} Channels'.format(count))
             Playlist.after_merge()
