@@ -802,7 +802,7 @@ def require_update():
                 need_updated.append([addon_id, addon.getAddonInfo('name'), cur_version])
 
     if need_updated:
-        raise PluginError(_(_.UPDATES_REQUIRED, updates_required='\n'.join(['[B]{} ({})[/B]'.format(entry[1], entry[2]) for entry in need_updated])))
+        log.error(_(_.UPDATES_REQUIRED, updates_required='\n'.join(['{} ({})'.format(entry[1], entry[2]) for entry in need_updated])))
 
 def process_news():
     news = settings.common_settings.get('_news')

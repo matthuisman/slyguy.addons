@@ -819,6 +819,6 @@ msgid "Failed to connect to host: {host}\n"
 msgstr ""
 
 msgctxt "#32151"
-msgid "The below addons are old and must be updated to use this add-on\n\n"
+msgid "The below SlyGuy addons are outdated and must be updated or no support will be given\n"
 "{updates_required}"
 msgstr ""

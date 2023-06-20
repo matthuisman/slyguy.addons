@@ -71,13 +71,14 @@ def set_drm_level():
                         wv_level = int(wv_level.lower().lstrip('l'))
 
                         try:
-                            if wv_level == WV_L1:
-                                system_id = crypto.GetPropertyString('systemId')
-                                if system_id in FAKE_L1:
-                                    log.debug('Detected fake L1 systemID {}. Downgrading to L3'.format(system_id))
-                                    wv_level = WV_L3
+                            system_id = crypto.GetPropertyString('systemId')
                         except:
-                            pass
+                            system_id = 'N/A'
+
+                        log.info("Widevine System ID: {}".format(system_id))
+                        if wv_level == WV_L1 and system_id in FAKE_L1:
+                            log.debug('Detected fake L1 System ID {}. Downgrading to L3'.format(system_id))
+                            wv_level = WV_L3
 
                 if not hdcp_level:
                     hdcp_level = crypto.GetPropertyString('hdcpLevel')
