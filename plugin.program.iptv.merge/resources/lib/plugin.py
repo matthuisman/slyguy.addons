@@ -9,6 +9,7 @@ from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_st
 from slyguy.constants import ADDON_PROFILE, ADDON_ICON, KODI_VERSION, ADDON_NAME
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
+from slyguy.log import log
 
 from .language import _
 from .models import Playlist, EPG, Channel, Override, merge_info
@@ -612,7 +613,6 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
         if is_multi_instance:
             # addon.setSetting('m3uRefreshMode', '1')
             # addon.setSetting('m3uRefreshIntervalMins', '10')
-
             for file in os.listdir(addon_path):
                 if file.startswith('instance-settings-') and file.endswith('.xml'):
                     xbmcvfs.delete(os.path.join(addon_path, file))
@@ -622,7 +622,7 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
             # wait for migration to occur
             max_wait = 10
-            while not os.path.exists(os.path.join(addon_path, instance_filepath)):
+            while not os.path.exists(instance_filepath):
                 monitor.waitForAbort(1)
                 max_wait -= 1
                 if max_wait <= 0:
@@ -631,13 +631,16 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
             kodi_rpc('Addons.SetAddonEnabled', {'addonid': IPTV_SIMPLE_ID, 'enabled': False})
             monitor.waitForAbort(2)
 
-            with open(instance_filepath, 'r') as f:
-                data = f.read()
+            if os.path.exists(instance_filepath):
+                with open(instance_filepath, 'r') as f:
+                    data = f.read()
 
-            data = data.replace('Migrated Add-on Config', ADDON_NAME)
-            data = data.replace('<setting id="m3uPathType" default="true">1</setting>', '<setting id="m3uPathType">0</setting>') #IPTV Simple 20.8.0 bug
-            with open(instance_filepath, 'w') as f:
-                f.write(data)
+                data = data.replace('Migrated Add-on Config', ADDON_NAME)
+                data = data.replace('<setting id="m3uPathType" default="true">1</setting>', '<setting id="m3uPathType">0</setting>') #IPTV Simple 20.8.0 bug
+                with open(instance_filepath, 'w') as f:
+                    f.write(data)
+            else:
+                log.warning('Failed to find IPTV Simple Client settings file: {}'.format(instance_filepath))
 
         set_kodi_setting('epg.futuredaystodisplay', 7)
         #  set_kodi_setting('epg.ignoredbforclient', True)
