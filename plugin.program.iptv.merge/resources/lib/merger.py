@@ -253,8 +253,6 @@ class Merger(object):
         with codecs.open(file_path, 'r', encoding='utf8', errors='replace') as infile:
             for line in infile:
                 line = line.strip()
-                if not line:
-                    continue
 
                 if '#EXTM3U' in line:
                     #if not playlist.ignore_playlist_epg:
