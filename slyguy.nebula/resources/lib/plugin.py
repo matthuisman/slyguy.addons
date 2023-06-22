@@ -1,8 +1,6 @@
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG
-from slyguy.util import async_tasks
 
 from .api import API
 from .language import _
@@ -403,13 +401,11 @@ def play(slug, **kwargs):
 
     item = plugin.Item(
         path = data['manifest'],
-        inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs, force=True) if inputstream.require_version('20.3.2') else None,
+        inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs, force=True),
     )
-
     ## subs seem to be included in manifest now
     # for idx, row in enumerate(data.get('subtitles', [])):
     #     item.subtitles.append([row['url'], row['language_code']])
-
     return item
 
 @plugin.route()
