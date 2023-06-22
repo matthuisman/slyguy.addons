@@ -19,7 +19,7 @@ HDCP_3_0 = 30
 HDCP_LEVELS = [AUTO, HDCP_NONE, HDCP_1, HDCP_2_2, HDCP_3_0]
 
 # List of system ids that use fake L1
-FAKE_L1 = ['7011',]
+FAKE_L1 = ['7011','6077']
 
 def is_wv_secure():
     return widevine_level() == WV_L1
