@@ -77,7 +77,7 @@ def set_drm_level():
 
                         log.info("Widevine System ID: {}".format(system_id))
                         if wv_level == WV_L1 and system_id in FAKE_L1:
-                            log.debug('Detected fake L1 System ID {}. Downgrading to L3'.format(system_id))
+                            log.info('Detected fake L1 System ID {}. Downgrading to L3'.format(system_id))
                             wv_level = WV_L3
 
                 if not hdcp_level:
