@@ -14,16 +14,17 @@ from requests import ConnectionError
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
-from kodi_six import xbmc
+from kodi_six import xbmc, xbmcaddon
 from pycaption import detect_format, WebVTTWriter
 
-from slyguy import settings, gui, inputstream
+from slyguy import settings, gui
 from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language, replace_kids
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
+from slyguy.smart_urls import get_dns_rewrites
 
 from .language import _
 
@@ -46,7 +47,7 @@ ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
 PROXY_GLOBAL = {
     'last_qualities': [],
-    'session': {},
+    'sessions': {},
     'error_count': 0,
 }
 
@@ -111,6 +112,7 @@ def codec_rank(_codecs):
                     highest = rank
 
     return highest
+
 class RequestHandler(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         try:
@@ -129,8 +131,34 @@ class RequestHandler(BaseHTTPRequestHandler):
         self._url = url = self.path.lstrip('/').strip('\\')
         log.debug('REQUEST IN: {} ({})'.format(url, method))
 
-        self._session = PROXY_GLOBAL['session']
         self.proxy_path = 'http://{}/'.format(self.headers.get('Host'))
+
+        self._headers = {}
+        for header in self.headers:
+            if header.lower() == 'referer' and self.headers[header].startswith(self.proxy_path):
+                self.headers[header] = self.headers[header][len(self.proxy_path):]
+
+            if header.lower() not in REMOVE_IN_HEADERS:
+                self._headers[header.lower()] = self.headers[header]
+
+        session_type = self._headers.pop('session_type', 'playback')
+        session_addonid = self._headers.pop('session_addonid', None)
+        self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
+
+        if session_addonid and session_addonid != self._session.get('addon_id'):
+            try:
+                _settings = settings.Settings(xbmcaddon.Addon(session_addonid))
+            except:
+                _settings = {}
+
+            self._session = {
+                'addon_id': session_addonid,
+                'verify': settings.common_settings.getBool('verify_ssl', True),
+                'timeout': settings.common_settings.getInt('http_timeout', 30),
+                'dns_rewrites': get_dns_rewrites(addon_id=session_addonid),
+                'proxy_server': _settings.get('proxy_server') or settings.common_settings.get('proxy_server'),
+            }
+            log.debug('Session created from header addon_id: {}'.format(session_addonid))
 
         try:
             proxy_data = json.loads(get_kodi_string('_slyguy_proxy_data'))
@@ -145,15 +173,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         except:
             pass
 
-        PROXY_GLOBAL['session'] = self._session
-
-        self._headers = {}
-        for header in self.headers:
-            if header.lower() == 'referer' and self.headers[header].startswith(self.proxy_path):
-                self.headers[header] = self.headers[header][len(self.proxy_path):]
-
-            if header.lower() not in REMOVE_IN_HEADERS:
-                self._headers[header.lower()] = self.headers[header]
+        PROXY_GLOBAL['sessions'][session_type] = self._session
 
         # must remove content-length header as the length can change once we read it / resend it
         length = int(self._headers.pop('content-length', 0))

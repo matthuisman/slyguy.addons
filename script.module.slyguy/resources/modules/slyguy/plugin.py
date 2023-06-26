@@ -590,7 +590,7 @@ class Item(gui.Item):
             self.context.append((_.ADD_BOOKMARK, 'RunPlugin({})'.format(url)))
 
         if not self.playable:
-            self.art['thumb']  = self.art.get('thumb') or default_thumb
+            self.art['thumb'] = self.art.get('thumb') or default_thumb
             self.art['fanart'] = self.art.get('fanart') or default_fanart
 
         quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)

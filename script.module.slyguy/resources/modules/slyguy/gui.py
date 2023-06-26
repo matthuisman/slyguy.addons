@@ -27,6 +27,22 @@ def redirect(location):
 def get_view_id():
     return xbmcgui.Window(xbmcgui.getCurrentWindowId()).getFocusId()
 
+def get_art_url(url):
+    if not url or not url.lower().startswith(('http', 'plugin')):
+        return url
+
+    if url.lower().startswith('http'):
+        url = url.replace(' ', '%20')
+
+    if not settings.common_settings.getBool('proxy_enabled', True):
+        return url
+
+    proxy_path = settings.common_settings.get('_proxy_path')
+    if proxy_path and not url.lower().startswith(proxy_path.lower()):
+        url = proxy_path + url + '|' + get_url_headers({'session_type': 'art', 'session_addonid': ADDON_ID})
+
+    return url
+
 def exception(heading=None):
     if not heading:
         heading = _(_.PLUGIN_EXCEPTION, addon=ADDON_NAME, version=ADDON_VERSION, common_version=COMMON_ADDON.getAddonInfo('version'))
@@ -117,9 +133,8 @@ def progress(message='', heading=None, percent=0, background=False):
 
 def notification(message, heading=None, icon=None, time=3000, sound=False):
     heading = _make_heading(heading)
-    icon    = ADDON_ICON if not icon else icon
-
-    xbmcgui.Dialog().notification(heading, message, icon, time, sound)
+    icon = ADDON_ICON if not icon else icon
+    xbmcgui.Dialog().notification(heading, message, get_art_url(icon), time, sound)
 
 def select(heading=None, options=None, autoclose=None, multi=False, **kwargs):
     heading = _make_heading(heading)
@@ -293,22 +308,20 @@ class Item(object):
 
         if self.art:
             defaults = {
-                'poster':    'thumb',
+                'poster': 'thumb',
                 'landscape': 'thumb',
-                'icon':      'thumb',
+                'icon': 'thumb',
             }
 
-            for key in defaults:
-                if key not in self.art:
-                    self.art[key] = self.art.get(defaults[key])
-
+            art = {}
             for key in self.art:
-                if self.art[key] and self.art[key].lower().startswith('http'):
-                    self.art[key] = self.art[key].replace(' ', '%20')
-                elif self.art[key] and self.art[key].lower().startswith('plugin'):
-                    self.art[key] = proxy_path + self.art[key]
+                art[key] = get_art_url(self.art[key])
 
-            li.setArt(self.art)
+            for key in defaults:
+                if key not in art:
+                    art[key] = art.get(defaults[key])
+
+            li.setArt(art)
 
         if self.playable:
             li.setProperty('IsPlayable', 'true')

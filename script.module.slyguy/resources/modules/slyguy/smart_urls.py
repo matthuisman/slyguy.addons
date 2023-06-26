@@ -1,17 +1,17 @@
 import os
 
 import requests
-from kodi_six import xbmc
+from kodi_six import xbmc, xbmcaddon
 
 from .log import log
 from .mem_cache import cached
-from .constants import ADDON_PROFILE, ADDON_ID, COMMON_ADDON
+from .constants import ADDON_ID, COMMON_ADDON_ID
 
-def get_dns_rewrites(dns_rewrites=None):
-    rewrites = _load_rewrites(ADDON_PROFILE)
+def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
+    rewrites = _load_rewrites(addon_id)
 
-    if COMMON_ADDON.getAddonInfo('id') != ADDON_ID:
-        rewrites.extend(_load_rewrites(COMMON_ADDON.getAddonInfo('profile')))
+    if COMMON_ADDON_ID != addon_id:
+        rewrites.extend(_load_rewrites(COMMON_ADDON_ID))
 
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
@@ -31,13 +31,18 @@ def _get_url(url):
     log.debug('Request DNS URL: {}'.format(url))
     return requests.get(url).text
 
-def _load_rewrites(directory):
+def _load_rewrites(addon_id):
     rewrites = []
 
     file_names = [
         'urls.txt',
         'dns_rewrites.txt', #legacy
     ]
+
+    try:
+        directory = xbmc.translatePath(xbmcaddon.Addon(addon_id).getAddonInfo('profile'))
+    except:
+        return rewrites
 
     found = False
     for name in file_names:
