@@ -252,7 +252,11 @@ class API(object):
     @mem_cache.cached(60*5)
     def show_menu(self, show_id):
         self._refresh_token()
-        return self._session.get('/v3.0/androidphone/shows/{}/menu.json'.format(show_id), params=self._params()).json()['showMenu'][0].get('links', [])
+        params = {
+            'locale': 'en-us',
+        }
+
+        return self._session.get('/v3.0/androidphone/shows/{}/menu.json'.format(show_id), params=self._params(params)).json()['showMenu'][0].get('links', [])
 
     @mem_cache.cached(60*10)
     def show(self, show_id):
@@ -266,6 +270,7 @@ class API(object):
             'platformType': 'apps',
             'rows': 1,
             'begin': 0,
+            'locale': 'en-us',
         }
         sections = self._session.get('/v2.0/androidphone/shows/{}/videos/config/{}.json'.format(show_id, config), params=self._params(params)).json()['videoSectionMetadata']
         for section in sections:
