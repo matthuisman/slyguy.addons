@@ -165,7 +165,7 @@ class API(object):
         userdata.set('profile_img', profile['profilePicPath'])
 
     def _params(self, params=None):
-        _params = {'at': self._config.at_token}
+        _params = {'at': self._config.at_token, 'locale': self._config.locale}
         #_params = {'locale': 'en-us', 'at': self._at_token(secret), 'LOCATEMEIN': 'us'}
         if params:
             _params.update(params)
