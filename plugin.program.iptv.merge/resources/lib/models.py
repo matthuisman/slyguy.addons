@@ -30,9 +30,12 @@ def strip_quotes(string):
 
 def parse_attribs(line):
     attribs = {}
+    match = None
     for match in ATTRIBUTELISTPATTERN.finditer(line):
-        line = line.replace(match.group(0), '')
         attribs[match.group(1).lower().strip()] = strip_quotes(match.group(2).strip())
+    if match:
+        # return the remainder of line after the last match
+        line = line[match.end():]
     return attribs, line
 
 @plugin.route()
@@ -622,7 +625,6 @@ class Channel(database.Model):
         )
 
     def load_extinf(self, extinf):
-        extinf = extinf.replace('#EXTINF:', '')
         attribs, extinf = parse_attribs(extinf)
         chunks = extinf.split(',', 1)
         if len(chunks) == 2:
