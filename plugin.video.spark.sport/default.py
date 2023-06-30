@@ -1,5 +1,3 @@
-import sys
+from slyguy import gui
 
-from resources.lib.plugin import plugin
-
-plugin.dispatch(sys.argv[2])
+gui.ok('Spart Sport service stopped June 30th 2023')
