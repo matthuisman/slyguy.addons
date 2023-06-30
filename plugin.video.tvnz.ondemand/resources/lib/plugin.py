@@ -3,10 +3,11 @@ import string
 
 import arrow
 from kodi_six import xbmcplugin
-from slyguy import plugin, gui, settings, userdata, inputstream
-from slyguy.constants import ROUTE_LIVE_TAG
+from slyguy import plugin, gui, settings, userdata, inputstream, signals
+from slyguy.constants import *
 from slyguy.util import pthms_to_seconds
 from slyguy.session import Session
+from slyguy.router import add_url_args
 from slyguy.log import log
 
 from .api import API
@@ -15,18 +16,28 @@ from .language import _
 
 api = API()
 
+@signals.on(signals.BEFORE_DISPATCH)
+def before_dispatch():
+    api.new_session()
+    plugin.logged_in = api.logged_in
+
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
     folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+    folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(sport))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
-
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+
+    if not api.logged_in:
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+    else:
+        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -106,29 +117,63 @@ def _process_video(data, showname, categories=None):
     )
 
 @plugin.route()
+def login(**kwargs):
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+    if not username:
+        return
+
+    userdata.set('username', username)
+
+    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+    if not password:
+        return
+
+    api.login(username=username, password=password)
+    gui.refresh()
+
+@plugin.route()
+def logout(**kwargs):
+    if not gui.yes_no(_.LOGOUT_YES_NO):
+        return
+
+    api.logout()
+    gui.refresh()
+
+@plugin.route()
 def featured(href=None, **kwargs):
     folder = plugin.Folder( _.FEATURED)
+    for row in api.page():
+        folder.add_item(
+            label = row['name'],
+            path = plugin.url_for(section, href=row['href']),
+        )
+    return folder
 
-    if href is None:
-        folder = plugin.Folder(_.FEATURED)
-        for section in api.featured():
-            folder.add_item(
-                label = section['name'],
-                path = plugin.url_for(featured, href=section['href']),
-            )
-    else:
-        data = api.featured_href(href)
-        folder = plugin.Folder(data['title'])
-        for row in data.get('items', []):
-            item = _parse_row(row['_embedded'])
-            folder.add_items(item)
+@plugin.route()
+def sport(**kwargs):
+    folder = plugin.Folder(_.SPORT)
+    for row in api.page('sport'):
+        folder.add_item(
+            label = row['name'],
+            path = plugin.url_for(section, href=row['href']),
+        )
+    return folder
 
-        if data['nextPage']:
-            folder.add_item(
-                label = _(_.NEXT_PAGE),
-                path = plugin.url_for(featured, href=data['nextPage']),
-                specialsort = 'bottom',
-            )
+@plugin.route()
+def section(href, **kwargs):
+    data = api.section(href)
+    folder = plugin.Folder(data['title'])
+
+    for row in data.get('items', []):
+        item = _parse_row(row['_embedded'])
+        folder.add_items(item)
+
+    if data['nextPage']:
+        folder.add_item(
+            label = _(_.NEXT_PAGE),
+            path = plugin.url_for(section, href=data['nextPage']),
+            specialsort = 'bottom',
+        )
 
     return folder
 
@@ -322,6 +367,57 @@ def _parse_row(row):
             path = plugin.url_for(play, channel=row['page']['href'].split('/')[-1], _is_live=True),
             playable = True,
         )
+    elif row['type'] == 'sportVideo':
+        item = _process_sport_video(row)
+        return item
+
+def _process_sport_video(row):
+    now = arrow.now()
+
+    def get_image(type):
+        for img in row['images']:
+            if img['type'] == type:
+                return img['src']
+
+    is_live = row['videoType'] == 'LIVE'
+    title = row['title']
+    if row['phase']:
+        title += ' : ' + row['phase']
+
+    start = now
+    end = now
+    if 'startTime' in row['media']:
+        start = arrow.get(row['media']['startTime'])
+    if 'endTime' in row['media']:
+        end = arrow.get(row['media']['endTime'])
+
+    if row['media']['source'] == 'brightcove':
+        path = plugin.url_for(play, brightcoveId=row['media']['id'], _is_live=is_live)
+    else:
+        path = plugin.url_for(play, mediakindhref=row['playbackHref'], _is_live=is_live)
+
+    item = plugin.Item(
+        label = title,
+        info = {'plot': row['description'] or row['synopsis'], 'duration': pthms_to_seconds(row['media']['duration'])},
+        art = {'thumb': get_image('tile'), 'fanart': get_image('cover')},
+        path = path,
+        playable = True,
+    )
+
+    if start < now and end > now:
+        item.label += _(' (LIVE)', _bold=True)
+        item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
+            add_url_args(path, play_type=PLAY_FROM_LIVE)
+        )))
+
+        item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
+            add_url_args(path, play_type=PLAY_FROM_START)
+        )))
+    elif start > now:
+        item.label += _(start.to('local').format(_.DATE_FORMAT), _bold=True)
+
+    return item
+
 
 @plugin.route()
 def live_tv(**kwargs):
@@ -374,24 +470,66 @@ def live_tv(**kwargs):
 
     return folder
 
+
 @plugin.route()
-def play(livestream=None, brightcoveId=None, channel=None, **kwargs):
+def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, play_type=None, **kwargs):
+    headers = HEADERS
+
+    if play_type is None:
+        play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, PLAY_FROM_ASK)
+    play_type = int(play_type)
+
     if brightcoveId:
         item = api.get_brightcove_src(brightcoveId)
 
     elif livestream:
         item = plugin.Item(path=livestream, art=False, inputstream=inputstream.HLS(live=True))
-        
-        if ROUTE_LIVE_TAG in kwargs and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START):
-            item.resume_from = 1
-            item.inputstream = inputstream.HLS(force=True, live=True)
-            if not item.inputstream.check():
-                plugin.exception(_.LIVE_HLS_REQUIRED)
+
+        if ROUTE_LIVE_TAG in kwargs:
+            if play_type == PLAY_FROM_START:
+                item.resume_from = 1
+            elif play_type == PLAY_FROM_ASK:
+                item.resume_from = plugin.live_or_start()
+                if item.resume_from == -1:
+                    return
+
+            if item.resume_from == 1:
+                item.inputstream = inputstream.HLS(force=True, live=True)
+                if not item.inputstream.check():
+                    plugin.exception(_.LIVE_HLS_REQUIRED)
 
     elif channel:
         data = api.channel(channel)
         item = plugin.Item(path=data['publisherMetadata']['liveStreamUrl'], art=False, inputstream=inputstream.HLS(live=True))
 
-    item.headers = HEADERS
-    
+    elif mediakindhref:
+        if not api.logged_in:
+            plugin.exception(_.PLUGIN_LOGIN_REQUIRED)
+
+        data = api.play(mediakindhref)
+        if 'message' in data:
+            plugin.exception(data['message'])
+
+        item = plugin.Item(
+            path = data['streaming']['dash']['url'],
+            inputstream = inputstream.Widevine(license_key=data['encryption']['licenseServers']['widevine']),
+        )
+        headers['Authorization'] = data['encryption']['drmToken']
+
+        if ROUTE_LIVE_TAG in kwargs:
+            if play_type == PLAY_FROM_START:
+                item.resume_from = 1
+            elif play_type == PLAY_FROM_ASK:
+                item.resume_from = plugin.live_or_start()
+                if item.resume_from == -1:
+                    return
+
+            if not item.resume_from:
+                ## Need below to seek to live over multi-periods
+                item.resume_from = LIVE_HEAD
+
+    else:
+        plugin.exception('Unknown playback url')
+
+    item.headers = headers
     return item

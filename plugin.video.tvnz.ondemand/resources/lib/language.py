@@ -16,5 +16,7 @@ class Language(BaseLanguage):
     FLATTEN_SEASONS  = 30012
     HIDE_EMPTY_SHOWS = 30013
     FEATURED         = 30014
+    SPORT            = 30015
+    DATE_FORMAT      = 30016
 
 _ = Language()

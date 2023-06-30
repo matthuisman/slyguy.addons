@@ -1,12 +1,29 @@
-from slyguy import util, mem_cache
+from slyguy import util, mem_cache, userdata
+from slyguy.util import jwt_data
 from slyguy.session import Session
+from slyguy.exceptions import Error
 
 from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT
 
+
+class APIError(Error):
+    pass
+
+
 class API(object):
-    def __init__(self):
+    def new_session(self):
+        self.logged_in = False
         self._session = Session(HEADERS, base_url=API_URL)
         #x-tvnz-active-profile-id (profile support)
+        self._set_authentication()
+
+    def _set_authentication(self):
+        token = userdata.get('token')
+        if not token:
+            return
+
+        self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
+        self.logged_in = True
 
     @mem_cache.cached(60*30)
     def _category(self, slug):
@@ -29,11 +46,34 @@ class API(object):
         
         return data['title'], shows
 
-   # @mem_cache.cached(60*5)
-    def featured(self):
+    def login(self, username, password):
+        payload = {
+            'email': username,
+            'password': password,
+            'keepMeLoggedIn': True
+        }
+
+        resp = self._session.post('/api/v1/androidtv/consumer/login', json=payload)
+        if not resp.ok:
+            raise APIError('Invalid login details')
+
+        token = resp.headers['aat']
+        token_data = jwt_data(token)
+        expires = token_data['exp']
+
+        userdata.set('token', token)
+        userdata.set('token_expires', expires)
+        self._set_authentication()
+
+    def logout(self):
+        userdata.delete('token')
+        userdata.delete('token_expires')
+        self.new_session()
+
+    def page(self, page=''):
         sections = []
 
-        data = self._session.get('/api/v2/android/play/page/').json()
+        data = self._session.get('/api/v2/android/play/page/{}'.format(page)).json()
         order = ['hero', 'above', 'main', 'below', '_other']
         for _type in sorted(data['layout']['slots'], key=lambda x: order.index(x) if x in order else order.index('_other')):
             for module in data['layout']['slots'][_type].get('modules', []):
@@ -51,7 +91,7 @@ class API(object):
 
         return sections
 
-    def featured_href(self, href):
+    def section(self, href):
         data = self._session.get(href).json()
         for row in data['items']:
             row['_embedded'] = data['_embedded'][row['href']]
@@ -127,3 +167,6 @@ class API(object):
         data = resp.json()
 
         return util.process_brightcove(data)
+
+    def play(self, href):
+        return self._session.get(href).json()

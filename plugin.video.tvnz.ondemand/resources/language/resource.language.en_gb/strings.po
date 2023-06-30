@@ -61,6 +61,14 @@ msgctxt "#30014"
 msgid "Featured"
 msgstr ""
 
+msgctxt "#30015"
+msgid "Sport"
+msgstr ""
+
+msgctxt "#30016"
+msgid " (D MMM, h:mm A)"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
@@ -86,3 +94,16 @@ msgstr ""
 msgctxt "#32073"
 msgid "Disabled"
 msgstr ""
+
+msgctxt "#32066"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32065"
+msgid "From Live"
+msgstr ""
+
+msgctxt "#32064"
+msgid "From Start"
+msgstr ""
+
