@@ -89,19 +89,17 @@ def start():
         log.exception(e)
 
     ## Inital wait on boot
-    monitor.waitForAbort(5)
+    monitor.waitForAbort(30)
 
     try:
         while not monitor.abortRequested():
-            try: check_updates()
-            except Exception as e: log.exception(e)
-
-            try: check_repo()
-            except Exception as e: log.exception(e)
-
-            if not is_donor or settings.getBool('show_news'):
-                try: _check_news()
-                except Exception as e: log.exception(e)
+            try:
+                check_updates()
+                check_repo()
+                if not is_donor or settings.getBool('show_news'):
+                    _check_news()
+            except Exception as e:
+                log.exception(e)
 
             if monitor.waitForAbort(60):
                 break
