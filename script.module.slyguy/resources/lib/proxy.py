@@ -45,6 +45,7 @@ CODECS = [
 
 ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
+DEFAULT_SESSION_NAME = 'playback'
 PROXY_GLOBAL = {
     'last_qualities': [],
     'sessions': {},
@@ -141,7 +142,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             if header.lower() not in REMOVE_IN_HEADERS:
                 self._headers[header.lower()] = self.headers[header]
 
-        session_type = self._headers.pop('session_type', 'playback')
+        session_type = self._headers.pop('session_type', DEFAULT_SESSION_NAME)
         session_addonid = self._headers.pop('session_addonid', None)
         self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
 
@@ -1438,10 +1439,14 @@ class ResponseStream(object):
 
 def save_session():
     # persist session across service restarts
-    session = PROXY_GLOBAL['session']
+    session = PROXY_GLOBAL['sessions'].get(DEFAULT_SESSION_NAME)
+    if not session:
+        return
+
     requests_session = session.pop('session', None)
     if requests_session:
         session['cookies'] = requests_session.cookies.get_dict()
+
     set_kodi_string('_slyguy_proxy_data', json.dumps(session))
     log.debug('Session saved')
 
