@@ -470,5 +470,5 @@ def playlist(output, **kwargs):
                 continue
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" channel-id="{channel}" group-title="{group}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=elem['channelCode'], channel=elem['channelId'], logo=_image('{id}:{site_id}:CHANNEL:IMAGE'.format(id=elem['id'], site_id=LIVE_SITEID), fragment=elem['title']),
+                id=elem['channelCode'], channel=elem['channelId'], logo=gui.get_art_url(_image('{id}:{site_id}:CHANNEL:IMAGE'.format(id=elem['id'], site_id=LIVE_SITEID), fragment=elem['title'])),
                 name=elem['title'], group=genres.get(elem['channelCode'], ''), url=plugin.url_for(play, media_type=TYPE_LIVE, id=elem['id'], _is_live=True)))
