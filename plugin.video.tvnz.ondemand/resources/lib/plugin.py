@@ -479,6 +479,10 @@ def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, p
         play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, PLAY_FROM_ASK)
     play_type = int(play_type)
 
+    if channel:
+        data = api.channel(channel)
+        mediakindhref = data['playbackHref']
+
     if brightcoveId:
         item = api.get_brightcove_src(brightcoveId)
 
@@ -498,10 +502,6 @@ def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, p
                 if not item.inputstream.check():
                     plugin.exception(_.LIVE_HLS_REQUIRED)
 
-    elif channel:
-        data = api.channel(channel)
-        item = plugin.Item(path=data['publisherMetadata']['liveStreamUrl'], art=False, inputstream=inputstream.HLS(live=True))
-
     elif mediakindhref:
         if not api.logged_in:
             plugin.exception(_.PLUGIN_LOGIN_REQUIRED)
@@ -517,12 +517,13 @@ def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, p
         headers['Authorization'] = data['encryption']['drmToken']
 
         if ROUTE_LIVE_TAG in kwargs:
-            if play_type == PLAY_FROM_START:
-                item.resume_from = 1
-            elif play_type == PLAY_FROM_ASK:
-                item.resume_from = plugin.live_or_start()
-                if item.resume_from == -1:
-                    return
+            if not channel:
+                if play_type == PLAY_FROM_START:
+                    item.resume_from = 1
+                elif play_type == PLAY_FROM_ASK:
+                    item.resume_from = plugin.live_or_start()
+                    if item.resume_from == -1:
+                        return
 
             if not item.resume_from:
                 ## Need below to seek to live over multi-periods
