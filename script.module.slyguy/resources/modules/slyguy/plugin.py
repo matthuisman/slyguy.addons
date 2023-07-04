@@ -347,7 +347,7 @@ def _ia_install(**kwargs):
     inputstream.install_widevine(reinstall=True)
 
 @route(ROUTE_IA_HELPER)
-def _ia_helper(protocol, drm=None, **kwargs):
+def _ia_helper(protocol, drm='', **kwargs):
     _close()
     result = bool(inputstream.ia_helper(protocol, drm=drm))
     log.debug('IA Helper Result: {}'.format(result))

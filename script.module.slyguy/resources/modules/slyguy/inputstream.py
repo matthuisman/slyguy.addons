@@ -93,17 +93,29 @@ class MPD(InputstreamItem):
     def do_check(self):
         return require_version(self.minversion, required=True)
 
-class Playready(InputstreamItem):
+class ISM(InputstreamItem):
     manifest_type = 'ism'
-    license_type = 'com.microsoft.playready'
     mimetype = 'application/vnd.ms-sstr+xml'
     minversion = IA_PR_MIN_VER
+
+    def do_check(self):
+        return require_version(self.minversion, required=True)
+
+class Playready(InputstreamItem):
+    license_type = 'com.microsoft.playready'
+    minversion = IA_PR_MIN_VER
+
+    def __init__(self, manifest_type='ism', mimetype='application/vnd.ms-sstr+xml', **kwargs):
+        super(Playready, self).__init__(**kwargs)     
+        self.manifest_type = manifest_type   
+        self.mimetype = mimetype
 
     def do_check(self):
         return require_version(self.minversion, required=True) and KODI_VERSION > 17 and xbmc.getCondVisibility('system.platform.android')
 
 class Widevine(InputstreamItem):
     license_type = 'com.widevine.alpha'
+    minversion = IA_WV_MIN_VER
 
     def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', server_certificate=None, license_data=None, license_headers=None, wv_secure=False, flags=None, **kwargs):
         super(Widevine, self).__init__(**kwargs)
@@ -352,12 +364,16 @@ def _download(url, dst_path, md5=None):
     shutil.move(tmp_path, dst_path)
     return True
 
-def ia_helper(protocol, drm=None):
+def ia_helper(protocol, drm=''):
     protocol = protocol.lower().strip()
-    if protocol == 'ism':
-        return Playready().check()
-    elif drm and 'widevine' in drm.lower().strip():
-        return Widevine().check()
+    drm = drm.lower().strip()
+
+    if 'playready' in drm:
+        return Playready(manifest_type=protocol).check()
+    elif 'widevine' in drm:
+        return Widevine(manifest_type=protocol).check()
+    elif protocol == 'ism':
+        return ISM().check()
     elif protocol == 'mpd':
         return MPD().check()
     elif protocol == 'hls':
