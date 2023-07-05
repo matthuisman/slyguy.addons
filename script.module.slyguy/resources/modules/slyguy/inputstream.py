@@ -96,7 +96,7 @@ class MPD(InputstreamItem):
 class ISM(InputstreamItem):
     manifest_type = 'ism'
     mimetype = 'application/vnd.ms-sstr+xml'
-    minversion = IA_PR_MIN_VER
+    minversion = IA_MPD_MIN_VER
 
     def do_check(self):
         return require_version(self.minversion, required=True)
