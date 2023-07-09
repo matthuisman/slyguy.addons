@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.audio.nz.radio" name="RADIO NZ" provider-name="SlyGuy" version="0.14.4">
+<addon id="plugin.audio.nz.radio" name="RADIO NZ" provider-name="SlyGuy" version="0.14.5">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
