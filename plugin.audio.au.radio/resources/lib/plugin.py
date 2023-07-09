@@ -3,6 +3,7 @@ import codecs
 from slyguy import plugin, settings
 from slyguy.session import Session
 from slyguy.mem_cache import cached
+from slyguy.constants import QUALITY_DISABLED
 
 from .constants import DATA_URL, REGIONS
 from .language import _
@@ -49,16 +50,16 @@ def _stations():
 def play(slug, **kwargs):
     region  = get_region()
     channel = get_channels(region)[slug]
-    url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
+    url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '') if 'mjh.nz' in channel['mjh_master'].lower() else None
 
     item = plugin.Item(
-        path     = url or channel['mjh_master'],
-        headers  = channel['headers'],
-        info     = {'plot': channel.get('description')},
-        video    = channel.get('video', {}),
-        audio    = channel.get('audio', {}),
-        art      = {'thumb': channel.get('logo')},
-        use_proxy = False,
+        path = url or channel['mjh_master'],
+        headers = channel['headers'],
+        info = {'plot': channel.get('description')},
+        video = channel.get('video', {}),
+        audio = channel.get('audio', {}),
+        art = {'thumb': channel.get('logo')},
+        quality = QUALITY_DISABLED,
     )
 
     return item
