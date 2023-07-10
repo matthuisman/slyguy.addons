@@ -246,7 +246,7 @@ class API(object):
     @mem_cache.cached(60*10)
     def related_shows(self, show_id):
         self._refresh_token()
-        return self._session.get('/v2.0/androidphone/shows/{}/related/shows.json'.format(show_id), params=self._params()).json()['relatedShows']
+        return self._session.get('/v2.0/androidphone/shows/{}/related/shows.json'.format(show_id), params=self._params()).json().get('relatedShows', [])
 
     @mem_cache.cached(60*5)
     def show_menu(self, show_id):

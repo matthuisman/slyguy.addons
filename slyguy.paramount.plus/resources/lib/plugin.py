@@ -406,81 +406,52 @@ def related_shows(show_id, **kwargs):
 def show(show_id, config=None, **kwargs):
     _show = api.show(show_id)
     art = _show_art(_show['showAssets'])
-
     folder = plugin.Folder(_show['show']['results'][0]['title'], thumb=art.get('thumb'), fanart=art.get('fanart'))
-
     plot = _show['show']['results'][0]['about'] + '\n\n'
 
-    if not config:
-        for row in api.show_menu(show_id):
-            if row.get('videoConfigUniqueName'): #and row.get('hasResultsFromVideoConfig'):
-                config = api.show_config(show_id, row['videoConfigUniqueName'])
-                if config.get('display_seasons'):
-                    clip_count = 0
-                    for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
-                        clip_count += row['clipsCount']
-                        if not row['totalCount']:
-                            continue
+    if config:
+        config = api.show_config(show_id, config)
+        items = _show_episodes(_show, config['sectionId'], ignore_eps=True)
+        folder.add_items(items)
+        return folder
 
-                        folder.add_item(
-                            label = _(_.SEASON, season=row['seasonNum']),
-                            info = {
-                                'plot': plot,
-                                'mediatype': 'season',
-                                'tvshowtitle': _show['show']['results'][0]['title'],
-                            },
-                            path = plugin.url_for(season, show_id=show_id, section=config['sectionId'], season=row['seasonNum']),
-                        )
-                    continue
+    for row in api.show_menu(show_id):
+        if row.get('videoConfigUniqueName'): #and row.get('hasResultsFromVideoConfig'):
+            config = api.show_config(show_id, row['videoConfigUniqueName'])
+            if config.get('display_seasons'):
+                for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
+                    if not row['totalCount']:
+                        continue
 
+                    folder.add_item(
+                        label = _(_.SEASON, season=row['seasonNum']),
+                        info = {
+                            'plot': plot,
+                            'mediatype': 'season',
+                            'tvshowtitle': _show['show']['results'][0]['title'],
+                        },
+                        path = plugin.url_for(season, show_id=show_id, section=config['sectionId'], season=row['seasonNum']),
+                    )
+            else:
                 folder.add_item(
                     label = row['title'],
                     path = plugin.url_for(show, show_id=show_id, config=row['videoConfigUniqueName']),
                     specialsort = 'bottom',
                 )
 
-            elif row['page_type'] == 'related_shows':
-                folder.add_item(
-                    label = row['title'],
-                    path = plugin.url_for(related_shows, show_id=show_id),
-                    specialsort = 'bottom',
-                )
+        elif row['page_type'] == 'related_shows':
+            folder.add_item(
+                label = row['title'],
+                path = plugin.url_for(related_shows, show_id=show_id),
+                specialsort = 'bottom',
+            )
 
-            elif row['page_type'] == 'channel' and row.get('currentListingsSize'):
-                folder.add_item(
-                    label = row['title'],
-                    path = plugin.url_for(live_tv, channel_slug=row['channel_slug']),
-                    specialsort = 'bottom',
-                )
-
-        return folder
-
-    config = api.show_config(show_id, config)
-    if not config.get('display_seasons'):
-        items = _show_episodes(_show, config['sectionId'], ignore_eps=True)
-        folder.add_items(items)
-        return folder
-
-    clip_count = 0
-    for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
-        clip_count += row['clipsCount']
-        if not row['totalCount']:
-            continue
-
-        folder.add_item(
-            label = _(_.SEASON, season=row['seasonNum']),
-            info = {
-                'plot': plot,
-                'mediatype': 'season',
-                'tvshowtitle': _show['show']['results'][0]['title'],
-            },
-            path = plugin.url_for(season, show_id=show_id, section=config['sectionId'], season=row['seasonNum']),
-        )
-
-    # if clip_count:
-    #     folder.add_item(
-    #         label = _.CLIPS,
-    #     )
+        elif row['page_type'] == 'channel' and row.get('currentListingsSize'):
+            folder.add_item(
+                label = row['title'],
+                path = plugin.url_for(live_tv, channel_slug=row['channel_slug']),
+                specialsort = 'bottom',
+            )
 
     return folder
 
