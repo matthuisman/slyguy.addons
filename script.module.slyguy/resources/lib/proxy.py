@@ -1386,7 +1386,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     license_data = b'None'
                 gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
 
-            self._session['license_init'] = license_data
+            self._session['license_init'] = True
 
         self._output_response(response)
 
@@ -1442,6 +1442,8 @@ def save_session():
     session = PROXY_GLOBAL['sessions'].get(DEFAULT_SESSION_NAME)
     if not session:
         return
+
+    print(session)
 
     requests_session = session.pop('session', None)
     if requests_session:
