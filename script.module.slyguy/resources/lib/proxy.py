@@ -1443,8 +1443,6 @@ def save_session():
     if not session:
         return
 
-    print(session)
-
     requests_session = session.pop('session', None)
     if requests_session:
         session['cookies'] = requests_session.cookies.get_dict()
