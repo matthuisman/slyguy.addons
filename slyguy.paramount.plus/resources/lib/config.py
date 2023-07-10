@@ -81,6 +81,10 @@ class Config(object):
         return self._config['country']
 
     @property
+    def locale(self):
+        return self._config['locale']
+
+    @property
     def episodes_section(self):
         return CONFIG[self.region]['episodes_section']
 
@@ -146,9 +150,16 @@ class Config(object):
         if not app_version.get('availableInRegion'):
             return None
 
+        app_locale = 'en-us'
+        for locale in data.get('localesSupport', []):
+            if locale.get('isDefaultLanguage'):
+                app_locale = locale['lang']
+                break
+
         config = {
             'version': ADDON_VERSION,
             'region': region,
+            'locale': app_locale,
             'country': app_version['clientRegion'],
             'mvpd': app_version['clientRegion'] in app_config.get('mvpd_enabled_countries', []),
             'live_tv': app_config.get('livetv_disabled') != 'true',
