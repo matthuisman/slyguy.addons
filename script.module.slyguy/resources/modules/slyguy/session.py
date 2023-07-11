@@ -136,8 +136,8 @@ class RawSession(requests.Session):
                 elif entry.startswith('r:'):
                     _type = 'resolver'
                     entry = entry[2:]
-                elif entry.startswith('s:'):
-                    _type = 'source_address'
+                elif entry.startswith('i:'):
+                    _type = 'interface_ip'
                     entry = entry[2:]
                 elif entry[0].isdigit():
                     _type = 'dns'
@@ -189,7 +189,7 @@ class RawSession(requests.Session):
             'ssl_ciphers': self._ssl_ciphers,
             'ssl_options': self._ssl_options,
             'proxy': None,
-            'source_address': None,
+            'interface_ip': None,
             'rewrite': None,
             'resolver': None,
             'url': url,
@@ -209,8 +209,8 @@ class RawSession(requests.Session):
                         session_data['url'] = re.sub(row[0], entry[1], url, count=1)
                     elif entry[0] == 'proxy':
                         session_data['proxy'] = entry[1]
-                    elif entry[0] == 'source_address':
-                        session_data['source_address'] = entry[1]
+                    elif entry[0] == 'interface_ip':
+                        session_data['interface_ip'] = entry[1]
                     elif entry[0] == 'dns':
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
@@ -231,8 +231,8 @@ class RawSession(requests.Session):
                 request_context['ssl_context'] = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=session_data['ssl_ciphers'], options=session_data['ssl_options'])
                 pool_key = pool_key._replace(key_ssl_context=(session_data['ssl_ciphers'], session_data['ssl_options']))
 
-            if session_data['source_address']:
-                request_context['source_address'] = (session_data['source_address'], 0)
+            if session_data['interface_ip']:
+                request_context['source_address'] = (session_data['interface_ip'], 0)
                 pool_key = pool_key._replace(key_source_address=request_context['source_address'])
 
             # ensure we get a unique pool (socket) for same domain on different rewrite ips
