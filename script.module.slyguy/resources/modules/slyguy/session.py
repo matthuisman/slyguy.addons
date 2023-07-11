@@ -19,7 +19,7 @@ from .smart_urls import get_dns_rewrites
 from .log import log
 from .language import _
 from .exceptions import SessionError, Error
-from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, ADDON_ID
+from .constants import DEFAULT_USERAGENT, CHUNK_SIZE
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -36,10 +36,6 @@ SSL_CIPHERS = 'ECDHE-ECDSA-AES256-GCM-SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_256_
 SSL_OPTIONS = None
 DNS_CACHE = dns.resolver.Cache()
 
-ciphers_list = SSL_CIPHERS.split(':')
-random.shuffle(ciphers_list)
-SSL_CIPHERS = ':'.join(ciphers_list)
-
 # Save pointers to original functions
 orig_connection_from_pool_key = urllib3.PoolManager.connection_from_pool_key
 orig_getaddrinfo = socket.getaddrinfo
@@ -50,22 +46,6 @@ def json_override(func, error_msg):
         return func()
     except Exception as e:
         raise SessionError(error_msg or _.JSON_ERROR)
-
-class SSLAdapter(requests.adapters.HTTPAdapter):
-    def __init__(self, ciphers=None, options=None):
-        self._ciphers = ciphers
-        self._options = options
-        super(SSLAdapter, self).__init__()
-
-    def init_poolmanager(self, *args, **kwargs):
-        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self._ciphers, options=self._options)
-        kwargs['ssl_context'] = context
-        return super(SSLAdapter, self).init_poolmanager(*args, **kwargs)
-
-    def proxy_manager_for(self, *args, **kwargs):
-        context = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self._ciphers, options=self._options)
-        kwargs['ssl_context'] = context
-        return super(SSLAdapter, self).proxy_manager_for(*args, **kwargs)
 
 SESSIONS = []
 @signals.on(signals.AFTER_DISPATCH)
@@ -124,7 +104,7 @@ class DOHResolver(object):
         raise SessionError('Unable to resolve host: {} with nameservers: {}'.format(host, self.nameservers))
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=None, proxy=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
@@ -133,11 +113,13 @@ class RawSession(requests.Session):
         self._proxy = proxy
         self._cert = None
 
+        ciphers_list = ssl_ciphers.split(':')
+        random.shuffle(ciphers_list)
+        self._ssl_ciphers = ':'.join(ciphers_list)
+        self._ssl_options = ssl_options
+
         if auto_close:
             SESSIONS.append(self)
-
-        self._ssl_adapter = SSLAdapter(ciphers=ssl_ciphers, options=SSL_OPTIONS)
-        self.mount('https://', self._ssl_adapter)
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
@@ -148,11 +130,14 @@ class RawSession(requests.Session):
             new_entries = []
             for entry in entries:
                 _type = 'skip'
-                if entry.startswith('>'):
+                if entry.startswith('p:'):
                     _type = 'proxy'
-                    entry = entry[1:]
+                    entry = entry[2:]
                 elif entry.startswith('r:'):
                     _type = 'resolver'
+                    entry = entry[2:]
+                elif entry.startswith('s:'):
+                    _type = 'source_address'
                     entry = entry[2:]
                 elif entry[0].isdigit():
                     _type = 'dns'
@@ -201,7 +186,10 @@ class RawSession(requests.Session):
         url = req.prepare().url
 
         session_data = {
+            'ssl_ciphers': self._ssl_ciphers,
+            'ssl_options': self._ssl_options,
             'proxy': None,
+            'source_address': None,
             'rewrite': None,
             'resolver': None,
             'url': url,
@@ -221,6 +209,8 @@ class RawSession(requests.Session):
                         session_data['url'] = re.sub(row[0], entry[1], url, count=1)
                     elif entry[0] == 'proxy':
                         session_data['proxy'] = entry[1]
+                    elif entry[0] == 'source_address':
+                        session_data['source_address'] = entry[1]
                     elif entry[0] == 'dns':
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
@@ -236,13 +226,22 @@ class RawSession(requests.Session):
 
             self._session_cache[url] = session_data
 
-        def connection_from_pool_key(self, pool_key, request_context=None):
+        def connection_from_pool_key(self, pool_key, request_context):
+            if session_data['ssl_ciphers'] or session_data['ssl_options']:
+                request_context['ssl_context'] = requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=session_data['ssl_ciphers'], options=session_data['ssl_options'])
+                pool_key = pool_key._replace(key_ssl_context=(session_data['ssl_ciphers'], session_data['ssl_options']))
+
+            if session_data['source_address']:
+                request_context['source_address'] = (session_data['source_address'], 0)
+                pool_key = pool_key._replace(key_source_address=request_context['source_address'])
+
             # ensure we get a unique pool (socket) for same domain on different rewrite ips
             if session_data['rewrite'] and session_data['rewrite'][0] == request_context['host']:
                 pool_key = pool_key._replace(key_server_hostname=session_data['rewrite'][1])
             # ensure we get a unique pool (socket) for same domain on different resolvers
             elif session_data['resolver'] and session_data['resolver'][0] == request_context['host']:
                 pool_key = pool_key._replace(key_server_hostname=session_data['resolver'][1].nameservers[0])
+
             return orig_connection_from_pool_key(self, pool_key, request_context)
 
         def getaddrinfo(host, port, family=0, _type=0, proto=0, flags=0):
@@ -272,12 +271,6 @@ class RawSession(requests.Session):
         def _ssl_wrap_socket_impl(*args, **kwargs):
             ssl_obj = orig_ssl_wrap_socket_impl(*args, **kwargs)
             log.debug('SSL Cipher: {} - {}'.format(ssl_obj.server_hostname, ssl_obj.cipher()))
-            ## python 3.7 only:
-            # 'version': ssl_obj.version(),
-            # 'compression': ssl_obj.compression(),
-            # 'peercert': ssl_obj.getpeercert(),
-            # 'protocol': ssl_obj.selected_alpn_protocol(),
-            # 'shared_ciphers': [x[0] for x in ssl_obj.shared_ciphers()],
             return ssl_obj
 
         if session_data['url'] != url:
@@ -390,7 +383,8 @@ class Session(RawSession):
                     raise
                 else:
                     continue
-            except:
+            except Exception as e:
+                log.exception(e)
                 resp = None
 
             if resp is None:
