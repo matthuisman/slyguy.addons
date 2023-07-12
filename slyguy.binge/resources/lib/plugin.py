@@ -611,7 +611,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     if asset['data']['type'] == 'tv-episode' and settings.getBool('play_next_episode', True):
         up_next = api.up_next(id)
-        if up_next:
+        if up_next and up_next['data']['type'] == 'tv-episode' and up_next['data']['clickthrough']['show'] == asset['data']['clickthrough']['show']:
             item.play_next['next_file'] = plugin.url_for(play, id=up_next['data']['id'], start_from=start_from, play_type=play_type)
 
     if stream['streamingFormat'] == FORMAT_DASH:
