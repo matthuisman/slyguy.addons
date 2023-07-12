@@ -162,21 +162,24 @@ class API(object):
         self._refresh_token()
 
         payload = {
-            'assetId': asset_id,
-            'canPlayHevc': settings.getBool('hevc', False),
-            'contentType': 'application/xml+dash',
-            'drm': True,
-            'forceSdQuality': False,
-            'playerName': 'exoPlayerTV',
-            'udid': UDID,
+            "assetId": asset_id,
+            "application": {"name":"binge", "appId":"binge.com.au"},
+            "device":{"id":UDID, "type":"android"},
+            "player":{"name":"exoPlayerTV"},
+            "ads":{"optOut": True},
+            "capabilities":{"codecs":["avc"]},
+            "session":{"intent":"playback"}
         }
 
-        data = self._session.post('https://play.binge.com.au/api/v1/play', json=payload, headers=self._auth_header).json()
+        if settings.getBool('hevc', False):
+            payload['capabilities']['codecs'].append('hevc')
+
+        data = self._session.post('https://play.binge.com.au/api/v3/play', json=payload, headers=self._auth_header).json()
         if ('status' in data and data['status'] != 200) or 'errors' in data:
             msg = data.get('detail') or data.get('errors', [{}])[0].get('detail')
             raise APIError(_(_.ASSET_ERROR, msg=msg))
 
-        return data['data'][0]
+        return data
 
     def logout(self):
         userdata.delete('access_token')

@@ -556,23 +556,30 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
                 return
 
     asset = api.stream(id)
-    streams = [asset['recommendedStream']]
-    streams.extend(asset['alternativeStreams'])
-    streams = [s for s in streams if s['mediaFormat'] in SUPPORTED_FORMATS]
+
+    streams = []
+    for s in asset['streams']:
+        drm = s['drm']
+        if drm and 'com.widevine.alpha' not in s.get('licenseAcquisitionUrl'):
+            continue
+
+        if drm:
+            s['streamingFormat'] = 'drm-{}'.format(s['streamingFormat'])
+
+        if s['streamingFormat'] not in SUPPORTED_FORMATS:
+            continue
+
+        s['provider'] = s['provider'].upper()
+        streams.append(s)
+
     if not streams:
         raise PluginError(_.NO_STREAM)
 
     prefer_cdn = settings.getEnum('prefer_cdn', AVAILABLE_CDNS)
-    prefer_format = SUPPORTED_FORMATS[0]
-
     if prefer_cdn == CDN_AUTO:
         try:
             data = api.use_cdn(is_live)
             prefer_cdn = data['useCDN']
-            prefer_format = 'ssai-{}'.format(data['mediaFormat']) if data.get('ssai') else data['mediaFormat']
-            if prefer_format.startswith('ssai-'):
-                log.debug('Stream Format: Ignoring prefer ssai format')
-                prefer_format = prefer_format[5:]
         except Exception as e:
             log.exception(e)
             log.debug('Failed to get preferred cdn')
@@ -581,37 +588,36 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     providers = [prefer_cdn]
     providers.extend([s['provider'] for s in streams])
 
-    formats = [prefer_format]
-    formats.extend(SUPPORTED_FORMATS)
-
-    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), formats.index(k['mediaFormat'])))
+    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), ['fhd','sd'].index(k['urlProfile']), SUPPORTED_FORMATS.index(k['streamingFormat'])))
     stream = streams[0]
 
-    log.debug('Stream CDN: {provider} | Stream Format: {mediaFormat}'.format(**stream))
+    log.debug('Stream CDN: {provider} | Stream Format: {streamingFormat}'.format(**stream))
 
     item = plugin.Item(
-        path = stream['manifest']['uri'],
+        path = stream['manifest'],
         headers = HEADERS,
     )
 
-    if stream['mediaFormat'] == FORMAT_DASH:
+    asset_type = asset['playerEventRequest']['body']['progress']['assetType']
+
+    if stream['streamingFormat'] == FORMAT_DASH:
         item.inputstream = inputstream.MPD()
 
-    elif stream['mediaFormat'] in (FORMAT_HLS_TS, FORMAT_HLS_TS_SSAI):
-        force = stream['mediaFormat'] == FORMAT_HLS_TS_SSAI or (is_live and play_type == PLAY_FROM_LIVE and asset['assetType'] != 'live-linear')
+    elif stream['streamingFormat'] in (FORMAT_HLS_TS):
+        force = is_live and play_type == PLAY_FROM_LIVE and asset_type != 'live-linear'
         item.inputstream = inputstream.HLS(force=force, live=is_live)
         if force and not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
-    elif stream['mediaFormat'] in (FORMAT_HLS_FMP4, FORMAT_HLS_FMP4_SSAI):
+    elif stream['streamingFormat'] in (FORMAT_HLS_FMP4):
         ## No audio on ffmpeg or IA
         item.inputstream = inputstream.HLS(force=True, live=is_live)
         if not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)
 
-    elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_HEVC):
+    elif stream['streamingFormat'] in (FORMAT_DRM_DASH):
         item.inputstream = inputstream.Widevine(
-            license_key=plugin.url_for(license_request, license_url=stream['drm']['uri'] if 'drm' in stream else LICENSE_URL),
+            license_key=plugin.url_for(license_request, license_url=stream['licenseAcquisitionUrl']['com.widevine.alpha']),
         )
 
     if start_from and not ROUTE_RESUME_TAG in kwargs:
