@@ -158,6 +158,18 @@ class API(object):
         self._refresh_token()
         return self._auth_header
 
+    def asset(self, asset_id):
+        self._refresh_token()
+        params = {'profile': userdata.get('profile_id')}
+        return self._session.get('https://api.binge.com.au/v1/private/assets/{}'.format(asset_id), params=params, headers=self._auth_header).json()
+
+    def up_next(self, asset_id):
+        data = self.landing('next', params={'asset': asset_id})
+        for panel in data.get('panels', []):
+            if panel.get('countdown') and panel.get('contents'):
+                return panel['contents'][0]
+        return None
+
     def stream(self, asset_id):
         self._refresh_token()
 

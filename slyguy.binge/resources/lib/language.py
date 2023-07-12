@@ -8,6 +8,8 @@ class Language(BaseLanguage):
     LIVE_CHNO             = 30006
     PROFILE_ACTIVATED     = 30007
     SHOW_EPG              = 30008
+    SKIP_CREDITS          = 30009
+    PLAY_NEXT_EPISODE     = 30010
 
     FEATURED              = 30018
     SHOWS                 = 30019

@@ -352,7 +352,7 @@ def _parse_contents(rows):
         if row['contentType'] == 'video' and asset['asset_id']:
             items.append(_parse_video(asset))
 
-        elif row['contentType'] == 'section' and row['data']['type'] == 'feature-film':
+        elif row['contentType'] == 'section' and row['data']['type'] in ('feature-film', 'tv-episode', 'live-linear'):
             items.append(_parse_video(asset))
 
         elif row['contentType'] == 'section' and row['data']['type'] == 'tv-show':
@@ -555,10 +555,14 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
             if start_from == -1:
                 return
 
-    asset = api.stream(id)
+    asset = api.asset(id)
+    playback = api.stream(id)
+
+    item = _parse_contents([asset])[0]
+    item.headers = HEADERS
 
     streams = []
-    for s in asset['streams']:
+    for s in playback['streams']:
         drm = s['drm']
         if drm and 'com.widevine.alpha' not in s.get('licenseAcquisitionUrl'):
             continue
@@ -590,21 +594,31 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     streams = sorted(streams, key=lambda k: (providers.index(k['provider']), ['fhd','sd'].index(k['urlProfile']), SUPPORTED_FORMATS.index(k['streamingFormat'])))
     stream = streams[0]
+    item.path = stream['manifest']
 
     log.debug('Stream CDN: {provider} | Stream Format: {streamingFormat}'.format(**stream))
 
-    item = plugin.Item(
-        path = stream['manifest'],
-        headers = HEADERS,
-    )
+    def _get_marker(name):
+        for marker in playback['metadata'].get('markers', []):
+            if marker['type'] == name:
+                return {'from': marker['startTime'], 'to': marker['endTime']}
+        return None
 
-    asset_type = asset['playerEventRequest']['body']['progress']['assetType']
+    if settings.getBool('skip_credits', False):
+        marker = _get_marker('credits')
+        if marker:
+            item.play_skips.append(marker)
+
+    if asset['data']['type'] == 'tv-episode' and settings.getBool('play_next_episode', True):
+        up_next = api.up_next(id)
+        if up_next:
+            item.play_next['next_file'] = plugin.url_for(play, id=up_next['data']['id'], start_from=start_from, play_type=play_type)
 
     if stream['streamingFormat'] == FORMAT_DASH:
         item.inputstream = inputstream.MPD()
 
     elif stream['streamingFormat'] in (FORMAT_HLS_TS):
-        force = is_live and play_type == PLAY_FROM_LIVE and asset_type != 'live-linear'
+        force = is_live and play_type == PLAY_FROM_LIVE and asset['data']['type'] != 'live-linear'
         item.inputstream = inputstream.HLS(force=force, live=is_live)
         if force and not item.inputstream.check():
             raise PluginError(_.HLS_REQUIRED)

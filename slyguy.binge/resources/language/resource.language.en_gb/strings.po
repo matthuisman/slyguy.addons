@@ -30,6 +30,14 @@ msgctxt "#30008"
 msgid "Show Mini EPG"
 msgstr ""
 
+msgctxt "#30009"
+msgid "Skip Credits"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Play Next Episode"
+msgstr ""
+
 msgctxt "#30018"
 msgid "Featured"
 msgstr ""
