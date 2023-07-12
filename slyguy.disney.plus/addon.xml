@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.13.8">
+<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.13.9">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
@@ -19,11 +19,14 @@ Abonnement requis.</description>
     <description lang="cs">Disney+ je exkluzivní místo pro vaše oblíbené filmy a televizní pořady ze světa Disney, Pixar, Marvel, Star Wars a National Geographic.
 
 Je nutné předplatné.</description>
+      <description lang="pl">Disney+ to wyłączne miejsce dla twoich ulubionych filmów i programów telewizyjnych od Disneya, Pixara, Marvela, Gwiezdnych wojen i National Geographic.
+
+Wymagana subskrypcja.</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>Support OTP email code login</news>
+    <news>Updated pl translation. Thanks @norbiros</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
