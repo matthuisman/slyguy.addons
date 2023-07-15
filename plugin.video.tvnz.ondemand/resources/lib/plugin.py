@@ -160,6 +160,7 @@ def sport(**kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination(key='href')
 def section(href, **kwargs):
     data = api.section(href)
     folder = plugin.Folder(data['title'])
@@ -168,14 +169,7 @@ def section(href, **kwargs):
         item = _parse_row(row['_embedded'])
         folder.add_items(item)
 
-    if data['nextPage']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE),
-            path = plugin.url_for(section, href=data['nextPage']),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, data['nextPage']
 
 @plugin.route()
 def shows(sort=None, **kwargs):
@@ -294,6 +288,7 @@ def show(slug,  **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination(key='href')
 def video_list(href, label, fanart, **kwargs):
     if 'sortOrder=oldestFirst' in href:
         limit = 60
@@ -315,14 +310,7 @@ def video_list(href, label, fanart, **kwargs):
         if len(folder.items) == limit:
             break
 
-    if next_page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE),
-            path = plugin.url_for(video_list, href=next_page, label=label, fanart=fanart),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, next_page
 
 @plugin.route()
 def similar(href, label, fanart, **kwargs):
