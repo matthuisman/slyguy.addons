@@ -38,6 +38,11 @@ msgctxt "#30010"
 msgid "Play Next Episode"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Profile not found\n"
+"Try re-selecting your profile from the main addon menu"
+msgstr ""
+
 msgctxt "#30018"
 msgid "Featured"
 msgstr ""

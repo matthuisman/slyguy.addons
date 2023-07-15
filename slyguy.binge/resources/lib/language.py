@@ -10,6 +10,7 @@ class Language(BaseLanguage):
     SHOW_EPG              = 30008
     SKIP_CREDITS          = 30009
     PLAY_NEXT_EPISODE     = 30010
+    PROFILE_MISSING       = 30011
 
     FEATURED              = 30018
     SHOWS                 = 30019

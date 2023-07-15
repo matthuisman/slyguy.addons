@@ -1,13 +1,14 @@
 import codecs
 import time
 import re
+from xml.dom.minidom import parseString
 
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
-from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, LIVE_HEAD
+from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, LIVE_HEAD, MIDDLEWARE_PLUGIN
 
 from .api import API
 from .language import _
@@ -541,6 +542,30 @@ def license_request(license_url, **kwargs):
     return {'url': license_url, 'headers': headers}
 
 @plugin.route()
+@plugin.plugin_request()
+def mpd_request(_data, _path, tracking_url, **kwargs):
+    root = parseString(_data)
+
+
+    tracking_ids = api.tracking_ids(tracking_url)
+    if tracking_ids:
+        mpd = root.getElementsByTagName("MPD")[0]
+        if mpd.hasAttribute('mediaPresentationDuration'):
+            mpd.removeAttribute('mediaPresentationDuration')
+
+        for period in root.getElementsByTagName('Period'):
+            if period.hasAttribute('start'):
+                period.removeAttribute('start')
+            for tracking_id in tracking_ids:
+                period_id = period.getAttribute('id')
+                if period.getAttribute('id') == tracking_id:
+                    period.parentNode.removeChild(period)
+                    log.debug("Removed tracking period: {}".format(period_id))
+
+    with open(_path, 'wb') as f:
+        f.write(root.toprettyxml(encoding='utf-8'))
+
+@plugin.route()
 @plugin.login_required()
 def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     start_from = int(start_from)
@@ -579,22 +604,15 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     if not streams:
         raise PluginError(_.NO_STREAM)
 
-    prefer_cdn = settings.getEnum('prefer_cdn', AVAILABLE_CDNS)
-    if prefer_cdn == CDN_AUTO:
-        try:
-            data = api.use_cdn(is_live)
-            prefer_cdn = data['useCDN']
-        except Exception as e:
-            log.exception(e)
-            log.debug('Failed to get preferred cdn')
-            prefer_cdn = AVAILABLE_CDNS[0]
-
-    providers = [prefer_cdn]
-    providers.extend([s['provider'] for s in streams])
-
-    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), ['fhd','sd'].index(k['urlProfile']), SUPPORTED_FORMATS.index(k['streamingFormat'])))
+    providers = [settings.getEnum('prefer_cdn', AVAILABLE_CDNS)] + [s['provider'] for s in streams]
+    profiles = ['uhd','fhd','hd','sd'] + [s['urlProfile'] for s in streams]
+    streams = sorted(streams, key=lambda k: (providers.index(k['provider']), profiles.index(k['urlProfile']), SUPPORTED_FORMATS.index(k['streamingFormat'])))
     stream = streams[0]
+
     item.path = stream['manifest']
+    tracking_url = stream.get('adTrackingUrl') or ''
+    if tracking_url:
+        item.proxy_data['middleware'] = {stream['manifest']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request, tracking_url=tracking_url)}}
 
     log.debug('Stream CDN: {provider} | Stream Format: {streamingFormat}'.format(**stream))
 
