@@ -35,8 +35,8 @@ def home(**kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def browse(page=1, **kwargs):
-    page = int(page)
     folder = plugin.Folder(_.BROWSE)
 
     data = api.browse(page=page)
@@ -53,18 +53,11 @@ def browse(page=1, **kwargs):
             path = plugin.url_for(collection, id=collection_id, label=label),
         )
 
-    if data['_links']['next']['href'] is not None:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(browse, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, data['_links']['next']['href'] is not None
 
 @plugin.route()
+@plugin.pagination()
 def collection(id, label, page=1, default_thumb=None, **kwargs):
-    page = int(page)
     folder = plugin.Folder(label)
 
     data = api.collection(id, page=page)
@@ -80,14 +73,7 @@ def collection(id, label, page=1, default_thumb=None, **kwargs):
     # if is_season:
     #     folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
 
-    if data['_links']['next']['href'] is not None:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(collection, id=id, label=label, page=page+1, default_thumb=default_thumb),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, data['_links']['next']['href'] is not None
 
 def _process_items(rows, default_thumb=None):
     items = []
