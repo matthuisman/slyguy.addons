@@ -72,7 +72,6 @@ def featured(index=None, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def videos(category=None, title=None, page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
 
     if category is None:
@@ -101,7 +100,6 @@ def videos(category=None, title=None, page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def podcast_creators(category=None, title=None, page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
 
     if category is None:
@@ -130,7 +128,6 @@ def podcast_creators(category=None, title=None, page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def creators(category=None, title=None, page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
 
     if category is None:
@@ -255,7 +252,6 @@ def _parse_podcasts(rows):
 @plugin.route()
 @plugin.pagination()
 def my_videos(page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
     data = api.my_videos(page=page, page_size=page_size)
 
@@ -267,7 +263,6 @@ def my_videos(page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def my_creators(page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
     data = api.my_creators(page=page, page_size=page_size)
 
@@ -279,7 +274,6 @@ def my_creators(page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def podcasts(slug, page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
     data = api.podcasts(slug, page=page, page_size=page_size)
 
@@ -291,7 +285,6 @@ def podcasts(slug, page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def creator_videos(slug, page=1, **kwargs):
-    page = int(page)
     page_size = settings.getInt('page_size', 50)
     data = api.creator(slug, page=page, page_size=page_size)
 
