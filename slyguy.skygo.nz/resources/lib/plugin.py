@@ -102,8 +102,8 @@ def search(query, page, **kwargs):
     return process_rows(results), False
 
 @plugin.route()
-def collection(id, filters=None, page=1, after=None, **kwargs):
-    page = int(page)
+@plugin.pagination(key='after')
+def collection(id, filters=None, after=None, **kwargs):
     data = api.collection(id, filters, after=after)
     folder = plugin.Folder(data['title'])
 
@@ -119,19 +119,11 @@ def collection(id, filters=None, page=1, after=None, **kwargs):
                 path = plugin.url_for(collection, id=id, filters=row['id']),
             )
 
-        return folder
+        return folder, False
 
     items = process_rows(data['contentPage']['content'])
     folder.add_items(items)
-
-    if data['contentPage']['pageInfo']['hasNextPage']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(collection, id=id, filters=filters or "", page=page+1, after=data['contentPage']['pageInfo']['endCursor']),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, data['contentPage']['pageInfo']['endCursor'] if data['contentPage']['pageInfo']['hasNextPage'] else None
 
 def process_rows(rows):
     items = []
