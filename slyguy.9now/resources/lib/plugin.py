@@ -61,9 +61,9 @@ def show(show, **kwargs):
 
     if settings.getBool('flatten_single_season', True) and len(data['seasons']) == 1:
         if not data['seasons'][0]['episodeCount']:
-            return _clips(show, data['seasons'][0]['slug'])
+            return plugin.redirect(plugin.url_for(clips, show=show, season=data['seasons'][0]['slug']))
         else:
-            return _episodes(show, data['seasons'][0]['slug'])
+            return plugin.redirect(plugin.url_for(episodes, show=show, season=data['seasons'][0]['slug']))
 
     folder = plugin.Folder(data['tvSeries']['name'], fanart=data['tvSeries']['image']['sizes']['w1920'])
 
@@ -112,11 +112,8 @@ def suggested(show, **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def episodes(show, season, page=1, **kwargs):
-    return _episodes(show, season, page)
-
-def _episodes(show, season, page=1):
-    page = int(page)
     data = api.episodes(show, season, page=page, items_per_page=None)
 
     folder = plugin.Folder(
@@ -129,22 +126,11 @@ def _episodes(show, season, page=1):
         item = _parse_episode(row)
         folder.add_items(item)
 
-    if data['episodes']['count'] > (data['episodes']['take'] + data['episodes']['skip']):
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            art = {'thumb': data['tvSeries']['image']['sizes']['w768']},
-            path  = plugin.url_for(episodes, show=show, season=season, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, data['episodes']['count'] > (data['episodes']['take'] + data['episodes']['skip'])
 
 @plugin.route()
+@plugin.pagination()
 def clips(show, season, page=1, **kwargs):
-    return _clips(show, season, page)
-
-def _clips(show, season, page=1):
-    page = int(page)
     data = api.clips(show, season, page=page, items_per_page=50)
 
     folder = plugin.Folder(
@@ -156,15 +142,7 @@ def _clips(show, season, page=1):
         item = _parse_episode(row)
         folder.add_items(item)
 
-    if data['clips']['count'] > (data['clips']['take'] + data['clips']['skip']):
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            art = {'thumb': data['tvSeries']['image']['sizes']['w768']},
-            path  = plugin.url_for(clips, show=show, season=season, page=page+1),
-            specialsort = 'bottom',
-        )
-
-    return folder
+    return folder, data['clips']['count'] > (data['clips']['take'] + data['clips']['skip'])
 
 @plugin.route()
 def shows(sort=None, **kwargs):
