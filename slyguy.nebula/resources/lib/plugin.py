@@ -70,6 +70,7 @@ def featured(index=None, **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def videos(category=None, title=None, page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
@@ -89,23 +90,16 @@ def videos(category=None, title=None, page=1, **kwargs):
                 path = plugin.url_for(videos, category=row['slug'], title=row['title']),
             )
 
-        return folder
+        return folder, False
 
     folder = plugin.Folder(title)
-
     data = api.videos(category=category, page=page, page_size=page_size)
     items = _parse_videos(data['results'])
     folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(videos, category=category, title=title, page=page+1),
-        )
-
-    return folder
+    return folder, data['next']
 
 @plugin.route()
+@plugin.pagination()
 def podcast_creators(category=None, title=None, page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
@@ -125,23 +119,16 @@ def podcast_creators(category=None, title=None, page=1, **kwargs):
                 path = plugin.url_for(podcast_creators, category=row['slug'], title=row['title']),
             )
 
-        return folder
+        return folder, False
 
     folder = plugin.Folder(title)
-
     data = api.podcast_creators(category=category, page=page, page_size=page_size)
     items = _parse_podcast_creators(data['results'])
     folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(podcast_creators, category=category, title=title, page=page+1),
-        )
-
-    return folder
+    return folder, data['next']
 
 @plugin.route()
+@plugin.pagination()
 def creators(category=None, title=None, page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
@@ -161,22 +148,13 @@ def creators(category=None, title=None, page=1, **kwargs):
                 path = plugin.url_for(creators, category=row['slug'], title=row['title']),
             )
 
-        return folder
+        return folder, False
 
     folder = plugin.Folder(title)
-
     data = api.creators(category=category, page=page, page_size=page_size)
-
     items = _parse_creators(data['results'])
     folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(creators, category=category, title=title, page=page+1),
-        )
-
-    return folder
+    return folder, data['next']
 
 def _parse_creators(rows, following=False):
     items = []
@@ -275,6 +253,7 @@ def _parse_podcasts(rows):
     return items
 
 @plugin.route()
+@plugin.pagination()
 def my_videos(page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
@@ -283,16 +262,10 @@ def my_videos(page=1, **kwargs):
     folder = plugin.Folder(_.MY_VIDEOS)
     items = _parse_videos(data['results'], following=True)
     folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(my_videos, page=page+1),
-        )
-
-    return folder
+    return folder, data['next']
 
 @plugin.route()
+@plugin.pagination()
 def my_creators(page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
@@ -301,54 +274,31 @@ def my_creators(page=1, **kwargs):
     folder = plugin.Folder(_.MY_CREATORS)
     items = _parse_creators(data['results'], following=True)
     folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(my_creators, page=page+1),
-        )
-
-    return folder
+    return folder, data['next']
 
 @plugin.route()
+@plugin.pagination()
 def podcasts(slug, page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
-
     data = api.podcasts(slug, page=page, page_size=page_size)
 
     folder = plugin.Folder(data['details']['title'])
-
     items = _parse_podcasts(data['episodes']['results'])
     folder.add_items(items)
-
-    if data['episodes']['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(podcasts, slug=slug, page=page+1),
-        )
-
-    return folder
+    return folder, data['episodes']['next']
 
 @plugin.route()
+@plugin.pagination()
 def creator_videos(slug, page=1, **kwargs):
     page = int(page)
     page_size = settings.getInt('page_size', 50)
-
     data = api.creator(slug, page=page, page_size=page_size)
 
     folder = plugin.Folder(data['details']['title'], fanart=data['details']['assets']['avatar']['512']['original'])
-
     items = _parse_videos(data['episodes']['results'], creator_page=True)
     folder.add_items(items)
-
-    if data['episodes']['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path  = plugin.url_for(creator_videos, slug=slug, page=page+1),
-        )
-
-    return folder
+    return folder, data['episodes']['next']
 
 @plugin.route()
 def follow_creator(slug, title, icon, **kwargs):
@@ -420,7 +370,6 @@ def play_podcast(channel, episode, **kwargs):
         },
         art = {'thumb': data['assets']['regular']},
         path = data['episode_url'],
-        use_proxy = False,
     )
 
     return item

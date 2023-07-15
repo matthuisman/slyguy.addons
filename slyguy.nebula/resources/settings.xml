@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30012" id="page_size" type="number" default="50"/>
-    </category>
-
     <category label="$ADDON[script.module.slyguy 32139]">
+        <setting label="30012" id="page_size" type="number" default="50"/>
+        <setting label="$ADDON[script.module.slyguy 32143]" id="pagination_multiplier" type="slider" default="1" range="1,1,10" option="int"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
     </category>
