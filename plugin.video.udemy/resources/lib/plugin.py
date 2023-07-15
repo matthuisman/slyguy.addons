@@ -63,20 +63,14 @@ def search(query, page, **kwargs):
     return _process_courses(data['results']), data['next']
 
 @plugin.route()
+@plugin.pagination()
 def my_courses(page=1, **kwargs):
     page = int(page)
     folder = plugin.Folder(_.MY_COURSES)
     data = api.my_courses(page=page)
     items = _process_courses(data['results'])
     folder.add_items(items)
-
-    if data['next']:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, _bold=True),
-            path = plugin.url_for(my_courses, page=page+1),
-        )
-
-    return folder
+    return folder, data['next']
 
 def _process_courses(rows):
     items = []
@@ -101,12 +95,12 @@ def _process_courses(rows):
     return items
 
 @plugin.route()
+@plugin.pagination()
 def chapters(course_id, title, page=1, **kwargs):
     page = int(page)
     folder = plugin.Folder(title)
 
     rows, next_page = api.chapters(course_id, page=page)
-
     for row in sorted(rows, key=lambda r: r['object_index']):
         folder.add_item(
             label = _(_.SECTION_LABEL, section_number=row['object_index'], section_title=row['title']),
@@ -115,21 +109,15 @@ def chapters(course_id, title, page=1, **kwargs):
             info = {'plot': strip_html_tags(row['description'])},
         )
 
-    if next_page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, _bold=True),
-            path = plugin.url_for(chapters, course_id=course_id, title=title, page=page+1),
-        )
-
-    return folder
+    return folder, next_page
 
 @plugin.route()
+@plugin.pagination()
 def lectures(course_id, chapter_id, title, page=1, **kwargs):
     page = int(page)
     folder = plugin.Folder(title)
 
     rows, next_page = api.lectures(course_id, chapter_id, page=page)
-
     for row in rows:
         folder.add_item(
             label = row['title'],
@@ -145,13 +133,7 @@ def lectures(course_id, chapter_id, title, page=1, **kwargs):
             playable = True,
         )
 
-    if next_page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, _bold=True),
-            path = plugin.url_for(lectures, course_id=course_id, chapter_id=chapter_id, title=title, page=page+1),
-        )
-
-    return folder
+    return folder, next_page
 
 def select_quality(qualities):
     options = []
@@ -190,9 +172,7 @@ def select_quality(qualities):
 def play(asset_id, **kwargs):
     stream_data = api.get_stream_data(asset_id)
     token = userdata.get('access_token')
-
-    headers = {'Authorization': 'Bearer {}'.format(token)}
-    headers.update(HEADERS)
+    headers = {'Authorization': 'Bearer {}'.format(token), 'user-agent': 'python-requests/2.28.2'}
 
     play_item = plugin.Item(
         headers = headers,

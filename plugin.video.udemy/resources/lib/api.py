@@ -56,7 +56,10 @@ class API(object):
             'fields[quiz]': 'id',
         }
 
-        data = self._session.get('courses/{}/subscriber-curriculum-items/'.format(course_id), params=params).json()
+        r = self._session.get('courses/{}/subscriber-curriculum-items/'.format(course_id), params=params)
+        data = r.json()
+        if not r.ok:
+            raise APIError(data.get('detail'))
         rows = [r for r in data['results'] if r['_class'] == 'chapter']
         return rows, data['next']
 
