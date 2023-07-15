@@ -367,6 +367,7 @@ def manager(radio=0, **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def channels(radio=0, page=1, **kwargs):
     folder = plugin.Folder(_.ALL_CHANNELS)
 
@@ -378,14 +379,7 @@ def channels(radio=0, page=1, **kwargs):
 
     items = _process_channels(query)
     folder.add_items(items)
-
-    if len(items) == page_size:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1, _bold=True),
-            path = plugin.url_for(channels, radio=radio, page=page+1),
-        )
-
-    return folder
+    return folder, len(items) == page_size
 
 def _process_channels(query):
     items = []
@@ -461,6 +455,7 @@ def edit_channel_value(slug, method, **kwargs):
         gui.refresh()
 
 @plugin.route()
+@plugin.pagination()
 def search_channel(query=None, radio=0, page=1, **kwargs):
     radio = int(radio)
     page = int(page)
@@ -479,16 +474,10 @@ def search_channel(query=None, radio=0, page=1, **kwargs):
 
     items = _process_channels(db_query)
     folder.add_items(items)
-
-    if len(items) == page_size:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1, _bold=True),
-            path  = plugin.url_for(search_channel, query=query, radio=radio, page=page+1),
-        )
-
-    return folder
+    return folder, len(items) == page_size
 
 @plugin.route()
+@plugin.pagination()
 def playlist_channels(playlist_id, radio=0, page=1, **kwargs):
     playlist_id = int(playlist_id)
     radio = int(radio)
@@ -504,19 +493,13 @@ def playlist_channels(playlist_id, radio=0, page=1, **kwargs):
     items = _process_channels(db_query)
     folder.add_items(items)
 
-    if len(items) == page_size:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1, _bold=True),
-            path  = plugin.url_for(playlist_channels, playlist_id=playlist_id, radio=radio, page=page+1),
-        )
-
     if playlist.source_type == Playlist.TYPE_CUSTOM:
         folder.add_item(
             label = _(_.ADD_CHANNEL, _bold=True),
             path  = plugin.url_for(add_channel, playlist_id=playlist_id, radio=radio),
         )
 
-    return folder
+    return folder, len(items) == page_size
 
 @plugin.route()
 def add_channel(playlist_id, radio, **kwargs):
