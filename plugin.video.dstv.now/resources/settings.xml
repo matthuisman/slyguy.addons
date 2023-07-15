@@ -6,7 +6,9 @@
 
     <category label="$ADDON[script.module.slyguy 32139]">
         <setting label="30014" type="bool" id="flatten_single_season" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32143]" id="pagination_multiplier" type="slider" default="1" range="1,1,10" option="int"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

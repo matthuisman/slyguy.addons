@@ -82,6 +82,7 @@ def live_tv(**kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def content(title, tags, sort='az', category=None, page=1, **kwargs):
     folder = plugin.Folder(title)
 
@@ -109,15 +110,9 @@ def content(title, tags, sort='az', category=None, page=1, **kwargs):
     if not folder.items:
         items = _process_rows(data['items'])
         folder.add_items(items)
-
-        if data['total'] > ((data['pageSize'] * data['page']) + data['count']):
-            folder.add_item(
-                label = _(_.NEXT_PAGE, page=page+1),
-                path = plugin.url_for(content, title=title, tags=tags, sort=sort, category=category, page=page+1),
-                specialsort = 'bottom',
-            )
-
-    return folder
+        return folder, data['total'] > ((data['pageSize'] * data['page']) + data['count'])
+    else:
+        return folder, False
 
 def _process_rows(rows):
     items = []
