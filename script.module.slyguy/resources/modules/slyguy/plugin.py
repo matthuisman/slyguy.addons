@@ -216,8 +216,9 @@ def pagination(key=None):
                     folder, more_results = f(**kwargs)
                     kwargs['page'] += 1
                 else:
-                    folder, more_results, key_val = f(**kwargs)
+                    folder, key_val = f(**kwargs)
                     kwargs[key] = key_val
+                    more_results = key_val
 
                 items.extend(folder.items)
                 if not more_results:
