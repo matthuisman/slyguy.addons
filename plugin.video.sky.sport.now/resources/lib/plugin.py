@@ -112,7 +112,7 @@ def bucket(content_id, bucket_id, last_seen=None, **kwargs):
     items = process_rows(data['contentList'])
     folder.add_items(items)
 
-    return folder, data['paging']['moreDataAvailable'] and data['paging']['lastSeen'], data['paging']['lastSeen']
+    return folder, data['paging']['lastSeen'] if data['paging']['moreDataAvailable'] else None
 
 @plugin.route()
 @plugin.search()
