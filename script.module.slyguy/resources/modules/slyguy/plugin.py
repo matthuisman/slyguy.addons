@@ -19,16 +19,13 @@ from .util import set_kodi_string, get_addon, remove_file, user_country
 ## SHORTCUTS
 url_for = router.url_for
 dispatch = router.dispatch
+redirect = router.redirect
 ############
 
 def exception(msg=''):
     raise PluginError(msg)
 
 logged_in = False
-
-class Redirect(object):
-    def __init__(self, location):
-        self.location = location
 
 # @plugin.no_error_gui()
 def no_error_gui():
@@ -72,11 +69,6 @@ def route(url=None):
                 item.display()
             elif isinstance(item, Item):
                 item.play(**kwargs)
-            elif isinstance(item, Redirect):
-                if _handle() > 0:
-                    xbmcplugin.endOfDirectory(_handle(), succeeded=True, updateListing=True, cacheToDisc=True)
-
-                gui.redirect(item.location)
             else:
                 resolve()
 
