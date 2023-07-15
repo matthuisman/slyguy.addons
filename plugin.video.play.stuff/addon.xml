@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.play.stuff" name="Play Stuff" provider-name="SlyGuy" version="0.1.9">
+<addon id="plugin.video.play.stuff" name="Play Stuff (SHUTDOWN)" provider-name="SlyGuy" version="0.2.0">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
@@ -7,15 +7,12 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <description lang="en">Play Stuff is an innovative new video on demand product that will appeal to a broad audience, including younger viewers.
-
-Requires New Zealand IP Address
-</description>
+    <description lang="en">Play Stuff was shutdown at some point</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix shows (now called Series)</news>
+    <news></news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
