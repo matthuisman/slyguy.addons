@@ -146,34 +146,22 @@ def categories(id=None, **kwargs):
     return folder
 
 @plugin.route()
+@plugin.pagination()
 def media(title, filterby, term, page=1, **kwargs):
-    page = int(page)
-
-    data = api.filter_media(filterby, term, page=page)
-    total_pages = int(data['paginator']['total_pages'])
-
     folder = plugin.Folder(title)
 
+    data = api.filter_media(filterby, term, page=page)
     items = _process_rows(data['data'])
     folder.add_items(items)
 
-    if total_pages > page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(media, title=title, filterby=filterby, term=term, page=page+1),
-        )
-
-    return folder
+    return folder, int(data['paginator']['total_pages']) > page
 
 @plugin.route()
+@plugin.pagination()
 def collections(page=1, **kwargs):
-    page = int(page)
-
-    data = api.collections(page=page)
-    total_pages = int(data['paginator']['total_pages'])
-
     folder = plugin.Folder(_.COLLECTIONS)
 
+    data = api.collections(page=page)
     for row in data['data']:
         folder.add_item(
             label = row['title'],
@@ -182,13 +170,7 @@ def collections(page=1, **kwargs):
             path = plugin.url_for(collection, id=row['id']),
         )
 
-    if total_pages > page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(collections, page=page+1),
-        )
-
-    return folder
+    return folder, int(data['paginator']['total_pages']) > page
 
 @plugin.route()
 def series(id, **kwargs):
@@ -248,27 +230,18 @@ def featured(id=None, **kwargs):
 @plugin.search()
 def search(query, page, **kwargs):
     data = api.filter_media('keyword', query, page=page)
-    total_pages = int(data['paginator']['total_pages'])
-    return _process_rows(data['data']), total_pages > page
+    return _process_rows(data['data']), int(data['paginator']['total_pages']) > page
 
 @plugin.route()
+@plugin.pagination()
 def watchlist(page=1, **kwargs):
-    page = int(page)
-
     folder = plugin.Folder(_.WATCHLIST)
-    data = api.filter_media('bookmarked', page=page)
-    total_pages = int(data['paginator']['total_pages'])
 
+    data = api.filter_media('bookmarked', page=page)
     items = _process_rows(data['data'], in_watchlist=True)
     folder.add_items(items)
 
-    if total_pages > page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(watchlist, page=page+1),
-        )
-
-    return folder
+    return folder, int(data['paginator']['total_pages']) > page
 
 @plugin.route()
 def add_watchlist(id, title, series=0, **kwargs):
@@ -285,28 +258,19 @@ def remove_watchlist(id, title, series=0, **kwargs):
         result = api.set_user_collection(id, is_bookmarked='false')
     else:
         result = api.set_user_media(id, is_bookmarked='false')
-
     gui.notification(title, heading=_.WATCHLIST_REMOVED)
     gui.refresh()
 
 @plugin.route()
+@plugin.pagination()
 def watching(page=1, **kwargs):
-    page = int(page)
-
     folder = plugin.Folder(_.WATCHING)
-    data   = api.filter_media('watching', page=page)
-    total_pages = int(data['paginator']['total_pages'])
 
+    data = api.filter_media('watching', page=page)
     items = _process_rows(data['data'])
     folder.add_items(items)
 
-    if total_pages > page:
-        folder.add_item(
-            label = _(_.NEXT_PAGE, page=page+1),
-            path = plugin.url_for(watchlist, page=page+1),
-        )
-
-    return folder
+    return folder, int(data['paginator']['total_pages']) > page
 
 @plugin.route()
 def login(**kwargs):
