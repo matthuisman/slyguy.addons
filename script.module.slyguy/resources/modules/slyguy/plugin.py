@@ -687,7 +687,7 @@ class Folder(object):
             if not item.specialsort:
                 media_type = item.info.get('mediatype')
                 show_name = item.info.get('tvshowtitle')
-                if media_type != 'episode' or not show_name or (last_show_name and show_name != last_show_name):
+                if media_type != 'episode' or not item.info.get('episode')  or not show_name or (last_show_name and show_name != last_show_name):
                     ep_sort = False
 
                 if not last_show_name:
