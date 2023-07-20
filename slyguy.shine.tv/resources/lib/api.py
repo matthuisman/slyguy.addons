@@ -72,10 +72,8 @@ class API(object):
 
         page = resp.text.replace(' ', '').strip()
         play_url = re.search('embed_url:"(.*?)"', page).group(1)
-
         resp = self._session.get(play_url)
         page = resp.text.replace(' ', '').strip()
-
         event_id = re.search('eventId:(.*?),', page)
 
         if event_id:

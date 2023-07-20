@@ -8,6 +8,10 @@ from .api import API
 from .language import _
 from .constants import *
 
+
+COLLECTION_ID = re.compile('collections/(.*?)/')
+SEASON_NUMBER = re.compile('season ([0-9]+)')
+
 api = API()
 
 @signals.on(signals.BEFORE_DISPATCH)
@@ -46,8 +50,11 @@ def browse(page=1, **kwargs):
         else:
             label = row['name'].encode('ascii', errors='ignore').decode().strip()
 
-        collection_id = re.search('collections/(.*?)/', row['_links']['items']['href']).group(1)
+        match = COLLECTION_ID.search(row['_links']['items']['href'].lower().strip())
+        if not match:
+            continue
 
+        collection_id = match.group(1)
         folder.add_item(
             label = label,
             path = plugin.url_for(collection, id=collection_id, label=label),
@@ -57,25 +64,16 @@ def browse(page=1, **kwargs):
 
 @plugin.route()
 @plugin.pagination()
-def collection(id, label, page=1, default_thumb=None, **kwargs):
+def collection(id, label, page=1, default_thumb=None, season=None, **kwargs):
     folder = plugin.Folder(label)
 
     data = api.collection(id, page=page)
-    items = _process_items(data['_embedded']['items'], default_thumb)
+    items = _process_items(data['_embedded']['items'], default_thumb, season, label)
     folder.add_items(items)
-
-    ## There episode numbers pretty inconsistent so just order as is
-    # is_season = True
-    # for item in folder.items:
-    #     if not item.info.get('episode'):
-    #         is_season = False
-
-    # if is_season:
-    #     folder.sort_methods = [xbmcplugin.SORT_METHOD_EPISODE, xbmcplugin.SORT_METHOD_UNSORTED, xbmcplugin.SORT_METHOD_LABEL, xbmcplugin.SORT_METHOD_DATEADDED]
 
     return folder, data['_links']['next']['href'] is not None
 
-def _process_items(rows, default_thumb=None):
+def _process_items(rows, default_thumb=None, season=None, folder_label=None):
     items = []
 
     for row in rows:
@@ -95,13 +93,15 @@ def _process_items(rows, default_thumb=None):
                 'mediatype': 'movie',
             }
 
-            if row.get('media_type') == 'episode':
+            if row.get('media_type') == 'episode' or season:
                 info.update({
                     'mediatype': 'episode',
-                    'season': row['metadata'].get('season_number'),
-                    'episode': row['metadata'].get('episode_number'),
-                    'tvshowtitle': row['metadata'].get('series_name'),
+                    'season': season,
+                    'episode': row['metadata'].get('episode_number') or row.get('position'),
+                    'tvshowtitle': folder_label,
                 })
+                if str(row['metadata'].get('episode_number')).endswith(str(row.get('position'))):
+                    info['episode'] = row['position']
 
             items.append(plugin.Item(
                 label = label,
@@ -112,7 +112,6 @@ def _process_items(rows, default_thumb=None):
             ))
 
         elif row['type'] == 'series':
-            collection_id = re.search('collections/(.*?)/', row['_links']['items']['href']).group(1)
             thumb = row['thumbnail']['medium'] if 'default-medium' not in row['thumbnail']['medium'] else default_thumb
 
             items.append(plugin.Item(
@@ -122,21 +121,29 @@ def _process_items(rows, default_thumb=None):
                     'mediatype': 'tvshow',
                     'plot': row['description'],
                 },
-                path = plugin.url_for(collection, id=collection_id, label=row['name'], default_thumb=thumb),
+                path = plugin.url_for(collection, id=row['id'], label=row['name'], default_thumb=thumb),
             ))
 
         elif row['type'] == 'season':
-            collection_id = re.search('collections/(.*?)/', row['_links']['items']['href']).group(1)
+            if row.get('episodes_count') == 0:
+                continue
+
             thumb = row['thumbnail']['medium'] if 'default-medium' not in row['thumbnail']['medium'] else default_thumb
 
+            match = SEASON_NUMBER.search(row['name'].lower().strip())
+            if match:
+                season_number = int(match.group(1))
+            else:
+                season_number = row['season_number']
+
             items.append(plugin.Item(
-                label = _(_.SEASON, number=row['season_number']),
+                label = _(_.SEASON, number=season_number),
                 art = {'thumb': thumb},
                 info = {
                     'mediatype': 'season',
                     'plot': row['description'],
                 },
-                path = plugin.url_for(collection, id=collection_id, label=row['name'], default_thumb=thumb),
+                path = plugin.url_for(collection, id=row['id'], label=folder_label, season=season_number, default_thumb=thumb),
             ))
 
     return items
