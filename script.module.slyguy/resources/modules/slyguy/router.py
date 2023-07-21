@@ -24,15 +24,12 @@ def route(url):
 
 def add_url_args(url, **kwargs):
     parsed = urlparse(url)
-
     if parsed.scheme.lower() != 'plugin':
         return url
 
     params = dict(parse_qsl(parsed.query, keep_blank_values=True))
     params.update(**kwargs)
     path = parsed.path.rstrip('/') or params.pop(ROUTE_TAG, '')
-    if not path:
-        return url
 
     return build_url(path, _addon_id=parsed.netloc, **params)
 
