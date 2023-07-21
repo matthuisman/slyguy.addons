@@ -76,7 +76,7 @@ def url_for(func_or_url, **kwargs):
 def build_url(_url, _addon_id=ADDON_ID, **kwargs):
     if not _url.startswith('/'):
         path = ''
-        kwargs[ROUTE_TAG] = _url
+        kwargs[ROUTE_TAG] = _url or None
     else:
         path = _url.rstrip('/')
 
