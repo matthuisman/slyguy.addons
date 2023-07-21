@@ -53,7 +53,6 @@ def parse_url(url):
         params[ROUTE_LIVE_TAG] = True
 
     function = _routes.get(path)
-
     if not function:
         raise RouterError(_(_.ROUTER_NO_FUNCTION, raw_url=url, parsed_url=path))
 
@@ -102,13 +101,8 @@ def build_url(_url, _addon_id=ADDON_ID, **kwargs):
 
 def redirect(url):
     log.debug('Redirect -> {}'.format(url))
-
-    if not url.startswith('?') and '?' in url:
-        url = '?' + url.split('?')[1]
-
     function, params = parse_url(url)
     function(**params)
-
     raise Exit()
 
 # router.dispatch('?_=_settings')
