@@ -13,7 +13,7 @@ _routes = {}
 def add(url, f):
     if url == None:
         url = f.__name__
-    _routes[url] = f
+    _routes[url.rstrip('/')] = f
 
 # @router.route('_settings')
 def route(url):
@@ -30,36 +30,32 @@ def add_url_args(url, **kwargs):
 
     params = dict(parse_qsl(parsed.query, keep_blank_values=True))
     params.update(**kwargs)
-    _url = params.pop(ROUTE_TAG, None)
-    if not _url:
+    path = parsed.path.rstrip('/') or params.pop(ROUTE_TAG, '')
+    if not path:
         return url
 
-    return build_url(_url, _addon_id=parsed.netloc, **params)
+    return build_url(path, _addon_id=parsed.netloc, **params)
 
 # @router.parse_url('?_=_settings')
 def parse_url(url):
     if url.startswith('?'):
-        params = dict(parse_qsl(url.lstrip('?'), keep_blank_values=True))
-        for key in params:
-            params[key] = params[key]
+        url = 'plugin://{}/{}'.format(ADDON_ID, url)
 
-        _url = params.pop(ROUTE_TAG, '')
-        params[ROUTE_URL_TAG] = 'plugin://{}{}'.format(ADDON_ID, url)
-    else:
-        params = {}
-        _url = url
-        params[ROUTE_URL_TAG] = url
+    parsed = urlparse(url)
+    params = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    path = parsed.path.rstrip('/') or params.pop(ROUTE_TAG, '')
 
+    params[ROUTE_URL_TAG] = url
     if len(sys.argv) > 3 and sys.argv[3].lower() == 'resume:true':
         params[ROUTE_RESUME_TAG] = True
 
     if params.pop(ROUTE_LIVE_TAG, None) != None or params.pop(ROUTE_LIVE_TAG_LEGACY, None) != None:
         params[ROUTE_LIVE_TAG] = True
 
-    function = _routes.get(_url)
+    function = _routes.get(path)
 
     if not function:
-        raise RouterError(_(_.ROUTER_NO_FUNCTION, raw_url=url, parsed_url=_url))
+        raise RouterError(_(_.ROUTER_NO_FUNCTION, raw_url=url, parsed_url=path))
 
     log('Router Parsed: \'{0}\' => {1} {2}'.format(url, function.__name__, params))
 
@@ -79,7 +75,11 @@ def url_for(func_or_url, **kwargs):
         return build_url(func_or_url, **kwargs)
 
 def build_url(_url, _addon_id=ADDON_ID, **kwargs):
-    kwargs[ROUTE_TAG] = _url
+    if not _url.startswith('/'):
+        path = ''
+        kwargs[ROUTE_TAG] = _url
+    else:
+        path = _url.rstrip('/')
 
     is_live = kwargs.pop(ROUTE_LIVE_TAG, False)
     no_resume = kwargs.pop(NO_RESUME_TAG, False)
@@ -98,7 +98,7 @@ def build_url(_url, _addon_id=ADDON_ID, **kwargs):
     if is_live or no_resume:
         params.append((NO_RESUME_TAG, NO_RESUME_SUFFIX))
 
-    return 'plugin://{}/?{}'.format(_addon_id, urlencode(params))
+    return 'plugin://{}{}/?{}'.format(_addon_id, path, urlencode(params))
 
 def redirect(url):
     log.debug('Redirect -> {}'.format(url))
