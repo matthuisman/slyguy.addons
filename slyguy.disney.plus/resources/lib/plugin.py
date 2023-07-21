@@ -247,7 +247,6 @@ def sets(**kwargs):
 
 @plugin.pagination()
 def _sets(set_id, set_type, page=1, **kwargs):
-    page = int(page)
     data = api.set_by_id(set_id, set_type, page=page)
 
     folder = plugin.Folder(_get_text(data, 'title', 'set'))
@@ -543,7 +542,6 @@ def series(series_id, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def season(season_id, title, page=1, **kwargs):
-    page = int(page)
     data = api.episodes(season_id, page=page)
 
     folder = plugin.Folder(title)
