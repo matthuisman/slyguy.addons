@@ -103,7 +103,10 @@ def redirect(url):
     raise Exit()
 
 # router.dispatch('?_=_settings')
-def dispatch(url):
+def dispatch(url=None):
+    if url is None:
+        url = sys.argv[0] + sys.argv[2]
+
     with signals.throwable():
         signals.emit(signals.BEFORE_DISPATCH)
         function, params = parse_url(url)
