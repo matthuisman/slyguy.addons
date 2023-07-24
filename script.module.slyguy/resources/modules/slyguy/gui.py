@@ -12,7 +12,7 @@ from .constants import *
 from .router import add_url_args
 from .language import _
 from .smart_urls import get_dns_rewrites
-from .util import fix_url, set_kodi_string, hash_6, get_url_headers
+from .util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
 
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
@@ -27,7 +27,7 @@ def redirect(location):
 def get_view_id():
     return xbmcgui.Window(xbmcgui.getCurrentWindowId()).getFocusId()
 
-def get_art_url(url):
+def get_art_url(url, headers=None):
     if not url or not url.lower().startswith(('http', 'plugin')):
         return url
 
@@ -39,7 +39,10 @@ def get_art_url(url):
 
     proxy_path = settings.common_settings.get('_proxy_path')
     if proxy_path and not url.lower().startswith(proxy_path.lower()):
-        url = proxy_path + url + '|' + get_url_headers({'session_type': 'art', 'session_addonid': ADDON_ID})
+        _headers = get_headers_from_url(url)
+        _headers.update(headers or {})
+        _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
+        url = proxy_path + url + '|' + get_url_headers(_headers)
 
     return url
 

@@ -17,7 +17,7 @@ from contextlib import closing
 
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 from six.moves import queue, range
-from six.moves.urllib.parse import urlparse, urlunparse, quote
+from six.moves.urllib.parse import urlparse, urlunparse, quote, parse_qsl
 from requests.models import PreparedRequest
 from six import PY2
 import requests
@@ -720,3 +720,18 @@ def get_url_headers(headers=None, cookies=None):
             string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
 
     return string.strip().strip('&')
+
+def get_headers_from_url(url):
+    split = url.split('|')
+    if len(split) < 2:
+        return {}
+
+    headers = {}
+    _headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
+    for key in _headers:
+        if _headers[key].startswith(' '):
+            _headers[key] = u'%20{}'.format(_headers[key][1:])
+
+        headers[key.lower()] = _headers[key]
+
+    return headers
