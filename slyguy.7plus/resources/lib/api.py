@@ -109,10 +109,10 @@ class API(object):
             'pc': 3350,
             'deviceType': 'androidtv',
             'ozid': 'b09f7dc3-3999-47c7-a09f-8dce404c0455',
-           # 'encryptionType': 'cbcs',
-           # 'drmSystems': 'widevine',
-           # 'containerFormat': 'cmaf',
-           # 'supportedCodecs': 'avc',
+            'encryptionType': 'cenc',
+            'drmSystems': 'widevine',
+            'containerFormat': 'cmaf',
+            'supportedCodecs': 'avc',
             'sdkverification': 'true',
         }
 
