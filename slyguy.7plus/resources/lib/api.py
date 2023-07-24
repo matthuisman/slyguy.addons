@@ -129,5 +129,4 @@ class API(object):
             raise APIError(data[0]['error_code'])
 
         item = process_brightcove(data['media'])
-        item.path = item.path.replace('SYD3HC.m3u8', 'SYD3.m3u8')
         return item
