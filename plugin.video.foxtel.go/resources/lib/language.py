@@ -28,5 +28,6 @@ class Language(BaseLanguage):
     CONTINUE_WATCHING  = 30027
     WATCHLIST          = 30028
     SHOW_EPG           = 30029
+    SEE_ALL            = 30030
 
 _ = Language()

@@ -177,7 +177,6 @@ class API(object):
             'showall': 'true' if showall else 'false',
             'plt': PLT_DEVICE,
             'entitlementToken': self._entitlement_token(),
-            'sort': 'latest',
             'format': 'json',
             'appID': 'GO2',
             'serviceID': 'PLAY',

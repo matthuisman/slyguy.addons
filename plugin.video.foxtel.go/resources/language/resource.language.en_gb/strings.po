@@ -112,6 +112,10 @@ msgctxt "#30029"
 msgid "Show Mini EPG"
 msgstr ""
 
+msgctxt "#30030"
+msgid "See All"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
