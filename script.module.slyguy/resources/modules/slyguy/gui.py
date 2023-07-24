@@ -42,7 +42,7 @@ def get_art_url(url, headers=None):
         _headers = get_headers_from_url(url)
         _headers.update(headers or {})
         _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
-        url = proxy_path + url + '|' + get_url_headers(_headers)
+        url = proxy_path + url.split('|')[0] + '|' + get_url_headers(_headers)
 
     return url
 
