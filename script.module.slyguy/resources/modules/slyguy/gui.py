@@ -34,17 +34,18 @@ def get_art_url(url, headers=None):
     if url.lower().startswith('http'):
         url = url.replace(' ', '%20')
 
-    if not settings.common_settings.getBool('proxy_enabled', True):
-        return url
+    _headers = {'user-agent': DEFAULT_USERAGENT}
+    _headers.update(headers or {})
+    _headers.update(get_headers_from_url(url))
 
-    proxy_path = settings.common_settings.get('_proxy_path')
-    if proxy_path and not url.lower().startswith(proxy_path.lower()):
-        _headers = get_headers_from_url(url)
-        _headers.update(headers or {})
-        _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
-        url = proxy_path + url.split('|')[0] + '|' + get_url_headers(_headers)
+    if settings.common_settings.getBool('proxy_enabled', True):
+        proxy_path = settings.common_settings.get('_proxy_path')
+        if proxy_path:
+            _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
+            if not url.lower().startswith(proxy_path.lower()):
+                url = proxy_path + url
 
-    return url
+    return url.split('|')[0] + '|' + get_url_headers(_headers)
 
 def exception(heading=None):
     if not heading:
