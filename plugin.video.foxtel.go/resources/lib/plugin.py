@@ -6,6 +6,7 @@ from six.moves.urllib_parse import quote
 
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
+from slyguy.util import get_url_headers
 
 from .api import API
 from .language import _
@@ -337,7 +338,7 @@ def _get_entitlements():
 def _image(id, width=400, fragment=''):
     if fragment:
         fragment = '#{}'.format(quote(fragment))
-    return IMG_URL.format(id=id, width=width, fragment=fragment)
+    return IMG_URL.format(id=id, width=width, fragment=fragment) + '|' + get_url_headers(HEADERS)
 
 @plugin.route()
 def live_tv(_filter=None, **kwargs):
