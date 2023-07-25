@@ -382,7 +382,7 @@ def process_brightcove(data):
             sources.append({'source': source, 'type': 'mp4', 'order_1': 2, 'order_2': int(source.get('avg_bitrate', 0))})
 
         # Widevine cenc
-        elif source.get('encryption_type') == 'cenc' and 'com.widevine.alpha' in source.get('key_systems', ''):
+        elif source.get('encryption_type', 'cenc') == 'cenc' and 'com.widevine.alpha' in source.get('key_systems', {}):
             sources.append({'source': source, 'type': 'widevine', 'mimetype': source['type'], 'order_1': 3, 'order_2': 0})
 
         elif source.get('type') == 'application/vnd.apple.mpegurl' and 'key_systems' not in source:
@@ -410,7 +410,7 @@ def process_brightcove(data):
     elif source['type'] == 'widevine':
         return plugin.Item(
             path = source['source']['src'],
-            inputstream = inputstream.Widevine(license_key=source['source']['key_systems']['com.widevine.alpha']['license_url'], mimetype=source['mimetype'], manifest_type='dash' if source['mimetype'] == 'application/dash+xml' else 'hls'),
+            inputstream = inputstream.Widevine(license_key=source['source']['key_systems']['com.widevine.alpha']['license_url'], mimetype=source['mimetype'], manifest_type='mpd' if source['mimetype'] == 'application/dash+xml' else 'hls'),
             art = False,
         )
     else:
