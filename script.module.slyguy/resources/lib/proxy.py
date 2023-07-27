@@ -511,7 +511,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         video_sets = []
         audio_sets = []
         lang_adap_sets = []
-        streams, all_streams = [], []
         adap_parent = None
 
         subs_forced = self._session.get('subs_forced', True)
@@ -534,8 +533,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         max_height = self._session.get('max_height') or float('inf')
         max_channels = self._session.get('max_channels') or 0
 
+        all_streams = {}
         for period_index, period in enumerate(root.getElementsByTagName('Period')):
-            rep_index = 0
+            all_streams[period_index] = []
             for adap_set in period.getElementsByTagName('AdaptationSet'):
                 adap_parent = adap_set.parentNode
 
@@ -647,7 +647,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if is_hdr:
                             codecs.append('hdr')
 
-                        stream_data = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'rep_index': rep_index, 'elem': stream, 'res_ok': True, 'compatible': True}
+                        stream_data = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'elem': stream, 'res_ok': True, 'compatible': True}
                         if stream_data['width'] > max_width or stream_data['height'] > max_height:
                             stream_data['res_ok'] = False
 
@@ -663,14 +663,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if not h265_enabled and codec_string == H265:
                             stream_data['compatible'] = False
 
+                        stream_data['codec'] = codec_string
+
                         # if not stream_data['compatible']:
                         #     continue
 
-                        all_streams.append(stream_data)
-                        rep_index += 1
-
-                        if period_index == 0:
-                            streams.append(stream_data)
+                        all_streams[period_index].append(stream_data)
 
                     # add rep to end of adap set
                     adap_set.appendChild(stream)
@@ -685,13 +683,24 @@ class RequestHandler(BaseHTTPRequestHandler):
                 else:
                     audio_sets.append([highest_bandwidth, adap_set, adap_parent])
 
+        buckets = {}
+        for period_index in all_streams:
+            for stream in all_streams[period_index]:
+                key = '{}-{}-{}'.format(stream['codec'], stream['height'], stream['width'])
+                if key not in buckets:
+                    buckets[key] = []
+                buckets[key].append(stream)
+
+        streams = []
+        for key in buckets:
+            streams.append(sorted(buckets[key], key=lambda x: x['bandwidth'])[-1])
+
         ## Get selected quality
         selected = self._quality_select(streams)
         if selected:
-            for stream in all_streams:
-                if stream['rep_index'] != selected['rep_index']:
+            for period_index in all_streams:
+                for stream in sorted(all_streams[period_index], key=lambda x: (x == selected, x['compatible'] == selected['compatible'], x['codec'] == selected['codec'], x['bandwidth'] <= selected['bandwidth'], x['bandwidth']))[:-1]:
                     stream['elem'].parentNode.removeChild(stream['elem'])
-        #################
 
         video_sets.sort(key=lambda  x: x[0], reverse=True)
         audio_sets.sort(key=lambda  x: x[0], reverse=True)
