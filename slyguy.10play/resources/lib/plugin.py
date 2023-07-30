@@ -188,7 +188,7 @@ def season(show_id, season_id, **kwargs):
 
 def _parse_episode(row, use_name=False):
     episode = 0
-    search = '{} {} {}'.format(row['customFields'].get('clip_title', ''), row['customFields'].get('episode_name', ''), row.get('name', ''))
+    search = u'{} {} {}'.format(row['customFields'].get('clip_title', ''), row['customFields'].get('episode_name', ''), row.get('name', ''))
     patterns = ['episode ([0-9]+)', 'Ep. ?([0-9]+)']
     for pattern in patterns:
         match = re.search(pattern, search, re.IGNORECASE)
