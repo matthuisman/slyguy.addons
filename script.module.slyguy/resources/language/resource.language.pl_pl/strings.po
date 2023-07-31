@@ -63,7 +63,7 @@ msgid "Auto"
 msgstr "Automatycznie"
 
 msgctxt "#30009"
-msgid "L1 (Secure)"
+msgid "L1 (Zabezpieczony)"
 msgstr "L1"
 
 msgctxt "#30010"
