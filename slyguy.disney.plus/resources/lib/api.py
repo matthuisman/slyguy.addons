@@ -290,14 +290,14 @@ class API(object):
         region = session['portabilityLocation']['countryCode'] if session['portabilityLocation'] else session['location']['countryCode']
         maturity = session['preferredMaturityRating']['impliedMaturityRating'] if session['preferredMaturityRating'] else 1850
         kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
-        appLanguage = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
+        app_language = settings.get('app_language').strip() or (profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US')
 
         _args = {
             'apiVersion': '{apiVersion}',
             'region': region,
             'impliedMaturityRating': maturity,
             'kidsModeEnabled': 'true' if kids_mode else 'false',
-            'appLanguage': appLanguage,
+            'appLanguage': app_language,
             'partner': BAM_PARTNER,
         }
         _args.update(**kwargs)

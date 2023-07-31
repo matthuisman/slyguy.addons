@@ -145,6 +145,10 @@ msgid "Check {email} for 6-digit code and enter it below\n"
 "The code expires in 15 minutes"
 msgstr ""
 
+msgctxt "#30033"
+msgid "App Language (empty = profile language)"
+msgstr ""
+
 msgctxt "#30042"
 msgid "Continue Watching"
 msgstr ""
