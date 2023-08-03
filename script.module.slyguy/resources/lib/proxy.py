@@ -686,7 +686,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         buckets = {}
         for period_index in all_streams:
             for stream in all_streams[period_index]:
-                key = '{}-{}-{}'.format(stream['codec'], stream['height'], stream['width'])
+                key = '{}-{}-{}-{}'.format(stream['codec'], stream['height'], stream['width'], stream['frame_rate'])
                 if key not in buckets:
                     buckets[key] = []
                 buckets[key].append(stream)
