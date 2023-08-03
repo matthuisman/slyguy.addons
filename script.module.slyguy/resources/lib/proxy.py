@@ -1377,25 +1377,27 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self, retry=True):
         url = self._get_url('POST')
-        response = self._proxy_request('POST', url)
 
         if url == self._session.get('license_url'):
-            license_data = response.stream.content
-
-            if ADDON_DEV:
-                with open(xbmc.translatePath('special://temp/license.data'), 'wb') as f:
-                    f.write(license_data)
-
-            if not self._session.get('license_init') and (not response.ok or not license_data):
-                # force wv install on next attempt
-                settings.set('_wv_last_check', 0)
-                settings.set('_wv_latest_hash', '')
-                log.error(license_data)
-                if not license_data:
-                    license_data = b'None'
-                gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
+            for i in range(3):
+                response = self._proxy_request('POST', url)
+                license_data = response.stream.content
+                if ADDON_DEV:
+                    with open(xbmc.translatePath('special://temp/license.data'), 'wb') as f:
+                        f.write(license_data)
+                if response.ok and license_data:
+                    break
+                time.sleep(0.5)
+            else:
+                if not self._session.get('license_init'):
+                    log.error(license_data)
+                    if not license_data:
+                        license_data = b'None'
+                    gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
 
             self._session['license_init'] = True
+        else:
+            response = self._proxy_request('POST', url)
 
         self._output_response(response)
 
