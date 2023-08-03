@@ -182,10 +182,11 @@ def mpd_request(url, _data, _path, **kwargs):
     ## OS2 HACK
     elif '/OptusSport2/' in url:
         to_add = r'''\1\n
-        <Representation id="7" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
+        <Representation id="2" width="1920" height="1080" frameRate="50/1" bandwidth="8000000" codecs="avc1.640020"/>
+        <Representation id="3" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
         '''
         if settings.getBool('h265', True):
-            to_add += '<Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
+            to_add += '<Representation id="1" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
         _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
 
     ## OS11 Premier League HACK
