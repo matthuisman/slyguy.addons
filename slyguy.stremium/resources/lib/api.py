@@ -136,6 +136,36 @@ class API(object):
         userdata.set('refresh_token', data['refreshToken'])
         self._refresh_token(force=True)
 
+    def device_code(self):
+        self.logout()
+        return self._session.post('/externalToken').text
+
+    def device_login(self, code):
+        params = {
+            'code': code,
+        }
+        resp = self._session.get('/externalToken', params=params)
+        if not resp.ok:
+            return False
+
+        token = resp.json()['token']
+
+        params = {
+            'key': GOOGLE_KEY,
+        }
+        payload = {
+            'token': token,
+            'returnSecureToken': True,
+        }
+
+        data = self._session.post(VERIFY_TOKEN, params=params, json=payload).json()
+        if 'error' in data:
+            raise APIError(data['error']['message'])
+
+        userdata.set('refresh_token', data['refreshToken'])
+        self._refresh_token(force=True)
+        return True
+
     def logout(self):
         userdata.delete('access_token')
         userdata.delete('refresh_token')

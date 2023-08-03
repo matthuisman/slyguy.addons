@@ -4,10 +4,12 @@ HEADERS = {
 
 LOGIN_URL = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword'
 TOKEN_URL = 'https://securetoken.googleapis.com/v1/token'
+VERIFY_TOKEN = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken'
 
 GOOGLE_KEY = 'AIzaSyBhQW6GEk_QKfDAX_mP7sG9Vcnju6kLszg'
 API_URL = 'https://api.stremium.com{}'
 IMAGE_URL = 'https://i.mjh.nz/.images/stremium/'
+DEVICE_CODE_URL = 'https://stremium.com/link'
 
 ALL = '_'
 PUBLIC = 'public'

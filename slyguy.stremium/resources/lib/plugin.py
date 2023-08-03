@@ -2,6 +2,8 @@ import codecs
 import re
 from xml.sax.saxutils import escape
 
+from kodi_six import xbmc
+
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream, mem_cache
 from slyguy.constants import LIVE_HEAD
@@ -167,6 +169,33 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
+    options = [
+        [_.EMAIL_PASSWORD, _email_password],
+        [_.DEVICE_CODE, _device_code],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    gui.refresh()
+
+def _device_code():
+    monitor = xbmc.Monitor()
+    code = api.device_code()
+    timeout = 600
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_CODE_URL), heading=_.DEVICE_CODE) as progress:
+        for i in range(timeout):
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
+
+            progress.update(int((i / float(timeout)) * 100))
+
+            if i % 5 == 0 and api.device_login(code):
+                return True
+
+def _email_password(**kwargs):
     username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
     if not username:
         return
@@ -178,7 +207,7 @@ def login(**kwargs):
         return
 
     api.login(username, password)
-    gui.refresh()
+    return True
 
 @plugin.route()
 @plugin.login_required()
