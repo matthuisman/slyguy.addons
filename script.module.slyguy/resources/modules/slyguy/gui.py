@@ -264,7 +264,7 @@ class Item(object):
         if self.label:
             li.setLabel(self.label)
 
-        if not (info.get('plot') or '').strip():
+        if not (info.get('plot') or '').strip() and not info.get('mediatype') and settings.common_settings.getBool('video_view_menus', False):
             info['plot'] = '[B][/B]'
 
         if info:

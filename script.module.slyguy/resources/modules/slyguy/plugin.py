@@ -720,7 +720,8 @@ class Folder(object):
             elif top_type == 'episode':
                 content_type = 'episodes'
 
-        if settings.common_settings.getBool('video_folder_content', False):
+        if (content_type == 'menus' and settings.common_settings.getBool('video_view_menus', False)) or \
+            (content_type != 'menus' and settings.common_settings.getBool('video_view_media', False)):
             content_type = 'videos'
 
         # data = userdata.get('view_{}'.format(content_type))
@@ -729,12 +730,12 @@ class Folder(object):
         #     self.content = data[1]
 
         if self.content == 'AUTO':
-            if content_type in ('movies', 'tvshows', 'seasons', 'episodes'):
+            if content_type in ('movies', 'tvshows', 'seasons', 'episodes', 'videos'):
                 self.content = content_type
             elif content_type == 'mixed':
                 self.content = 'movies'
             else:
-                self.content = 'videos'
+                self.content = None
 
         if self.content: xbmcplugin.setContent(handle, self.content)
         if self.title: xbmcplugin.setPluginCategory(handle, self.title)

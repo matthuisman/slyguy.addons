@@ -113,7 +113,7 @@ msgid "Ignore Display Resolution"
 msgstr ""
 
 msgctxt "#30023"
-msgid "Video view for all content"
+msgid "Video view for media"
 msgstr ""
 
 msgctxt "#30024"
@@ -171,6 +171,10 @@ msgctxt "#30036"
 msgid "WARNING: System architecture change detected ({old} -> {new})\n"
 "This may cause issues with binary addons as Kodi repo will still use {old}\n"
 "If you have issues, try revert back to Kodi {old}"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Video view for menus"
 msgstr ""
 
 ## COMMON ##
