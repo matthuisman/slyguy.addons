@@ -14,6 +14,9 @@ from .language import _
 from .smart_urls import get_dns_rewrites
 from .util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
 
+if KODI_VERSION >= 20:
+    from infotagger.listitem import ListItemInfoTag
+
 def _make_heading(heading=None):
     return heading if heading else ADDON_NAME
 
@@ -299,7 +302,10 @@ class Item(object):
             if not date_added and aired:
                 info['dateadded'] = date_added = '{} 12:00:00'.format(aired)
 
-            li.setInfo('video', info)
+            if KODI_VERSION >= 20:
+                ListItemInfoTag(li, 'video').set_info(info)
+            else:
+                li.setInfo('video', info)
 
         if self.specialsort:
             li.setProperty('specialsort', self.specialsort)
