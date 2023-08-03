@@ -16,13 +16,13 @@ def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
 
+    if rewrites:
+        log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
+
     # add some defaults that are often blocked by networkwide dns
     rewrites.extend([
         ['r:https://cloudflare-dns.com/dns-query', 'dai.google.com'],
     ])
-
-    if rewrites:
-        log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
 
     return rewrites
 
