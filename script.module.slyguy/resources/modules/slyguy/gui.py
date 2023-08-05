@@ -302,10 +302,10 @@ class Item(object):
             if not date_added and aired:
                 info['dateadded'] = date_added = '{} 12:00:00'.format(aired)
 
-            if KODI_VERSION >= 20:
-                ListItemInfoTag(li, 'video').set_info(info)
-            else:
-                li.setInfo('video', info)
+            # if KODI_VERSION >= 20:
+            #     ListItemInfoTag(li, 'video').set_info(info)
+            # else:
+            li.setInfo('video', info)
 
         if self.specialsort:
             li.setProperty('specialsort', self.specialsort)
