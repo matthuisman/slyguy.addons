@@ -64,7 +64,7 @@ msgstr "Automatycznie"
 
 msgctxt "#30009"
 msgid "L1 (Secure)"
-msgstr "L1"
+msgstr "L1 (Zabezpieczony)"
 
 msgctxt "#30010"
 msgid "L3"
@@ -118,10 +118,9 @@ msgctxt "#30022"
 msgid "Ignore Display Resolution"
 msgstr "Ignoruj rozdzielczość wyświetlacza"
 
-
 msgctxt "#30023"
-msgid "Video view for all content"
-msgstr "Widok wideo dla wszystkich treści"
+msgid "Video view for media"
+msgstr "Widok wideo dla mediów"
 
 msgctxt "#30024"
 msgid "Folders for TV Show and Seasons"
@@ -166,6 +165,28 @@ msgstr "Maksymalna liczba kanałów audio"
 msgctxt "#30034"
 msgid "PVR: Autoskip Bad Channels"
 msgstr "PVR: Autopomijanie błędnych kanałów"
+
+msgctxt "#30035"
+msgid "Please check your Widevine CDM is upto date\n"
+"A Widevine CDM update dialog will appear when you play this content again\n\n"
+"Widevine Server Response:\n"
+"{error}"
+msgstr "Sprawdź, czy Twój Widevine CDM jest aktualny\n"
+"Podczas ponownego odtwarzania tej zawartości pojawi się okno dialogowe aktualizacji Widevine CDM".
+"Odpowiedź serwera Widevine:\n"
+"{error}"
+
+msgctxt "#30036"
+msgid "WARNING: System architecture change detected ({old} -> {new})\n"
+"This may cause issues with binary addons as Kodi repo will still use {old}\n"
+"If you have issues, try revert back to Kodi {old}"
+msgstr "OSTRZEŻENIE: Wykryto zmianę architektury systemu ({old} -> {new})\n"
+"Może to powodować problemy z dodatkami binarnymi, ponieważ repozytorium Kodi nadal będzie używać {old}\n".
+"Jeśli masz problemy, spróbuj powrócić do Kodi {old}".
+
+msgctxt "#30037"
+msgid "Video view for menus"
+msgstr "Widok wideo dla menu"
 
 ## COMMON ##
 
