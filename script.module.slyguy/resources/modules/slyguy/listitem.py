@@ -101,7 +101,7 @@ class _ListItemInfoTagVideo(_ListItemInfoTag):
     _tag_attr = {
         'size': {'skip': True},  # Currently no infoTag setter for this property
         'count': {'skip': True},  # Currently no infoTag setter for this property
-        'date': {'attr': 'setDateTime', 'convert': str, 'classinfo': str},
+        'date': {'attr': 'setDateAdded', 'convert': str, 'classinfo': str},
         'genre': {'attr': 'setGenres', 'convert': lambda x: [x], 'classinfo': (list, tuple)},
         'country': {'attr': 'setCountries', 'convert': lambda x: [x], 'classinfo': (list, tuple)},
         'year': {'attr': 'setYear', 'convert': int, 'classinfo': int},
