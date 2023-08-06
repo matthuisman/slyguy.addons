@@ -308,8 +308,8 @@ class Item(object):
 
             if KODI_VERSION >= 20:
                 ListItemInfoTag(li, 'video').set_info(info)
-                if info.get('data'):
-                    li.setDateTime(info['data'])
+                if info.get('date'):
+                    li.setDateTime(info['date'])
             else:
                 li.setInfo('video', info)
 
