@@ -148,6 +148,10 @@ msgid "Check {email} for 6-digit code and enter it below\n"
 msgstr "Sprawdź {email}, aby znaleźć 6 cyfrowy kod i wpisz go poniżej\n"
 "Kod wygasa po 15 minutach."
 
+msgctxt "#30033"
+msgid "App Language (empty = profile language)"
+msgstr "Język aplikacji (pusty = język profilu)"
+
 msgctxt "#30042"
 msgid "Continue Watching"
 msgstr "Kontynuuj oglądanie"
