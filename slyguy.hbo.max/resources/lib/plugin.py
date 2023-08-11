@@ -117,7 +117,7 @@ def _process_rows(rows, slug):
                 art = {'thumb': _image(row['images'].get('tileburnedin')), 'fanart': _image(row['images'].get('tile'), size='1920x1080')},
                 info = {
                     'duration': row['duration'],
-                    'tvshowtitle': row['seriesTitles']['full'],
+                   # 'tvshowtitle': row['seriesTitles']['full'],
                     'season': row.get('seasonNumber', 1),
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
                     'mediatype': 'episode',
@@ -356,7 +356,7 @@ def series(slug, season=None, **kwargs):
                 info = {
                     'plot': row['summaries']['short'],
                     'duration': row['duration'],
-                    'tvshowtitle': row['seriesTitles']['full'],
+                   # 'tvshowtitle': row['seriesTitles']['full'],
                     'season': row.get('seasonNumber', 1),
                     'episode': row.get('numberInSeason', row.get('numberInSeries', 1)),
                     'mediatype': 'episode',
