@@ -307,10 +307,12 @@ class Item(object):
                 info['date'] = aired
 
             if KODI_VERSION >= 20:
-                ListItemInfoTag(li, 'video').set_info(info)
                 if info.get('date'):
-                    li.setDateTime(info['date'])
+                    li.setDateTime(info.pop('date'))
+                ListItemInfoTag(li, 'video').set_info(info)
             else:
+                if info.get('date'):
+                    info['date'] = '{}.{}.{}'.format(info['date'][8:10], info['date'][5:7], info['date'][0:4])
                 li.setInfo('video', info)
 
         if self.specialsort:
