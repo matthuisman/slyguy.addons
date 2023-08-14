@@ -1375,29 +1375,27 @@ class RequestHandler(BaseHTTPRequestHandler):
         response = self._proxy_request('HEAD', url)
         self._output_response(response)
 
-    def do_POST(self, retry=True):
+    def do_POST(self):
         url = self._get_url('POST')
 
-        if url == self._session.get('license_url'):
-            for i in range(3):
-                response = self._proxy_request('POST', url)
-                license_data = response.stream.content
-                if ADDON_DEV:
-                    with open(xbmc.translatePath('special://temp/license.data'), 'wb') as f:
-                        f.write(license_data)
-                if response.ok and license_data:
-                    break
-                time.sleep(0.5)
-            else:
-                if not self._session.get('license_init'):
-                    log.error(license_data)
-                    if not license_data:
-                        license_data = b'None'
-                    gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
-
-            self._session['license_init'] = True
-        else:
+        for i in range(3):
             response = self._proxy_request('POST', url)
+            if url != self._session.get('license_url'):
+                break
+
+            license_data = response.stream.content
+            if ADDON_DEV:
+                with open(xbmc.translatePath('special://temp/license.data'), 'wb') as f:
+                    f.write(license_data)
+            if response.ok and license_data:
+                break
+
+            time.sleep(0.5)
+        else:
+            log.error(license_data)
+            if not license_data:
+                license_data = b'None'
+            gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
 
         self._output_response(response)
 
