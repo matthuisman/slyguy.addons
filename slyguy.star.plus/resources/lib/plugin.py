@@ -2,7 +2,7 @@ import arrow
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
-from slyguy.constants import KODI_VERSION
+from slyguy.constants import KODI_VERSION, NO_RESUME_TAG
 from slyguy.drm import is_wv_secure
 
 from .api import API
@@ -228,7 +228,6 @@ def sets(**kwargs):
 
 @plugin.pagination()
 def _sets(set_id, set_type, page=1, **kwargs):
-    page = int(page)
     data = api.set_by_id(set_id, set_type, page=page)
 
     folder = plugin.Folder(_get_text(data, 'title', 'set'))
@@ -310,7 +309,7 @@ def _get_play_path(content_id):
         kwargs['profile_id'] = profile_id
 
     if settings.getBool('sync_playback', False):
-        kwargs['_noresume'] = True
+        kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -566,7 +565,6 @@ def series(series_id, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def season(season_id, title, page=1, **kwargs):
-    page = int(page)
     data = api.episodes(season_id, page=page)
 
     folder = plugin.Folder(title)
@@ -729,7 +727,7 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
     item.play_next = {}
     item.play_skips = []
 
-    if settings.getBool('sync_playback', False) and playhead.get('status') == 'PlayheadFound':
+    if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playhead.get('status') == 'PlayheadFound':
         item.resume_from = plugin.resume_from(playhead['position'])
         if item.resume_from == -1:
             return
