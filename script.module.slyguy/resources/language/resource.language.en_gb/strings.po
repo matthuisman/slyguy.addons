@@ -177,6 +177,26 @@ msgctxt "#30037"
 msgid "Video view for menus"
 msgstr ""
 
+msgctxt "#30038"
+msgid "Resume from"
+msgstr ""
+
+msgctxt "#30039"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Last position"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Beginning"
+msgstr ""
+
+msgctxt "#30042"
+msgid "Bypass"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

@@ -540,6 +540,15 @@ def resume_from(seconds):
     if not seconds or seconds < 60:
         return 0
 
+    resume = settings.common_settings.getEnum('resume_from', RESUME_TYPES, default=RESUME_ASK)
+
+    if resume == RESUME_LAST:
+        return seconds
+    elif resume == RESUME_START:
+        return 0
+    elif resume == RESUME_SKIP:
+        return None
+
     minutes = seconds // 60
     hours = minutes // 60
     label = _(_.RESUME_FROM, '{:02d}:{:02d}:{:02d}'.format(hours, minutes % 60, seconds % 60))

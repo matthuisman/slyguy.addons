@@ -20,6 +20,7 @@
     <category label="$ADDON[script.module.slyguy 32035]">
         <setting label="30022" id="ignore_display_resolution" type="bool" default="true"/>
         <setting label="30034" id="skip_next_channel" type="bool" default="false"/>
+        <setting label="30038" id="resume_from" type="enum" default="0" lvalues="30039|30040|30041|30042"/>
         <setting label="30025" id="max_width" type="number" default="0"/>
         <setting label="30026" id="max_height" type="number" default="0"/>
         <setting label="30027" id="h265" type="bool" default="false"/>
