@@ -369,8 +369,8 @@ def _parse_video(row):
         info  = {
             'plot': _get_text(row, 'description', 'program'),
             'duration': row['mediaMetadata']['runtimeMillis']/1000,
-            'year': row['releases'][0]['releaseYear'],
-            'aired': row['releases'][0]['releaseDate'] or row['releases'][0]['releaseYear'],
+            'year': row['releases'][0]['releaseYear'] if row['releases'][0]['releaseDate'] else None,
+            'aired': row['releases'][0]['releaseDate'],
             'mediatype': 'movie',
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
