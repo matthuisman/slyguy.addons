@@ -310,6 +310,14 @@ class API(object):
         self._refresh_token()
         return self._session.get('/v3.0/androidtv/login/status.json', params=self._params()).json()
 
+    def video(self, video_id):
+        self._refresh_token()
+
+        params = {
+            "contentId": video_id,
+        }
+        return self._session.get('/v3.0/androidphone/video/streams.json', params=self._params(params)).json()
+
     def play(self, video_id):
         self._refresh_token()
 
