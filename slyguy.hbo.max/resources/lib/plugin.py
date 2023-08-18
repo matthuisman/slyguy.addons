@@ -4,10 +4,8 @@ from xml.dom.minidom import parseString
 from kodi_six import xbmc, xbmcplugin
 from slyguy import plugin, gui, userdata, signals, inputstream, settings, mem_cache
 from slyguy.session import Session
-from slyguy.util import replace_kids
-from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG
+from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG, NO_RESUME_TAG
 from slyguy.drm import is_wv_secure
-from slyguy.log import log
 
 from .api import API
 from .constants import *
@@ -525,7 +523,7 @@ def _get_play_path(slug):
         kwargs['profile_id'] = profile_id
 
     if settings.getBool('sync_playback', False):
-        kwargs['_noresume'] = True
+        kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -626,7 +624,7 @@ def play(slug, **kwargs):
     else:
         item.headers = headers
 
-    if settings.getBool('sync_playback', False) and not kwargs.get(ROUTE_RESUME_TAG):
+    if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and not kwargs.get(ROUTE_RESUME_TAG):
         marker = api.marker(edit['playbackMarkerId'])
 
         if marker and float(marker['position']) / marker['runtime'] <= (WATCHED_PERCENT / 100.0):
