@@ -2,7 +2,7 @@ import arrow
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
-from slyguy.constants import KODI_VERSION, NO_RESUME_TAG
+from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
 
 from .api import API
@@ -727,7 +727,7 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
     item.play_next = {}
     item.play_skips = []
 
-    if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playhead.get('status') == 'PlayheadFound':
+    if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playhead.get('status') == 'PlayheadFound' and not kwargs.get(ROUTE_RESUME_TAG):
         item.resume_from = plugin.resume_from(playhead['position'])
         if item.resume_from == -1:
             return
