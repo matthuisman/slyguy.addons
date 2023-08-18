@@ -163,6 +163,8 @@ class API(object):
         userdata.set('profile_id', profile['id'])
         userdata.set('profile_name', profile['name'])
         userdata.set('profile_img', profile['profilePicPath'])
+        userdata.set('profile_userid', profile['userId'])
+        userdata.set('profile_refid', profile['referenceProfileId'])
 
     def _params(self, params=None):
         _params = {'at': self._config.at_token, 'locale': self._config.locale}
@@ -383,6 +385,33 @@ class API(object):
         }
 
         return data
+
+    def update_playhead(self, session_id, content_id, time):
+        self._refresh_token()
+
+        user_id = userdata.get('profile_userid')
+        profile_refid = userdata.get('profile_refid')
+
+        # If any of the options above are missing, refresh the stored profile data.
+        if user_id is None or profile_refid is None:
+            profile = self.user()['activeProfile']
+            self._set_profile_data(profile)
+
+            user_id = profile['userId']
+            profile_refid = profile['referenceProfileId']
+
+        params = {
+            'sessionid': session_id,
+            'contentid': content_id,
+            'userid': user_id,
+            'profileid': profile_refid,
+            'medtime': '%d' % time,
+            'premium': 'true',
+            'platform': 'cbs_android_phone_app',
+        }
+
+        url = self._config.base_url.replace('://www.', '://sparrow.')
+        self._session.get(url + '/streamer/v1.0/ingest/beacon.json', params=self._params(params))
 
     def _ip(self):
         return self._session.get(self._config.ip_url, params=self._params()).json()['ip']

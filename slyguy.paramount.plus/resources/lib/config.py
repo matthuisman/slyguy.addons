@@ -89,6 +89,10 @@ class Config(object):
         return CONFIG[self.region]['episodes_section']
 
     @property
+    def base_url(self):
+        return CONFIG[self.region]['base_url']
+
+    @property
     def api_url(self):
         return CONFIG[self.region]['base_url'] + '/apps-api{}'
 

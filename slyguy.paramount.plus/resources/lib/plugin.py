@@ -1,5 +1,6 @@
 import time
 import codecs
+import uuid
 from xml.sax.saxutils import escape
 from xml.dom.minidom import parseString
 
@@ -681,7 +682,20 @@ def _play(video_id):
 
     item.headers['authorization'] = 'Bearer {}'.format(data['license_token'])
 
+    if settings.getBool('sync_playback', False):
+        item.callback = {
+            'type':'interval',
+            'interval': 10,
+            'callback': plugin.url_for(callback, session_id=str(uuid.uuid4()), media_id=video_id),
+        }
+
+
     return item
+
+@plugin.route()
+@plugin.no_error_gui()
+def callback(session_id, media_id, _time, **kwargs):
+    api.update_playhead(session_id, media_id, int(_time))
 
 @plugin.route()
 @plugin.login_required()

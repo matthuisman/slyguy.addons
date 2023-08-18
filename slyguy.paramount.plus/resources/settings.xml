@@ -17,6 +17,8 @@
         <setting label="$ADDON[script.module.slyguy 32088]" id="subs_forced" type="bool" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32089]" id="subs_non_forced" type="bool" default="true" visible="false"/>
 
+        <setting label="30030" type="bool" id="sync_playback" default="false"/>
+
         <setting label="30025" type="bool" id="ac3_enabled" default="false"/>
         <setting label="30024" type="bool" id="ec3_enabled" default="false"/>
             <setting label="30028" type="bool" id="atmos_enabled" default="false" enable="eq(-1,true)"/>

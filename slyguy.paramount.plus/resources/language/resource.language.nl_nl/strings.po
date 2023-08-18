@@ -105,6 +105,10 @@ msgstr "Kan verificatietoken niet vernieuwen\n"
 "Controleer of uw abonnement nog geldig is\n"
 "Probeer vervolgens uit te loggen en opnieuw in te loggen"
 
+msgctxt "#30030"
+msgid "Sync with Paramount+"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

@@ -103,6 +103,10 @@ msgid "Failed to refresh auth token\n"
 "Then try logout and login again"
 msgstr ""
 
+msgctxt "#30030"
+msgid "Sync with Paramount+"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
