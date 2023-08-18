@@ -267,15 +267,9 @@ class Item(object):
         if self.label:
             li.setLabel(self.label)
 
-        if not (info.get('plot') or '').strip() and not info.get('mediatype') and settings.common_settings.getBool('video_view_menus', False):
-            info['plot'] = '[B][/B]'
-
         if info:
             if not info.get('title') and self.label and info.get('mediatype'):
                 info['title'] = self.label
-
-            if info.get('mediatype') in ('tvshow','season') and settings.common_settings.getBool('show_series_folders', False):
-                info.pop('mediatype')
 
             if info.get('mediatype') == 'movie':
                 info.pop('season', None)

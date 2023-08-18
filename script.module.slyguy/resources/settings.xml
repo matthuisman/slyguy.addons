@@ -12,9 +12,9 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32139]">
+        <setting label="30024" id="menu_view_shows_seasons" type="bool" default="false"/>
         <setting label="30023" id="video_view_media" type="bool" default="false"/>
         <setting label="30037" id="video_view_menus" type="bool" default="false"/>
-        <setting label="30024" id="show_series_folders" type="bool" default="false"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">

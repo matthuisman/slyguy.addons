@@ -676,6 +676,10 @@ class Folder(object):
                     is_folder = False,
                 ))
 
+        video_view_menus = settings.common_settings.getBool('video_view_menus', False)
+        video_view_media = settings.common_settings.getBool('video_view_media', False)
+        menu_view_shows_seasons = settings.common_settings.getBool('menu_view_shows_seasons', False)
+
         count = 0.0
         for item in items:
             if self.thumb and not item.art.get('thumb'):
@@ -687,6 +691,13 @@ class Folder(object):
             if not item.specialsort:
                 media_type = item.info.get('mediatype')
                 show_name = item.info.get('tvshowtitle')
+
+                if not media_type and item.playable:
+                    item.info['mediatype'] = media_type = 'video'
+
+                if not (item.info.get('plot') or '').strip() and not item.info.get('mediatype') and video_view_menus:
+                    item.info['plot'] = '[B][/B]'
+
                 if media_type != 'episode' or not item.info.get('episode') or not show_name or (last_show_name and show_name != last_show_name):
                     ep_sort = False
 
@@ -719,9 +730,13 @@ class Folder(object):
                 content_type = 'seasons'
             elif top_type == 'episode':
                 content_type = 'episodes'
+            elif top_type == 'video':
+                content_type = 'videos'
 
-        if (content_type == 'menus' and settings.common_settings.getBool('video_view_menus', False)) or \
-            (content_type != 'menus' and settings.common_settings.getBool('video_view_media', False)):
+        if content_type in ('tvshows', 'seasons') and menu_view_shows_seasons:
+            content_type = 'menus'
+
+        if (content_type == 'menus' and video_view_menus) or (content_type != 'menus' and video_view_media):
             content_type = 'videos'
 
         # data = userdata.get('view_{}'.format(content_type))
