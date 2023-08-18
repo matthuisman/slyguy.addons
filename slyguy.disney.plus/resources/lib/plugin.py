@@ -2,7 +2,7 @@ from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
-from slyguy.constants import KODI_VERSION
+from slyguy.constants import KODI_VERSION, NO_RESUME_TAG
 from slyguy.drm import is_wv_secure
 from slyguy.util import async_tasks
 
@@ -325,7 +325,7 @@ def _get_play_path(content_id):
         kwargs['profile_id'] = profile_id
 
     if settings.getBool('sync_playback', False):
-        kwargs['_noresume'] = True
+        kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -685,7 +685,7 @@ def _play(content_id=None, family_id=None, **kwargs):
     item.play_next = {}
     item.play_skips = []
 
-    if settings.getBool('sync_playback', False) and playback_data['playhead']['status'] == 'PlayheadFound':
+    if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
         item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
         if item.resume_from == -1:
             return
