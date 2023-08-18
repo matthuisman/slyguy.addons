@@ -2,7 +2,6 @@ import re
 import json
 import codecs
 from xml.sax.saxutils import escape
-from xml.dom.minidom import parseString
 
 import arrow
 from six.moves.urllib_parse import quote
@@ -10,7 +9,7 @@ from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.log import log
-from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, MIDDLEWARE_PLUGIN, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, NO_RESUME_TAG
+from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, NO_RESUME_TAG
 
 from .api import API
 from .language import _
@@ -621,7 +620,7 @@ def _play(id, play_type, **kwargs):
             item.subtitles.append([subs[key], key])
 
     if data['asset_playback_type'] == 'VOD' and settings.getBool('sync_playback', False):
-        if data.get('initial_position') and NO_RESUME_TAG in kwargs:
+        if data.get('initial_position') and NO_RESUME_TAG in kwargs and not kwargs.get(ROUTE_RESUME_TAG):
             item.resume_from = plugin.resume_from(int(data['initial_position']/1000))
             if item.resume_from == -1:
                 return
