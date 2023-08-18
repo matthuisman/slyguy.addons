@@ -1,5 +1,5 @@
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.constants import NO_RESUME_TAG
+from slyguy.constants import NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.exceptions import PluginError
 
 from .api import API
@@ -314,7 +314,7 @@ def play(id, **kwargs):
         try: progress = data['user_media']['progress_in_seconds']
         except: progress = 0
 
-        if NO_RESUME_TAG in kwargs:
+        if NO_RESUME_TAG in kwargs and not kwargs.get(ROUTE_RESUME_TAG):
             item.resume_from = plugin.resume_from(progress)
             if item.resume_from == -1:
                 return
