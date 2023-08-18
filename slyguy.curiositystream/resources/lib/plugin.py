@@ -1,5 +1,5 @@
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.log import log
+from slyguy.constants import NO_RESUME_TAG
 from slyguy.exceptions import PluginError
 
 from .api import API
@@ -293,7 +293,7 @@ def _get_play_path(id):
     }
 
     if settings.getBool('sync_playback', False):
-        kwargs['_noresume'] = True
+        kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -314,9 +314,10 @@ def play(id, **kwargs):
         try: progress = data['user_media']['progress_in_seconds']
         except: progress = 0
 
-        item.resume_from = plugin.resume_from(progress)
-        if item.resume_from == -1:
-            return
+        if NO_RESUME_TAG in kwargs:
+            item.resume_from = plugin.resume_from(progress)
+            if item.resume_from == -1:
+                return
 
         item.callback = {
             'type': 'interval',
