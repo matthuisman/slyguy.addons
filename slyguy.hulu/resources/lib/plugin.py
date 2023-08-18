@@ -10,7 +10,7 @@ from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.log import log
-from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, MIDDLEWARE_PLUGIN, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK
+from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, MIDDLEWARE_PLUGIN, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, NO_RESUME_TAG
 
 from .api import API
 from .language import _
@@ -69,7 +69,7 @@ def _hub_path(slug, view=1):
 @plugin.route()
 @plugin.pagination()
 def hub(slug, view=1, page=1, **kwargs):
-    data = api.hub(slug, page=int(page), view=bool(int(view)))
+    data = api.hub(slug, page=page, view=bool(int(view)))
     folder = plugin.Folder(data.get('name'))
 
     if 'components' in data:
@@ -544,7 +544,7 @@ def _get_play_path(id, **kwargs):
 
     kwargs['id'] = id
     if settings.getBool('sync_playback', False):
-        kwargs['_noresume'] = True
+        kwargs[NO_RESUME_TAG] = True
     else:
         profile_id = userdata.get('profile_id')
         if profile_id:
@@ -621,7 +621,7 @@ def _play(id, play_type, **kwargs):
             item.subtitles.append([subs[key], key])
 
     if data['asset_playback_type'] == 'VOD' and settings.getBool('sync_playback', False):
-        if data.get('initial_position'):
+        if data.get('initial_position') and NO_RESUME_TAG in kwargs:
             item.resume_from = plugin.resume_from(int(data['initial_position']/1000))
             if item.resume_from == -1:
                 return
