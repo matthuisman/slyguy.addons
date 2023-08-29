@@ -105,6 +105,10 @@ msgstr "Verifizierungs-Token kann nicht erneuert werden"
 "Bitte prüfen Sie, ob Ihr Abonnement noch gültig ist"
 "Versuchen Sie dann, sich abzumelden und erneut anzumelden."
 
+msgctxt "#30030"
+msgid "Sync with Paramount+"
+msgstr "Mit Paramount+ synchronisieren"
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

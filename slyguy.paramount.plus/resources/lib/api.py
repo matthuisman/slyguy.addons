@@ -160,6 +160,7 @@ class API(object):
         self._save_auth(resp.cookies)
 
     def _set_profile_data(self, profile):
+        userdata.set('user_id', profile['userId'])
         userdata.set('profile_id', profile['id'])
         userdata.set('profile_name', profile['name'])
         userdata.set('profile_img', profile['profilePicPath'])
@@ -312,6 +313,13 @@ class API(object):
         self._refresh_token()
         return self._session.get('/v3.0/androidtv/login/status.json', params=self._params()).json()
 
+    def video(self, video_id):
+        self._refresh_token()
+        params = {
+            'contentId': video_id,
+        }
+        return self._session.get('/v3.0/androidphone/video/streams.json', params=self._params(params)).json()
+
     def play(self, video_id):
         self._refresh_token()
 
@@ -388,6 +396,19 @@ class API(object):
 
         return data
 
+    def update_playhead(self, content_id, time):
+        params = {
+            'contentid': content_id,
+            'userid': userdata.get('user_id'),
+            'profileid': userdata.get('profile_id'),
+            'medtime': time or 1,
+            'premium': True,
+            'sessionid': '',
+            'platform': '',
+        }
+
+        return Session().get(self._config.playhead_url, params=self._params(params)).json().get('success')
+
     def _ip(self):
         return self._session.get(self._config.ip_url, params=self._params()).json()['ip']
 
@@ -452,9 +473,10 @@ class API(object):
             return None
 
     def logout(self):
-        userdata.delete('profile_img')
-        userdata.delete('profile_name')
+        userdata.delete('user_id')
         userdata.delete('profile_id')
+        userdata.delete('profile_name')
+        userdata.delete('profile_img')
         userdata.delete('auth_cookies')
         userdata.delete('device_id')
         userdata.delete('expires')

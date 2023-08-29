@@ -89,6 +89,10 @@ class Config(object):
         return CONFIG[self.region]['episodes_section']
 
     @property
+    def playhead_url(self):
+        return CONFIG[self.region]['base_url'].replace('https://www.', 'https://sparrow.') + '/streamer/v1.0/ingest/beacon.json'
+
+    @property
     def api_url(self):
         return CONFIG[self.region]['base_url'] + '/apps-api{}'
 

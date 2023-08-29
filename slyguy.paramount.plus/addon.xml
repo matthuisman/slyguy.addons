@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.paramount.plus" name="Paramount+" provider-name="SlyGuy" version="0.6.8">
+<addon id="slyguy.paramount.plus" name="Paramount+" provider-name="SlyGuy" version="0.6.9">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix shows with empty sections</news>
+    <news>Add Sync with Paramount+ setting (thanks @StollD)</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
