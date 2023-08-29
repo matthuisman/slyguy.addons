@@ -526,13 +526,20 @@ def live_tv(channel_slug=None, **kwargs):
                 start = arrow.get(row['upcomingListing'][0]['startTimestamp'])
                 plot += u'[{}] {}\n'.format(start.to('local').format('h:mma'), row['upcomingListing'][0]['title'])
 
+            label = row['channelName'].strip()
+            listing_id = None
+            if row['streamType'] == 'mpx_live' and len(row['currentListing']) > 1:
+                listing_id = listing['id']
+                label = listing['title'].strip()
+                plot = listing['description']
+
             folder.add_item(
-                label = row['channelName'].strip(),
+                label = label,
                 info = {
                     'plot': plot,
                 },
                 art = {'thumb': config.image(row['filePathLogoSelected'])},
-                path = plugin.url_for(play_channel, slug=row['slug'], listing_id=listing['id'] if (row['streamType'] == 'mpx_live' and len(row['currentListing']) > 1) else None, _is_live=True),
+                path = plugin.url_for(play_channel, slug=row['slug'], listing_id=listing_id, _is_live=True),
                 playable = True,
             )
 
@@ -673,7 +680,6 @@ def play(video_id, **kwargs):
 
 def _play(video_id, **kwargs):
     data = api.play(video_id)
-
     item = plugin.Item(
         path = data['url'],
     )

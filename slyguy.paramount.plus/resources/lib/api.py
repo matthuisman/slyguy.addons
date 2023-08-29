@@ -341,6 +341,9 @@ class API(object):
         #     if pid_type and pid:
         #         pids.append({'pid': pid, 'type': pid_type})
 
+        params = {'contentId': video_id}
+        session = self._session.get('/v3.1/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
+
         order = ['HLS_AES', 'DASH_LIVE', 'DASH_CENC_HDR10', 'DASH_TA', 'DASH_CENC', 'DASH_CENC_PRECON', 'DASH_CENC_PS4']
         order.extend(['HLS_LIVE', 'HLS_FPS_HDR', 'HLS_FPS', 'HLS_FPS_PRECON']) #APPLE SAMPLE-AES - add last
 
@@ -360,6 +363,17 @@ class API(object):
 
         url = self._config.get_link_platform_url(video_id)
         resp = self._session.get(url, params=params)
+        if not resp.ok:
+            if session.get('streamingUrl'):
+                return {
+                    'url': session['streamingUrl'],
+                    'type': 'HLS',
+                    'widevine': False,
+                    'license_url': session['url'],
+                    'license_token': session['ls_session'],
+                    'live': True,
+                }
+            raise APIError("Unable to find playback url for {}".format(video_id))
         root = parseString(resp.content)
 
         videos = root.getElementsByTagName('video')
@@ -370,9 +384,6 @@ class API(object):
                 if error_msg:
                     break
             raise APIError(_(error_msg))
-
-        params = {'contentId': video_id}
-        session = self._session.get('/v3.0/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
 
         switch = root.getElementsByTagName('switch')[0]
         ref = switch.getElementsByTagName('ref')[0]
