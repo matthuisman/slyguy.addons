@@ -538,7 +538,7 @@ default_fanart = ADDON_FANART
 
 def resume_from(seconds):
     if not seconds or seconds < 60:
-        return 0
+        return None
 
     minutes = seconds // 60
     hours = minutes // 60
