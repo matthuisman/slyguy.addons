@@ -266,7 +266,11 @@ class API(object):
             'rows': 1,
             'begin': 0,
         }
-        sections = self._session.get('/v2.0/androidphone/shows/{}/videos/config/{}.json'.format(show_id, config), params=self._params(params)).json()['videoSectionMetadata']
+        data = self._session.get('/v2.0/androidphone/shows/{}/videos/config/{}.json'.format(show_id, config), params=self._params(params)).json()
+        if 'videoSectionMetadata' not in data:
+            return None
+
+        sections = data['videoSectionMetadata']
         for section in sections:
             if section['section_type'] == 'Full Episodes':
                 return section

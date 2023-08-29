@@ -417,7 +417,12 @@ def show(show_id, config=None, **kwargs):
 
     for row in api.show_menu(show_id):
         if row.get('videoConfigUniqueName'): #and row.get('hasResultsFromVideoConfig'):
+            # if not row.get('hasResultsFromVideoConfig', True):
+            #     continue
             config = api.show_config(show_id, row['videoConfigUniqueName'])
+            if not config:
+                continue
+
             if config.get('display_seasons'):
                 for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
                     if not row['totalCount']:
