@@ -343,6 +343,9 @@ class API(object):
 
         params = {'contentId': video_id}
         session = self._session.get('/v3.1/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
+        if not session.get('success', True):
+            error = session.get('Error Message') or session.get('message') or str(session)
+            raise APIError('Failed to obtain session token\n{}'.format(error))
 
         order = ['HLS_AES', 'DASH_LIVE', 'DASH_CENC_HDR10', 'DASH_TA', 'DASH_CENC', 'DASH_CENC_PRECON', 'DASH_CENC_PS4']
         order.extend(['HLS_LIVE', 'HLS_FPS_HDR', 'HLS_FPS', 'HLS_FPS_PRECON']) #APPLE SAMPLE-AES - add last
@@ -373,7 +376,9 @@ class API(object):
                     'license_token': session['ls_session'],
                     'live': True,
                 }
-            raise APIError("Unable to find playback url for {}".format(video_id))
+            else:
+                raise APIError("Unable to find playback url for {}".format(video_id))
+
         root = parseString(resp.content)
 
         videos = root.getElementsByTagName('video')
