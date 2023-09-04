@@ -19,7 +19,7 @@ from .smart_urls import get_dns_rewrites
 from .log import log
 from .language import _
 from .exceptions import SessionError, Error
-from .constants import DEFAULT_USERAGENT, CHUNK_SIZE
+from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -291,6 +291,9 @@ class RawSession(requests.Session):
             }
 
         if self._cert:
+            if KODI_VERSION > 18:
+                # @SECLEVEL added in OpenSSL 1.1.1
+                session_data['ssl_ciphers'] += '@SECLEVEL=0'
             kwargs['verify'] = False
             kwargs['cert'] = self._get_cert()
 
