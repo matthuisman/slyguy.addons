@@ -290,7 +290,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._parse_m3u8(response)
 
             elif self._session.get('type') == 'mpd' and url == manifest:
-                self._session['manifest'] = None #unset manifest url so isn't parsed again
                 self._parse_dash(response)
         except Exception as e:
             log.exception(e)
@@ -876,6 +875,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             if '://' in url:
                 elem.firstChild.nodeValue = self.proxy_path + url
+
+            self._session['manifest'] = url
         ################
 
         ## Convert to proxy paths
