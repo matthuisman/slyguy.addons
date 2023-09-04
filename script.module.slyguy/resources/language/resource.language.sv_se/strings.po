@@ -332,10 +332,6 @@ msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "HTTP-försök"
 
-msgctxt "#32046"
-msgid "Chunksize"
-msgstr "Bitstorlek"
-
 msgctxt "#32047"
 msgid "{label} [COLOR green][B](LATEST)[/B][/COLOR]"
 msgstr "{label} [COLOR green][B](SENASTE)[/B][/COLOR]"

@@ -215,10 +215,6 @@ msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "HTTP Tentativo"
 
-msgctxt "#32046"
-msgid "Chunksize"
-msgstr "Dimensione"
-
 msgctxt "#32047"
 msgid "{label} (LATEST)"
 msgstr "{label} (Ultima)"

@@ -324,10 +324,6 @@ msgstr "Beste"
 #msgid "HTTP Retries"
 #msgstr ""
 
-#msgctxt "#32046"
-#msgid "Chunksize"
-#msgstr ""
-
 msgctxt "#32047"
 msgid "{label} (LATEST)"
 msgstr "{label} (neueste)"

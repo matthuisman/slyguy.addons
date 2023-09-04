@@ -138,7 +138,7 @@ STOP_URL = 'stop.m3u8'
 EMPTY_TS = 'empty.ts' if KODI_VERSION < 19 else ''
 #################
 
-CHUNK_SIZE = 4 * 1024 # 4096 best for shoutcast streams and quick playback start
+CHUNK_SIZE = 64 * 1024
 LIVE_HEAD = 25*60*60
 NEWS_MAX_TIME = 432000 #5 Days
 MAX_SEARCH_HISTORY = 10

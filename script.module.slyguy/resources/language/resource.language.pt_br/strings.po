@@ -240,10 +240,6 @@ msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "HTTP Retries"
 
-msgctxt "#32046"
-msgid "Chunksize"
-msgstr "Chunksize"
-
 msgctxt "#32047"
 msgid "{label} [COLOR green][B](LATEST)[/B][/COLOR]"
 msgstr "{label} [COLOR green][B](MAIS RECENTE)[/B][/COLOR]"

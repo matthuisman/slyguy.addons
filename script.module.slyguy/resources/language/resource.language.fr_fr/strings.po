@@ -224,10 +224,6 @@ msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "Nombre d'essais HTTP"
 
-msgctxt "#32046"
-msgid "Chunksize"
-msgstr "Taille des blocs"
-
 msgctxt "#32047"
 msgid "{label} (LATEST)"
 msgstr ""

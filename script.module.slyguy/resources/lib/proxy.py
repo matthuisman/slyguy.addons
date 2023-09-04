@@ -1432,7 +1432,8 @@ class ResponseStream(object):
         else:
             while True:
                 try:
-                    chunk = self._response.raw.read(CHUNK_SIZE)
+                    # 4096 best for shoutcast streams and quick playback start
+                    chunk = self._response.raw.read(4096)
                 except:
                     chunk = None
 

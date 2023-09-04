@@ -395,12 +395,6 @@ msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "Ponowienie HTTP"
 
-msgctxt "#32046"
-msgid "Chunksize"
-msgstr "Rozmiar fragmentu"
-
-
-
 msgctxt "#32048"
 msgid "Bypass"
 msgstr "Pomiń"
