@@ -164,6 +164,7 @@ class API(object):
         userdata.set('profile_id', profile['id'])
         userdata.set('profile_name', profile['name'])
         userdata.set('profile_img', profile['profilePicPath'])
+        userdata.set('profile_ref_id', profile['referenceProfileId'])
 
     def _params(self, params=None):
         _params = {'at': self._config.at_token, 'locale': self._config.locale}
@@ -416,7 +417,7 @@ class API(object):
         params = {
             'contentid': content_id,
             'userid': userdata.get('user_id'),
-            'profileid': userdata.get('profile_id'),
+            'profileid': userdata.get('profile_ref_id'),
             'medtime': time or 1,
             'premium': True,
             'sessionid': '',
@@ -493,6 +494,7 @@ class API(object):
         userdata.delete('profile_id')
         userdata.delete('profile_name')
         userdata.delete('profile_img')
+        userdata.delete('profile_ref_id')
         userdata.delete('auth_cookies')
         userdata.delete('device_id')
         userdata.delete('expires')
