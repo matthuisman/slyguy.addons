@@ -851,15 +851,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         base_url_parents = []
         for elem in root.getElementsByTagName('BaseURL'):
             url = elem.firstChild.nodeValue
-            if '://' not in url:
-                url = urljoin(response.url, url)
 
             if elem.parentNode in base_url_parents:
                 log.debug('Non-1st BaseURL removed: {}'.format(url))
                 elem.parentNode.removeChild(elem)
                 continue
 
-            elem.firstChild.nodeValue = self.proxy_path + url
+            if url.startswith('/'):
+                url = urljoin(response.url, url)
+
+            if '://' in url:
+                elem.firstChild.nodeValue = self.proxy_path + url
+
             base_url_parents.append(elem.parentNode)
         ################
 
