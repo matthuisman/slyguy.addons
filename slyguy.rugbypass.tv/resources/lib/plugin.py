@@ -206,28 +206,28 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
 
     item = _get_stream(data, is_live=is_live)
 
-    if start is None:
-        start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
-    else:
-        start = int(start)
-        play_type = PLAY_FROM_START
+    # if start is None:
+    #     start = arrow.get(data['startedAt']).timestamp
+    # else:
+    #     start = int(start)
+    #     play_type = PLAY_FROM_START
 
-    offset = arrow.now().timestamp - start
-    if is_live and offset > 0:
-        offset = (24*3600 + 20) - offset
+    # offset = arrow.now().timestamp - start
+    # if is_live and offset > 0:
+    #     offset = (24*3600 + 20) - offset
 
-        if play_type is None:
-            play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+    #     if play_type is None:
+    #         play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
 
-        if play_type == PLAY_FROM_ASK:
-            result = plugin.live_or_start()
-            if result == -1:
-                return
-            elif result == 1:
-                item.resume_from = max(1, offset)
+    #     if play_type == PLAY_FROM_ASK:
+    #         result = plugin.live_or_start()
+    #         if result == -1:
+    #             return
+    #         elif result == 1:
+    #             item.resume_from = max(1, offset)
 
-        elif play_type == PLAY_FROM_START:
-            item.resume_from = max(1, offset)
+    #     elif play_type == PLAY_FROM_START:
+    #         item.resume_from = max(1, offset)
 
     if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
         ## Need below to seek to live over multi-periods
