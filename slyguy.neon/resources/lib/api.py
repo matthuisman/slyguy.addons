@@ -31,11 +31,8 @@ class API(object):
     def _device_info(self, username):
         return {
             'uuid': hashlib.sha1(username.encode('utf8')).hexdigest(),
-            'platform': 'Android',
-            'name': 'KODI',
-            'os': 'KODI',
-            'model': 'KODI',
-            #'version': '27'
+            'name': 'NVIDIA Shield TV',
+            'platform': 'AndroidTV',
         }
 
     def _query_request(self, query, variables=None, **kwargs):
@@ -133,8 +130,9 @@ class API(object):
         variables = {
             'contentItemId': contentID,
             'drmLevel': 'WIDEVINE_{}'.format(widevine_level()),
-            'os': 'Windows',
-            'osVersion': "10.0",
+            'os': 'Android_TV',
+            'osVersion': "2021",
+         #   'preferredResolution': 'HD',
         }
 
         return self._query_request(queries.PLAYBACK_AUTH, variables)

@@ -1,4 +1,7 @@
-from slyguy import plugin, gui, userdata, signals, settings
+from slyguy import plugin, gui, userdata, signals, settings, inputstream
+from slyguy.constants import ROUTE_LIVE_TAG
+from slyguy.exceptions import Error
+from slyguy.log import log
 
 from .api import API
 from .language import _
@@ -239,16 +242,66 @@ def _parse_episodes(show, season):
 @plugin.login_required()
 def play(id, **kwargs):
     data = api.playback_auth(id)
-
     if 'errors' in data:
         msg = data['errors'][0]['message']
         plugin.exception(msg)
 
-    referenceID = data['data']['playAuth']['reference_id']
-    jwt_token = data['data']['playAuth']['drmToken']
+    try:
+        referenceID = data['data']['playAuth']['reference_id']
+        jwt_token = data['data']['playAuth']['drmToken']
+        item = api.get_brightcove_src(referenceID, jwt_token)
+        item.headers = HEADERS
+        return item
+    except Error as e:
+        log.info("Error: {}. Fallback to data sources".format(e))
 
-    item = api.get_brightcove_src(referenceID, jwt_token)
-    item.headers = HEADERS
+    streams = []
+    for row in data['data']['playAuth']['sources']:
+        stream = {'url': row['src'], 'license_url': None}
+        if row['type'] == 'application/x-mpegURL':
+            stream['type'] = 'hls'
+        elif row['type'] == 'application/dash+xml':
+            stream['type'] = 'dash'
+        else:
+            continue
+
+        if row.get('key_systems'):
+            if row['key_systems'].get('com.widevine.alpha'):
+                stream['license_url'] = row['key_systems']['com.widevine.alpha']['license_url']
+            else:
+                continue
+
+        if stream not in streams:
+            streams.append(stream)
+
+    streams = sorted(streams, key=lambda x: (x['type'] == 'hls' and not x['license_url'], x['type'] == 'dash'), reverse=True)
+    if not streams:
+        raise plugin.PluginError('No suitable stream found')
+
+    headers = {}
+    headers.update(HEADERS)
+    headers['bcov-auth'] = data['data']['playAuth']['drmToken']
+
+    selected = streams[0]
+    item = plugin.Item(
+        path = selected['url'],
+        headers = headers,
+    )
+
+    if selected['license_url']:
+        item.inputstream = inputstream.Widevine(
+            license_key = selected['license_url']
+        )
+
+        if selected['type'] == 'hls':
+            item.inputstream.manifest_type = 'hls'
+            item.inputstream.mimetype = 'application/vnd.apple.mpegurl'
+
+    elif selected['type'] == 'hls':
+        item.inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs)
+
+    else:
+        item.inputstream = inputstream.MPD()
 
     return item
 
