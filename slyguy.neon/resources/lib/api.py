@@ -132,7 +132,13 @@ class API(object):
             'drmLevel': 'WIDEVINE_{}'.format(widevine_level()),
             'os': 'Android_TV',
             'osVersion': "2021",
-         #   'preferredResolution': 'HD',
+            'preferredResolution': 'HD',
+            'format': 'HD',
+            # 'bitrates': {
+            #     'lowestBitrate': 1000000,
+            #     'SDBitrate': 1000000,
+            #     'HDBitrate': 1000000,
+            # }
         }
 
         return self._query_request(queries.PLAYBACK_AUTH, variables)
