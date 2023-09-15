@@ -478,7 +478,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         data = data.replace('urn:mpeg:mpegB:cicp:ChannelConfiguration', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
         data = data.replace('dvb:', '') #showmax mpd has dvb: namespace without declaration
 
-        root = parseString(data.encode('utf8'))
+        try:
+            root = parseString(data.encode('utf8'))
+        except Exception as e:
+            log.error('Failed to parse dash: {}'.format(data))
+            raise
 
         if ADDON_DEV:
             pretty = root.toprettyxml(encoding='utf-8')
@@ -1385,7 +1389,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             if ADDON_DEV:
                 with open(xbmc.translatePath('special://temp/license.data'), 'wb') as f:
                     f.write(license_data)
+
             if response.ok and license_data:
+                self._session['license_init'] = True
                 break
 
             time.sleep(0.5)
@@ -1393,7 +1399,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             log.error(license_data)
             if not license_data:
                 license_data = b'None'
-            gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
+
+            # only show error on initial license fail
+            if not self._session.get('license_init'):
+                gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
 
         self._output_response(response)
 
