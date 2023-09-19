@@ -29,7 +29,7 @@ class API(object):
         self.logged_in = True
 
     def _oauth_token(self, data, _raise=True):
-        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, error_msg=_.TOKEN_ERROR).json()
+        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, headers={'user-agent': 'okhttp/4.9.3'}, error_msg=_.TOKEN_ERROR).json()
 
         if 'error' in token_data:
             error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
@@ -78,7 +78,7 @@ class API(object):
             'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
         }
 
-        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload).json()
+        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload, headers={'user-agent': 'okhttp/4.9.3'}).json()
 
     def device_login(self, device_code):
         payload = {
