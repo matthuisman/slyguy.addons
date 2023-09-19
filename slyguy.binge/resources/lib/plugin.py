@@ -546,7 +546,6 @@ def license_request(license_url, **kwargs):
 def mpd_request(_data, _path, tracking_url, **kwargs):
     root = parseString(_data)
 
-
     tracking_ids = api.tracking_ids(tracking_url)
     if tracking_ids:
         mpd = root.getElementsByTagName("MPD")[0]
