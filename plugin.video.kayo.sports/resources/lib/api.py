@@ -1,6 +1,6 @@
 from time import time
 
-from slyguy import settings, userdata, mem_cache
+from slyguy import settings, userdata
 from slyguy.log import log
 from slyguy.session import Session
 from slyguy.exceptions import Error
@@ -42,7 +42,7 @@ class API(object):
         return self._subscribed
 
     def _oauth_token(self, data, _raise=True):
-        token_data = self._session.post(AUTH_URL + '/token', json=data, headers=AUTH_HEADERS, error_msg=_.TOKEN_ERROR).json()
+        token_data = self._session.post(AUTH_URL + '/token', json=data, error_msg=_.TOKEN_ERROR).json()
 
         if 'error' in token_data:
             error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR

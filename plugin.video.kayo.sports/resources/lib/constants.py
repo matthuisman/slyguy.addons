@@ -2,12 +2,6 @@ HEADERS = {
     'user-agent': 'okhttp/4.9.3',
 }
 
-AUTH_HEADERS = {
-    'referer': 'https://kayosports.com.au/',
-    'auth0-client': 'eyJuYW1lIjoiYXV0aDAtc3BhLWpzIiwidmVyc2lvbiI6IjEuMjAuMSJ9',
-    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
-}
-
 AUTH_URL = 'https://auth.streamotion.com.au/oauth'
 API_URL = 'https://api.kayosports.com.au/v3{}'
 PROFILE_URL = 'https://profileapi.streamotion.com.au'
