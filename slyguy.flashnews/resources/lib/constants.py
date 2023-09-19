@@ -1,5 +1,5 @@
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36',
+    'user-agent': 'okhttp/4.9.3',
 }
 
 AVATAR_URL = 'https://resources.streamotion.com.au/production/flash/profile/avatar-{avatar_id:02d}.png?imwidth=400'
