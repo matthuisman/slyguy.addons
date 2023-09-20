@@ -17,5 +17,6 @@ class Language(BaseLanguage):
     SHOW_MINI_EPG =     30011
     SHOW_CHNOS    =     30012
     LIVE_CHNO     =     30013
+    HIDE_FAST     =     30014
 
 _ = Language()

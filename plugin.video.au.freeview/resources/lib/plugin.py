@@ -28,6 +28,7 @@ def live_tv(**kwargs):
 
     folder = plugin.Folder(_(_.REGIONS[region]))
     show_chnos = settings.getBool('show_chnos', False)
+    hide_fast = settings.getBool('hide_fast_channels', False)
 
     if settings.getBool('show_epg', True):
         now = arrow.now()
@@ -37,6 +38,8 @@ def live_tv(**kwargs):
 
     for slug in sorted(channels, key=lambda k: (channels[k].get('chno') is None, channels[k].get('network', 'zzzzzzz') if not show_chnos else None, float(channels[k].get('chno', 'inf')), channels[k].get('name', 'zzzzzzz'))):
         channel = channels[slug]
+        if hide_fast and not channel.get('chno'):
+            continue
 
         plot = u''
         count = 0
@@ -110,12 +113,15 @@ def get_region():
 def playlist(output, **kwargs):
     region = get_region()
     channels = get_channels(region)
+    hide_fast = settings.getBool('hide_fast_channels', False)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL.format(region=region)))
 
         for slug in sorted(channels, key=lambda k: (channels[k].get('chno') is None, channels[k].get('network', 'zzzzzzz'), float(channels[k].get('chno', 'inf')), channels[k].get('name', 'zzzzzzz'))):
             channel = channels[slug]
+            if hide_fast and not channel.get('chno'):
+                continue
 
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
                 channel_id=slug, epg_id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),
