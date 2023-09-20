@@ -80,11 +80,10 @@ def live_tv(**kwargs):
 def play(slug, **kwargs):
     region = get_region()
     channel = get_channels(region)[slug]
-    url = Session().head(channel['mjh_master'], allow_redirects=False).headers.get('location', '')
 
     item = plugin.Item(
         label = channel['name'],
-        path = url or channel['mjh_master'],
+        path = channel['mjh_master'],
         headers = channel.get('headers'),
         info = {'plot': channel.get('description')},
         art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
