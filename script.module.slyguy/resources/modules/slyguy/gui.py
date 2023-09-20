@@ -13,6 +13,8 @@ from .router import add_url_args
 from .language import _
 from .smart_urls import get_dns_rewrites
 from .util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
+from .session import Session
+
 
 if KODI_VERSION >= 20:
     from .listitem import ListItemInfoTag
@@ -461,8 +463,12 @@ class Item(object):
             return u'{}{}'.format(proxy_path, proxy_url)
 
         if self.path and (self.path.lower().startswith('http://') or self.path.lower().startswith('https://')):
-            if not mimetype:
+            parse = urlparse(self.path.lower())
+            if parse.netloc in REDIRECT_HOSTS:
+                self.path = Session().head(self.path).headers.get('location') or self.path
                 parse = urlparse(self.path.lower())
+
+            if not mimetype:
                 if parse.path.endswith('.m3u') or parse.path.endswith('.m3u8'):
                     mimetype = 'application/vnd.apple.mpegurl'
                 elif parse.path.endswith('.mpd'):

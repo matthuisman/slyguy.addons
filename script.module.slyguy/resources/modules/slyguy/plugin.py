@@ -597,8 +597,6 @@ class Item(gui.Item):
         self.playable = True
 
         quality = kwargs.get(QUALITY_TAG, self.quality)
-        is_live = ROUTE_LIVE_TAG in kwargs
-
         if quality is None:
             quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
             if quality == QUALITY_CUSTOM:
