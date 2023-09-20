@@ -103,7 +103,7 @@ class API(object):
         return self._query_request(queries.GROUP, variables={'railId': id})['data']['group']
 
     @mem_cache.cached(60*5)
-    def channels(self):
+    def channels(self, subscribed_only=True):
         ids = []
         channels = []
 
@@ -116,6 +116,8 @@ class API(object):
         for group in groups:
             for row in group.get('channels', []):
                 if row['__typename'] == 'LinearChannel' and row['id'] not in ids:
+                    if subscribed_only and not row.get('mySchedule'):
+                        continue
                     ids.append(row['id'])
                     channels.append(row)
 
@@ -190,4 +192,5 @@ class API(object):
         userdata.delete('refresh_token')
         userdata.delete('expires')
         userdata.delete('profile_id')
+        mem_cache.empty()
         self.new_session()

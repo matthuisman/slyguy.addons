@@ -11,6 +11,9 @@ query getChannels($from: DateTime!, $to: DateTime!) {
       tileImage {
         uri
       }
+      mySchedule {
+        ...schedule
+      }
       slots(from: $from to: $to) {
         start
         programme {
@@ -25,6 +28,12 @@ query getChannels($from: DateTime!, $to: DateTime!) {
         }
       }
     }
+  }
+}
+fragment schedule on Schedule {
+  subscriptions {
+    id
+    title
   }
 }
 """

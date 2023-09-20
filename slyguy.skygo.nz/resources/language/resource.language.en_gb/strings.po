@@ -64,6 +64,10 @@ msgid "Server returned {code} response code\n"
 "Try accessing the content via other means (offical app / website) to confirm it's a Kodi add-on issue"
 msgstr ""
 
+msgctxt "#30014"
+msgid "Show only subscribed live channels"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
