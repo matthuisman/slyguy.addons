@@ -46,10 +46,9 @@ def _stations():
 @plugin.route()
 def play(slug, **kwargs):
     channel = get_channels()[slug]
-    url = session.head(channel['mjh_master'], allow_redirects=False).headers.get('location', '') if 'mjh.nz' in channel['mjh_master'].lower() else None
 
     item = plugin.Item(
-        path = url or channel['mjh_master'],
+        path = channel['mjh_master'],
         headers = channel['headers'],
         info = {'plot': channel.get('description')},
         art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
