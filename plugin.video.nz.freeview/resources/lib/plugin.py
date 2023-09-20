@@ -32,9 +32,13 @@ def live_tv(**kwargs):
     else:
         epg_count = None
 
+    hide_fast = settings.getBool('hide_fast_channels', False)
+
     channels = get_channels()
     for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
         channel = channels[slug]
+        if hide_fast and not channel.get('chno'):
+            continue
 
         plot = u''
         count = 0
@@ -102,12 +106,15 @@ def get_channels():
 @plugin.merge()
 def playlist(output, **kwargs):
     channels = get_channels()
+    hide_fast = settings.getBool('hide_fast_channels', False)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
         for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
             channel = channels[slug]
+            if hide_fast and not channel.get('chno'):
+                continue
 
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
                 channel_id=slug, epg_id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),

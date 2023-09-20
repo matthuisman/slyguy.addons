@@ -17,6 +17,10 @@ msgctxt "#30004"
 msgid "{chno} | {label}"
 msgstr ""
 
+msgctxt "#30005"
+msgid "Hide FAST Channels"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
