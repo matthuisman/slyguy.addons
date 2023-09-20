@@ -3,7 +3,6 @@ import codecs
 import arrow
 from slyguy import plugin, inputstream, mem_cache, settings, userdata, gui
 from slyguy.session import Session
-from slyguy.util import gzip_extract
 from slyguy.exceptions import PluginError
 
 from .language import _
@@ -186,12 +185,7 @@ def play(id, **kwargs):
     headers = data['headers']
     headers.update(region.get('headers', {}))
 
-    url = channel.get('url')
-    resp = Session().head(PLAY_URL.format(id=id), headers=headers, allow_redirects=True)
-    if resp.ok:
-        url = resp.url
-
-    if not url:
+    if not channel.get('url'):
         raise PluginError(_.NO_VIDEO_FOUND)
 
     return plugin.Item(
@@ -200,7 +194,7 @@ def play(id, **kwargs):
         art = {'thumb': channel['logo']},
         inputstream = inputstream.HLS(live=True),
         headers = data['headers'],
-        path = url,
+        path = channel['url'],
     )
 
 @plugin.route()
@@ -233,29 +227,6 @@ def playlist(output, **kwargs):
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{region}",{name}\n{url}'.format(
                     id=id, name=channel['name'], logo=channel['logo'], region=region['name'], url=plugin.url_for(play, id=id, _is_live=True),
                 ))
-
-@plugin.route()
-def configure_merge(**kwargs):
-    data = _app_data()
-    data['regions'].pop(ALL, None)
-
-    user_regions = userdata.get('merge_regions', [])
-    avail_regions = sorted(data['regions'], key=lambda x: (data['regions'][x]['sort'], data['regions'][x]['name']))
-
-    options = []
-    preselect = []
-    for index, code in enumerate(avail_regions):
-        region = data['regions'][code]
-        options.append(plugin.Item(label=region['name'], art={'thumb': region['logo']}))
-        if code in user_regions:
-            preselect.append(index)
-
-    indexes = gui.select(heading=_.SELECT_REGIONS, options=options, multi=True, useDetails=True, preselect=preselect)
-    if indexes is None:
-        return
-
-    user_regions = [avail_regions[i] for i in indexes]
-    userdata.set('merge_regions', user_regions)
 
 @plugin.route()
 def configure_merge(**kwargs):
