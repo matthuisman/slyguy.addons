@@ -25,14 +25,13 @@ def home(**kwargs):
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
     show_chnos = settings.getBool('show_chnos', True)
+    hide_fast = settings.getBool('hide_fast_channels', False)
 
     if settings.getBool('show_epg', True):
         now = arrow.now()
         epg_count = 5
     else:
         epg_count = None
-
-    hide_fast = settings.getBool('hide_fast_channels', False)
 
     channels = get_channels()
     for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
@@ -78,11 +77,10 @@ def live_tv(**kwargs):
 @plugin.route()
 def play(slug, **kwargs):
     channel = get_channels()[slug]
-    url = Session().head(channel['mjh_master']).headers.get('location', '')
 
     item = plugin.Item(
         label = channel['name'],
-        path = url or channel['mjh_master'],
+        path = channel['mjh_master'],
         headers = channel['headers'],
         info = {'plot': channel.get('description')},
         art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},

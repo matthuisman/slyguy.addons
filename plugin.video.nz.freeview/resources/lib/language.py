@@ -6,6 +6,6 @@ class Language(BaseLanguage):
     SHOW_MINI_EPG      = 30002
     SHOW_CHNOS         = 30003
     LIVE_CHNO          = 30004
-    HIDE_FAST_CHANNELS = 30005
+    HIDE_FAST          = 30005
 
 _ = Language()
