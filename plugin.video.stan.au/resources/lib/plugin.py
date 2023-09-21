@@ -325,7 +325,7 @@ def _process_entries(entries):
                 end_date = now.shift(hours=2)
 
             item.label = row['title']
-            item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(start_date.to('local').format('MMM Do h:mm A'), row['description'])
+            item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(start_date.to('local').format('MMM Do h:mm A'), row.get('description'))
             if now < start_date:
                 item.label += u' [B][{}][/B]'.format(start_date.humanize())
             elif now > start_date and now < end_date:
