@@ -503,10 +503,11 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     item = plugin.Item(
         path = stream['manifest']['uri'],
-        headers = HEADERS,
+        headers = {
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+            'authorization': 'Bearer {}'.format(userdata.get('access_token')),
+        },
     )
-
-    item.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})
 
     ## Cloudfront streams start from correct position
     if stream['provider'] == CDN_CLOUDFRONT and start_from:
