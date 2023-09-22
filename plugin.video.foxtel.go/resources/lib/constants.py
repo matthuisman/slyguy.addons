@@ -1,5 +1,6 @@
 HEADERS = {
-    'User-Agent': 'okhttp/2.7.5',
+    'user-agent': 'okhttp/4.9.3',
+    'Accept': None,
 }
 
 LIVE_SITEID = '206'

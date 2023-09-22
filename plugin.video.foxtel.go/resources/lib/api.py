@@ -141,9 +141,8 @@ class API(object):
             'deviceId': device_id,
             'nickName': nickname,
             'format': 'json',
-            'appID': 'GO2',
-            'accountType': 'foxtel',
-            'plt': PLT_DEVICE,
+            'type': 'phone',
+            'versionNumber': '6.0.0.J',
         }
 
         secret = self._session.post('/auth.class.api.php/prelogin/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()['secret']
