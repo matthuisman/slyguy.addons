@@ -112,10 +112,7 @@ class RawSession(requests.Session):
         self._rewrites = []
         self._proxy = proxy
         self._cert = None
-
-        ciphers_list = ssl_ciphers.split(':')
-        random.shuffle(ciphers_list)
-        self._ssl_ciphers = ':'.join(ciphers_list)
+        self._ssl_ciphers = ssl_ciphers
         self._ssl_options = ssl_options
 
         if auto_close:
