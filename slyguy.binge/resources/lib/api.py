@@ -25,7 +25,7 @@ class API(object):
         if not access_token:
             return
 
-        self._auth_header = {'authorization': 'Bearer {}'.format(access_token)}
+        self._auth_header = {'Authorization': 'Bearer {}'.format(access_token)}
         self.logged_in = True
 
     def _oauth_token(self, data, _raise=True):
