@@ -1,13 +1,12 @@
 import codecs
 import time
-import re
 
 import arrow
 from slyguy import plugin, gui, settings, userdata, signals, inputstream
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
-from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, LIVE_HEAD, ROUTE_RESUME_TAG
+from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_ASK, PLAY_FROM_LIVE, LIVE_HEAD, ROUTE_RESUME_TAG
 
 from .api import API
 from .language import _
@@ -60,7 +59,7 @@ def login(**kwargs):
 def _device_code():
     start = time.time()
     data = api.device_code()
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_CODE) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=CODE_URL, code=data['user_code']), heading=_.DEVICE_CODE) as progress:
         while (time.time() - start) < data['expires_in']:
             for i in range(data['interval']):
                 if progress.iscanceled() or monitor.waitForAbort(1):
@@ -275,7 +274,7 @@ def _play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     item = plugin.Item(
         path = stream['manifest']['uri'],
-        headers = HEADERS,
+        headers = PLAY_HEADERS,
     )
 
     item.headers.update({'authorization': 'Bearer {}'.format(userdata.get('access_token'))})

@@ -1,5 +1,13 @@
 HEADERS = {
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+    'User-Agent': 'okhttp/4.9.3',
+    'Accept': '',
+    'Accept-Charset': '',
+}
+
+PLAY_HEADERS = {
+    'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)',
+    'Accept': '',
+    'Accept-Charset': '',
 }
 
 AVATAR_URL = 'https://resources.streamotion.com.au/production/flash/profile/avatar-{avatar_id:02d}.png?imwidth=400'
@@ -8,6 +16,7 @@ LIVE_DATA_URL = 'https://i.mjh.nz/Flash/app.json.gz'
 EPG_URL = 'https://i.mjh.nz/Flash/epg.xml.gz'
 CLIENT_ID = 'C6eoEMBGpDRnuDaTqRt6KJLdxXvXUuaG'
 UDID = 'bc1e95db-723d-48fc-8012-effa322bdbc8'
+CODE_URL = 'flashnews.com.au/connect'
 
 FORMAT_HLS_TS = 'hls-ts'
 FORMAT_HLS_TS_SSAI = 'ssai-hls-ts'

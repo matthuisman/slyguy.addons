@@ -17,7 +17,7 @@ class API(object):
         self.logged_in = False
         self._auth_header = {}
 
-        self._session = Session(HEADERS)
+        self._session = Session(HEADERS, attempts=4, return_json=True)
         self._set_authentication()
 
     def _set_authentication(self):
@@ -25,11 +25,11 @@ class API(object):
         if not access_token:
             return
 
-        self._auth_header = {'authorization': 'Bearer {}'.format(access_token)}
+        self._auth_header = {'Authorization': 'Bearer {}'.format(access_token)}
         self.logged_in = True
 
     def _oauth_token(self, data, _raise=True):
-        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, headers={'user-agent': 'okhttp/4.9.3'}, error_msg=_.TOKEN_ERROR).json()
+        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, error_msg=_.TOKEN_ERROR)
 
         if 'error' in token_data:
             error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
@@ -79,7 +79,7 @@ class API(object):
             'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
         }
 
-        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload, headers={'user-agent': 'okhttp/4.9.3'}).json()
+        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload)
 
     def device_login(self, device_code):
         payload = {
@@ -113,14 +113,6 @@ class API(object):
         self._oauth_token(payload)
         self._refresh_token(force=True)
 
-    def _retry_request(self, url, params=None, attempts=2):
-        resp = self._session.get(url, params=params, attempts=attempts, retry_not_ok=True, retry_delay=3000)
-
-        if not resp.ok:
-            raise APIError(_.PAGE_ERROR)
-
-        return resp
-
     #landing has heros and panels
     def landing(self, name, params=None):
         _params = {
@@ -129,7 +121,7 @@ class API(object):
 
         _params.update(params or {})
 
-        return self._retry_request('https://api.flashnews.com.au/v1/content/types/landing/names/{}'.format(name), _params).json()
+        return self._session.get('https://api.flashnews.com.au/v1/content/types/landing/names/{}'.format(name), params=params)
     
     def _check_errors(self, data):
         if 'violations' in data:
@@ -153,17 +145,17 @@ class API(object):
             url = 'https://api.flashnews.com.au/v1/private/panels/{panel_id}' if self.logged_in else 'https://api.flashnews.com.au/v1/panels/{panel_id}'
             link = url.format(panel_id=panel_id)
 
-        data = self._session.get(link, params=params, headers=self._auth_header).json()
+        data = self._session.get(link, params=params, headers=self._auth_header)
         self._check_errors(data)
         return data
 
     def use_cdn(self, live=False):
-        return self._session.get('https://cdnselectionserviceapi.flashnews.com.au/mobile/usecdn/unknown/{media}'.format(media='LIVE' if live else 'VOD'), headers=self._auth_header).json()
+        return self._session.get('https://cdnselectionserviceapi.flashnews.com.au/mobile/usecdn/unknown/{media}'.format(media='LIVE' if live else 'VOD'), headers=self._auth_header)
 
     def profiles(self):
         self._refresh_token()
         try:
-            return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/flash', headers=self._auth_header).json()
+            return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/flash', headers=self._auth_header)
         except:
             return []
 
@@ -180,7 +172,7 @@ class API(object):
             'udid': UDID,
         }
 
-        data = self._session.post('https://play.flashnews.com.au/api/v1/play', json=payload, headers=self._auth_header).json()
+        data = self._session.post('https://play.flashnews.com.au/api/v1/play', json=payload, headers=self._auth_header)
         self._check_errors(data)
         return data['data'][0]
 
