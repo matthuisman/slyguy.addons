@@ -31,8 +31,8 @@ DEFAULT_HEADERS = {
     'User-Agent': DEFAULT_USERAGENT,
 }
 
-SSL_CIPHERS = 'AES256-GCM-SHA384:CHACHA20-POLY1305-SHA256:AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-ECDSA-AES256-CCM-8:ECDHE-ECDSA-AES256-CCM:ECDHE-ECDSA-AES128-CCM-8:ECDHE-ECDSA-AES128-CCM:ECDHE-ECDSA-AES256-CBC-SHA384:ECDHE-RSA-AES256-CBC-SHA384:ECDHE-ECDSA-AES128-CBC-SHA256:ECDHE-RSA-AES128-CBC-SHA256:ECDHE-ECDSA-AES256-CBC-SHA:ECDHE-RSA-AES256-CBC-SHA:ECDHE-ECDSA-AES128-CBC-SHA:ECDHE-RSA-AES128-CBC-SHA:DHE-RSA-AES256-CCM-8:DHE-RSA-AES256-CCM:DHE-RSA-AES128-CCM-8:DHE-RSA-AES128-CCM:DHE-RSA-AES256-CBC-SHA256:DHE-RSA-AES128-CBC-SHA256:DHE-RSA-AES256-CBC-SHA:DHE-RSA-AES128-CBC-SHA:RSA-AES256-GCM-SHA384:RSA-AES128-GCM-SHA256:RSA-AES256-CCM-8:RSA-AES256-CCM:RSA-AES128-CCM-8:RSA-AES128-CCM:RSA-AES256-CBC-SHA256:RSA-AES128-CBC-SHA256:RSA-AES256-CBC-SHA:RSA-AES128-CBC-SHA:EMPTY-RENEGOTIATION-INFO-SCSV'
-SSL_OPTIONS = None
+SSL_CIPHERS = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA:AES256-SHA'
+SSL_OPTIONS = ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_COMPRESSION
 DNS_CACHE = dns.resolver.Cache()
 
 # Save pointers to original functions
@@ -325,7 +325,7 @@ class RawSession(requests.Session):
         return result
 
 class Session(RawSession):
-    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True,):
+    def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, return_json=False):
         super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
             timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close)
 
@@ -333,6 +333,7 @@ class Session(RawSession):
         self._cookies_key = cookies_key
         self._base_url = base_url
         self._attempts = settings.common_settings.getInt('http_retries', 1) if attempts is None else attempts
+        self._return_json = return_json
         self.before_request = None
         self.after_request = None
 
@@ -350,13 +351,14 @@ class Session(RawSession):
         json_text = GzipFile(fileobj=BytesIO(resp.content)).read()
         return json.loads(json_text)
 
-    def request(self, method, url, timeout=None, attempts=None, verify=None, error_msg=None, retry_not_ok=False, retry_delay=1000, log_url=None, **kwargs):
+    def request(self, method, url, timeout=None, attempts=None, verify=None, error_msg=None, retry_not_ok=False, retry_delay=1000, log_url=None, return_json=None, **kwargs):
         method = method.upper()
 
         if not url.startswith('http'):
             url = self._base_url.format(url)
 
         attempts = self._attempts if attempts is None else attempts
+        return_json = self._return_json if return_json is None else return_json
 
         if timeout is not None:
             kwargs['timeout'] = timeout
@@ -391,15 +393,27 @@ class Session(RawSession):
 
             if retry_not_ok and not resp.ok:
                 continue
-            else:
-                break
+
+            if return_json:
+                try:
+                    data = resp.json()
+                except:
+                    if i == attempts:
+                        raise
+                    else:
+                        continue
+
+            break
 
         resp.json = lambda func=resp.json, error_msg=error_msg: json_override(func, error_msg)
 
         if self.after_request:
             self.after_request(resp)
 
-        return resp
+        if return_json:
+            return data
+        else:
+            return resp
 
     def save_cookies(self):
         if not self._cookies_key:

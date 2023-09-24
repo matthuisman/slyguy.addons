@@ -121,7 +121,8 @@ WIDEVINE_UUID = bytearray([237, 239, 139, 169, 121, 214, 74, 206, 163, 200, 39, 
 WIDEVINE_PSSH = bytearray([112, 115, 115, 104])
 
 #DEFAULT_USERAGENT = xbmc.getUserAgent()
-DEFAULT_USERAGENT = 'okhttp/3.4.1'
+#DEFAULT_USERAGENT = 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)'
+DEFAULT_USERAGENT = 'okhttp/4.9.3'
 DEFAULT_WORKERS = 5
 
 #### BOOKMARKS #####
