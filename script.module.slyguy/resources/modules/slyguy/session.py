@@ -347,6 +347,7 @@ class Session(RawSession):
             self.cookies.update(userdata.get(self._cookies_key, {}))
 
     def gz_json(self, *args, **kwargs):
+        kwargs['return_json'] = False
         resp = self.get(*args, **kwargs)
         json_text = GzipFile(fileobj=BytesIO(resp.content)).read()
         return json.loads(json_text)
@@ -428,6 +429,7 @@ class Session(RawSession):
 
     def chunked_dl(self, url, dst_path, method='GET', **kwargs):
         kwargs['stream'] = True
+        kwargs['return_json'] = False
         resp = self.request(method, url, **kwargs)
         resp.raise_for_status()
 
