@@ -62,7 +62,7 @@ def _device_code():
     data = api.device_code()
     monitor = xbmc.Monitor()
 
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_CODE) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=CODE_URL, code=data['user_code']), heading=_.DEVICE_CODE) as progress:
         while (time.time() - start) < data['expires_in']:
             for i in range(data['interval']):
                 if progress.iscanceled() or monitor.waitForAbort(1):
@@ -503,10 +503,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     item = plugin.Item(
         path = stream['manifest']['uri'],
-        headers = {
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-            'authorization': 'Bearer {}'.format(userdata.get('access_token')),
-        },
+        headers = PLAY_HEADERS,
     )
 
     ## Cloudfront streams start from correct position

@@ -1,5 +1,13 @@
 HEADERS = {
-    'user-agent': 'okhttp/4.9.3',
+    'User-Agent': 'okhttp/4.9.3',
+    'Accept': '',
+    'Accept-Charset': '',
+}
+
+PLAY_HEADERS = {
+    'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)',
+    'Accept': '',
+    'Accept-Charset': '',
 }
 
 AUTH_URL = 'https://auth.streamotion.com.au/oauth'
@@ -13,6 +21,7 @@ LIVE_DATA_URL = 'https://i.mjh.nz/Kayo/app.json'
 EPG_URL = 'https://i.mjh.nz/Kayo/epg.xml.gz'
 CLIENT_ID = 'a0n14xap7jreEXPfLo9F6JLpRp3Xeh2l'
 UDID = 'bc1e95db-723d-48fc-8012-effa322bdbc8'
+CODE_URL = 'kayosports.com.au/connect'
 
 FORMAT_HLS_TS = 'hls-ts'
 FORMAT_HLS_TS_SSAI = 'ssai-hls-ts'
