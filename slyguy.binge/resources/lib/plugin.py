@@ -62,7 +62,7 @@ def login(**kwargs):
 def _device_code():
     start = time.time()
     data = api.device_code()
-    with gui.progress(_(_.DEVICE_LINK_STEPS, url=data['verification_uri'], code=data['user_code']), heading=_.DEVICE_CODE) as progress:
+    with gui.progress(_(_.DEVICE_LINK_STEPS, url=CODE_URL, code=data['user_code']), heading=_.DEVICE_CODE) as progress:
         while (time.time() - start) < data['expires_in']:
             for i in range(data['interval']):
                 if progress.iscanceled() or monitor.waitForAbort(1):
@@ -583,7 +583,7 @@ def play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
     playback = api.stream(id)
 
     item = _parse_contents([asset])[0]
-    item.headers = HEADERS
+    item.headers = PLAY_HEADERS
 
     streams = []
     for s in playback['streams']:

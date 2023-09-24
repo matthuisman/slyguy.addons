@@ -17,7 +17,7 @@ class API(object):
         self.logged_in = False
         self._auth_header = {}
 
-        self._session = Session(HEADERS)
+        self._session = Session(HEADERS, attempts=4, return_json=True)
         self._set_authentication()
 
     def _set_authentication(self):
@@ -29,7 +29,7 @@ class API(object):
         self.logged_in = True
 
     def _oauth_token(self, data, _raise=True):
-        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, headers={'user-agent': 'okhttp/4.9.3'}, error_msg=_.TOKEN_ERROR).json()
+        token_data = self._session.post('https://auth.streamotion.com.au/oauth/token', json=data, error_msg=_.TOKEN_ERROR)
 
         if 'error' in token_data:
             error = _.REFRESH_TOKEN_ERROR if data.get('grant_type') == 'refresh_token' else _.LOGIN_ERROR
@@ -49,7 +49,7 @@ class API(object):
 
     def channel_data(self):
         try:
-            return self._session.get(LIVE_DATA_URL).json()
+            return self._session.get(LIVE_DATA_URL)
         except:
             return {}
 
@@ -78,7 +78,7 @@ class API(object):
             'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
         }
 
-        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload, headers={'user-agent': 'okhttp/4.9.3'}).json()
+        return self._session.post('https://auth.streamotion.com.au/oauth/device/code', data=payload)
 
     def device_login(self, device_code):
         payload = {
@@ -117,15 +117,7 @@ class API(object):
             'q': query,
         }
 
-        return self._retry_request('https://api.binge.com.au/v1/search/types/landing', params).json()
-
-    def _retry_request(self, url, params=None, attempts=2):
-        resp = self._session.get(url, params=params, attempts=attempts, retry_not_ok=True, retry_delay=3000)
-
-        if not resp.ok:
-            raise APIError(_.PAGE_ERROR)
-
-        return resp
+        return self._session.get('https://api.binge.com.au/v1/search/types/landing', params=params)
 
     #landing has heros and panels
     def landing(self, name, params=None):
@@ -135,7 +127,7 @@ class API(object):
 
         _params.update(params or {})
 
-        return self._retry_request('https://api.binge.com.au/v1/content/types/landing/names/{}'.format(name), _params).json()
+        return self._session.get('https://api.binge.com.au/v1/content/types/landing/names/{}'.format(name), params=params)
 
     def panel(self, link=None, panel_id=None):
         self._refresh_token()
@@ -145,14 +137,14 @@ class API(object):
             url = 'https://api.binge.com.au/v1/private/panels/{panel_id}' if self.logged_in else 'https://api.binge.com.au/v1/panels/{panel_id}'
             link = url.format(panel_id=panel_id)
 
-        return self._session.get(link, params=params, headers=self._auth_header).json()
+        return self._session.get(link, params=params, headers=self._auth_header)
 
     def use_cdn(self, live=False):
-        return self._session.get('https://cdnselectionserviceapi.binge.com.au/web/usecdn/unknown/{media}'.format(media='LIVE' if live else 'VOD'), headers=self._auth_header).json()
+        return self._session.get('https://cdnselectionserviceapi.binge.com.au/web/usecdn/unknown/{media}'.format(media='LIVE' if live else 'VOD'), headers=self._auth_header)
 
     def profiles(self):
         self._refresh_token()
-        return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header).json()
+        return self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares', headers=self._auth_header)
 
     def license_headers(self):
         self._refresh_token()
@@ -161,7 +153,7 @@ class API(object):
     def asset(self, asset_id):
         self._refresh_token()
         params = {'profile': userdata.get('profile_id')}
-        return self._session.get('https://api.binge.com.au/v1/private/assets/{}'.format(asset_id), params=params, headers=self._auth_header).json()
+        return self._session.get('https://api.binge.com.au/v1/private/assets/{}'.format(asset_id), params=params, headers=self._auth_header)
 
     def up_next(self, asset_id):
         data = self.landing('next', params={'asset': asset_id})
@@ -175,11 +167,11 @@ class API(object):
             'client_id': CLIENT_ID,
             'scope': 'openid email drm:{}'.format('high' if is_wv_secure() else 'low'),
         }
-        data = self._session.post('https://tokenservice.streamotion.com.au/oauth/token', json=payload, headers=self._auth_header).json()
+        data = self._session.post('https://tokenservice.streamotion.com.au/oauth/token', json=payload, headers=self._auth_header)
         return data['access_token']
 
     def profile(self, profile_id):
-        data = self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares/{}'.format(profile_id), headers=self._auth_header).json()
+        data = self._session.get('https://profileapi.streamotion.com.au/user/profile/type/ares/{}'.format(profile_id), headers=self._auth_header)
         if 'status' in data and data['status'] != 200:
             raise APIError(_.PROFILE_MISSING)
         return data
@@ -187,7 +179,7 @@ class API(object):
     def tracking_ids(self, url):
         ids = []
         try:
-            data = self._session.get(url).json()
+            data = self._session.get(url)
             for row in data.get('avails') or []:
                 for ad in row.get('ads') or []:
                     ids.append(ad['adId'])
@@ -217,7 +209,7 @@ class API(object):
         headers = {'authorization': 'Bearer {}'.format(token)}
         headers['x-vimond-subprofile'] = self.profile(userdata.get('profile_id')).get('vimond_token')
 
-        data = self._session.post('https://play.binge.com.au/api/v3/play', json=payload, headers=headers).json()
+        data = self._session.post('https://play.binge.com.au/api/v3/play', json=payload, headers=headers)
         if ('status' in data and data['status'] != 200) or 'errors' in data:
             msg = data.get('detail') or data.get('errors', [{}])[0].get('detail')
             raise APIError(_(_.ASSET_ERROR, msg=msg))
