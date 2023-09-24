@@ -8,7 +8,6 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
 from slyguy.util import get_system_arch
-from slyguy.drm import is_wv_secure
 
 from .constants import *
 from .language import _
@@ -18,7 +17,7 @@ class APIError(Error):
 
 class API(object):
     def new_session(self):
-        self._session = Session(HEADERS, base_url=API_URL)
+        self._session = Session(HEADERS, base_url=API_URL, return_json=True, attempts=2)
         self.logged_in = userdata.get('token') != None
 
     def _refresh_token(self):
@@ -40,7 +39,7 @@ class API(object):
         else:
             log.debug('Using Token Login')
 
-        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()
+        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload)
 
         response = data['LogonResponse']
         error = response.get('Error')
@@ -77,8 +76,6 @@ class API(object):
             'password': hex_password,
             'deviceId': device_id,
             'accountType': 'foxtel',
-            'format': 'json',
-            'appID': 'GO2',
             'plt': PLT_DEVICE,
         }
 
@@ -86,7 +83,7 @@ class API(object):
             payload['deviceToKick'] = kickdevice
             log.debug('Kicking device: {}'.format(kickdevice))
 
-        data = self._session.post('/auth.class.api.php/logon/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()
+        data = self._session.post('/auth.class.api.php/logon/{site_id}?appID=GO2&format=json'.format(site_id=VOD_SITEID), data=payload)
 
         response = data['LogonResponse']
         devices = response.get('CurrentDevices', [])
@@ -140,12 +137,11 @@ class API(object):
         payload = {
             'deviceId': device_id,
             'nickName': nickname,
-            'format': 'json',
             'type': 'phone',
             'versionNumber': '6.0.0.J',
         }
 
-        secret = self._session.post('/auth.class.api.php/prelogin/{site_id}'.format(site_id=VOD_SITEID), data=payload).json()['secret']
+        secret = self._session.post('/auth.class.api.php/prelogin/{site_id}?appID=GO2&format=json'.format(site_id=VOD_SITEID), data=payload)['secret']
         log.debug('Pass Secret: {}{}'.format(secret[:5], 'x'*len(secret[5:])))
 
         try:
@@ -184,7 +180,7 @@ class API(object):
         if _filter:
             params['filters'] = _filter
 
-        return self._session.get('/categoryTree.class.api.php/GOgetAssets/{site_id}/{asset_type}'.format(site_id=VOD_SITEID, asset_type=asset_type), params=params).json()
+        return self._session.get('/categoryTree.class.api.php/GOgetAssets/{site_id}/{asset_type}'.format(site_id=VOD_SITEID, asset_type=asset_type), params=params)
 
     def live_channels(self, _filter=None):
         params = {
@@ -198,7 +194,7 @@ class API(object):
         if _filter:
             params['filter'] = _filter
 
-        return self._session.get('/categoryTree.class.api.php/GOgetLiveChannels/{site_id}'.format(site_id=LIVE_SITEID), params=params).json()
+        return self._session.get('/categoryTree.class.api.php/GOgetLiveChannels/{site_id}'.format(site_id=LIVE_SITEID), params=params)
 
     def show(self, show_id):
         params = {
@@ -210,7 +206,7 @@ class API(object):
             'serviceID': 'PLAY',
         }
 
-        return self._session.get('/asset.class.api.php/GOgetAssetData/{site_id}/0'.format(site_id=VOD_SITEID), params=params).json()
+        return self._session.get('/asset.class.api.php/GOgetAssetData/{site_id}/0'.format(site_id=VOD_SITEID), params=params)
 
     def asset(self, media_type, id):
         params = {
@@ -226,7 +222,7 @@ class API(object):
         else:
             site_id = LIVE_SITEID
 
-        return self._session.get('/asset.class.api.php/GOgetAssetData/{site_id}/{id}'.format(site_id=site_id, id=id), params=params).json()
+        return self._session.get('/asset.class.api.php/GOgetAssetData/{site_id}/{id}'.format(site_id=site_id, id=id), params=params)
 
     def bundle(self, mode=''):
         params = {
@@ -240,7 +236,7 @@ class API(object):
             'serviceID': 'PLAY',
         }
 
-        return self._session.get(BUNDLE_URL, params=params).json()
+        return self._session.get(BUNDLE_URL, params=params)
 
     def _sync_token(self, site_id, catalog_name):
         self._refresh_token()
@@ -255,7 +251,7 @@ class API(object):
             'format': 'json',
         }
 
-        data = self._session.post('/userCatalog.class.api.php/getSyncTokens/{site_id}'.format(site_id=VOD_SITEID), params=params, data=payload).json()
+        data = self._session.post('/userCatalog.class.api.php/getSyncTokens/{site_id}'.format(site_id=VOD_SITEID), params=params, data=payload)
 
         for token in data.get('tokens', []):
             if token['siteId'] == site_id and token['catalogName'] == catalog_name:
@@ -277,12 +273,12 @@ class API(object):
             'serviceID': 'PLAY',
         }
 
-        return self._session.get('/userCatalog.class.api.php/getCarousel/{site_id}/{catalog_name}'.format(site_id=site_id, catalog_name=catalog_name), params=params).json()
+        return self._session.get('/userCatalog.class.api.php/getCarousel/{site_id}/{catalog_name}'.format(site_id=site_id, catalog_name=catalog_name), params=params)
 
     @mem_cache.cached(60*5)
     def channel_data(self):
         try:
-            return self._session.get(LIVE_DATA_URL).json()
+            return self._session.get(LIVE_DATA_URL)
         except:
             return {}
 
@@ -307,7 +303,7 @@ class API(object):
             'rid': 'SEARCH5',
         }
 
-        return self._session.get(SEARCH_URL, params=params).json()
+        return self._session.get(SEARCH_URL, params=params)
 
     def play(self, media_type, id):
         self._refresh_token()
@@ -331,7 +327,7 @@ class API(object):
             'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L1').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
-        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post(PLAY_URL.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload)
 
         error = data.get('errorMessage')
         if error:
@@ -352,7 +348,7 @@ class API(object):
             'deviceCaps': hashlib.md5('TR3V0RwAZH3r3L00kingA7SumStuFF{}'.format('L3').encode('utf8')).hexdigest().lower(),
             'format': 'json',
         }
-        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload).json()
+        data = self._session.post('/playback.class.api.php/{endpoint}/{site_id}/1/{id}'.format(endpoint=endpoint, site_id=site_id, id=id), params=params, data=payload)
         license_url = data['fullLicenceUrl']
         #
 
@@ -367,7 +363,7 @@ class API(object):
         }
 
         url = '/playback.class.api.php/GOupdateSession/{}/{}'.format(data['general']['siteID'], data['general']['assetID'])
-        self._session.get(url, params=params).json()
+        self._session.get(url, params=params)
 
         return playback_url, license_url
 
