@@ -666,7 +666,7 @@ class Folder(object):
             label = _(self.no_items_label, _label=True)
 
             if self.no_items_method == 'dialog':
-                gui.ok(label, heading=self.title)
+                gui.notification(label, heading=self.title)
                 return resolve()
             else:
                 items.append(Item(
