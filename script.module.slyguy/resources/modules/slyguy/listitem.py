@@ -156,6 +156,8 @@ class _ListItemInfoTagVideo(_ListItemInfoTag):
     def set_info_cast(self, cast: list, *args, **kwargs):
         """ Wrapper to convert cast and castandrole from ListItem.setInfo() to InfoTagVideo.setCast() """
         def _set_cast_member(x, i):
+            if isinstance(i, dict):
+                return i
             if not isinstance(i, tuple):
                 i = (i, '',)
             return {'name': f'{i[0]}', 'role': f'{i[1]}', 'order': x, 'thumbnail': ''}
