@@ -220,14 +220,12 @@ def parse(url, title=None, page=1, **kwargs):
                     #art = {'thumb': row['thumbnail']},
                     path = plugin.url_for(parse, url=row['url'], title=row['title']),
                 )
+    else:
+        if data.get('type') == 'single_list':
+            data = api.url(data['entries'][0]['url'])
 
-        return folder
-
-    if data.get('type') == 'single_list':
-        data = api.url(data['entries'][0]['url'])
-
-    items = _process_entries(data['entries'])
-    folder.add_items(items)
+        items = _process_entries(data['entries'])
+        folder.add_items(items)
 
     return folder, data.get('next')
 
