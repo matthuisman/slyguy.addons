@@ -160,13 +160,6 @@ msgctxt "#30034"
 msgid "PVR: Autoskip Bad Channels"
 msgstr ""
 
-msgctxt "#30035"
-msgid "Please check your Widevine CDM is upto date\n"
-"A Widevine CDM update dialog will appear when you play this content again\n\n"
-"Widevine Server Response:\n"
-"{error}"
-msgstr ""
-
 msgctxt "#30036"
 msgid "WARNING: System architecture change detected ({old} -> {new})\n"
 "This may cause issues with binary addons as Kodi repo will still use {old}\n"
@@ -785,7 +778,7 @@ msgid "Pagination Multiplier"
 msgstr ""
 
 msgctxt "#32144"
-msgid "Check log for more info"
+msgid "Check Kodi log for more info"
 msgstr ""
 
 msgctxt "#32145"

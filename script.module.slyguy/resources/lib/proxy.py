@@ -1394,18 +1394,19 @@ class RequestHandler(BaseHTTPRequestHandler):
                     f.write(license_data)
 
             if response.ok and license_data:
+                log.info('WV License response OK and returned data')
                 self._session['license_init'] = True
                 break
 
+            log.error('WV License attempt: {}/3 failed: {}'.format(i+1, license_data.decode()))
             time.sleep(0.5)
         else:
-            log.error(license_data)
             if not license_data:
                 license_data = b'None'
 
             # only show error on initial license fail
             if not self._session.get('license_init'):
-                gui.text(_(_.CHECK_WV_CDM, error=license_data.decode('utf8')), heading=_.WV_FAILED)
+                gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.WV_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
 
         self._output_response(response)
 

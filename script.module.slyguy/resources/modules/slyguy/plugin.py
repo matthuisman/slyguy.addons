@@ -637,7 +637,7 @@ class Item(gui.Item):
 
 #Plugin.Folder()
 class Folder(object):
-    def __init__(self, title=None, items=None, content='AUTO', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='dialog', show_news=True):
+    def __init__(self, title=None, items=None, content='AUTO', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='notification', show_news=True):
         self.title = title
         self.items = items or []
         self.content = content
@@ -654,23 +654,17 @@ class Folder(object):
         if self.show_news:
             require_update()
 
-        handle = _handle()
         items = [i for i in self.items if i]
-
-        ep_sort = True
-        last_show_name = ''
-
-        item_types = {}
-
         if not items and self.no_items_label:
-            label = _(self.no_items_label, _label=True)
-
-            if self.no_items_method == 'dialog':
-                gui.ok(label, heading=self.title)
+            if self.no_items_method == 'notification':
+                gui.notification(self.no_items_label, heading=self.title)
+                return resolve()
+            elif self.no_items_method == 'dialog':
+                gui.ok(self.no_items_label, heading=self.title)
                 return resolve()
             else:
                 items.append(Item(
-                    label = label,
+                    label = _(self.no_items_label, _label=True),
                     is_folder = False,
                 ))
 
@@ -678,7 +672,11 @@ class Folder(object):
         video_view_media = settings.common_settings.getBool('video_view_media', False)
         menu_view_shows_seasons = settings.common_settings.getBool('menu_view_shows_seasons', False)
 
+        handle = _handle()
         count = 0.0
+        item_types = {}
+        ep_sort = True
+        last_show_name = ''
         for item in items:
             if self.thumb and not item.art.get('thumb'):
                 item.art['thumb'] = self.thumb
