@@ -4,7 +4,7 @@ import traceback
 import time
 from contextlib import contextmanager
 
-from six.moves.urllib_parse import urlparse
+from six.moves.urllib_parse import urlparse, quote
 from kodi_six import xbmcgui, xbmc
 
 from . import settings
@@ -376,7 +376,7 @@ class Item(object):
             _url = url.lower()
 
             if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or _url.startswith('plugin://') or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.common_settings.getBool('proxy_enabled', True):
-                url = u'{}{}'.format(proxy_path, url)
+                url = u'{}{}'.format(proxy_path, quote(url))
 
             return url
 

@@ -13,7 +13,7 @@ import arrow
 from requests import ConnectionError
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
-from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
+from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl, unquote
 from kodi_six import xbmc, xbmcaddon
 from pycaption import detect_format, WebVTTWriter
 
@@ -129,7 +129,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.request.settimeout(5)
 
     def _get_url(self, method):
-        self._url = url = self.path.lstrip('/').strip('\\')
+        self._url = url = unquote(self.path.lstrip('/').strip('\\'))
         log.debug('REQUEST IN: {} ({})'.format(url, method))
 
         self.proxy_path = 'http://{}/'.format(self.headers.get('Host'))
@@ -391,15 +391,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         quality_compare = cmp_to_key(compare)
         streams = sorted(qualities, key=quality_compare, reverse=True)
 
-
         ok_streams = [x for x in streams if x['compatible'] and x['res_ok']]
         not_compatible = [x for x in streams if not x['compatible']]
         not_res_ok = [x for x in streams if not x['res_ok'] and x not in not_compatible]
 
         if not streams:
             quality = QUALITY_DISABLED
-        elif len(streams) < 2:
-            quality = QUALITY_BEST
 
         if quality == QUALITY_ASK:
             options = []
