@@ -311,6 +311,9 @@ class Item(object):
                 if info.get('date'):
                     try: info['date'] = '{}.{}.{}'.format(info['date'][8:10], info['date'][5:7], info['date'][0:4])
                     except: pass
+                if info.get('cast'):
+                    try: info['cast'] = [(member['name'], member['role']) for member in info['cast']]
+                    except: pass
                 li.setInfo('video', info)
 
         if self.specialsort:
