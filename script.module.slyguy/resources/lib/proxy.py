@@ -397,6 +397,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if not streams:
             quality = QUALITY_DISABLED
+        elif len(streams) < 2:
+            quality = QUALITY_BEST
 
         if quality == QUALITY_ASK:
             options = []
