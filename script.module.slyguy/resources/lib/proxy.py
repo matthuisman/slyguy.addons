@@ -13,7 +13,7 @@ import arrow
 from requests import ConnectionError
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
-from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl, unquote
+from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
 from kodi_six import xbmc, xbmcaddon
 from pycaption import detect_format, WebVTTWriter
 
@@ -129,7 +129,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.request.settimeout(5)
 
     def _get_url(self, method):
-        self._url = url = unquote(self.path.lstrip('/').strip('\\'))
+        self._url = url = self.path.lstrip('/').strip('\\')
         log.debug('REQUEST IN: {} ({})'.format(url, method))
 
         self.proxy_path = 'http://{}/'.format(self.headers.get('Host'))
