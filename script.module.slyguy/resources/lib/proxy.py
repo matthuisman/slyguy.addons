@@ -1398,12 +1398,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._session['license_init'] = True
                 break
 
-            log.error('WV License attempt: {}/3 failed: {}'.format(i+1, license_data.decode()))
-            time.sleep(0.5)
-        else:
             if not license_data:
                 license_data = b'None'
 
+            log.error('WV License attempt: {}/3 failed: {}'.format(i+1, license_data.decode()))
+            time.sleep(0.5)
+        else:
             # only show error on initial license fail
             if not self._session.get('license_init'):
                 gui.notification(_.PLAYBACK_FAILED_CHECK_LOG, heading=_.WV_FAILED, icon=xbmc.getInfoLabel('Player.Icon'))
