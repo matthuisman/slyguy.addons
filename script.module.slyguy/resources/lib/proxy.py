@@ -1275,15 +1275,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             response = Response()
             response.headers = {}
             response.stream = ResponseStream(response)
+            real_path = xbmc.translatePath(url)
 
-            if os.path.exists(url):
+            if os.path.exists(real_path):
+                log.debug('Reading response from local path: {}'.format(real_path))
                 response.status_code = 200
-                with open(url, 'rb') as f:
+                with open(real_path, 'rb') as f:
                     response.stream.content = f.read()
-                if not ADDON_DEV: remove_file(url)
+
+                if not ADDON_DEV:
+                    remove_file(real_path)
             else:
                 response.status_code = 500
-                response.stream.content = "File not found: {}".format(url).encode('utf-8')
+                response.stream.content = "File not found: {}".format(real_path).encode('utf-8')
 
             return response
 

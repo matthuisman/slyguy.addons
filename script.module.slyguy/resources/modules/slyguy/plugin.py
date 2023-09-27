@@ -610,7 +610,7 @@ class Item(gui.Item):
             self.play_skips.append({'to': int(self.resume_from)})
             self.resume_from = 1
 
-        li = self.get_li()
+        li = self.get_li(playing=True)
         handle = _handle()
 
         play_data = {
