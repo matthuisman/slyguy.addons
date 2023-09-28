@@ -52,24 +52,24 @@ def play_channel(slug, **kwargs):
     else:
         headers = {}
 
-    if len(split) > 1:
-        _headers = dict(parse_qsl(u'{}'.format(split[1]), keep_blank_values=True))
+    def get_header_dict(header_str):
+        headers = {}
+        _headers = dict(parse_qsl(u'{}'.format(header_str), keep_blank_values=True))
         for key in _headers:
             if _headers[key].startswith(' '):
                 _headers[key] = u'%20{}'.format(_headers[key][1:])
 
             headers[key.lower()] = _headers[key]
+        return headers
 
-    manifest_type = channel.properties.get('inputstream.adaptive.manifest_type', '')
-    license_type = channel.properties.get('inputstream.adaptive.license_type', '')
-    if manifest_type:
-        ia_addon = channel.properties.get('inputstream') or channel.properties.get('inputstreamaddon') or IA_ADDON_ID
-        channel.properties.pop('inputstream', None)
-        channel.properties.pop('inputstreamaddon', None)
-        if KODI_VERSION < 19:
-            channel.properties['inputstreamaddon'] = ia_addon
-        else:
-            channel.properties['inputstream'] = ia_addon
+    if len(split) > 1:
+        headers.update(get_header_dict(split[1]))
+
+    manifest_type = channel.properties.pop('inputstream.adaptive.manifest_type', '')
+    license_type = channel.properties.pop('inputstream.adaptive.license_type', '')
+    license_key = channel.properties.pop('inputstream.adaptive.license_key', '')
+    channel.properties.pop('inputstream', None)
+    channel.properties.pop('inputstreamaddon', None)
 
     item = plugin.Item(
         label = channel.name,
@@ -77,35 +77,30 @@ def play_channel(slug, **kwargs):
         path = split[0],
         properties = channel.properties,
         headers = headers,
-        use_proxy = False,
-        playable = True,
+        use_proxy = settings.getBool('iptv_merge_proxy', True),
     )
-
-    if not settings.getBool('iptv_merge_proxy', True):
-        return item
-
-    if not channel.radio:
-        item.use_proxy = True
-
-    if manifest_type.lower() == 'mpd':
-        item.mimetype = 'application/dash+xml'
-    elif manifest_type.lower() == 'hls':
-        item.mimetype = 'application/vnd.apple.mpegurl'
-    elif manifest_type.lower() == 'ism':
-        item.mimetype = 'application/vnd.ms-sstr+xml'
 
     ## To do: support other IA Add-ons here (eg. ffmpeg.direct)
     if license_type.lower() == 'com.widevine.alpha':
-        inputstream.Widevine().check()
+        kwargs = {'license_key': license_key, 'manifest_type': manifest_type}
+        if '|' in license_key:
+            license_key, license_headers, challenge, response = license_key.split('|')
+            kwargs.update({
+                'license_key': license_key,
+                'license_headers': get_header_dict(license_headers) or None,
+                'challenge': challenge,
+                'response': response,
+            })
+        item.inputstream = inputstream.Widevine(**kwargs)
 
     elif manifest_type.lower() == 'hls':
-        inputstream.HLS(force=True, live=True).check()
+        item.inputstream = inputstream.HLS(force=True, live=True)
 
     elif manifest_type.lower() == 'ism':
-        inputstream.Playready().check()
+        item.inputstream = inputstream.Playready()
 
     elif manifest_type.lower() == 'mpd':
-        inputstream.MPD().check()
+        item.inputstream = inputstream.MPD()
 
     elif not channel.radio and '.m3u8' in split[0].lower() and settings.getBool('use_ia_hls_live'):
         item.inputstream = inputstream.HLS(live=True)

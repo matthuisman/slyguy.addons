@@ -372,7 +372,6 @@ def channels(radio=0, page=1, **kwargs):
     folder = plugin.Folder(_.ALL_CHANNELS)
 
     radio = int(radio)
-    page = int(page)
     page_size = settings.getInt('page_size', 0)
 
     query = Channel.channel_list(radio=radio, page=page, page_size=page_size)
@@ -458,8 +457,6 @@ def edit_channel_value(slug, method, **kwargs):
 @plugin.pagination()
 def search_channel(query=None, radio=0, page=1, **kwargs):
     radio = int(radio)
-    page = int(page)
-
     if not query:
         query = gui.input(_.SEARCH, default=userdata.get('search', '')).strip()
         if not query:
@@ -481,7 +478,6 @@ def search_channel(query=None, radio=0, page=1, **kwargs):
 def playlist_channels(playlist_id, radio=0, page=1, **kwargs):
     playlist_id = int(playlist_id)
     radio = int(radio)
-    page = int(page)
 
     playlist = Playlist.get_by_id(playlist_id)
 
