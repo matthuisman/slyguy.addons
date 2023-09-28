@@ -311,6 +311,10 @@ class Item(object):
                 if info.get('date'):
                     try: info['date'] = '{}.{}.{}'.format(info['date'][8:10], info['date'][5:7], info['date'][0:4])
                     except: pass
+
+                if info.get('cast'):
+                    try: info['cast'] = [(member['name'], member['role']) for member in info['cast']]
+                    except: pass
                 li.setInfo('video', info)
 
         if self.specialsort:
@@ -380,6 +384,12 @@ class Item(object):
 
             return url
 
+        def redirect_url(url):
+            parse = urlparse(url.lower())
+            if parse.netloc in REDIRECT_HOSTS and is_http(url):
+                url = Session().head(url).headers.get('location') or url
+            return url
+
         license_url = None
         if self.inputstream and self.inputstream.check():
             if KODI_VERSION < 19:
@@ -421,7 +431,7 @@ class Item(object):
                 license_url = self.inputstream.license_key
                 license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}{headers}|{challenge}|{response}'.format(
-                    url = get_url(self.inputstream.license_key),
+                    url = get_url(redirect_url(fix_url(self.inputstream.license_key))),
                     content_type = self.inputstream.content_type,
                     headers = '&' + license_headers if license_headers else '',
                     challenge = self.inputstream.challenge,
@@ -466,16 +476,11 @@ class Item(object):
             return u'{}{}'.format(proxy_path, proxy_url)
 
         if self.path and playing:
-            self.path = fix_url(self.path)
-
-            parse = urlparse(self.path.lower())
-            if parse.netloc in REDIRECT_HOSTS and is_http(self.path):
-                self.path = Session().head(self.path).headers.get('location') or self.path
-                parse = urlparse(self.path.lower())
-
+            self.path = redirect_url(fix_url(self.path))
             final_path = get_url(self.path)
             if is_http(final_path):
                 if not mimetype:
+                    parse = urlparse(self.path.lower())
                     if parse.path.endswith('.m3u') or parse.path.endswith('.m3u8'):
                         mimetype = 'application/vnd.apple.mpegurl'
                     elif parse.path.endswith('.mpd'):
