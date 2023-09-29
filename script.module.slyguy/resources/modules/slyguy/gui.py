@@ -330,8 +330,10 @@ class Item(object):
                     try: info['cast'] = [(member['name'], member['role']) for member in info['cast']]
                     except: pass
                 li.setInfo('video', info)
-                if isinstance(self.unique_ids,dict) and len(list(self.unique_ids.keys())):
-                    li.setUniqueIDs(self.unique_ids, self.defunique_id)
+                try:
+                    if isinstance(self.unique_ids,dict) and len(list(self.unique_ids.keys())):
+                        li.setUniqueIDs(self.unique_ids, self.defunique_id)
+                except: pass
 
         if self.specialsort:
             li.setProperty('specialsort', self.specialsort)
