@@ -219,7 +219,7 @@ class Item(object):
     def __init__(self, id=None, label='', path=None, playable=False, info=None, context=None,
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
             video=None, audio=None, subtitles=None, use_proxy=True, specialsort=None, custom=None, proxy_data=None,
-            resume_from=None, force_resume=False, dns_rewrites=None):
+            resume_from=None, force_resume=False, dns_rewrites=None, unique_ids=None):
 
         self.id          = id
         self.label       = label
@@ -244,6 +244,7 @@ class Item(object):
         self.use_proxy   = use_proxy
         self.resume_from = resume_from
         self.force_resume = force_resume
+        self.unique_ids = unique_ids or {}
 
     def update(self, **kwargs):
         for key in kwargs:
@@ -302,11 +303,24 @@ class Item(object):
             if not date and aired:
                 info['date'] = aired
 
+            try:
+                if isinstance(self.unique_ids,tuple):
+                    self.defunique_id = self.unique_ids[1]
+                    self.unique_ids = self.unique_ids[0]
+                elif isinstance(self.unique_ids,dict) and len(list(self.unique_ids.keys())):
+                    self.defunique_id = list(self.unique_ids.keys())[0]
+            except: pass
+
             if KODI_VERSION >= 20:
                 if info.get('date'):
                     try: li.setDateTime(info.pop('date'))
                     except: pass
-                ListItemInfoTag(li, 'video').set_info(info)
+                infotag = ListItemInfoTag(li, 'video')
+                infotag.set_info(info)
+                try:
+                    if isinstance(self.unique_ids,dict) and len(list(self.unique_ids.keys())):
+                        infotag.set_unique_ids(self.unique_ids,self.defunique_id)
+                except: pass
             else:
                 if info.get('date'):
                     try: info['date'] = '{}.{}.{}'.format(info['date'][8:10], info['date'][5:7], info['date'][0:4])
@@ -316,6 +330,8 @@ class Item(object):
                     try: info['cast'] = [(member['name'], member['role']) for member in info['cast']]
                     except: pass
                 li.setInfo('video', info)
+                if isinstance(self.unique_ids,dict) and len(list(self.unique_ids.keys())):
+                    li.setUniqueIDs(self.unique_ids, self.defunique_id)
 
         if self.specialsort:
             li.setProperty('specialsort', self.specialsort)
