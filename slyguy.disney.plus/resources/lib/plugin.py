@@ -685,19 +685,20 @@ def _play(content_id=None, family_id=None, **kwargs):
     item.play_next = {}
     item.play_skips = []
 
-    if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound' and not kwargs.get(ROUTE_RESUME_TAG):
-        item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
-        if item.resume_from == -1:
-            return
+    if not kwargs.get(ROUTE_RESUME_TAG):
+        if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
+            item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
+            if item.resume_from == -1:
+                return
 
-    elif milestones and settings.getBool('skip_intros', False):
-        intro_start = _get_milestone(milestones, 'intro_start')
-        intro_end = _get_milestone(milestones, 'intro_end')
+        elif milestones and settings.getBool('skip_intros', False):
+            intro_start = _get_milestone(milestones, 'intro_start')
+            intro_end = _get_milestone(milestones, 'intro_end')
 
-        if intro_start <= 10 and intro_end > intro_start:
-            item.resume_from = intro_end
-        elif intro_start > 0 and intro_end > intro_start:
-            item.play_skips.append({'from': intro_start, 'to': intro_end})
+            if intro_start <= 10 and intro_end > intro_start:
+                item.resume_from = intro_end
+            elif intro_start > 0 and intro_end > intro_start:
+                item.play_skips.append({'from': intro_start, 'to': intro_end})
 
     if milestones and settings.getBool('skip_credits', False):
         credits_start = _get_milestone(milestones, 'up_next')
