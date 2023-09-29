@@ -306,6 +306,7 @@ class Item(object):
                 if info.get('date'):
                     try: li.setDateTime(info.pop('date'))
                     except: pass
+                #TODO: do own 20+ wrapper layer
                 ListItemInfoTag(li, 'video').set_info(info)
             else:
                 if info.get('date'):
@@ -320,11 +321,11 @@ class Item(object):
         if self.specialsort:
             li.setProperty('specialsort', self.specialsort)
 
-        if self.video:
-            li.addStreamInfo('video', self.video)
-
-        if self.audio:
-            li.addStreamInfo('audio', self.audio)
+        # there is a kodi bug that wont resume from favourites if you dont call one of a methods on the li
+        # see https://forum.kodi.tv/showthread.php?tid=374491&pid=3167595#pid3167595
+        # Therefore, always calling the below even with empty info
+        li.addStreamInfo('video', self.video)
+        li.addStreamInfo('audio', self.audio)
 
         if self.art:
             defaults = {
