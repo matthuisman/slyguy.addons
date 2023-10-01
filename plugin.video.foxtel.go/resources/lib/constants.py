@@ -1,6 +1,6 @@
 HEADERS = {
-    'user-agent': 'GO2/6.0.0.J/Phone/ANDROID/8.1.0/S22',
-    'Accept': '',
+    'user-agent': 'okhttp/4.9.2',
+    'Accept':  None,
     'Accept-Encoding': 'gzip',
     'Cache-Control': 'no-cache',
     'Pragma': 'gzip',
