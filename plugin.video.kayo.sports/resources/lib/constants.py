@@ -1,13 +1,13 @@
 HEADERS = {
-    'User-Agent': 'okhttp/4.9.3',
-    'Accept': '',
-    'Accept-Charset': '',
+    'User-Agent': 'okhttp/4.9.2',
+    'Accept': None,
+    'Accept-Charset': None,
 }
 
 PLAY_HEADERS = {
     'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)',
-    'Accept': '',
-    'Accept-Charset': '',
+    'Accept': None,
+    'Accept-Charset': None,
 }
 
 AUTH_URL = 'https://auth.streamotion.com.au/oauth'
