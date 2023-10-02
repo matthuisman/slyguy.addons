@@ -30,6 +30,7 @@ from .language import _
 
 H264 = 'H.264'
 H265 = 'H.265'
+VP9 = 'VP9'
 HDR = 'H.265 HDR'
 DOLBY_VISION = 'H.265 Dolby Vision'
 
@@ -39,6 +40,7 @@ CODECS = [
     ['avc', H264],
     ['hvc', H265],
     ['hev', H265],
+    ['vp9', VP9],
     ['hdr', HDR],
     ['dvh', DOLBY_VISION],
 ]
