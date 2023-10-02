@@ -136,11 +136,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         self._headers = {}
         for header in self.headers:
-            if header.lower() == 'referer' and self.headers[header].startswith(self.proxy_path):
-                self.headers[header] = self.headers[header][len(self.proxy_path):]
+            key = header.lower()
+            value = self.headers[header]
 
-            if header.lower() not in REMOVE_IN_HEADERS:
-                self._headers[header.lower()] = self.headers[header]
+            if key == 'referer' and value.lower().startswith(self.proxy_path.lower()):
+                value = value[len(self.proxy_path):]
+
+            if key not in REMOVE_IN_HEADERS:
+                self._headers[key] = value
 
         session_type = self._headers.pop('session_type', DEFAULT_SESSION_NAME)
         session_addonid = self._headers.pop('session_addonid', None)
