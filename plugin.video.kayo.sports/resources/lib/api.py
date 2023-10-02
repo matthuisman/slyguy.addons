@@ -63,8 +63,8 @@ class API(object):
     def device_code(self):
         payload = {
             'client_id': CLIENT_ID,
-            'audience' : 'streamotion.com.au',
-            'scope': 'openid offline_access drm:{} email'.format('high' if is_wv_secure() else 'low'),
+            'audience': 'streamotion.com.au',
+            'scope': 'openid offline_access drm:low email',
         }
 
         return self._session.post(AUTH_URL + '/device/code', data=payload)
@@ -73,7 +73,7 @@ class API(object):
         payload = {
             'client_id': CLIENT_ID,
             'device_code' : device_code,
-            'scope': 'openid offline_access drm:{}'.format('high' if is_wv_secure() else 'low'),
+            'scope': 'openid offline_access drm:low email',
             'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
         }
 
