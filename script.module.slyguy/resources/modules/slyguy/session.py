@@ -340,7 +340,7 @@ class Session(RawSession):
         self.set_dns_rewrites(get_dns_rewrites() if dns_rewrites is None else dns_rewrites)
         self.set_proxy(settings.get('proxy_server') or settings.common_settings.get('proxy_server'))
 
-        self.headers.update(DEFAULT_HEADERS)
+        self.headers = DEFAULT_HEADERS
         self.headers.update(self._headers)
 
         if self._cookies_key:
