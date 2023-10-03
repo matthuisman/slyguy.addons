@@ -1,17 +1,5 @@
-HEADERS = {
-    'User-Agent': 'okhttp/4.9.3',
-    'Accept': None,
-    'Accept-Charset': None,
-}
-
-PLAY_HEADERS = {
-    'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)',
-    'Accept': None,
-    'Accept-Charset': None,
-}
-
+API_URL = 'https://api.binge.com.au/v1{}'
 AVATAR_URL = 'https://resources.streamotion.com.au/production/binge/profile/avatar-{avatar_id:02d}.png?imwidth=400'
-LICENSE_URL = 'https://drm.streamotion.com.au/licenseServer/widevine/v1/streamotion/license'
 LIVE_DATA_URL = 'https://i.mjh.nz/Binge/app.json'
 EPG_URL = 'https://i.mjh.nz/Binge/epg.xml.gz'
 CLIENT_ID = 'QQdtPlVtx1h9BkO09BDM2OrFi5vTPCty'
