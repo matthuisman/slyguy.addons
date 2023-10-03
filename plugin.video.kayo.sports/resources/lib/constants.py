@@ -1,20 +1,8 @@
-HEADERS = {
-    'user-agent': 'Mozilla/5.0 (Linux; Android 7.1.2; GoogleTV_V1 Build/NHG47L; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/113.0.5672.131 Mobile Safari/537.36',
-    'connection': 'close',
-    'upgrade-insecure-requests': '1',
-}
-
-PLAY_HEADERS = {
-    'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)',
-}
-
-AUTH_URL = 'https://auth.streamotion.com.au/oauth'
 API_URL = 'https://api.kayosports.com.au/v3{}'
 PROFILE_URL = 'https://profileapi.streamotion.com.au'
 RESOURCE_URL = 'https://resources.kayosports.com.au'
 CDN_URL = 'https://cdnselectionserviceapi.kayosports.com.au'
 PLAY_URL = 'https://play.kayosports.com.au/api/v2'
-LICENSE_URL = 'https://drm.streamotion.com.au/licenseServer/widevine/v1/streamotion/license'
 LIVE_DATA_URL = 'https://i.mjh.nz/Kayo/app.json'
 EPG_URL = 'https://i.mjh.nz/Kayo/epg.xml.gz'
 CLIENT_ID = 'a0n14xap7jreEXPfLo9F6JLpRp3Xeh2l'
