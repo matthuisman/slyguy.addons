@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.flashnews" name="Flash" provider-name="SlyGuy" version="0.1.3">
+<addon id="slyguy.flashnews" name="Flash" provider-name="SlyGuy" version="0.1.4">
   <requires>
-    <import addon="script.module.slyguy" version="0.63.1"/>
+    <import addon="script.module.streamotion"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
     <provides>video</provides>

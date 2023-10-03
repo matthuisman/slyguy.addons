@@ -11,6 +11,7 @@ from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_ASK, PLAY_FROM_LIVE, LIVE
 from .api import API
 from .language import _
 from .constants import *
+from streamotion.constants import *
 
 api = API()
 
@@ -220,6 +221,14 @@ def _set_profile(profile, notify=True):
         gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=_get_avatar(profile['avatar_id']))
 
 @plugin.route()
+@plugin.plugin_request()
+def license_request(_path, _data, **kwargs):
+    data = api.license_request(_data)
+    with open(_path, 'wb') as f:
+        f.write(data)
+    return {'url': _path}
+
+@plugin.route()
 @plugin.login_required()
 def play_channel(channel_id, **kwargs):
     data = api.landing('channel', params={'channel': channel_id})
@@ -296,7 +305,7 @@ def _play(id, start_from=0, play_type=PLAY_FROM_LIVE, **kwargs):
 
     elif stream['mediaFormat'] in (FORMAT_DRM_DASH, FORMAT_DRM_DASH_HEVC):
         item.inputstream = inputstream.Widevine(
-            license_key = LICENSE_URL,
+            license_key=plugin.url_for(license_request, license_url=stream['licenseAcquisitionUrl']['com.widevine.alpha']),
         )
 
     if start_from and not ROUTE_RESUME_TAG in kwargs:
