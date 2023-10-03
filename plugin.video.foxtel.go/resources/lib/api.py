@@ -17,7 +17,7 @@ class APIError(Error):
 
 class API(object):
     def new_session(self):
-        self._session = Session(HEADERS, base_url=API_URL, return_json=True, attempts=4)
+        self._session = Session(HEADERS, base_url=API_URL, return_json=True, attempts=4, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS)
         self.logged_in = userdata.get('token') != None
 
     def _refresh_token(self):
