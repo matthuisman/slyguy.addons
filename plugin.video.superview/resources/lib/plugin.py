@@ -27,74 +27,7 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), bookmark=False)
-
     return folder
-
-@plugin.route()
-@plugin.login_required()
-def races(**kwargs):
-    folder = plugin.Folder(_.RACES, no_items_label=_.NO_RACES)
-
-    races = api.races()
-
-    for slug in races:
-        folder.add_item(
-            label = races[slug]['title'],
-            path  = plugin.url_for(race, slug=slug)
-        )
-
-    return folder
-
-@plugin.route()
-@plugin.login_required()
-def race(slug, **kwargs):
-    races = api.races()
-    if slug not in races:
-        raise Error(_.RACE_NOT_FOUND)
-
-    race = races[slug]
-    folder = plugin.Folder(race['title'], no_items_label=_.NO_STREAMS)
-
-    for stream in race['streams']:
-        if not stream['slug']:
-            continue
-
-        item = plugin.Item(
-            label = stream['label'],
-            path  = plugin.url_for(play, slug=stream['slug']),
-            playable = True,
-        )
-
-        if stream['live']:
-            item.label = _(_.LIVE_LABEL, title=stream['label'])
-
-            item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
-                plugin.url_for(play, slug=stream['slug'], play_type=PLAY_FROM_LIVE, _is_live=True)
-            )))
-
-            item.context.append((_.PLAY_FROM_START, "PlayMedia({})".format(
-                plugin.url_for(play, slug=stream['slug'], play_type=PLAY_FROM_START, _is_live=True)
-            )))
-
-            item.path = plugin.url_for(play, slug=stream['slug'], play_type=settings.getEnum('live_play_type', PLAY_FROM_TYPES, PLAY_FROM_ASK), _is_live=True)
-
-        folder.add_items([item])
-
-    return folder
-
-@plugin.route()
-@plugin.login_required()
-def play(slug, play_type=PLAY_FROM_LIVE, **kwargs):
-    item = api.play(slug)
-
-    if ROUTE_LIVE_TAG in kwargs and item.inputstream:
-        item.inputstream.live = True
-
-    play_type = int(play_type)
-    if play_type == PLAY_FROM_LIVE or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START)):
-        item.resume_from = 1
-
-    return item
 
 @plugin.route()
 def login(**kwargs):
@@ -110,6 +43,29 @@ def login(**kwargs):
 
     api.login(username=username, password=password)
     gui.refresh()
+
+@plugin.route()
+@plugin.login_required()
+def races(**kwargs):
+    folder = plugin.Folder(_.RACES, no_items_label=_.NO_RACES)
+    for row in api.races():
+        is_live = False
+        folder.add_item(
+            label = row['name'],
+            art = {'thumb': row['poster']},
+            playable = True,
+            path = plugin.url_for(play, id=row['id'], _is_live=is_live)
+        )
+
+    return folder
+
+@plugin.route()
+@plugin.login_required()
+def play(id, **kwargs):
+    item = api.play(id)
+    if ROUTE_LIVE_TAG in kwargs and item.inputstream:
+        item.inputstream.live = True
+    return item
 
 @plugin.route()
 def logout(**kwargs):
