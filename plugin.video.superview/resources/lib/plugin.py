@@ -48,13 +48,15 @@ def login(**kwargs):
 @plugin.login_required()
 def races(**kwargs):
     folder = plugin.Folder(_.RACES, no_items_label=_.NO_RACES)
-    for row in api.races():
-        is_live = False
+
+    rows = [api.live()]
+    rows.extend(api.races())
+    for row in rows:
         folder.add_item(
             label = row['name'],
             art = {'thumb': row['poster']},
             playable = True,
-            path = plugin.url_for(play, id=row['id'], _is_live=is_live)
+            path = plugin.url_for(play, id=row['id'], _is_live=row['duration'] < 0)
         )
 
     return folder
@@ -63,8 +65,10 @@ def races(**kwargs):
 @plugin.login_required()
 def play(id, **kwargs):
     item = api.play(id)
+
     if ROUTE_LIVE_TAG in kwargs and item.inputstream:
         item.inputstream.live = True
+
     return item
 
 @plugin.route()

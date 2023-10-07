@@ -28,6 +28,21 @@ class API(object):
         userdata.set('access_token', data['idToken'])
         self.new_session()
 
+    def live(self):
+        params = {
+            'q': LIVE_ID,
+            'limit': 1,
+            'offset': 0,
+            'sort': '-published_at',
+        }
+
+        data = self._session.get('https://edge.api.brightcove.com/playback/v1/accounts/{}/videos'.format(BRIGHTCOVE_ACCOUNT),
+            params = params,
+            headers = {'accept': 'application/json;pk={}'.format(BRIGHTCOVE_KEY)}
+        )
+
+        return data.json()['videos'][0]
+
     def races(self, year=2023):
         params = {
             'q': '+tags:Superview +tags:{} -tags:delete -tags:test'.format(year),
@@ -36,7 +51,7 @@ class API(object):
             'sort': '-published_at',
         }
 
-        data = self._session.get('https://edge.api.brightcove.com/playback/v1/accounts/2178772919001/videos',
+        data = self._session.get('https://edge.api.brightcove.com/playback/v1/accounts/{}/videos'.format(BRIGHTCOVE_ACCOUNT),
             params = params,
             headers = {'accept': 'application/json;pk={}'.format(BRIGHTCOVE_KEY)}
         )
@@ -53,7 +68,7 @@ class API(object):
             'X-Forwarded-For': '18.233.21.73',
             'BCOV-POLICY': BRIGHTCOVE_KEY,
         }
-        brightcove_url = BRIGHTCOVE_URL.format(referenceID)
+        brightcove_url = BRIGHTCOVE_URL.format(BRIGHTCOVE_ACCOUNT, referenceID)
         data = Session().get(brightcove_url, headers=headers).json()
         return util.process_brightcove(data)
 
