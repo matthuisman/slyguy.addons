@@ -41,6 +41,9 @@ CODECS = [
     ['hvc', H265],
     ['hev', H265],
     ['vp9', VP9],
+    ['vp9.2', 'VP9 HDR'],
+    ['av01', 'AV1'],
+    ['av1', 'AV1'],
     ['hdr', HDR],
     ['dvh', DOLBY_VISION],
 ]

@@ -99,7 +99,7 @@ def start():
                 if not is_donor or settings.getBool('show_news'):
                     _check_news()
             except Exception as e:
-                log.exception(e)
+                log.debug('Service loop failed: {}'.format(e))
 
             if monitor.waitForAbort(60):
                 break
