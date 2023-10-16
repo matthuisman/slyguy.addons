@@ -1,3 +1,4 @@
+import uuid
 from slyguy import settings, userdata
 from slyguy.exceptions import Error
 from slyguy.util import jwt_data
@@ -119,7 +120,7 @@ class API(BaseAPI):
            # 'drm': True,
             'forceSdQuality': False,
             'playerName': 'exoPlayerTV',
-            'udid': UDID,
+            'udid': str(uuid.uuid4()),
         }
 
         data = self._session.post(PLAY_URL + '/play', json=payload, headers=self._auth_header)
