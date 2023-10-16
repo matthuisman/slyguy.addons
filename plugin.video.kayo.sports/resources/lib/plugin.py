@@ -13,6 +13,8 @@ from .api import API
 from .language import _
 from .constants import *
 from streamotion.constants import *
+from random import randint
+from time import sleep
 
 api = API()
 
@@ -445,9 +447,16 @@ def _parse_video(data):
 @plugin.route()
 @plugin.plugin_request()
 def license_request(_path, _data, **kwargs):
+    i = 0
     data = api.license_request(_data)
+    while 'Error' in str(data) and i<20:
+        data = api.license_request(_data)
+        i = i + 1
+
     with open(_path, 'wb') as f:
+        sleep(randint(250,2500)/1000)
         f.write(data)
+
     return {'url': _path}
 
 @plugin.route()
