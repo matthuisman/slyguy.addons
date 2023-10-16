@@ -14,7 +14,6 @@ from .language import _
 from .constants import *
 from streamotion.constants import *
 from random import randint
-from time import sleep
 
 api = API()
 
@@ -454,7 +453,7 @@ def license_request(_path, _data, **kwargs):
         i = i + 1
 
     with open(_path, 'wb') as f:
-        sleep(randint(250,2500)/1000)
+        time.sleep(randint(250,2500)/1000)
         f.write(data)
 
     return {'url': _path}
