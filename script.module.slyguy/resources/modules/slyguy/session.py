@@ -310,8 +310,7 @@ class RawSession(requests.Session):
         try:
             # Do request
             result = super(RawSession, self).request(method, session_data['url'], **kwargs)
-        except requests.exceptions.ConnectionError as e:
-            log.exception(e)
+        except requests.exceptions.ConnectionError:
             if session_data['proxy']:
                 raise SessionError(_(_.CONNECTION_ERROR_PROXY, host=urlparse(session_data['url']).netloc.lower()))
             else:
@@ -380,16 +379,11 @@ class Session(RawSession):
             try:
                 resp = super(Session, self).request(method, url, **kwargs)
             except SessionError:
-                resp = None
                 if i == attempts:
                     raise
                 else:
                     continue
-            except Exception as e:
-                log.exception(e)
-                resp = None
-
-            if resp is None:
+            except Exception:
                 raise SessionError(error_msg or _.NO_RESPONSE_ERROR)
 
             if retry_not_ok and not resp.ok:
