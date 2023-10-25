@@ -86,9 +86,7 @@ def live_tv(**kwargs):
 def content(title, tags, sort='az', category=None, page=1, **kwargs):
     folder = plugin.Folder(title)
 
-    page = int(page)
     data = api.content(tags, sort, category=category, page=page, pagesize=24)
-
     if category is None:
         category = ''
         for section in data['subSections']:
@@ -322,7 +320,8 @@ def logout(**kwargs):
 
 @plugin.route()
 @plugin.plugin_request()
-def license_request(license_url, _data, _path, _headers, **kwargs):
+def license_request(content_id, _data, _path, _headers, **kwargs):
+    license_url = api.license_request(content_id)
     resp = Session().post(license_url, data=_data, headers=_headers)
     data = resp.content
 
@@ -357,8 +356,8 @@ def _get_license_cooldown():
 @plugin.route()
 @plugin.login_required()
 def play_asset(stream_url, content_id, **kwargs):
-    url, license_url, headers = api.play_asset(stream_url, content_id)
-    license_url = plugin.url_for(license_request, license_url=license_url)
+    url, content_id, headers = api.play_asset(stream_url, content_id)
+    license_url = plugin.url_for(license_request, content_id=content_id)
 
     return plugin.Item(
         inputstream = inputstream.Widevine(license_url),
@@ -369,8 +368,8 @@ def play_asset(stream_url, content_id, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def play_video(id, **kwargs):
-    url, license_url, headers = api.play_video(id)
-    license_url = plugin.url_for(license_request, license_url=license_url)
+    url, content_id, headers = api.play_video(id)
+    license_url = plugin.url_for(license_request, content_id=content_id)
 
     return plugin.Item(
         inputstream = inputstream.Widevine(license_url),
@@ -381,8 +380,8 @@ def play_video(id, **kwargs):
 @plugin.route()
 @plugin.login_required()
 def play_channel(id, **kwargs):
-    url, license_url, headers = api.play_channel(id)
-    license_url = plugin.url_for(license_request, license_url=license_url)
+    url, content_id, headers = api.play_channel(id)
+    license_url = plugin.url_for(license_request, content_id=content_id)
 
     return plugin.Item(
         inputstream = inputstream.Widevine(license_url, properties={'manifest_update_parameter': 'full'}),

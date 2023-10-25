@@ -2,8 +2,6 @@ import uuid
 import time
 import json
 import threading
-import random
-import string
 from contextlib import contextmanager
 
 import websocket
@@ -182,9 +180,9 @@ class API(object):
         parsed = urlparse(stream_url)
         content_id = parse_qs(parsed.query)['contentId'][0]
 
-        stream_url, license_url, headers = self.play_asset(stream_url, content_id)
+        stream_url, content_id, headers = self.play_asset(stream_url, content_id)
         stream_url = add_url_args(stream_url, {'hdnts': self.stream_token(channel['id'])})
-        return stream_url, license_url, headers
+        return stream_url, content_id, headers
 
     def play_video(self, id):
         video = self.get_video(id)
@@ -202,6 +200,10 @@ class API(object):
         elif '.ism' in stream_url:
             stream_url = stream_url.replace('.ism', '.ism/.mpd')
 
+        return stream_url, content_id, HEADERS
+
+    def license_request(self, content_id):
+        # TODO: store session and reuse if its not expired (2hours)
         payload = {
             "device_id": self._device_id(),
             "device_name": "chrome",
@@ -218,9 +220,7 @@ class API(object):
 
         session = self._request_json('/vod-auth/entitlement/session', json=payload, type='post')
         session = session['session']
-
-        license_url = LICENSE_URL.format(content_id, session)
-        return stream_url, license_url, HEADERS
+        return LICENSE_URL.format(content_id, session)
 
     def _device_id(self):
         def _format_id(string):
