@@ -1,4 +1,4 @@
-import xbmcvfs, xbmcaddon, xbmc
+from kodi_six import xbmcvfs, xbmcaddon, xbmc
 
 INPUTSTREAM_PROTOCOLS = {
     'mpd': 'inputstream.adaptive',
