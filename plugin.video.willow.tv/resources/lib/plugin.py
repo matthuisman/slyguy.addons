@@ -60,7 +60,8 @@ def live(**kwargs):
             url = plugin.url_for(select_source, match_id=row['mid'], sources=json.dumps(sources))
             item.context.append((_.PLAYBACK_SOURCE, 'PlayMedia({})'.format(url)))
 
-        folder.add_items(item)
+        if not 'TVe' in row['seriesName'] and settings.getBool('ignore_tve'):
+            folder.add_items(item)
 
     return folder
 
