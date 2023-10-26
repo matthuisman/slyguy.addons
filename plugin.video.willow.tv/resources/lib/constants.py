@@ -13,3 +13,5 @@ TEAMS_IMAGE_URL = 'https://aimages.willow.tv/AppleTvLogos/{team1}_{team2}.png'
 
 DEV_TYPE = 'androidtv'
 SERVICE_TIME = 300
+
+TVE_STRING= 'TVe'

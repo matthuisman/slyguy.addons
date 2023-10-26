@@ -70,6 +70,14 @@ msgctxt "#30021"
 msgid "Could not find video urls for this content"
 msgstr ""
 
+msgctxt "#30022"
+msgid "Hide TVe Streams"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Willow"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

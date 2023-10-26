@@ -8,7 +8,7 @@ from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLA
 
 from .api import API
 from .language import _
-from .constants import HEADERS, TEAMS_IMAGE_URL
+from .constants import HEADERS, TEAMS_IMAGE_URL, TVE_STRING
 
 api = API()
 
@@ -60,7 +60,9 @@ def live(**kwargs):
             url = plugin.url_for(select_source, match_id=row['mid'], sources=json.dumps(sources))
             item.context.append((_.PLAYBACK_SOURCE, 'PlayMedia({})'.format(url)))
 
-        folder.add_items(item)
+        if not settings.getBool('ignore_tve') or (TVE_STRING not in row['seriesName'] and settings.getBool('ignore_tve')):
+            folder.add_items(item)
+
 
     return folder
 
@@ -88,12 +90,12 @@ def played(**kwargs):
 
     data = api.played_series()
     for row in data['vod']:
-        folder.add_item(
-            label = row['title'],
-            art = {'thumb': row['img']},
-            path = plugin.url_for(series, series_id=row['sid']),
-        )
-
+        if not settings.getBool('ignore_tve') or (TVE_STRING not in row['title'] and settings.getBool('ignore_tve')):
+            folder.add_item(
+                label=row['title'],
+                art={'thumb': row['img']},
+                path=plugin.url_for(series, series_id=row['sid']),
+            )
     return folder
 
 @plugin.route()
