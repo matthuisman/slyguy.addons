@@ -9,7 +9,7 @@ from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.drm import is_wv_secure
 from slyguy.log import log
-from slyguy.constants import MIDDLEWARE_PLUGIN, NO_RESUME_TAG, ROUTE_RESUME_TAG
+from slyguy.constants import MIDDLEWARE_PLUGIN, NO_RESUME_TAG, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG
 
 from .language import _
 from .api import API
@@ -701,7 +701,7 @@ def _play(video_id, **kwargs):
         item.inputstream = inputstream.MPD()
 
     else:
-        item.inputstream = inputstream.HLS(live=data['live'])
+        item.inputstream = inputstream.HLS(live=data.get('live', ROUTE_LIVE_TAG in kwargs))
 
     item.headers['authorization'] = 'Bearer {}'.format(data['license_token'])
 
