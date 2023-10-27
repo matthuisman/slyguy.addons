@@ -41,7 +41,7 @@ class API(object):
         data = self._get_explore_data()
         for row in data['result']['rows']:
             if row['title'].lower().strip() == name.lower().strip():
-                return row['items']
+                return row['items'] or []
         raise APIError("unable to find content for {}".format(name))
 
     def live_matches(self):

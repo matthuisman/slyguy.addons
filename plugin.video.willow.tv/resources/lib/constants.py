@@ -4,13 +4,11 @@ HEADERS = {
 
 MD5_KEY = '35a131404c264f36ca4031500143e4acf0682cd5'
 LOGIN_URL = 'https://www.willow.tv/EventMgmt/webservices/mobi_auth.asp'
-LIVE_URL = 'http://appfeeds.willow.tv/iptv/RokuLiveMatchList.json'
 PLAYBACK_URL = 'http://www.willow.tv/iptvws/v1/playlist.asp'
 UPCOMING_URL = 'http://appfeeds.willow.tv/RokuUpcoming.json'
 ARCHIVE_URL = 'http://appfeeds.willow.tv/iptv/RokuSeriesList.json'
 ARCHIVES_MATCH_URL = 'http://appfeeds.willow.tv/iptv/RokuMatchVODList_{match_id}.json'
 TEAMS_IMAGE_URL = 'https://aimages.willow.tv/AppleTvLogos/{team1}_{team2}.png'
-USER_INFO_URL = 'https://www.willow.tv/user_login_data'
 EXPLORE_URL = 'https://static.willow.tv/apps/explore.json.gz'
 
 DEV_TYPE = 'androidtv'
