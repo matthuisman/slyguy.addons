@@ -53,6 +53,13 @@ msgid "{series}\n\n"
 "{start}"
 msgstr ""
 
+msgctxt "#30015"
+msgid "[B]{start}[/B]\n"
+"{series}\n"
+"{match}\n"
+"{ground}"
+msgstr ""
+
 msgctxt "#30016"
 msgid "{label} [Part {part}]"
 msgstr ""

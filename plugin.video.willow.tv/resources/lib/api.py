@@ -5,7 +5,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.mem_cache import cached
 
-from .constants import HEADERS, MD5_KEY, DEV_TYPE, LOGIN_URL, PLAYBACK_URL, LIVE_URL, UPCOMING_URL, ARCHIVE_URL, ARCHIVES_MATCH_URL
+from .constants import *
 from .language import _
 
 class APIError(Error):
@@ -33,8 +33,19 @@ class API(object):
         
         userdata.set('userid', data['result']['userId'])
 
+    @cached(60*5)
+    def _get_explore_data(self):
+        return self._session.get(EXPLORE_URL).json()
+
+    def _explore_path(self, name):
+        data = self._get_explore_data()
+        for row in data['result']['rows']:
+            if row['title'].lower().strip() == name.lower().strip():
+                return row['items']
+        raise APIError("unable to find content for {}".format(name))
+
     def live_matches(self):
-        return self._session.get(LIVE_URL).json()
+        return self._explore_path('live now')
 
     @cached(60*10)
     def played_series(self):

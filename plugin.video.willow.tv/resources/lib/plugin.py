@@ -41,23 +41,31 @@ def home(**kwargs):
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE, no_items_label=_.NO_MATCHES)
 
-    data = api.live_matches()
-    for row in data['live']:
-        start = arrow.get(row['match_start_date']).to('local').format(_.DATE_FORMAT)
+    for row in api.live_matches():
+        # TODO: implement tve login. check 'tveUser' and show these if available
+        if row.get('tv_everywhere'):
+            continue
 
-        sources  = row['stream']['video_sources']
+        start = arrow.get(row['gmt_start_date_ts']).to('local').format(_.DATE_FORMAT)
+
+        sources = sorted(row['content_details'], key=lambda x: x['priority'])
         priority = sources[0]['priority']
 
         item = plugin.Item(
-            label    = row['subtitle'],
-            info     = {'plot': _(_.MATCH_PLOT, series=row['seriesName'], match=row['subtitle'], start=start)},
-            art      = {'thumb': TEAMS_IMAGE_URL.format(team1=row['team1'], team2=row['team2']).replace(' ', '')},
-            path     = plugin.url_for(play_live, match_id=row['mid'], priority=priority),
+            label = row['title'],
+            info = {
+                'plot': _(_.MATCH_PLOT_NEW, series=row['series_name'], match=row['sub_title'], start=start, ground=row['ground_details'], match_type=row['match_type'])
+            },
+            art = {
+                'thumb': TEAMS_IMAGE_URL.format(team1=row['team_one_name'], team2=row['team_two_name']).replace(' ', ''),
+                'fanart': 'https://img.willow.tv{}{}'.format(row['img_path'], row['thumbnails']['hrb'])
+            },
+            path = plugin.url_for(play_live, match_id=row['event_id'], priority=priority),
             playable = True,
         )
 
         if len(sources) > 1:
-            url = plugin.url_for(select_source, match_id=row['mid'], sources=json.dumps(sources))
+            url = plugin.url_for(select_source, match_id=row['event_id'], sources=json.dumps(sources))
             item.context.append((_.PLAYBACK_SOURCE, 'PlayMedia({})'.format(url)))
 
         folder.add_items(item)
@@ -71,7 +79,7 @@ def select_source(match_id, sources, **kwargs):
     sources = json.loads(sources)
 
     options = [x['priority'] for x in sources]
-    labels = [x['title'] for x in sources]
+    labels = [x['name'] for x in sources]
 
     index = gui.select(_.PLAYBACK_SOURCE, options=labels)
     if index < 0:

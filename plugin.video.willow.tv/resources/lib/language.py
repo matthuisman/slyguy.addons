@@ -14,6 +14,7 @@ class Language(BaseLanguage):
     UPCOMING_MATCH   = 30012
     DATE_FORMAT      = 30013
     MATCH_PLOT       = 30014
+    MATCH_PLOT_NEW   = 30015
 
     MULTIPART_VIDEO  = 30016
     PLAYBACK_SOURCE  = 30017
