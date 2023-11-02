@@ -528,6 +528,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         audio_description = self._session.get('audio_description', True)
         remove_framerate = self._session.get('remove_framerate', False)
         h265_enabled = self._session.get('h265', False)
+        vp9_enabled = self._session.get('vp9', False)
+        av1_enabled = self._session.get('av1', False)
         hdr_enabled = self._session.get('hdr10', False)
         dolby_vision_enabled = self._session.get('dolby_vision', False)
         atmos_enabled = self._session.get('dolby_atmos', False)
@@ -666,13 +668,19 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if stream_data['width'] > max_width or stream_data['height'] > max_height:
                             stream_data['res_ok'] = False
 
-                        if not dolby_vision_enabled and codec_string == DOLBY_VISION:
+                        if not dolby_vision_enabled and codec_string.lower().endswith('dolby vision'):
                             stream_data['compatible'] = False
 
-                        if not hdr_enabled and 'hdr' in codec_string.lower():
+                        if not hdr_enabled and codec_string.lower().endswith('hdr'):
                             stream_data['compatible'] = False
 
-                        if not h265_enabled and codec_string == H265:
+                        if not h265_enabled and codec_string.lower().startswith('h.265'):
+                            stream_data['compatible'] = False
+
+                        if not av1_enabled and codec_string.lower().startswith('av1'):
+                            stream_data['compatible'] = False
+
+                        if not vp9_enabled and codec_string.lower().startswith('vp9'):
                             stream_data['compatible'] = False
 
                         stream_data['codec'] = codec_string

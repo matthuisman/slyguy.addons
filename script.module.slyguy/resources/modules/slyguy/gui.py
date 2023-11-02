@@ -510,6 +510,8 @@ class Item(object):
                     'type': None,
                     'skip_next_channel': settings.common_settings.getBool('skip_next_channel', False),
                     'h265': settings.common_settings.getBool('h265', False),
+                    'vp9': settings.common_settings.getBool('vp9', False),
+                    'av1': settings.common_settings.getBool('av1', False),
                     'hdr10': settings.common_settings.getBool('hdr10', False),
                     'dolby_vision': settings.common_settings.getBool('dolby_vision', False),
                     'dolby_atmos': settings.common_settings.getBool('dolby_atmos', False),
@@ -527,6 +529,8 @@ class Item(object):
                 #######################################
                 ## keep old setting values working until new settings system implemented
                 legacy_map = {
+                    'vp9': [],
+                    'av1': [],
                     'h265': ['hevc','enable_h265',],
                     'hdr10': ['enable_hdr',],
                     'dolby_vision': [],

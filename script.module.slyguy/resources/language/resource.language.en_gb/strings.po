@@ -170,6 +170,14 @@ msgctxt "#30037"
 msgid "Video view for menus"
 msgstr ""
 
+msgctxt "#30038"
+msgid "VP9"
+msgstr ""
+
+msgctxt "#30039"
+msgid "AV1"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"
