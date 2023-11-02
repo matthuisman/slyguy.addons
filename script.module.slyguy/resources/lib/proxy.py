@@ -40,13 +40,14 @@ CODECS = [
     ['avc', H264],
     ['hvc', H265],
     ['hev', H265],
-    ['vp9', VP9],
-    ['vp9.2', 'VP9 HDR'],
-    ['av01', 'AV1'],
-    ['av1', 'AV1'],
+    ['vp0?9', VP9],
+    ['av0?1', 'AV1'],
     ['hdr', HDR],
     ['dvh', DOLBY_VISION],
+    ['vp0?9\.0?2', 'VP9 HDR'],
+    ['av0?1.*09\.16\.09\.0', 'AV1 HDR'],
 ]
+CODECS = [[re.compile(x[0], re.IGNORECASE), x[1]] for x in CODECS]
 
 ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
@@ -111,9 +112,8 @@ def codec_rank(_codecs):
     highest = -1
 
     for codec in _codecs:
-        for _codec in CODECS:
-            if codec.lower().startswith(_codec[0].lower()):
-                rank = CODECS.index(_codec)
+        for rank, _codec in enumerate(CODECS):
+            if _codec[0].search(codec):
                 if not highest or rank > highest:
                     highest = rank
 
@@ -657,17 +657,19 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if is_hdr:
                             codecs.append('hdr')
 
+                        index = codec_rank(codecs)
+                        codec_string = CODECS[index][1] if index >= 0 else ''
+                        if 'hdr' in codec_string.lower():
+                            codecs.append('hdr')
+
                         stream_data = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'elem': stream, 'res_ok': True, 'compatible': True}
                         if stream_data['width'] > max_width or stream_data['height'] > max_height:
                             stream_data['res_ok'] = False
 
-                        index = codec_rank(stream_data['codecs'])
-                        codec_string = CODECS[index][1] if index >= 0 else ''
-
                         if not dolby_vision_enabled and codec_string == DOLBY_VISION:
                             stream_data['compatible'] = False
 
-                        if not hdr_enabled and codec_string == HDR:
+                        if not hdr_enabled and 'hdr' in codec_string.lower():
                             stream_data['compatible'] = False
 
                         if not h265_enabled and codec_string == H265:
