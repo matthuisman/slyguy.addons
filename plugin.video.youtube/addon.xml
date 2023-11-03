@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.youtube" name="YouTube for Trailers" provider-name="SlyGuy" version="99.0.1">
+<addon id="plugin.video.youtube" name="YouTube for Trailers" provider-name="SlyGuy" version="99.0.2">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
@@ -15,8 +15,8 @@ NOTE: Does not allow browsing YouTube content. Simply for playback.</description
     <website></website>
     <news>Initial Release</news>
     <assets>
-      <icon>resources/media/icon.png</icon>
-      <fanart>resources/media/fanart.jpg</fanart>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
     </assets>
   </extension>
 </addon>
