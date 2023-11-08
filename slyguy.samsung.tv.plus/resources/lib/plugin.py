@@ -206,14 +206,27 @@ def play(id, **kwargs):
     data = _app_data()
     channel = data['regions'][ALL]['channels'][id]
 
-    return plugin.Item(
+    headers = data['headers']
+    headers.update(channel.get('headers', {}))
+
+    item = plugin.Item(
         label = channel['name'],
         info = {'plot': channel.get('description')},
         art = {'thumb': channel['logo']},
-        inputstream = inputstream.HLS(live=True),
-        headers = data['headers'],
+        headers = headers,
         path = _get_url(channel),
     )
+
+    if channel.get('license_url'):
+        item.inputstream = inputstream.Widevine(
+            license_key = channel['license_url'],
+            manifest_type = 'hls',
+            mimetype = 'application/vnd.apple.mpegurl',
+        )
+    else:
+        item.inputstream = inputstream.HLS(live=True)
+
+    return item
 
 @plugin.route()
 @plugin.merge()
