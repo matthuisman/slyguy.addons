@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.inputstreamhelper" name="InputStream Helper (Slyguy Wrapper)" version="99.0.7" provider-name="SlyGuy">
+<addon id="script.module.inputstreamhelper" name="InputStream Helper (Slyguy Wrapper)" provider-name="SlyGuy" version="99.0.8">
+	<requires>
+		<import addon="repository.slyguy.inputstreamhelper"/>
+	</requires>
   <extension point="xbmc.python.script" library="default.py">
     <provides>executable</provides>
   </extension>
