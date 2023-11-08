@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.0.8">
+<addon id="script.globalsearch" name="Global Search+ [MOVED]" provider-name="SlyGuy" version="99.0.8">
 	<requires>
     	<import addon="script.module.slyguy"/>
 		<import addon="repository.slyguy.globalsearch"/>
 	</requires>
 	<extension point="xbmc.python.script" library="default.py"/>
 	<extension point="xbmc.addon.metadata">
-		<description lang="en">This addon can find any item in your video and music library.
-
-A fork of ronie's Global Search with search history and smarter result ordering
-
-Drop-in replacement as uses the same addon id and much higher version number to stop overwrite by original
-</description>
+		<description lang="en">This addon has moved into the "SlyGuy Global Search+ Repository". That can be installed from the main SlyGuy Repository</description>
 		<platform>all</platform>
 		<license></license>
 		<assets>
