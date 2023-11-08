@@ -1,3 +1,3 @@
-from lib.inputstreamhelper import Helper
+import xbmcaddon
 
-Helper('mpd').check_inputstream()
+xbmcaddon.Addon().openSettings()

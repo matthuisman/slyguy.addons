@@ -1,4 +1,4 @@
-import xbmcgui
+import xbmcvfs, xbmcaddon, xbmc
 
 INPUTSTREAM_PROTOCOLS = {
     'mpd': 'inputstream.adaptive',
@@ -14,4 +14,12 @@ class Helper:
         self.inputstream_addon = INPUTSTREAM_PROTOCOLS[protocol]
 
     def check_inputstream(self):
-        xbmcgui.Dialog().ok('[MOVED]', 'Inputstream Helper addon has moved into the "SlyGuy InputStream Helper Wrapper Repository". That can be installed from the main SlyGuy Repository')
+        if xbmcaddon.Addon('script.module.inputstreamhelper').getSetting('skip_check').lower() == 'true':
+            xbmc.log('Skipping Inputstream check')
+            return True
+
+        xbmc.log('Running Slyguy DRM Helper')
+        _, files = xbmcvfs.listdir('plugin://script.module.slyguy/?_=_ia_helper&protocol={}&drm={}'.format(self.protocol, self.drm))
+        result = bool(files and files[0].lower() == 'true')
+        xbmc.log('Slyguy DRM Helper Result: {}'.format(result))
+        return result
