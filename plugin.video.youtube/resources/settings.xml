@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="$ADDON[script.module.slyguy 32035]">
+        <setting label="30001" id="play_with_youtube_apk" type="bool" default="false" visible="system.platform.android"/>
+        <setting label="30002" id="fallback_youtube_apk" type="bool" default="true" visible="system.platform.android" enable="eq(-1,false)"/>
+
+        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
+        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
+
+        <setting label="$ADDON[script.module.slyguy 30038]" id="vp9" type="bool" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30039]" id="av1" type="bool" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30027]" id="h265" type="bool" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30028]" id="hdr10" type="bool" default="false"/>
+        <setting label="$ADDON[script.module.slyguy 30031]" id="ac3" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 30032]" id="ec3" type="bool" default="true"/>
+    </category>
+
+    <category label="$ADDON[script.module.slyguy 32036]">
+        <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
+
+        <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
+
+        <setting id="_fresh" type="bool" default="true" visible="false"/>
+        <setting id="_userdata" type="text" default="{}" visible="false"/>
+    </category>
+</settings>
