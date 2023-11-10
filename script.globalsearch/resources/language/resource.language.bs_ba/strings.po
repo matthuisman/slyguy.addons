@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC Addons\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: ronie@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Kodi Translation Team\n"
@@ -24,57 +24,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr ""
 
-msgctxt "#30012"
+msgctxt "#32000"
 msgid "General"
 msgstr "Opšte"
 
-msgctxt "#30001"
+msgctxt "#32001"
 msgid "Search Movies"
 msgstr ""
 
-msgctxt "#30002"
+msgctxt "#32002"
 msgid "Search TV Shows"
 msgstr ""
 
-msgctxt "#30003"
+msgctxt "#32003"
 msgid "Search Episodes"
 msgstr ""
 
-msgctxt "#30007"
+msgctxt "#32004"
 msgid "Search Music Videos"
 msgstr ""
 
-msgctxt "#30009"
+msgctxt "#32005"
 msgid "Search Artists"
 msgstr ""
 
-msgctxt "#30010"
+msgctxt "#32006"
 msgid "Search Albums"
 msgstr ""
 
-msgctxt "#30011"
+msgctxt "#32007"
 msgid "Search Songs"
 msgstr ""
 
 # empty string with id 32008
-msgctxt "#30008"
+msgctxt "#32009"
 msgid "Search Live TV"
 msgstr ""
 
 # empty string with id 32010
-msgctxt "#30004"
+msgctxt "#32011"
 msgid "Search Movie Actors"
 msgstr ""
 
-msgctxt "#30005"
+msgctxt "#32012"
 msgid "Search Movie Directors"
 msgstr ""
 
-msgctxt "#30006"
+msgctxt "#32013"
 msgid "Search TV Show Actors"
 msgstr ""
 
-# empty strings from id 30005 to 32100
+# empty strings from id 32012 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "Unesite riječ za pretragu"

@@ -25,57 +25,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr "Tento dopněk dokáže najít libovolnou položku ve vaší audio a video knihovně."
 
-msgctxt "#30012"
+msgctxt "#32000"
 msgid "General"
 msgstr "Obecné"
 
-msgctxt "#30001"
+msgctxt "#32001"
 msgid "Search Movies"
 msgstr "Hledej filmy"
 
-msgctxt "#30002"
+msgctxt "#32002"
 msgid "Search TV Shows"
 msgstr "Hledej seriály"
 
-msgctxt "#30003"
+msgctxt "#32003"
 msgid "Search Episodes"
 msgstr "Hledej epizody"
 
-msgctxt "#30007"
+msgctxt "#32004"
 msgid "Search Music Videos"
 msgstr "Hledej hudební videa"
 
-msgctxt "#30009"
+msgctxt "#32005"
 msgid "Search Artists"
 msgstr "Hledej umělce"
 
-msgctxt "#30010"
+msgctxt "#32006"
 msgid "Search Albums"
 msgstr "Hledej alba"
 
-msgctxt "#30011"
+msgctxt "#32007"
 msgid "Search Songs"
 msgstr "Hledej skladby"
 
 # empty string with id 32008
-msgctxt "#30008"
+msgctxt "#32009"
 msgid "Search Live TV"
 msgstr "Hledej v EPG"
 
 # empty string with id 32010
-msgctxt "#30004"
+msgctxt "#32011"
 msgid "Search Movie Actors"
 msgstr "Hledej filmové herce"
 
-msgctxt "#30005"
+msgctxt "#32012"
 msgid "Search Movie Directors"
 msgstr "Hledej filmové režiséry"
 
-msgctxt "#30006"
+msgctxt "#32013"
 msgid "Search TV Show Actors"
 msgstr "Hledej seriálové herce"
 
-# empty strings from id 30005 to 32100
+# empty strings from id 32012 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "Zadejte řetězec k vyhledání"
