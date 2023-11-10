@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="128">
-	    <setting label="30000" type="slider" id="history_length" default="20" range="0,1,100" option="int"/>
+		<setting label="30000" type="slider" id="history_length" default="20" range="0,1,100" option="int"/>
 		<setting label="30001" type="bool" id="smart_search" default="true"/>
 	</category>
 	<category label="32000">
