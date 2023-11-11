@@ -5,16 +5,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC Addons\n"
-"Report-Msgid-Bugs-To: ronie@kodi.tv\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Rafa Oliveros (2020)\n"
-"Language-Team: Spanish (http://www.transifex.com/projects/p/xbmc-addons/language/es/)\n"
-"Language: es\n"
+"PO-Revision-Date: 2023-02-27 08:15+0000\n"
+"Last-Translator: José Antonio Alvarado <jalvarado0.eses@gmail.com>\n"
+"Language-Team: Spanish (Spain) <https://kodi.weblate.cloud/projects/kodi-add-ons-scripts/script-globalsearch/es_es/>\n"
+"Language: es_es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.15.2\n"
 
 msgctxt "Addon Summary"
 msgid "Search your library."
@@ -24,57 +25,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr "Este complemento puede encontrar cualquier elemento en tu biblioteca de vídeo y música."
 
-msgctxt "#32000"
+msgctxt "#30012"
 msgid "General"
 msgstr "General"
 
-msgctxt "#32001"
+msgctxt "#30001"
 msgid "Search Movies"
 msgstr "Buscar películas"
 
-msgctxt "#32002"
+msgctxt "#30002"
 msgid "Search TV Shows"
 msgstr "Buscar series TV"
 
-msgctxt "#32003"
+msgctxt "#30003"
 msgid "Search Episodes"
 msgstr "Buscar episodios"
 
-msgctxt "#32004"
+msgctxt "#30007"
 msgid "Search Music Videos"
 msgstr "Buscar videoclips"
 
-msgctxt "#32005"
+msgctxt "#30009"
 msgid "Search Artists"
 msgstr "Buscar intérpretes"
 
-msgctxt "#32006"
+msgctxt "#30010"
 msgid "Search Albums"
 msgstr "Buscar álbumes"
 
-msgctxt "#32007"
+msgctxt "#30011"
 msgid "Search Songs"
 msgstr "Buscar canciones"
 
 # empty string with id 32008
-msgctxt "#32009"
+msgctxt "#30008"
 msgid "Search Live TV"
 msgstr "Buscar en TV en directo"
 
 # empty string with id 32010
-msgctxt "#32011"
+msgctxt "#30004"
 msgid "Search Movie Actors"
-msgstr ""
+msgstr "Buscar actores de cine"
 
-msgctxt "#32012"
+msgctxt "#30005"
 msgid "Search Movie Directors"
-msgstr ""
+msgstr "Buscar directores de cine"
 
-msgctxt "#32013"
+msgctxt "#30006"
 msgid "Search TV Show Actors"
-msgstr ""
+msgstr "Buscar actores de series de TV"
 
-# empty strings from id 32012 to 32100
+# empty strings from id 30005 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "Introduzca cadena de búsqueda"
@@ -126,11 +127,11 @@ msgstr "Reanudar desde %s"
 # empty strings from id 32213 to 32220
 msgctxt "#32221"
 msgid "Movie Actors"
-msgstr ""
+msgstr "Actores de cine"
 
 msgctxt "#32222"
 msgid "TV Show Actors"
-msgstr ""
+msgstr "Actores de series de TV"
 
 # empty strings from id 32223 to 32296
 msgctxt "#32297"

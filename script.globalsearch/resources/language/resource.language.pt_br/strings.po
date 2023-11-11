@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC Addons\n"
-"Report-Msgid-Bugs-To: ronie@kodi.tv\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Kodi Translation Team\n"
@@ -24,57 +24,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr "Este addon pode encontrar qualquer item na sua coleção de vídeos e música."
 
-msgctxt "#32000"
+msgctxt "#30012"
 msgid "General"
 msgstr "Geral"
 
-msgctxt "#32001"
+msgctxt "#30001"
 msgid "Search Movies"
 msgstr "Pesquisar Filmes"
 
-msgctxt "#32002"
+msgctxt "#30002"
 msgid "Search TV Shows"
 msgstr "Pesquisar Séries de TV"
 
-msgctxt "#32003"
+msgctxt "#30003"
 msgid "Search Episodes"
 msgstr "Pesquisar Episódios"
 
-msgctxt "#32004"
+msgctxt "#30007"
 msgid "Search Music Videos"
 msgstr "Pesquisar Videoclipes"
 
-msgctxt "#32005"
+msgctxt "#30009"
 msgid "Search Artists"
 msgstr "Pesquisar Artistas"
 
-msgctxt "#32006"
+msgctxt "#30010"
 msgid "Search Albums"
 msgstr "Pesquisar Álbuns"
 
-msgctxt "#32007"
+msgctxt "#30011"
 msgid "Search Songs"
 msgstr "Pesquisar Músicas"
 
 # empty string with id 32008
-msgctxt "#32009"
+msgctxt "#30008"
 msgid "Search Live TV"
 msgstr "Pesquisar EPG"
 
 # empty string with id 32010
-msgctxt "#32011"
+msgctxt "#30004"
 msgid "Search Movie Actors"
 msgstr ""
 
-msgctxt "#32012"
+msgctxt "#30005"
 msgid "Search Movie Directors"
 msgstr ""
 
-msgctxt "#32013"
+msgctxt "#30006"
 msgid "Search TV Show Actors"
 msgstr ""
 
-# empty strings from id 32012 to 32100
+# empty strings from id 30005 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "Insira o texto a ser pesquisado"

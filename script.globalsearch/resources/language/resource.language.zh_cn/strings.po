@@ -25,57 +25,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr "此插件搜索你的视频和音乐资料库项目。"
 
-msgctxt "#32000"
+msgctxt "#30012"
 msgid "General"
 msgstr "常规"
 
-msgctxt "#32001"
+msgctxt "#30001"
 msgid "Search Movies"
 msgstr "搜索电影"
 
-msgctxt "#32002"
+msgctxt "#30002"
 msgid "Search TV Shows"
 msgstr "搜索剧集"
 
-msgctxt "#32003"
+msgctxt "#30003"
 msgid "Search Episodes"
 msgstr "搜索分集"
 
-msgctxt "#32004"
+msgctxt "#30007"
 msgid "Search Music Videos"
 msgstr "搜索音乐电视"
 
-msgctxt "#32005"
+msgctxt "#30009"
 msgid "Search Artists"
 msgstr "搜索艺人"
 
-msgctxt "#32006"
+msgctxt "#30010"
 msgid "Search Albums"
 msgstr "搜索专辑"
 
-msgctxt "#32007"
+msgctxt "#30011"
 msgid "Search Songs"
 msgstr "搜寻歌曲"
 
 # empty string with id 32008
-msgctxt "#32009"
+msgctxt "#30008"
 msgid "Search Live TV"
 msgstr "搜索电子节目单"
 
 # empty string with id 32010
-msgctxt "#32011"
+msgctxt "#30004"
 msgid "Search Movie Actors"
 msgstr "搜索电影演员"
 
-msgctxt "#32012"
+msgctxt "#30005"
 msgid "Search Movie Directors"
 msgstr "搜索电影导演"
 
-msgctxt "#32013"
+msgctxt "#30006"
 msgid "Search TV Show Actors"
 msgstr "搜索剧集演员"
 
-# empty strings from id 32012 to 32100
+# empty strings from id 30005 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "输入搜索字符串"

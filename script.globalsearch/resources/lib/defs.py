@@ -1,3 +1,11 @@
+import sys
+import re
+
+from slyguy.constants import ADDON
+from kodi_six import xbmc, xbmcgui, xbmcaddon
+
+LANGUAGE = ADDON.getLocalizedString
+
 ACTION_EXIT = (10,)
 ACTION_BACK = (9, 92, 216, 247, 257, 275, 61467, 61448,)
 ACTION_CONTEXT_MENU = (117,)

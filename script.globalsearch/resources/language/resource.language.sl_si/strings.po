@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC Addons\n"
-"Report-Msgid-Bugs-To: ronie@kodi.tv\n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Kodi Translation Team\n"
@@ -24,57 +24,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr "Ta dodatek lahko poišče katerokoli podatek v vaši knjižnici filmov in glasbe."
 
-msgctxt "#32000"
+msgctxt "#30012"
 msgid "General"
 msgstr "Splošno"
 
-msgctxt "#32001"
+msgctxt "#30001"
 msgid "Search Movies"
 msgstr "Išči Filme"
 
-msgctxt "#32002"
+msgctxt "#30002"
 msgid "Search TV Shows"
 msgstr "Išči TV serije"
 
-msgctxt "#32003"
+msgctxt "#30003"
 msgid "Search Episodes"
 msgstr "Išči Epizode"
 
-msgctxt "#32004"
+msgctxt "#30007"
 msgid "Search Music Videos"
 msgstr "Išči Video spote"
 
-msgctxt "#32005"
+msgctxt "#30009"
 msgid "Search Artists"
 msgstr "Išči Izvajalce"
 
-msgctxt "#32006"
+msgctxt "#30010"
 msgid "Search Albums"
 msgstr "Išči Albume"
 
-msgctxt "#32007"
+msgctxt "#30011"
 msgid "Search Songs"
 msgstr "Išči Pesmi"
 
 # empty string with id 32008
-msgctxt "#32009"
+msgctxt "#30008"
 msgid "Search Live TV"
 msgstr "Išči EPV (EPG)"
 
 # empty string with id 32010
-msgctxt "#32011"
+msgctxt "#30004"
 msgid "Search Movie Actors"
 msgstr ""
 
-msgctxt "#32012"
+msgctxt "#30005"
 msgid "Search Movie Directors"
 msgstr ""
 
-msgctxt "#32013"
+msgctxt "#30006"
 msgid "Search TV Show Actors"
 msgstr ""
 
-# empty strings from id 32012 to 32100
+# empty strings from id 30005 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "Vnesite iskalni niz"

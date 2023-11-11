@@ -25,57 +25,57 @@ msgctxt "Addon Description"
 msgid "This addon can find any item in your video and music library."
 msgstr "비디오와 음악 라이브러리의 모든 항목을 검색합니다."
 
-msgctxt "#32000"
+msgctxt "#30012"
 msgid "General"
 msgstr "일반"
 
-msgctxt "#32001"
+msgctxt "#30001"
 msgid "Search Movies"
 msgstr "영화 찾기"
 
-msgctxt "#32002"
+msgctxt "#30002"
 msgid "Search TV Shows"
 msgstr "TV 쇼 찾기"
 
-msgctxt "#32003"
+msgctxt "#30003"
 msgid "Search Episodes"
 msgstr "에피소드 찾기"
 
-msgctxt "#32004"
+msgctxt "#30007"
 msgid "Search Music Videos"
 msgstr "뮤직비디오 찾기"
 
-msgctxt "#32005"
+msgctxt "#30009"
 msgid "Search Artists"
 msgstr "아티스트 찾기"
 
-msgctxt "#32006"
+msgctxt "#30010"
 msgid "Search Albums"
 msgstr "앨범 찾기"
 
-msgctxt "#32007"
+msgctxt "#30011"
 msgid "Search Songs"
 msgstr "노래 찾기"
 
 # empty string with id 32008
-msgctxt "#32009"
+msgctxt "#30008"
 msgid "Search Live TV"
 msgstr "EPG 찾기"
 
 # empty string with id 32010
-msgctxt "#32011"
+msgctxt "#30004"
 msgid "Search Movie Actors"
 msgstr "영화 배우 검색"
 
-msgctxt "#32012"
+msgctxt "#30005"
 msgid "Search Movie Directors"
 msgstr "영화 감독 검색"
 
-msgctxt "#32013"
+msgctxt "#30006"
 msgid "Search TV Show Actors"
 msgstr "TV 쇼 배우 검색"
 
-# empty strings from id 32012 to 32100
+# empty strings from id 30005 to 32100
 msgctxt "#32101"
 msgid "Enter search string"
 msgstr "검색어 입력"

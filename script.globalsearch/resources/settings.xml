@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-	<category label="128">
-		<setting label="30000" type="slider" id="history_length" default="20" range="0,1,100" option="int"/>
-		<setting label="30001" type="bool" id="smart_search" default="true"/>
-	</category>
-	<category label="32000">
-		<setting label="32001" type="bool" id="movies" default="true"/>
-		<setting label="32002" type="bool" id="tvshows" default="true"/>
-		<setting label="32003" type="bool" id="episodes" default="false"/>
-		<setting label="32011" type="bool" id="actors" default="false"/>
-		<setting label="32012" type="bool" id="directors" default="false"/>
-		<setting label="32013" type="bool" id="tvactors" default="false"/>
-		<setting label="32004" type="bool" id="musicvideos" default="false"/>
-		<setting label="32009" type="bool" id="livetv" default="false"/>
-		<setting label="32005" type="bool" id="artists" default="false"/>
-		<setting label="32006" type="bool" id="albums" default="false"/>
-		<setting label="32007" type="bool" id="songs" default="false"/>
+	<category label="30012">
+	    <setting label="30000" type="slider" id="history_length" default="20" range="0,1,100" option="int"/>
+		<setting label="30013" type="bool" id="smart_search" default="true"/>
 		<setting label="24140" type="number" id="view" default="50" visible="false"/>
+	</category>
+	<category label="30014">
+		<setting label="30001" type="bool" id="movies" default="true"/>
+		<setting label="30002" type="bool" id="tvshows" default="true"/>
+		<setting label="30003" type="bool" id="episodes" default="false"/>
+		<setting label="30004" type="bool" id="actors" default="false"/>
+		<setting label="30005" type="bool" id="directors" default="false"/>
+		<setting label="30006" type="bool" id="tvactors" default="false"/>
+		<setting label="30007" type="bool" id="musicvideos" default="false"/>
+		<setting label="30008" type="bool" id="livetv" default="false"/>
+		<setting label="30009" type="bool" id="artists" default="false"/>
+		<setting label="30010" type="bool" id="albums" default="false"/>
+		<setting label="30011" type="bool" id="songs" default="false"/>
 	</category>
 </settings>
