@@ -1,14 +1,19 @@
-import datetime
 import json
 import operator
 from difflib import SequenceMatcher
 
-from .defs import *
+from kodi_six import xbmc, xbmcgui
 
 from slyguy import settings
 from slyguy.log import log
-from slyguy.constants import ADDON_ID, ADDON_VERSION
+from slyguy.constants import ADDON, ADDON_VERSION
 from slyguy.mem_cache import cached
+
+from .defs import *
+
+
+LANGUAGE = ADDON.getLocalizedString
+
 
 class GUI(xbmcgui.WindowXML):
     def __init__(self, *args, **kwargs):
