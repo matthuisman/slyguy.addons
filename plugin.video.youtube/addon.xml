@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.youtube" name="YouTube for Trailers" provider-name="SlyGuy" version="99.0.4">
+<addon id="plugin.video.youtube" name="YouTube for Trailers" provider-name="SlyGuy" version="99.0.5">
   <requires>
+    <import addon="xbmc.python" version="3.0.1"/>
     <import addon="script.module.slyguy"/>
     <import addon="repository.slyguy.youtube"/>
   </requires>
