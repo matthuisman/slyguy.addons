@@ -66,27 +66,36 @@ def _process_show(data):
     )
 
 def _process_video(data, showname, categories=None):
-    label = '{}'.format(data['labels']['primary'])
     categories = categories or []
 
     replaces = {
+        '${video.publishedDateTime}': lambda: arrow.get(data['publishedDateTime']).format('dddd D MMM'),
         '${video.broadcastDateTime}': lambda: arrow.get(data['broadcastDateTime']).format('dddd D MMM'),
         '${video.seasonNumber}': lambda: data['seasonNumber'],
         '${video.episodeNumber}': lambda: data['episodeNumber'],
         '${video.title}': lambda: data['title'],
     }
 
-    for replace in replaces:
-        if replace in label:
-            label = label.replace(replace, replaces[replace]())
+    for key in data['labels']:
+        label = data['labels'][key]
+        for replace in replaces:
+            if replace in label:
+                label = label.replace(replace, replaces[replace]())
+        data['labels'][key] = label
 
+    label = '{}'.format(data['labels']['primary'])
     if 'Movies' in categories:
         categories.remove('Movies')
         _type = 'movie'
     else:
         _type = 'episode'
 
-    info = {'plot': data['synopsis'], 'mediatype': _type, 'genre': categories, 'duration': pthms_to_seconds(data.get('duration'))}
+    if 'secondary' in data['labels']:
+        plot = '[B]{}[/B]\n\n{}'.format(data['labels']['secondary'], data['synopsis'])
+    else:
+        plot = data['synopsis']
+
+    info = {'plot': plot, 'mediatype': _type, 'genre': categories, 'duration': pthms_to_seconds(data.get('duration'))}
     if _type == 'episode':
         info['tvshowtitle'] = showname
         info['season'] = data['seasonNumber']
