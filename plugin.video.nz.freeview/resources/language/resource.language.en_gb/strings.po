@@ -18,7 +18,19 @@ msgid "{chno} | {label}"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Hide FAST Channels"
+msgid "Show Channels"
+msgstr ""
+
+msgctxt "#30006"
+msgid "All"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Freeview Only"
+msgstr ""
+
+msgctxt "#30008"
+msgid "FAST Only"
 msgstr ""
 
 ## COMMON SETTINGS ##

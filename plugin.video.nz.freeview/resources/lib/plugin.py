@@ -25,7 +25,6 @@ def home(**kwargs):
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
     show_chnos = settings.getBool('show_chnos', True)
-    hide_fast = settings.getBool('hide_fast_channels', False)
 
     if settings.getBool('show_epg', True):
         now = arrow.now()
@@ -33,18 +32,10 @@ def live_tv(**kwargs):
     else:
         epg_count = None
 
-    channels = get_channels()
-    for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
-        channel = channels[slug]
-        if hide_fast and not channel.get('chno'):
-            continue
-
+    for channel in get_channels():
         plot = u''
         count = 0
         if epg_count:
-            if channel.get('epg_id') and not channel.get('programs'):
-                channel['programs'] = channels.get(channel['epg_id'], {}).get('programs', [])
-
             for index, row in enumerate(channel.get('programs', [])):
                 start = arrow.get(row[0])
                 try: stop = arrow.get(channel['programs'][index+1][0])
@@ -61,7 +52,7 @@ def live_tv(**kwargs):
 
         item = plugin.Item(
             label = channel['name'],
-            path = plugin.url_for(play, slug=slug, _is_live=True),
+            path = plugin.url_for(play, slug=channel['slug'], _is_live=True),
             info = {'plot': plot},
             art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
             playable = True,
@@ -76,7 +67,7 @@ def live_tv(**kwargs):
 
 @plugin.route()
 def play(slug, **kwargs):
-    channel = get_channels()[slug]
+    channel = get_channels(slug)
 
     item = plugin.Item(
         label = channel['name'],
@@ -96,24 +87,41 @@ def play(slug, **kwargs):
 
     return item
 
-@cached(60*5)
-def get_channels():
-    return Session().gz_json(M3U8_URL)
+def get_channels(slug=None):
+    @cached(60*5)
+    def get_data():
+        return Session().gz_json(DATA_URL)
+
+    channels = get_data()
+    if slug:
+        return channels[slug]
+
+    channel_mode = settings.getEnum('channel_mode', CHANNEL_MODES, default=ALL)
+
+    channel_list = []
+    for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
+        channel = channels[slug]
+        channel['slug'] = slug
+
+        if channel_mode == FREEVIEW_ONLY and not channel.get('chno'):
+            continue
+        elif channel_mode == FAST_ONLY and channel.get('chno'):
+            continue
+
+        if channel.get('epg_id') and not channel.get('programs'):
+            channel['programs'] = channels.get(channel['epg_id'], {}).get('programs', [])
+
+        channel_list.append(channel)
+
+    return channel_list
 
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    channels = get_channels()
-    hide_fast = settings.getBool('hide_fast_channels', False)
-
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
 
-        for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
-            channel = channels[slug]
-            if hide_fast and not channel.get('chno'):
-                continue
-
+        for channel in get_channels():
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
-                channel_id=slug, epg_id=channel.get('epg_id', slug), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),
-                    url=plugin.url_for(play, slug=slug, _is_live=True)))
+                channel_id=channel['slug'], epg_id=channel.get('epg_id', channel['slug']), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),
+                    url=plugin.url_for(play, slug=channel['slug'], _is_live=True)))

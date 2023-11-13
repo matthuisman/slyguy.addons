@@ -3,7 +3,7 @@
     <category label="$ADDON[script.module.slyguy 32034]">
         <setting label="30002" id="show_epg" type="bool" default="true"/>
         <setting label="30003" id="show_chnos" type="bool" default="true"/>
-        <setting label="30005" id="hide_fast_channels" type="bool" default="false"/>
+        <setting label="30005" id="channel_mode" type="enum" default="0" lvalues="30006|30007|30008"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32139]">
