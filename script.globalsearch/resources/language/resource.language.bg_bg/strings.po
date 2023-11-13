@@ -1,0 +1,146 @@
+# Kodi Media Center language file
+# Addon Name: Global Search
+# Addon id: script.globalsearch
+# Addon Provider: ronie
+msgid ""
+msgstr ""
+"Project-Id-Version: XBMC Addons\n"
+"Report-Msgid-Bugs-To: ronie@kodi.tv\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Kodi Translation Team\n"
+"Language-Team: Bulgarian (http://www.transifex.com/projects/p/xbmc-addons/language/bg/)\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "Addon Summary"
+msgid "Search your library."
+msgstr "Търси в библиотеката Ви."
+
+msgctxt "Addon Description"
+msgid "This addon can find any item in your video and music library."
+msgstr "Добавката може да намери всеки елемент във вашата видео и музикална библиотека."
+
+msgctxt "#32000"
+msgid "General"
+msgstr "Общи"
+
+msgctxt "#32001"
+msgid "Search Movies"
+msgstr "Търсене в раздел \"Филми\""
+
+msgctxt "#32002"
+msgid "Search TV Shows"
+msgstr "Търсене в раздел \"ТВ Сериали\""
+
+msgctxt "#32003"
+msgid "Search Episodes"
+msgstr "Търсене в епизодите"
+
+msgctxt "#32004"
+msgid "Search Music Videos"
+msgstr "Търсене в раздел \"Музикални клипове\""
+
+msgctxt "#32005"
+msgid "Search Artists"
+msgstr "Търсене в изпълнителите"
+
+msgctxt "#32006"
+msgid "Search Albums"
+msgstr "Търсене в албумите"
+
+msgctxt "#32007"
+msgid "Search Songs"
+msgstr "Търсене в песните"
+
+# empty string with id 32008
+msgctxt "#32009"
+msgid "Search Live TV"
+msgstr "Търсене в ЕПС"
+
+# empty string with id 32010
+msgctxt "#32011"
+msgid "Search Movie Actors"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Search Movie Directors"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Search TV Show Actors"
+msgstr ""
+
+# empty strings from id 32012 to 32100
+msgctxt "#32101"
+msgid "Enter search string"
+msgstr "Въведете низ за търсене"
+
+msgctxt "#32102"
+msgid "Items"
+msgstr ""
+
+msgctxt "#32203"
+msgid "Browse album"
+msgstr "Преглед на албума"
+
+msgctxt "#32204"
+msgid "Season information"
+msgstr "Информация за сезона"
+
+msgctxt "#32205"
+msgid "Play trailer"
+msgstr "Възпроизведи трейлъра"
+
+msgctxt "#32206"
+msgid "Find album"
+msgstr "Намери албум"
+
+msgctxt "#32207"
+msgid "Find all seasons"
+msgstr "Намери всички сезони"
+
+msgctxt "#32208"
+msgid "Find all episodes"
+msgstr "Намери всички епизоди"
+
+msgctxt "#32209"
+msgid "Find all albums"
+msgstr "Намери всички албуми"
+
+msgctxt "#32210"
+msgid "Find all songs"
+msgstr "Намери всички песни"
+
+msgctxt "#32211"
+msgid "Movies starring"
+msgstr "Филми с участието на"
+
+msgctxt "#32212"
+msgid "Resume from %s"
+msgstr ""
+
+# empty strings from id 32213 to 32220
+msgctxt "#32221"
+msgid "Movie Actors"
+msgstr ""
+
+msgctxt "#32222"
+msgid "TV Show Actors"
+msgstr ""
+
+# empty strings from id 32223 to 32296
+msgctxt "#32297"
+msgid "Searching:"
+msgstr ""
+
+msgctxt "#32298"
+msgid "Search again?"
+msgstr ""
+
+msgctxt "#32299"
+msgid "New search"
+msgstr "НОВО ТЪРСЕНЕ"
