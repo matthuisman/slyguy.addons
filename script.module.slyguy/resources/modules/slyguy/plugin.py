@@ -765,11 +765,18 @@ class Folder(object):
             process_news()
 
     def add_item(self, *args, **kwargs):
+        condition = kwargs.pop('_condition', None)
         position = kwargs.pop('_position', None)
         kiosk = kwargs.pop('_kiosk', None)
 
         if kiosk == False and settings.getBool('kiosk', False):
             return False
+
+        if condition is not None:
+            if callable(condition):
+                condition = condition()
+            if not condition:
+                return False
 
         item = Item(*args, **kwargs)
 
