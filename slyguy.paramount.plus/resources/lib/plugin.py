@@ -431,7 +431,7 @@ def show(show_id, config=None, **kwargs):
             if not config:
                 continue
 
-            if config.get('display_seasons'):
+            if config.get('display_seasons') and 'episodes' in config.get('section_type').lower():
                 for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
                     if not row['totalCount']:
                         continue
@@ -682,6 +682,7 @@ def _play(video_id, **kwargs):
     data = api.play(video_id)
     item = plugin.Item(
         path = data['url'],
+        headers = config.headers,
     )
 
     if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and not kwargs.get(ROUTE_RESUME_TAG):
