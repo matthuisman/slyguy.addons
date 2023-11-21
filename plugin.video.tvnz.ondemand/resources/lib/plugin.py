@@ -77,7 +77,7 @@ def _process_video(data, showname, categories=None):
     }
 
     for key in data['labels']:
-        label = data['labels'][key]
+        label = data['labels'][key] or ''
         for replace in replaces:
             if replace in label:
                 label = label.replace(replace, replaces[replace]())
@@ -90,7 +90,7 @@ def _process_video(data, showname, categories=None):
     else:
         _type = 'episode'
 
-    if 'secondary' in data['labels']:
+    if data['labels'].get('secondary'):
         plot = '[B]{}[/B]\n\n{}'.format(data['labels']['secondary'], data['synopsis'])
     else:
         plot = data['synopsis']
