@@ -540,11 +540,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                 initial_timeline.appendChild(s_element.cloneNode(True))
                                                 log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {} , AdaptationSet id: {}'.format(period_id, initial_attributeset.getAttribute('id')))
 
-        # Loop through each 'SegmentTemplate' element in 'initial_dom' and remove 'presentationTimeOffset'
-#        for segment_template in initial_dom.getElementsByTagName('SegmentTemplate'):
-#            if segment_template.hasAttribute('presentationTimeOffset'):
-#                segment_template.removeAttribute('presentationTimeOffset')
-#                log.debug('Removed presentationTimeOffset attribute from SegmentTemplate')
 
         # Loop through each period of update_dom.
         for update_period in update_dom.getElementsByTagName('Period'):
@@ -557,23 +552,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # Store the updated clone in the session instead of the original
         self._session['initial_manifest'] = initial_dom.cloneNode(deep=True)
-        
-        # Scan all periods of initial_dom and remove periods with no <S> segments in any AdaptationSet
-#        for period in list(initial_dom.getElementsByTagName('Period')):  # Convert to list for safe removal
-#            adaptation_sets = period.getElementsByTagName('AdaptationSet')
-#            has_s_segments = False
-
-#            for adaptation_set in adaptation_sets:
-#                segment_timelines = adaptation_set.getElementsByTagName('SegmentTimeline')
-#                if any(st.getElementsByTagName('S') for st in segment_timelines):
-#                    has_s_segments = True
-#                    break
-
-#            if not has_s_segments:
-#                period.parentNode.removeChild(period)
-#                log.debug("Removed Period with id: {} due to no <S> segments in any AdaptationSet".format(period.getAttribute('id')))
-
-
 
         # Update the content of the response with the modified manifest
         response.stream.content = initial_dom.toxml(encoding='utf-8')
