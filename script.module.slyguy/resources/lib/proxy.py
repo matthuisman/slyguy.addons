@@ -392,7 +392,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             if self._session['selected_quality'] in (QUALITY_DISABLED, QUALITY_SKIP):
                 return None
             else:
-                return qualities[self._session['selected_quality']]
+                try:
+                    result = qualities[self._session['selected_quality']]
+                except IndexError:
+                    result = None
+            return result
 
         quality = int(self._session.get('quality', QUALITY_ASK))
 
@@ -475,9 +479,127 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._session['selected_quality'] = quality
             return None
 
+    def _parse_dash_update(self, response):
+        log.debug("Begin special partial manifest update")
+        try:
+            update_dom = parseString(response.stream.content.decode('utf8'))
+        except Exception as e:
+            log.error('Failed to parse partial dash: {}'.format(response.stream.content))
+            return response  # Return the original response if parsing fails
+
+        # Get the initial_manifest from the session
+        initial_manifest = self._session.get('initial_manifest')
+
+        if not initial_manifest:
+            log.error('No initial Manifest available to update the partial manifest!')
+            return response  # Return the original response if initial_manifest is missing
+
+        try:
+            initial_dom = parseString(initial_manifest.toxml(encoding='utf-8'))
+        except Exception as e:
+            log.error('Failed to parse initial dash: {}'.format(initial_manifest.toxml(encoding='utf-8')))
+            return response  # Return the original response if parsing fails
+
+        # Retrieve the 'Location' element from the update_dom
+        update_location_elements = update_dom.getElementsByTagName('Location')
+        if update_location_elements:
+            update_location_value = update_location_elements[0].firstChild.nodeValue
+            # Retrieve the 'Location' element from the initial_dom
+            initial_location_elements = initial_dom.getElementsByTagName('Location')
+            if initial_location_elements:
+                initial_location_elements[0].firstChild.nodeValue = update_location_value
+                log.debug("Replaced Location in initial_dom with update_dom value")
+
+        # Create a set of IDs of periods present in update_dom
+        update_period_ids = {period.getAttribute('id') for period in update_dom.getElementsByTagName('Period')}
+        initial_period_ids = {period.getAttribute('id') for period in initial_dom.getElementsByTagName('Period')}
+
+        # Loop through each period of initial_manifest.
+        for initial_period in initial_dom.getElementsByTagName('Period'):
+            period_id = initial_period.getAttribute('id')
+
+            # Check if the period exists in the update DOM
+            for update_period in update_dom.getElementsByTagName('Period'):
+                if update_period.getAttribute('id') == period_id:
+                    for update_attributeset in update_period.getElementsByTagName('AdaptationSet'):
+                        # Find matching AdaptationSet in initial_dom
+                        for initial_attributeset in initial_period.getElementsByTagName('AdaptationSet'):
+                            if initial_attributeset.getAttribute('id') == update_attributeset.getAttribute('id'):
+                                # Find SegmentTimeline in initial_dom
+                                initial_segment_timeline = initial_attributeset.getElementsByTagName('SegmentTimeline')
+                                if initial_segment_timeline:
+                                    initial_timeline = initial_segment_timeline[0]
+                                    # Find SegmentTimeline in update_dom
+                                    update_segment_timeline = update_attributeset.getElementsByTagName('SegmentTimeline')
+                                    if update_segment_timeline:
+                                        update_timeline = update_segment_timeline[0]
+                                        # Append new <S> segments from update_dom to initial_dom
+                                        for s_element in update_timeline.getElementsByTagName('S'):
+                                            # Check and append only new segments
+                                            if not any(s.getAttribute('t') == s_element.getAttribute('t') for s in initial_timeline.getElementsByTagName('S')):
+                                                initial_timeline.appendChild(s_element.cloneNode(True))
+                                                log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {} , AdaptationSet id: {}'.format(period_id, initial_attributeset.getAttribute('id')))
+
+        # Loop through each 'SegmentTemplate' element in 'initial_dom' and remove 'presentationTimeOffset'
+#        for segment_template in initial_dom.getElementsByTagName('SegmentTemplate'):
+#            if segment_template.hasAttribute('presentationTimeOffset'):
+#                segment_template.removeAttribute('presentationTimeOffset')
+#                log.debug('Removed presentationTimeOffset attribute from SegmentTemplate')
+
+        # Loop through each period of update_dom.
+        for update_period in update_dom.getElementsByTagName('Period'):
+            period_id = update_period.getAttribute('id')
+
+            if period_id not in initial_period_ids:
+                # add new period as-is
+                initial_dom.documentElement.appendChild(update_period.cloneNode(True))
+                log.debug("Added new Period with id: {} to initial_dom".format(period_id))
+
+        # Store the updated clone in the session instead of the original
+        self._session['initial_manifest'] = initial_dom.cloneNode(deep=True)
+        
+        # Scan all periods of initial_dom and remove periods with no <S> segments in any AdaptationSet
+#        for period in list(initial_dom.getElementsByTagName('Period')):  # Convert to list for safe removal
+#            adaptation_sets = period.getElementsByTagName('AdaptationSet')
+#            has_s_segments = False
+
+#            for adaptation_set in adaptation_sets:
+#                segment_timelines = adaptation_set.getElementsByTagName('SegmentTimeline')
+#                if any(st.getElementsByTagName('S') for st in segment_timelines):
+#                    has_s_segments = True
+#                    break
+
+#            if not has_s_segments:
+#                period.parentNode.removeChild(period)
+#                log.debug("Removed Period with id: {} due to no <S> segments in any AdaptationSet".format(period.getAttribute('id')))
+
+
+
+        # Update the content of the response with the modified manifest
+        response.stream.content = initial_dom.toxml(encoding='utf-8')
+
+        return response
+
     def _parse_dash(self, response):
+        
         data = response.stream.content.decode('utf8')
         response.stream.content = b''
+        
+        try:
+            temp_dom = parseString(data)
+        except Exception as e:
+            log.error('Failed to parse dash for conditional check: {}'.format(data))
+            raise
+
+        # Check for the presence of the specific EssentialProperty element
+        essential_properties = temp_dom.getElementsByTagName('EssentialProperty')
+        is_patch_update = any(ep.getAttribute('schemeIdUri') == "urn:com:hulu:schema:mpd:2017:patch" for ep in essential_properties)
+
+        if is_patch_update:
+            log.debug('Dash Fix: Hulu patch update manifest needs pre-processing')
+            response = self._parse_dash_update(response)
+            data = response.stream.content.decode('utf8')
+            response.stream.content = b''
 
         ## SUPPORT NEW DOLBY FORMAT https://github.com/xbmc/inputstream.adaptive/pull/466
         data = data.replace('tag:dolby.com,2014:dash:audio_channel_configuration:2011', 'urn:dolby:dash:audio_channel_configuration:2011')
@@ -501,9 +623,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         mpd_attribs = list(mpd.attributes.keys())
 
         ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
-        if 'publishTime' in mpd_attribs:
-            mpd.removeAttribute('publishTime')
-            log.debug('Dash Fix: publishTime removed')
+        if not is_patch_update:
+            if 'publishTime' in mpd_attribs:
+                mpd.removeAttribute('publishTime')
+                log.debug('Dash Fix: publishTime removed')
 
         ## NOT NEEDED
         ## Remove mediaPresentationDuration from live PR: https://github.com/xbmc/inputstream.adaptive/pull/762
@@ -717,10 +840,12 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         ## Get selected quality
         selected = self._quality_select(streams)
-        if selected:
-            for period_index in all_streams:
-                for stream in sorted(all_streams[period_index], key=lambda x: (x == selected, x['compatible'] == selected['compatible'], x['codec'] == selected['codec'], x['bandwidth'] <= selected['bandwidth'], x['bandwidth']))[:-1]:
-                    stream['elem'].parentNode.removeChild(stream['elem'])
+        if not is_patch_update:
+            if selected:
+                for period_index in all_streams:
+                    for stream in sorted(all_streams[period_index], key=lambda x: (x == selected, x['compatible'] == selected['compatible'], x['codec'] == selected['codec'], x['bandwidth'] <= selected['bandwidth'], x['bandwidth']))[:-1]:
+                        stream['elem'].parentNode.removeChild(stream['elem'])
+                        log.debug('Dash Fix: removing elem stream')
 
         video_sets.sort(key=lambda  x: x[0], reverse=True)
         audio_sets.sort(key=lambda  x: x[0], reverse=True)
@@ -869,22 +994,23 @@ class RequestHandler(BaseHTTPRequestHandler):
         ################
 
         ## Convert BaseURLS
-        base_url_parents = []
-        for elem in root.getElementsByTagName('BaseURL'):
-            url = elem.firstChild.nodeValue
+        if not is_patch_update:
+            base_url_parents = []
+            for elem in root.getElementsByTagName('BaseURL'):
+                url = elem.firstChild.nodeValue
 
-            if elem.parentNode in base_url_parents:
-                log.debug('Non-1st BaseURL removed: {}'.format(url))
-                elem.parentNode.removeChild(elem)
-                continue
+                if elem.parentNode in base_url_parents:
+                    log.debug('Non-1st BaseURL removed: {}'.format(url))
+                    elem.parentNode.removeChild(elem)
+                    continue
 
-            if url.startswith('/'):
-                url = urljoin(response.url, url)
+                if url.startswith('/'):
+                    url = urljoin(response.url, url)
 
-            if '://' in url:
-                elem.firstChild.nodeValue = self.proxy_path + url
+                if '://' in url:
+                    elem.firstChild.nodeValue = self.proxy_path + url
 
-            base_url_parents.append(elem.parentNode)
+                base_url_parents.append(elem.parentNode)
         ################
 
         ## Convert Location
@@ -894,8 +1020,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             url = elem.firstChild.nodeValue
             if '://' not in url:
                 url = urljoin(response.url, url)
-
-            elem.firstChild.nodeValue = self.proxy_path + url
+            if self.proxy_path not in url:
+                elem.firstChild.nodeValue = self.proxy_path + url
             # update our manifest url to the location url
             self._session['manifest'] = url
         ################
@@ -943,15 +1069,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             process_attrib('media')
 
             ## Remove presentationTimeOffset PR: https://github.com/xbmc/inputstream.adaptive/pull/564/
-            if 'presentationTimeOffset' in e.attributes.keys():
-                e.removeAttribute('presentationTimeOffset')
-                log.debug('Dash Fix: presentationTimeOffset removed')
+            if not is_patch_update:
+                if 'presentationTimeOffset' in e.attributes.keys():
+                    e.removeAttribute('presentationTimeOffset')
+                    log.debug('Dash Fix: presentationTimeOffset removed')
         ###############
 
         ## Remove empty adaption sets
-        for adap_set in root.getElementsByTagName('AdaptationSet'):
-            if not adap_set.getElementsByTagName('Representation'):
-                adap_set.parentNode.removeChild(adap_set)
+        if not is_patch_update:
+            for adap_set in root.getElementsByTagName('AdaptationSet'):
+                if not adap_set.getElementsByTagName('Representation'):
+                    adap_set.parentNode.removeChild(adap_set)
         #################
 
         ## Fix of cenc pssh to only contain kids still present
@@ -977,6 +1105,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                 f.write(mpd)
         else:
             mpd = root.toxml(encoding='utf-8')
+
+        if not is_patch_update:
+            # Store the data in self._session if not a partial update, as needed if partial updates begin
+            self._session['initial_manifest'] = root.cloneNode(deep=True)
+            log.debug('Storing initial_manifest for use in future partial update')
 
         response.stream.content = mpd
 
@@ -1325,22 +1458,46 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Fix any double // in url
         url = fix_url(url)
 
-        retries = 3
-        # some reason we get connection errors every so often when using a session. something to do with the socket
-        for i in range(retries):
+        general_retries = 3
+        status_no_content_retries = 10  # Separate counter for no content status code
+
+        retry_status_codes = [204]  # List of status codes for which you want to retry the request
+
+        while True:
             log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
             try:
                 response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
+
+                # Check if the response status code is 204 and retry up to 10 times
+                if response.status_code in retry_status_codes:
+                    if status_no_content_retries > 0:
+                        log.debug('Received status code 204. Retrying... ({} retries left)'.format(status_no_content_retries))
+                        status_no_content_retries -= 1
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        log.error('Exceeded maximum retries for no content status code')
+                        break
+
             except ConnectionError as e:
-                if 'Connection aborted' not in str(e) or i == retries-1:
+                if 'Connection aborted' not in str(e) or general_retries <= 0:
                     log.exception(e)
                     raise
+                log.debug('ConnectionError encountered, retrying... ({} retries left)'.format(general_retries))
+                general_retries -= 1
+                time.sleep(0.2)
+                continue
             except Exception as e:
                 log.exception(e)
                 raise
-            else:
-                log.debug('RESPONSE IN: {} ({})'.format(url, response.status_code))
+
+            if general_retries <= 0:
+                log.error('Exceeded maximum retries for general issues')
                 break
+
+            # Successful response or other non-retryable status codes
+            log.debug('RESPONSE IN: {} ({})'.format(url, response.status_code))
+            break
 
         response.stream = ResponseStream(response)
 
