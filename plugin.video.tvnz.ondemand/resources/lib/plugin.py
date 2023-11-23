@@ -48,7 +48,7 @@ def _process_show(data):
     if data['badge']:
         label = _(_.BADGE, label=label, badge=data['badge']['label'])
 
-    if not data['videosAvailable'] and settings.getBool('hide_emtpy_shows', True):
+    if not data['videosAvailable'] and settings.getBool('hide_empty_shows', True):
         return None
 
     return plugin.Item(
