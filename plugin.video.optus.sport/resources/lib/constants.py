@@ -6,7 +6,7 @@ HEADERS = {
     'Referer': 'https://sport.optus.com.au',
 }
 
-API_URL = 'https://sport.optus.com.au/api{}'
+API_URL = 'https://api-cdn.optussport.tv/api{}'
 AWS_URL = 'https://cognito-idp.ap-southeast-2.amazonaws.com/'
 AWS_CLIENT_ID = '4f9j45k3024143l8hck1k1o2tp'
 SERVICE_TIME = 270
