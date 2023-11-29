@@ -6,7 +6,7 @@ import json
 import shutil
 import binascii
 
-from xml.dom.minidom import parseString
+from xml.dom.minidom import parseString, Document
 from functools import cmp_to_key
 
 import arrow
@@ -479,105 +479,180 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._session['selected_quality'] = quality
             return None
 
-    def _parse_dash_update(self, response):
+    def _parse_dash_initial_manifest(self, root_dom):
+        if not self._session.get('manifest_current'):
+            # Ensure that root_dom is the root element, not the entire document
+            root_element = root_dom.documentElement
+            manifest_current = self._parse_element(root_element)
+            self._session['manifest_current'] = manifest_current
+            log.debug('Stored manifest_current for use in future partial update')
+#            log.debug('manifest_current contents: {}'.format(manifest_current))
+        else:
+            log.debug('manifest_current is already populated, skipping parsing')
+
+    def _parse_element(self, element):
+        # Skip text nodes and other non-element nodes
+        if element.nodeType != element.ELEMENT_NODE:
+            return None
+
+        element_dict = {"tag": element.tagName, "attributes": {}, "children": []}
+
+        # Add attributes
+        if element.hasAttributes():
+            for i in range(element.attributes.length):
+                attr = element.attributes.item(i)
+                element_dict["attributes"][attr.name] = attr.value
+
+        # Add children and handle text content
+        for child in element.childNodes:
+            if child.nodeType == child.ELEMENT_NODE:
+                child_dict = self._parse_element(child)
+                if child_dict:
+                    element_dict["children"].append(child_dict)
+            elif child.nodeType == child.TEXT_NODE:
+                # Handle text node
+                text_content = child.nodeValue.strip()
+                if text_content:
+                    element_dict["children"].append({"tag": "#text", "nodeValue": text_content})
+
+
+        return element_dict
+
+
+    def _dict_to_xml(self, element_dict):
+        doc = Document()
+
+        def create_element(ele_dict, parent):
+            # Handle text nodes differently
+            if ele_dict['tag'] == '#text':
+                return doc.createTextNode(ele_dict.get('nodeValue', ''))
+
+            element = doc.createElement(ele_dict['tag'])
+
+            # Set attributes if present
+            for attr, value in ele_dict.get('attributes', {}).items():
+                element.setAttribute(attr, value)
+
+            # Recursively create child elements
+            for child_dict in ele_dict.get('children', []):
+                child_element = create_element(child_dict, element)
+                element.appendChild(child_element)
+
+            return element
+
+
+        root_element = create_element(element_dict, doc)
+        doc.appendChild(root_element)
+        return doc
+
+    def _parse_dash_update(self, update_dom):
         log.debug("Begin special partial manifest update")
-        try:
-            update_dom = parseString(response.stream.content.decode('utf8'))
-        except Exception as e:
-            log.error('Failed to parse partial dash: {}'.format(response.stream.content))
-            return response  # Return the original response if parsing fails
 
-        # Get the initial_manifest from the session
-        initial_manifest = self._session.get('initial_manifest')
+        # Get the manifest_current from the session
+        manifest_current = self._session.get('manifest_current')
 
-        if not initial_manifest:
-            log.error('No initial Manifest available to update the partial manifest!')
-            return response  # Return the original response if initial_manifest is missing
+        if not manifest_current:
+            log.error('No manifest_current available to update the partial manifest!')
+            return  # Return None if manifest_current is missing
 
-        try:
-            initial_dom = parseString(initial_manifest.toxml(encoding='utf-8'))
-        except Exception as e:
-            log.error('Failed to parse initial dash: {}'.format(initial_manifest.toxml(encoding='utf-8')))
-            return response  # Return the original response if parsing fails
-
-        # Retrieve the 'Location' element from the update_dom
+        # Retrieve and update the 'Location' element
         update_location_elements = update_dom.getElementsByTagName('Location')
-        if update_location_elements:
+        if update_location_elements and update_location_elements[0].firstChild:
             update_location_value = update_location_elements[0].firstChild.nodeValue
-            # Retrieve the 'Location' element from the initial_dom
-            initial_location_elements = initial_dom.getElementsByTagName('Location')
-            if initial_location_elements:
-                initial_location_elements[0].firstChild.nodeValue = update_location_value
-                log.debug("Replaced Location in initial_dom with update_dom value")
-
-        # Create a set of IDs of periods present in update_dom
-        update_period_ids = {period.getAttribute('id') for period in update_dom.getElementsByTagName('Period')}
-        initial_period_ids = {period.getAttribute('id') for period in initial_dom.getElementsByTagName('Period')}
-
-        # Loop through each period of initial_manifest.
-        for initial_period in initial_dom.getElementsByTagName('Period'):
-            period_id = initial_period.getAttribute('id')
-
-            # Check if the period exists in the update DOM
-            for update_period in update_dom.getElementsByTagName('Period'):
-                if update_period.getAttribute('id') == period_id:
-                    for update_attributeset in update_period.getElementsByTagName('AdaptationSet'):
-                        # Find matching AdaptationSet in initial_dom
-                        for initial_attributeset in initial_period.getElementsByTagName('AdaptationSet'):
-                            if initial_attributeset.getAttribute('id') == update_attributeset.getAttribute('id'):
-                                # Find SegmentTimeline in initial_dom
-                                initial_segment_timeline = initial_attributeset.getElementsByTagName('SegmentTimeline')
-                                if initial_segment_timeline:
-                                    initial_timeline = initial_segment_timeline[0]
-                                    # Find SegmentTimeline in update_dom
-                                    update_segment_timeline = update_attributeset.getElementsByTagName('SegmentTimeline')
-                                    if update_segment_timeline:
-                                        update_timeline = update_segment_timeline[0]
-                                        # Append new <S> segments from update_dom to initial_dom
-                                        for s_element in update_timeline.getElementsByTagName('S'):
-                                            # Check and append only new segments
-                                            if not any(s.getAttribute('t') == s_element.getAttribute('t') for s in initial_timeline.getElementsByTagName('S')):
-                                                initial_timeline.appendChild(s_element.cloneNode(True))
-                                                log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {} , AdaptationSet id: {}'.format(period_id, initial_attributeset.getAttribute('id')))
+            # Find the 'Location' element in manifest_current and update its value
+            for child in manifest_current.get('children', []):
+                if child.get('tag') == 'Location':
+                    # Replace existing children with new text node
+                    child['children'] = [{'tag': '#text', 'nodeValue': update_location_value}]
+                    log.debug("Updated Location in manifest_current with new value: {}".format(update_location_value))
+                    break
 
 
-        # Loop through each period of update_dom.
+        # Loop through each period in the update_dom
         for update_period in update_dom.getElementsByTagName('Period'):
             period_id = update_period.getAttribute('id')
 
-            if period_id not in initial_period_ids:
-                # add new period as-is
-                initial_dom.documentElement.appendChild(update_period.cloneNode(True))
-                log.debug("Added new Period with id: {} to initial_dom".format(period_id))
+            # Find the corresponding Period in manifest_current
+            found_period = None
+            for period in manifest_current.get('children', []):
+                if period.get('tag') == 'Period' and period['attributes'].get('id') == period_id:
+                    found_period = period
+                    break
 
-        # Store the updated clone in the session instead of the original
-        self._session['initial_manifest'] = initial_dom.cloneNode(deep=True)
+            # Add and skip to the next Period if this one is not in manifest_current
+            if not found_period:
+                # Parse new Period
+                new_period_dict = self._parse_element(update_period)
+                # Insert the new Period into manifest_current
+                manifest_current['children'].append(new_period_dict)
+                log.debug('Inserted new Period with ID: {} into manifest_current'.format(period_id))
+                continue
 
-        # Update the content of the response with the modified manifest
-        response.stream.content = initial_dom.toxml(encoding='utf-8')
+            current_period = found_period
 
-        return response
+            # Loop through each AdaptationSet in the update period
+            for update_adaptation_set in update_period.getElementsByTagName('AdaptationSet'):
+                adaptation_set_id = update_adaptation_set.getAttribute('id')
+
+                # Find the corresponding AdaptationSet in the current period
+                found_adaptation_set = None
+                for adaptation_set in current_period.get('children', []):
+                    if adaptation_set.get('tag') == 'AdaptationSet' and adaptation_set['attributes'].get('id') == adaptation_set_id:
+                        found_adaptation_set = adaptation_set
+                        break
+
+                if not found_adaptation_set:
+                    # Logic to handle new AdaptationSet, if needed
+                    continue
+
+                # Extract SegmentTimeline from the update_adaptation_set
+                update_segment_timelines = update_adaptation_set.getElementsByTagName('SegmentTimeline')
+                update_segment_timeline = update_segment_timelines[0] if update_segment_timelines else None
+
+
+                # Find or create the SegmentTimeline within found_adaptation_set
+                found_segment_timeline = None
+                for child in found_adaptation_set.get('children', []):
+                    if child.get('tag') == 'SegmentTemplate':
+                        for segment_child in child.get('children', []):
+                            if segment_child.get('tag') == 'SegmentTimeline':
+                                found_segment_timeline = segment_child
+                                break
+                        if not found_segment_timeline:
+                            # Create new SegmentTimeline if it does not exist
+                            found_segment_timeline = {'tag': 'SegmentTimeline', 'children': []}
+                            child['children'].append(found_segment_timeline)
+                        break
+
+                # Update the SegmentTimeline with new <S> segments from update_segment_timeline
+                if update_segment_timeline:
+                    for s_element in update_segment_timeline.getElementsByTagName('S'):
+                        segment_info = {'tag': 'S', 'attributes': {'t': s_element.getAttribute('t'), 'd': s_element.getAttribute('d')}}
+                        # Check for the 'r' attribute and add it if present
+                        if s_element.hasAttribute('r'):
+                            segment_info['attributes']['r'] = s_element.getAttribute('r')
+                        # Append the new segment if it's not already in the timeline
+                        if not any(segment['attributes']['t'] == segment_info['attributes']['t'] for segment in found_segment_timeline.get('children', [])):
+                            found_segment_timeline['children'].append(segment_info)
+                            log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {}, AdaptationSet ID: {}'.format(period_id, adaptation_set_id))
+
+        # Convert the updated manifest_current dictionary back to XML
+        updated_dom = self._dict_to_xml(manifest_current)
+
+        # Make the XML "pretty"
+        pretty_xml_str = updated_dom.toprettyxml(indent="  ")
+
+        # Store the updated manifest_current in the session
+        self._session['manifest_current'] = manifest_current
+
+        return pretty_xml_str  # Return the pretty-formatted XML string
+
+
 
     def _parse_dash(self, response):
         
         data = response.stream.content.decode('utf8')
         response.stream.content = b''
-        
-        try:
-            temp_dom = parseString(data)
-        except Exception as e:
-            log.error('Failed to parse dash for conditional check: {}'.format(data))
-            raise
-
-        # Check for the presence of the specific EssentialProperty element
-        essential_properties = temp_dom.getElementsByTagName('EssentialProperty')
-        is_patch_update = any(ep.getAttribute('schemeIdUri') == "urn:com:hulu:schema:mpd:2017:patch" for ep in essential_properties)
-
-        if is_patch_update:
-            log.debug('Dash Fix: Hulu patch update manifest needs pre-processing')
-            response = self._parse_dash_update(response)
-            data = response.stream.content.decode('utf8')
-            response.stream.content = b''
 
         ## SUPPORT NEW DOLBY FORMAT https://github.com/xbmc/inputstream.adaptive/pull/466
         data = data.replace('tag:dolby.com,2014:dash:audio_channel_configuration:2011', 'urn:dolby:dash:audio_channel_configuration:2011')
@@ -590,6 +665,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             log.error('Failed to parse dash: {}'.format(data))
             raise
+
+        # Check for the presence of the specific EssentialProperty element
+        essential_properties = root.getElementsByTagName('EssentialProperty')
+        is_patch_update = any(ep.getAttribute('schemeIdUri') == "urn:com:hulu:schema:mpd:2017:patch" for ep in essential_properties)
+
+        if is_patch_update:
+            log.debug('Dash Fix: Hulu patch update manifest needs pre-processing')
+            updated_dom = self._parse_dash_update(root)
+            if updated_dom:
+#                log.debug("Pre-Updated DOM structure: %s", root.toprettyxml())
+                root = parseString(updated_dom.encode('utf-8'))
+#                log.debug("Post-Updated DOM structure: %s", root.toprettyxml())
 
         if ADDON_DEV:
             pretty = root.toprettyxml(encoding='utf-8')
@@ -1076,6 +1163,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                             log.debug('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
         ################################################
 
+        # Check if the manifest is a patch update
+        if mpd.getAttribute('type') == 'dynamic' and mpd.getAttribute('xmlns:hulu') == 'urn:com:hulu:schema:mpd:2015':
+            # Call the new function to store the initial manifest
+            self._parse_dash_initial_manifest(root)
+
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')
             mpd = b"\n".join([ll.rstrip() for ll in mpd.splitlines() if ll.strip()])
@@ -1083,11 +1175,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 f.write(mpd)
         else:
             mpd = root.toxml(encoding='utf-8')
-
-        if not is_patch_update:
-            # Store the data in self._session if not a partial update, as needed if partial updates begin
-            self._session['initial_manifest'] = root.cloneNode(deep=True)
-            log.debug('Storing initial_manifest for use in future partial update')
 
         response.stream.content = mpd
 
