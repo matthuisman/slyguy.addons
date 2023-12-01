@@ -1182,10 +1182,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         ###############
 
         ## Remove empty adaption sets
-        if not is_patch_update:
-            for adap_set in root.getElementsByTagName('AdaptationSet'):
-                if not adap_set.getElementsByTagName('Representation'):
-                    adap_set.parentNode.removeChild(adap_set)
+        for adap_set in root.getElementsByTagName('AdaptationSet'):
+            if not adap_set.getElementsByTagName('Representation'):
+                adap_set.parentNode.removeChild(adap_set)
         #################
 
         ## Fix of cenc pssh to only contain kids still present
