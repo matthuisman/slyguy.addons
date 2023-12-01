@@ -4,7 +4,6 @@ import time
 from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import jwt_data, get_system_arch
 
 from .constants import HEADERS, API_URL, AWS_URL, AWS_CLIENT_ID, UUID_NAMESPACE
 from .language import _
@@ -62,27 +61,11 @@ class API(object):
         userdata.set('user_id', data['userId'])
         self._parse_token(data['result'])
 
-    def _device_id(self, string):
-        def _format_id():
-            try:
-                mac_address = uuid.getnode()
-                if mac_address != uuid.getnode():
-                    mac_address = ''
-            except:
-                mac_address = ''
-
-            system, arch = get_system_arch()
-            return str(string.format(mac_address=mac_address, system=system).strip())
-
-        return str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), _format_id()))
-
     def device_code(self):
         self.logout()
 
-        deviceid = self._device_id('{mac_address}')
-
         payload = {
-            'deviceId': deviceid,
+            'deviceId': str(uuid.uuid1()),
             'deviceName': 'Shield',
             'vendor': 'Nvidia',
             'model': 'Shield',
@@ -148,25 +131,16 @@ class API(object):
     def play(self, asset, from_start=False, use_cmaf=False):
         self._check_token()
 
+        device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), userdata.get('user_id')))
+
         params = {
             'type': 'dash',
             'drm': 'widevine',
-            'drmLevel': 'L3',
-          #  'vendor': 'NVIDIA',
-           # 'model': 'SHIELD Android TV',
-            'yspSdk': 'false',
-          #  'osName': 'android',
-          #  'osVersion': '11',
-          #  'playerName': 'ExoPlayer',
-          #  'playerVersion': '2.6.508',
-          #  'appVersion': '1.6.508',
-            'advertConsent': 'false',
-            'advertIdType': '',
-            'deviceId': '',
-            'advertId': '',
-          #  'platform': 'androidtv',
-          #  'device': 'android',
-            'sdksInitialised': 'false',
+            'supportsCmaf': use_cmaf,
+            'deviceId': device_id,
+            'platform': 'androidtv',
+            'playerVersion': '8.114.0',
+            'appVersion': '2.14.13',
             'watchMode': 'startover' if from_start else 'live',
         }
 

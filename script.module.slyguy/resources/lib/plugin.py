@@ -9,15 +9,6 @@ from .util import check_updates, get_slyguy_addons
 from .language import _
 
 
-@plugin.route('')
-def home(**kwargs):
-    folder = plugin.Folder()
-    folder.add_item(label=_.UPDATE_ADDONS, path=plugin.url_for(update_addons))
-    folder.add_item(label=_.CHECK_LOG, path=plugin.url_for(check_log))
-    folder.add_item(label=_.INSTALL_WV_DRM, path=plugin.url_for(plugin.ROUTE_IA_INSTALL), _condition=not xbmc.getCondVisibility('System.Platform.Android'))
-    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS))
-    return folder
-
 @plugin.route()
 def update_addons(**kwargs):
     updates = check_updates(force=True)
