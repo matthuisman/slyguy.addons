@@ -483,14 +483,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not self._session.get('manifest_current'):
             # Ensure that root_dom is the root element, not the entire document
             root_element = root_dom.documentElement
-            manifest_current = self._parse_element(root_element)
+            manifest_current = self._parse_element(root_element, 0)
             self._session['manifest_current'] = manifest_current
             log.debug('Stored manifest_current for use in future partial update')
 #            log.debug('manifest_current contents: {}'.format(manifest_current))
         else:
             log.debug('manifest_current is already populated, skipping parsing')
 
-    def _parse_element(self, element):
+    def _parse_element(self, element, last_timestamp=0):
         # Skip text nodes and other non-element nodes
         if element.nodeType != element.ELEMENT_NODE:
             return None
@@ -503,20 +503,39 @@ class RequestHandler(BaseHTTPRequestHandler):
                 attr = element.attributes.item(i)
                 element_dict["attributes"][attr.name] = attr.value
 
+        # Reset last_timestamp for new AdaptationSet
+        if element.tagName == 'AdaptationSet':
+            last_timestamp = 0
+
+        last_duration = 0  # Initialize last_duration
+
         # Add children and handle text content
         for child in element.childNodes:
             if child.nodeType == child.ELEMENT_NODE:
-                child_dict = self._parse_element(child)
+                child_dict = self._parse_element(child, last_timestamp)
                 if child_dict:
                     element_dict["children"].append(child_dict)
+                    # Handle SegmentTimeline elements
+                    if child.tagName == 'S':
+                        # If 't' attribute is present, use it; otherwise, calculate it
+                        if 't' in child_dict['attributes']:
+                            last_timestamp = int(child_dict['attributes']['t'])
+                        else:
+                            child_dict['attributes']['t'] = str(last_timestamp)  # Set calculated 't' attribute
+
+                        # Update last_duration and last_timestamp
+                        if 'd' in child_dict['attributes']:
+                            last_duration = int(child_dict['attributes']['d'])
+                            repeat_count = int(child_dict['attributes'].get('r', 0))  # Default repeat count is 0
+                            last_timestamp += last_duration * (repeat_count + 1)  # +1 for the current segment itself
             elif child.nodeType == child.TEXT_NODE:
                 # Handle text node
                 text_content = child.nodeValue.strip()
                 if text_content:
                     element_dict["children"].append({"tag": "#text", "nodeValue": text_content})
 
-
         return element_dict
+
 
 
     def _dict_to_xml(self, element_dict):
@@ -582,7 +601,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             # Add and skip to the next Period if this one is not in manifest_current
             if not found_period:
                 # Parse new Period
-                new_period_dict = self._parse_element(update_period)
+                new_period_dict = self._parse_element(update_period, 0)
                 # Insert the new Period into manifest_current
                 manifest_current['children'].append(new_period_dict)
                 log.debug('Inserted new Period with ID: {} into manifest_current'.format(period_id))
@@ -625,14 +644,56 @@ class RequestHandler(BaseHTTPRequestHandler):
                         break
 
                 # Update the SegmentTimeline with new <S> segments from update_segment_timeline
+#                if update_segment_timeline:
+#                    for s_element in update_segment_timeline.getElementsByTagName('S'):
+#                        segment_info = {'tag': 'S', 'attributes': {'t': s_element.getAttribute('t'), 'd': s_element.getAttribute('d')}}
+#                        # Check for the 'r' attribute and add it if present
+#                        if s_element.hasAttribute('r'):
+#                            segment_info['attributes']['r'] = s_element.getAttribute('r')
+#                        # Append the new segment if it's not already in the timeline
+#                        if not any(segment['attributes']['t'] == segment_info['attributes']['t'] for segment in found_segment_timeline.get('children', [])):
+#                            found_segment_timeline['children'].append(segment_info)
+#                            log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {}, AdaptationSet ID: {}'.format(period_id, adaptation_set_id))
+
+
                 if update_segment_timeline:
+                    # Initialize last_timestamp and last_duration
+                    last_timestamp = 0
+                    last_duration = 0
+
+                    # Find the last timestamp and duration in the current SegmentTimeline
+                    if found_segment_timeline:
+                        for segment in reversed(found_segment_timeline.get('children', [])):
+                            if 't' in segment['attributes']:
+                                last_timestamp = int(segment['attributes']['t'])
+                                if 'd' in segment['attributes']:
+                                    last_duration = int(segment['attributes']['d'])
+                                break
+
+                    # Update the SegmentTimeline with new <S> segments from update_segment_timeline
                     for s_element in update_segment_timeline.getElementsByTagName('S'):
-                        segment_info = {'tag': 'S', 'attributes': {'t': s_element.getAttribute('t'), 'd': s_element.getAttribute('d')}}
+                        segment_info = {'tag': 'S', 'attributes': {}}
+
+                        # Check for the 't' attribute and calculate it if absent
+                        if s_element.hasAttribute('t'):
+                            timestamp = int(s_element.getAttribute('t'))
+                        else:
+                            timestamp = last_timestamp + last_duration
+                        segment_info['attributes']['t'] = str(timestamp)
+                        last_timestamp = timestamp
+
+                        # Get the 'd' attribute (duration)
+                        if s_element.hasAttribute('d'):
+                            duration = s_element.getAttribute('d')
+                            segment_info['attributes']['d'] = duration
+                            last_duration = int(duration)
+
                         # Check for the 'r' attribute and add it if present
                         if s_element.hasAttribute('r'):
                             segment_info['attributes']['r'] = s_element.getAttribute('r')
+
                         # Append the new segment if it's not already in the timeline
-                        if not any(segment['attributes']['t'] == segment_info['attributes']['t'] for segment in found_segment_timeline.get('children', [])):
+                        if not any(segment['attributes'].get('t', None) == segment_info['attributes']['t'] for segment in found_segment_timeline.get('children', [])):
                             found_segment_timeline['children'].append(segment_info)
                             log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {}, AdaptationSet ID: {}'.format(period_id, adaptation_set_id))
 
@@ -1164,9 +1225,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         ################################################
 
         # Check if the manifest is a patch update
-        if mpd.getAttribute('type') == 'dynamic' and mpd.getAttribute('xmlns:hulu') == 'urn:com:hulu:schema:mpd:2015':
+        if mpd.getAttribute('type') == 'dynamic' and mpd.getAttribute('xmlns:hulu') == 'urn:com:hulu:schema:mpd:2015' and not self._session.get('manifest_current'):
             # Call the new function to store the initial manifest
             self._parse_dash_initial_manifest(root)
+            # Generate new DOM from the updated manifest_current dictionary (as there maybe changes to even the initial manifest)
+            updated_manifest_dom = self._dict_to_xml(self._session['manifest_current'])
+            
+            # Convert the DOM to a pretty XML string
+            pretty_xml_str = updated_manifest_dom.toprettyxml(indent="  ", encoding='utf-8')
+            
+            # Replace the existing root with the newly generated DOM
+            root = parseString(pretty_xml_str).documentElement
 
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')
