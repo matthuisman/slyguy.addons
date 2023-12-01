@@ -486,7 +486,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             manifest_current = self._parse_element(root_element, 0)
             self._session['manifest_current'] = manifest_current
             log.debug('Stored manifest_current for use in future partial update')
-#            log.debug('manifest_current contents: {}'.format(manifest_current))
         else:
             log.debug('manifest_current is already populated, skipping parsing')
 
@@ -643,19 +642,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                             child['children'].append(found_segment_timeline)
                         break
 
-                # Update the SegmentTimeline with new <S> segments from update_segment_timeline
-#                if update_segment_timeline:
-#                    for s_element in update_segment_timeline.getElementsByTagName('S'):
-#                        segment_info = {'tag': 'S', 'attributes': {'t': s_element.getAttribute('t'), 'd': s_element.getAttribute('d')}}
-#                        # Check for the 'r' attribute and add it if present
-#                        if s_element.hasAttribute('r'):
-#                            segment_info['attributes']['r'] = s_element.getAttribute('r')
-#                        # Append the new segment if it's not already in the timeline
-#                        if not any(segment['attributes']['t'] == segment_info['attributes']['t'] for segment in found_segment_timeline.get('children', [])):
-#                            found_segment_timeline['children'].append(segment_info)
-#                            log.debug('Appended new <S> segment to SegmentTimeline in Period ID: {}, AdaptationSet ID: {}'.format(period_id, adaptation_set_id))
-
-
                 if update_segment_timeline:
                     # Initialize last_timestamp and last_duration
                     last_timestamp = 0
@@ -735,9 +721,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             log.debug('Dash Fix: Hulu patch update manifest needs pre-processing')
             updated_dom = self._parse_dash_update(root)
             if updated_dom:
-#                log.debug("Pre-Updated DOM structure: %s", root.toprettyxml())
                 root = parseString(updated_dom.encode('utf-8'))
-#                log.debug("Post-Updated DOM structure: %s", root.toprettyxml())
 
         if ADDON_DEV:
             pretty = root.toprettyxml(encoding='utf-8')
@@ -749,10 +733,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         mpd_attribs = list(mpd.attributes.keys())
 
         ## Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
-        if not is_patch_update:
-            if 'publishTime' in mpd_attribs:
-                mpd.removeAttribute('publishTime')
-                log.debug('Dash Fix: publishTime removed')
+        if 'publishTime' in mpd_attribs:
+            mpd.removeAttribute('publishTime')
+            log.debug('Dash Fix: publishTime removed')
 
         ## NOT NEEDED
         ## Remove mediaPresentationDuration from live PR: https://github.com/xbmc/inputstream.adaptive/pull/762
@@ -966,12 +949,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         ## Get selected quality
         selected = self._quality_select(streams)
-        if not is_patch_update:
-            if selected:
-                for period_index in all_streams:
-                    for stream in sorted(all_streams[period_index], key=lambda x: (x == selected, x['compatible'] == selected['compatible'], x['codec'] == selected['codec'], x['bandwidth'] <= selected['bandwidth'], x['bandwidth']))[:-1]:
-                        stream['elem'].parentNode.removeChild(stream['elem'])
-                        log.debug('Dash Fix: removing elem stream')
+        if selected:
+            for period_index in all_streams:
+                for stream in sorted(all_streams[period_index], key=lambda x: (x == selected, x['compatible'] == selected['compatible'], x['codec'] == selected['codec'], x['bandwidth'] <= selected['bandwidth'], x['bandwidth']))[:-1]:
+                    stream['elem'].parentNode.removeChild(stream['elem'])
+                    log.debug('Dash Fix: removing elem stream')
 
         video_sets.sort(key=lambda  x: x[0], reverse=True)
         audio_sets.sort(key=lambda  x: x[0], reverse=True)
@@ -1120,23 +1102,22 @@ class RequestHandler(BaseHTTPRequestHandler):
         ################
 
         ## Convert BaseURLS
-        if not is_patch_update:
-            base_url_parents = []
-            for elem in root.getElementsByTagName('BaseURL'):
-                url = elem.firstChild.nodeValue
+        base_url_parents = []
+        for elem in root.getElementsByTagName('BaseURL'):
+            url = elem.firstChild.nodeValue
 
-                if elem.parentNode in base_url_parents:
-                    log.debug('Non-1st BaseURL removed: {}'.format(url))
-                    elem.parentNode.removeChild(elem)
-                    continue
+            if elem.parentNode in base_url_parents:
+                log.debug('Non-1st BaseURL removed: {}'.format(url))
+                elem.parentNode.removeChild(elem)
+                continue
 
-                if url.startswith('/'):
-                    url = urljoin(response.url, url)
+            if url.startswith('/'):
+                url = urljoin(response.url, url)
 
-                if '://' in url:
-                    elem.firstChild.nodeValue = self.proxy_path + url
+            if '://' in url:
+                elem.firstChild.nodeValue = self.proxy_path + url
 
-                base_url_parents.append(elem.parentNode)
+            base_url_parents.append(elem.parentNode)
         ################
 
         ## Convert Location
@@ -1195,10 +1176,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             process_attrib('media')
 
             ## Remove presentationTimeOffset PR: https://github.com/xbmc/inputstream.adaptive/pull/564/
-            if not is_patch_update:
-                if 'presentationTimeOffset' in e.attributes.keys():
-                    e.removeAttribute('presentationTimeOffset')
-                    log.debug('Dash Fix: presentationTimeOffset removed')
+            if 'presentationTimeOffset' in e.attributes.keys():
+                e.removeAttribute('presentationTimeOffset')
+                log.debug('Dash Fix: presentationTimeOffset removed')
         ###############
 
         ## Remove empty adaption sets
