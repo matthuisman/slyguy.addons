@@ -571,6 +571,10 @@ def mpd_request(_data, _path, **kwargs):
             fix_sub(adap_set)
             continue
 
+        for repr in adap_set.getElementsByTagName('Representation'):
+            if 'hvc1.2.4' in repr.getAttribute('codecs'):
+                repr.setAttribute('hdr', 'true')
+
         if int(adap_set.getAttribute('maxHeight') or 0) >= 720:
             if wv_secure:
                 for elem in adap_set.getElementsByTagName('ContentProtection'):
