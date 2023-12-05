@@ -651,6 +651,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                         codecs = [x for x in attribs.get('codecs', '').split(',') if x]
 
+                        if attribs.get('hdr') == 'true':
+                            is_hdr = True
+
                         if is_hdr:
                             codecs.append('hdr')
 
