@@ -4,7 +4,7 @@ import uuid
 from time import time
 
 from slyguy import settings, signals, gui
-from slyguy.session import Session
+from slyguy.session import Session, close_sessions
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.drm import set_drm_level
@@ -89,7 +89,7 @@ def start():
         log.exception(e)
 
     ## Inital wait on boot
-    monitor.waitForAbort(30)
+    monitor.waitForAbort(10)
 
     try:
         while not monitor.abortRequested():
@@ -100,6 +100,8 @@ def start():
                     _check_news()
             except Exception as e:
                 log.debug('Service loop failed: {}'.format(e))
+            finally:
+                close_sessions()
 
             if monitor.waitForAbort(60):
                 break

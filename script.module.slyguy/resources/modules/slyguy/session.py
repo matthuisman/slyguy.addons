@@ -46,10 +46,10 @@ def json_override(func, error_msg):
     except Exception as e:
         raise SessionError(error_msg or _.JSON_ERROR)
 
-SESSIONS = []
+OPEN_SESSIONS = []
 @signals.on(signals.AFTER_DISPATCH)
 def close_sessions():
-    for session in SESSIONS:
+    for session in OPEN_SESSIONS:
         session.close()
 
 class DOHResolver(object):
@@ -115,7 +115,7 @@ class RawSession(requests.Session):
         self._ssl_options = ssl_options
 
         if auto_close:
-            SESSIONS.append(self)
+            OPEN_SESSIONS.append(self)
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
@@ -173,6 +173,11 @@ class RawSession(requests.Session):
         if self._proxy and self._proxy.lower().strip() == 'kodi':
             self._proxy = get_kodi_proxy()
         return self._proxy
+
+    def close(self):
+        super(RawSession, self).close()
+        if self in OPEN_SESSIONS:
+            OPEN_SESSIONS.remove(self)
 
     def __del__(self):
         self.close()
