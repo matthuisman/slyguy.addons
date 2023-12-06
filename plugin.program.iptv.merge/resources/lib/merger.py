@@ -436,8 +436,6 @@ class Merger(object):
                 groups.extend(self._extgroups)
                 for group in unique([x.strip() for x in groups if x.strip()]):
                     outfile.write(u'\n#EXTGRP:"{}"'.format(group))
-                # empty EXTGRP to end directive
-                outfile.write(u'\n#EXTGRP:')
 
                 chno = starting_ch_no
                 tv_groups = []
