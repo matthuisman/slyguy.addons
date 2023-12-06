@@ -362,7 +362,7 @@ class Session(RawSession):
         if not url.startswith('http'):
             url = self._base_url.format(url)
 
-        attempts = self._attempts if attempts is None else attempts
+        attempts = max(self._attempts if attempts is None else attempts, 1)
         return_json = self._return_json if return_json is None else return_json
 
         if timeout is not None:
