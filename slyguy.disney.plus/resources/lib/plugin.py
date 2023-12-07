@@ -116,11 +116,11 @@ def _email_password():
 def hubs(**kwargs):
     folder = plugin.Folder(_.HUBS)
 
-    data = api.collection_by_slug('home', 'home', 'StandardCollection')
+    data = api.collection_by_slug('home', 'home', 'PersonalizedCollection')
     for row in data['containers']:
         _style = row.get('style')
         _set = row.get('set')
-        if _set and _style == 'brandSix':
+        if _set and _style in('brandSix', 'brand'):
             items = _process_rows(_set.get('items', []), 'brand')
             folder.add_items(items)
 
@@ -194,6 +194,8 @@ def _switch_profile(profile):
 def collection(slug, content_class, label=None, **kwargs):
     data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection' if slug == 'home' else 'StandardCollection')
     folder = plugin.Folder(label or _get_text(data, 'title', 'collection'), thumb=_get_art(data).get('fanart'))
+    if not data:
+        return folder
 
     def process_row(row):
         _set = row.get('set')
@@ -208,7 +210,7 @@ def collection(slug, content_class, label=None, **kwargs):
         if not set_id:
             return
 
-        if slug == 'home' and (_style in ('brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
+        if slug == 'home' and (_style in ('brand', 'brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
             return
 
         title = _get_text(_set, 'title', 'set')
@@ -396,6 +398,9 @@ def _parse_video(row):
     return item
 
 def _get_art(row):
+    if not row:
+        return {}
+
     if 'image' in row:
         # api 5.1
         images = row['image']
@@ -476,6 +481,9 @@ def _get_art(row):
     return art
 
 def _get_text(row, field, source):
+    if not row:
+        return None
+
     texts = None
     if 'text' in row:
         # api 5.1
