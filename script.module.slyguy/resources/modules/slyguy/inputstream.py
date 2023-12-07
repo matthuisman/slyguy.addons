@@ -206,7 +206,7 @@ def install_widevine(reinstall=False):
 
     ia_addon = require_version(IA_WV_MIN_VER, required=True)
     system, arch = get_system_arch()
-    log.debug('Widevine - System: {} | Arch: {}'.format(system, arch))
+    log.info('Widevine - System: {} | Arch: {}'.format(system, arch))
 
     if system == 'Android':
         if KODI_VERSION > 18 and not is_wv_secure():
@@ -257,7 +257,7 @@ def install_widevine(reinstall=False):
     has_compatible = False
     for wv in wv_versions:
         wv['compatible'] = True
-        wv['label'] = str(wv['ver'])
+        wv['label'] = '{} {} - {}'.format(system, arch, str(wv['ver']))
         wv['confirm'] = None
 
         if wv.get('revoked'):
