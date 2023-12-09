@@ -306,12 +306,24 @@ def delete_watchlist(content_id, **kwargs):
     api.delete_watchlist(content_id)
     gui.refresh()
 
+@plugin.route()
+def explore(page_id, **kwargs):
+    pass
+
 def _parse_collection(row):
+    path = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass'])
+
+    if row.get('actions', []):
+        action = row['actions'][0]
+        if action['type'] == 'browse':
+            path = plugin.url_for(explore, page_id=action['pageId'])
+            return # TODO: implement!
+
     return plugin.Item(
         label = _get_text(row, 'title', 'collection'),
-        info  = {'plot': _get_text(row, 'description', 'collection')},
-        art   = _get_art(row),
-        path  = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass']),
+        info = {'plot': _get_text(row, 'description', 'collection')},
+        art = _get_art(row),
+        path = path,
     )
 
 def _get_play_path(content_id):

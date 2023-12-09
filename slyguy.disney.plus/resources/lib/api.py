@@ -305,7 +305,7 @@ class API(object):
         href = href.format(**_args)
 
         # on the app, this changes based on endpoint
-        api_version = '5.1' # [3.0, 3.1, 3.2, 5.0, 3.3, 5.1, 6.0, 5.2]
+        api_version = '6.1' # [3.0, 3.1, 3.2, 5.0, 3.3, 5.1, 6.0, 5.2, 6.1]
         # if '/CuratedSet/' in href or '/RecommendationSet/' in href or '/TrendingSet/' in href or '/WatchlistSet/' in href:
         #     api_version = '3.1' #3.1 has description
 

@@ -1,8 +1,9 @@
 CLIENT_ID = 'disney-svod-3d9324fc'
-CLIENT_VERSION = '8.2.4'
+CLIENT_VERSION = '9.7.0'
 
 API_KEY = 'ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA'
-CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v4.0/{}/android/v{}/google/tv/prod.json'.format(CLIENT_ID, CLIENT_VERSION)
+CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v5.0/{}/android/v{}/google/tv/prod.json'.format(CLIENT_ID, CLIENT_VERSION)
+
 DEVICE_CODE_URL = 'https://www.disneyplus.com/begin'
 PAGE_SIZE_SETS = 15
 PAGE_SIZE_CONTENT = 30
@@ -15,7 +16,7 @@ CONTINUE_WATCHING_SET_ID = '76aed686-1837-49bd-b4f5-5d2a27c0c8d4'
 CONTINUE_WATCHING_SET_TYPE = 'ContinueWatchingSet'
 
 HEADERS = {
-    'User-Agent': 'BAMSDK/v{} ({} 2.15.3-rc5.0; v4.0/v{}; android; tv)'.format(CLIENT_VERSION, CLIENT_ID, CLIENT_VERSION),
+    'User-Agent': 'BAMSDK/v{} ({} 2.26.2-rc1.0; v5.0/v{}; android; tv)'.format(CLIENT_VERSION, CLIENT_ID, CLIENT_VERSION),
     'x-application-version': 'google',
     'x-bamsdk-platform-id': 'android-tv',
     'x-bamsdk-client-id': CLIENT_ID,
