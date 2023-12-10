@@ -637,7 +637,7 @@ class Item(gui.Item):
 
 #Plugin.Folder()
 class Folder(object):
-    def __init__(self, title=None, items=None, content='AUTO', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, no_items_label=_.NO_ITEMS, no_items_method='notification', show_news=True):
+    def __init__(self, title=None, items=None, content='AUTO', updateListing=False, cacheToDisc=True, sort_methods=None, thumb=None, fanart=None, art=None, no_items_label=_.NO_ITEMS, no_items_method='notification', show_news=True):
         self.title = title
         self.items = items or []
         self.content = content
@@ -646,6 +646,7 @@ class Folder(object):
         self.sort_methods = sort_methods
         self.thumb = thumb or default_thumb
         self.fanart = fanart or default_fanart
+        self.art = art or {}
         self.no_items_label = no_items_label
         self.no_items_method = no_items_method
         self.show_news = show_news
@@ -678,6 +679,10 @@ class Folder(object):
         ep_sort = True
         last_show_name = ''
         for item in items:
+            for key in self.art:
+                if self.art[key] and not item.art.get(key):
+                    item.art[key] = self.art[key]
+
             if self.thumb and not item.art.get('thumb'):
                 item.art['thumb'] = self.thumb
 
