@@ -80,9 +80,9 @@ def check_repo():
     addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
 
     with Session(timeout=15) as session:
-        session.chunked_dl('{}/.repo/{}/addon.xml'.format(REPO_DOMAIN, REPO_ADDON_ID), os.path.join(addon_path, 'addon.xml.downloading'))
+        session.chunked_dl('{0}/.repo/{1}/{1}/addon.xml'.format(REPO_DOMAIN, REPO_ADDON_ID), os.path.join(addon_path, 'addon.xml.downloading'))
         safe_copy(os.path.join(addon_path, 'addon.xml.downloading'), os.path.join(addon_path, 'addon.xml'), del_src=True)
-        session.chunked_dl('{}/.repo/{}/icon.png'.format(REPO_DOMAIN, REPO_ADDON_ID), os.path.join(addon_path, 'icon.png.downloading'))
+        session.chunked_dl('{0}/.repo/{1}/{1}/icon.png'.format(REPO_DOMAIN, REPO_ADDON_ID), os.path.join(addon_path, 'icon.png.downloading'))
         safe_copy(os.path.join(addon_path, 'icon.png.downloading'), os.path.join(addon_path, 'icon.png'), del_src=True)
 
     xbmc.executebuiltin('UpdateLocalAddons')
