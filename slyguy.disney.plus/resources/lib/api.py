@@ -220,9 +220,9 @@ class API(object):
 
         return error_msg
 
-    def _json_call(self, endpoint):
+    def _json_call(self, endpoint, **kwargs):
         self._set_token()
-        data = self._session.get(endpoint).json()
+        data = self._session.get(endpoint, **kwargs).json()
         self._check_errors(data)
         return data
 
@@ -466,3 +466,78 @@ class API(object):
         userdata.delete('access_token') #LEGACY
         userdata.delete('expires') #LEGACY
         self.new_session()
+
+    ### EXPLORE ###
+    def explore_page(self, page_id):
+        params = {
+            'disableSmartFocus': 'true',
+            'limit': 999,
+            'enhancedContainersLimit': 0,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
+        return self._json_call(endpoint, params=params)['data']['page']
+
+    def explore_set(self, set_id, page=1):
+        params = {
+            'limit': 999,
+            'offset': 30*(page-1),
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
+        return self._json_call(endpoint, params=params)['data']['set']
+
+    def explore_season(self, season_id):
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
+        return self._json_call(endpoint)['data']['season']
+
+    def explore_playback(self, resource_id, wv_secure=False):
+        self._set_token()
+
+        scenario = 'ctr-high' if wv_secure else 'ctr-regular'
+        endpoint = self._endpoint(self.get_config()['services']['media']['client']['endpoints']['mediaPayload']['href'].format(scenario=scenario))
+
+        headers = {'accept': 'application/vnd.media-service+json', 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
+
+        payload = {
+            "playbackId": resource_id,
+            "playback": {
+                "attributes": {
+                    "codecs": {
+                        'supportsMultiCodecMaster': False, #if true outputs all codecs and resoultion in single playlist
+                    },
+                    "protocol": "HTTPS",
+                    #"ads": "",
+                    "frameRates": [60],
+                    "assetInsertionStrategy": "SGAI" if self._cache['basic_tier'] else "NONE",
+                    "playbackInitializationContext": "online"
+                },
+            }
+        }
+
+        video_ranges = []
+        audio_types = []
+
+        # atmos not yet supported on version=6 (basic tier). Add in-case support is added
+        if settings.getBool('dolby_atmos', False):
+            audio_types.append('atmos')
+
+        if wv_secure and settings.getBool('dolby_vision', False):
+            video_ranges.append('DOLBY_VISION')
+
+        if wv_secure and settings.getBool('hdr10', False):
+            video_ranges.append('HDR10')
+
+        if settings.getBool('hevc', False):
+            payload['playback']['attributes']['codecs'] = {'video': ['h264', 'h265']}
+
+        if audio_types:
+            payload['playback']['attributes']['audioTypes'] = audio_types
+
+        if video_ranges:
+            payload['playback']['attributes']['videoRanges'] = video_ranges
+
+        if not wv_secure:
+            payload['playback']['attributes']['resolution'] = {'max': ['1280x720']}
+
+        playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
+        self._check_errors(playback_data)
+        return playback_data

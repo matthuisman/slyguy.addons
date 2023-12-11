@@ -1,3 +1,6 @@
+import re
+from base64 import b64decode
+
 from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
@@ -306,18 +309,11 @@ def delete_watchlist(content_id, **kwargs):
     api.delete_watchlist(content_id)
     gui.refresh()
 
-@plugin.route()
-def explore(page_id, **kwargs):
-    pass
-
 def _parse_collection(row):
     path = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass'])
 
-    if row.get('actions', []):
-        action = row['actions'][0]
-        if action['type'] == 'browse':
-            path = plugin.url_for(explore, page_id=action['pageId'])
-            return # TODO: implement!
+    if row.get('actions', []) and row['actions'][0]['type'] == 'browse':
+        path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
 
     return plugin.Item(
         label = _get_text(row, 'title', 'collection'),
@@ -778,3 +774,245 @@ def logout(**kwargs):
     userdata.delete('profile')
     userdata.delete('profile_id')
     gui.refresh()
+
+
+### EXPLORE ###
+@plugin.route()
+def explore_page(page_id, **kwargs):
+    data = api.explore_page(page_id)
+    folder = _process_explore(data)
+    # flatten
+    if len(folder.items) == 1:
+        return plugin.redirect(folder.items[0].path)
+    return folder
+
+@plugin.route()
+@plugin.pagination()
+def explore_set(set_id, page=1, **kwargs):
+    data = api.explore_set(set_id, page=page)
+    folder = _process_explore(data)
+    return folder, data['pagination']['hasMore']
+
+@plugin.route()
+def explore_season(show_id, season_id, **kwargs):
+    data = api.explore_season(season_id)
+    folder = _process_explore(data)
+
+    show_data = api.explore_page(show_id)
+    show_art = _get_explore_art(show_data)
+    for key in show_art:
+        if key != 'poster' and not folder.art.get(key):
+            folder.art[key] = show_art[key]
+
+    return folder
+
+def _process_explore(data):
+    title = data['visuals'].get('title') or data['visuals']['name']
+    folder = plugin.Folder(title, art=_get_explore_art(data))
+
+    if 'containers' in data:
+        rows = data['containers']
+    elif 'items' in data:
+        rows = data['items']
+    else:
+        rows = []
+
+    is_show = 'seasonsAvailable' in data['visuals'].get('metastringParts', {})
+    is_season = data['type'] == 'season'
+
+    items = []
+    for row in rows:
+        if not is_show and row['type'] == 'set' and row['pagination']['totalCount'] > 0:
+            item = plugin.Item(
+                label = row['visuals']['name'],
+                art = _get_explore_art(row),
+                path = plugin.url_for(explore_set, set_id=row['id']),
+            )
+            items.append(item)
+
+        elif is_show and row['type'] == 'episodes':
+            seasons = []
+            for season in row.get('seasons', []):
+                item = plugin.Item(
+                    label = season['visuals']['name'],
+                    info = {
+                        'plot': data['visuals']['description']['full'],
+                        'tvshowtitle': title,
+                        'mediatype': 'season',
+                    },
+                    art = _get_explore_art(season),
+                    path = plugin.url_for(explore_season, show_id=data['id'], season_id=season['id']),
+                )
+                match = re.search('Season ([0-9]+)', season['visuals']['name'], re.IGNORECASE)
+                if match:
+                    item.info['season'] = int(match.group(1))
+                seasons.append(item)
+            items.extend(sorted(seasons, key=lambda item: item.info.get('season') or 9999, reverse=False))
+
+        elif is_season and row['type'] == 'view':
+            item = plugin.Item(
+                label =  row['visuals']['episodeTitle'],
+                info = {
+                    'plot': row['visuals']['description']['full'],
+                    'season': row['visuals']['seasonNumber'],
+                    'episode': row['visuals']['episodeNumber'],
+                    'tvshowtitle': row['visuals']['title'],
+                    'duration': int(row['visuals']['durationMs'] / 1000),
+                    'mediatype': 'episode',
+                },
+                art = _get_explore_art(row),
+                playable = True,
+                path = _get_explore_play_path(resource_id=row['actions'][0]['resourceId']),
+            )
+            folder.title = item.info['tvshowtitle']
+            items.append(item)
+
+        elif not is_show and row.get('actions', []) and row['actions'][0]['type'] == 'browse':
+            meta = row['visuals']['metastringParts']
+            item = plugin.Item(
+                label = row['visuals']['title'],
+                art = _get_explore_art(row),
+                path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId']),
+            )
+
+            if 'description' in row['visuals']:
+                item.info['plot'] = row['visuals']['description']['full']
+
+            if 'releaseYearRange' in meta:
+                item.info['year'] = meta['releaseYearRange']['startYear']
+
+            if 'genres' in meta:
+                item.info['genres'] = meta['genres']['values']
+
+            if 'ratingInfo' in meta:
+                item.info['rating'] = meta['ratingInfo']['rating']['text']
+
+            info = b64decode(row['infoBlock'])
+            if b':movie' in info:
+                item.info['mediatype'] = 'movie'
+                item.playable = True
+                item.path = _get_explore_play_path(page_id=row['actions'][0]['pageId'])
+            elif b':series' in info:
+                item.info['mediatype'] = 'tvshow'
+            elif is_show:
+                item.specialsort = 'bottom'
+
+            items.append(item)
+
+    folder.add_items(items)
+    return folder
+
+def _get_explore_art(row):
+    if not row or 'artwork' not in row['visuals']:
+        return {}
+
+    images = row['visuals']['artwork']['standard']
+    if 'tile' in row['visuals']['artwork']:
+        images['hero_tile'] = row['visuals']['artwork']['tile']['background']
+    if 'hero' in row['visuals']['artwork']:
+        images['background'] = row['visuals']['artwork']['hero']['background']
+    if 'network' in row['visuals']['artwork']:
+        images['thumbnail'] = row['visuals']['artwork']['network']['tile']
+
+    def _first_image_url(d):
+        return 'https://disney.images.edge.bamgrid.com/ripcut-delivery/v1/variant/disney/{}'.format(d['imageId'])
+
+    art = {}
+    # don't ask for jpeg thumb; might be transparent png instead
+    thumbsize = '/scale?width=400&aspectRatio=1.78'
+    bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
+    fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
+
+    thumb_ratios = ['1.78', '1.33', '1.00']
+    poster_ratios = ['0.71', '0.75', '0.80']
+    clear_ratios = ['2.00', '1.78', '3.32']
+    banner_ratios = ['3.91', '3.00', '1.78']
+
+    fanart_count = 0
+    for name in images or []:
+        art_type = images[name]
+
+        tr = br = pr = ''
+
+        for ratio in thumb_ratios:
+            if ratio in art_type:
+                tr = ratio
+                break
+
+        for ratio in banner_ratios:
+            if ratio in art_type:
+                br = ratio
+                break
+
+        for ratio in poster_ratios:
+            if ratio in art_type:
+                pr = ratio
+                break
+
+        for ratio in clear_ratios:
+            if ratio in art_type:
+                cr = ratio
+                break
+
+        if name in ('tile', 'thumbnail'):
+            if tr:
+                art['thumb'] = _first_image_url(art_type[tr]) + thumbsize
+            if pr:
+                art['poster'] = _first_image_url(art_type[pr]) + thumbsize
+
+        elif name == 'hero_tile':
+            if br:
+                art['banner'] = _first_image_url(art_type[br]) + bannersize
+
+        elif name in ('hero_collection', 'background_details', 'background'):
+            if tr:
+                k = 'fanart{}'.format(fanart_count) if fanart_count else 'fanart'
+                art[k] = _first_image_url(art_type[tr]) + fullsize
+                fanart_count += 1
+            if pr:
+                art['keyart'] = _first_image_url(art_type[pr]) + bannersize
+
+        elif name in ('title_treatment', 'logo'):
+            if cr:
+                art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
+
+    return art
+
+def _get_explore_play_path(**kwargs):
+    profile_id = userdata.get('profile_id')
+    if profile_id:
+        kwargs['profile_id'] = profile_id
+
+    return plugin.url_for(explore_play, **kwargs)
+
+@plugin.route()
+@plugin.login_required()
+def explore_play(page_id=None, resource_id=None, **kwargs):
+    if KODI_VERSION > 18:
+        ver_required = '2.6.0'
+    else:
+        ver_required = '2.4.5'
+
+    ia = inputstream.Widevine(
+        license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
+        manifest_type = 'hls',
+        mimetype = 'application/vnd.apple.mpegurl',
+        wv_secure = is_wv_secure(),
+    )
+
+    if not ia.check() or not inputstream.require_version(ver_required):
+        gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
+
+    if resource_id is None:
+        data = api.explore_page(page_id)
+        play_action = [x for x in data['actions'] if x['type'] == 'playback'][0]
+        resource_id = play_action['resourceId']
+
+    playback_data = api.explore_playback(resource_id, ia.wv_secure)
+
+    return plugin.Item(
+        path = playback_data['stream']['sources'][0]['complete']['url'],
+        inputstream = ia,
+        headers = api.session.headers,
+    )
+### END EXPLORE ###
