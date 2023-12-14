@@ -240,6 +240,7 @@ def collection(slug, content_class, label=None, **kwargs):
 
 @plugin.route()
 def watchlist(**kwargs):
+    #TODO: if api.feature_flags().get('wpnx-disney-watchlistOnExplore'):
     return _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
 
 @plugin.route()
@@ -628,10 +629,10 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(content_id=None, family_id=None, **kwargs):
-    return _play(content_id, family_id, **kwargs)
+def play(family_id, **kwargs):
+    return _play(family_id, **kwargs)
 
-def _play(content_id=None, family_id=None, **kwargs):
+def _play(family_id, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
     else:
@@ -647,11 +648,7 @@ def _play(content_id=None, family_id=None, **kwargs):
     if not ia.check() or not inputstream.require_version(ver_required):
         gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
 
-    if family_id:
-        data = api.video_bundle(family_id)
-    else:
-        data = api.video(content_id)
-
+    data = api.video_bundle(family_id)
     video = data.get('video')
     if not video:
         raise PluginError(_.NO_VIDEO_FOUND)
