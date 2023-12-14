@@ -67,7 +67,6 @@ class API(object):
         data = self._session.post(endpoint, json=payload, headers={'authorization': API_KEY}).json()
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk'])
-        return data
 
     def _set_auth(self, sdk):
         self._cache['feature_flags'] = sdk['featureFlags']
@@ -316,7 +315,6 @@ class API(object):
         return href.format(apiVersion=api_version)
 
     def profile(self):
-        self._set_token()
         session = self._cache.get('session')
         profile = self._cache.get('profile')
 
