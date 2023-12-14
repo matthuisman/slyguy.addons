@@ -148,7 +148,7 @@ def _avatars(ids):
 
 def _select_profile():
     account = api.account()['account']
-    profiles = account['profiles']
+    profiles = account['profiles']    
     avatars = _avatars([x['attributes']['avatar']['id'] for x in profiles])
 
     options = []
@@ -322,13 +322,9 @@ def _parse_collection(row):
         path = path,
     )
 
-def _get_play_path(content_id):
-    if not content_id:
+def _get_play_path(**kwargs):
+    if not kwargs:
         return None
-
-    kwargs = {
-        'content_id': content_id,
-    }
 
     profile_id = userdata.get('profile_id')
     if profile_id:
@@ -385,7 +381,7 @@ def _parse_video(row):
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
         art  = _get_art(row),
-        path = _get_play_path(row['contentId']),
+        path = _get_play_path(family_id=row['family']['encodedFamilyId']),
         playable = True,
     )
 
@@ -622,9 +618,13 @@ def full_details(family_id=None, series_id=None, **kwargs):
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    data = api.search(query)
-    hits = [x['hit'] for x in data['hits']]
-    return _process_rows(hits), False
+    if api.feature_flags().get('wpnx-disney-searchOnExplore'):
+        data = api.explore_search(query)
+        return _process_explore(data['containers'][0]).items, False
+    else:
+        data = api.search(query)
+        hits = [x['hit'] for x in data['hits']]
+        return _process_rows(hits), False
 
 @plugin.route()
 @plugin.login_required()
@@ -728,14 +728,14 @@ def _play(content_id=None, family_id=None, **kwargs):
         data = api.up_next(video['contentId'])
         for row in data.get('items', []):
             if row['type'] == 'DmcVideo' and row['programType'] == 'episode' and row['encodedSeriesId'] == video['encodedSeriesId']:
-                item.play_next['next_file'] = _get_play_path(row['contentId'])
+                item.play_next['next_file'] = _get_play_path(family_id=row['family']['encodedFamilyId'])
                 break
 
     elif video['programType'] != 'episode' and settings.getBool('play_next_movie', False):
         data = api.up_next(video['contentId'])
         for row in data.get('items', []):
             if row['type'] == 'DmcVideo' and row['programType'] != 'episode':
-                item.play_next['next_file'] = _get_play_path(row['contentId'])
+                item.play_next['next_file'] = _get_play_path(family_id=row['family']['encodedFamilyId'])
                 break
 
     if settings.getBool('sync_playback', False):
@@ -807,7 +807,7 @@ def explore_season(show_id, season_id, **kwargs):
     return folder
 
 def _process_explore(data):
-    title = data['visuals'].get('title') or data['visuals']['name']
+    title = data['visuals'].get('title') or data['visuals'].get('name')
     folder = plugin.Folder(title, art=_get_explore_art(data))
 
     if 'containers' in data:
@@ -822,7 +822,7 @@ def _process_explore(data):
 
     items = []
     for row in rows:
-        if not is_show and row['type'] == 'set' and row['pagination']['totalCount'] > 0:
+        if not is_show and row['type'] == 'set' and row['pagination'].get('totalCount', 0) > 0:
             item = plugin.Item(
                 label = row['visuals']['name'],
                 art = _get_explore_art(row),
@@ -867,13 +867,15 @@ def _process_explore(data):
             folder.title = item.info['tvshowtitle']
             items.append(item)
 
-        elif not is_show and row.get('actions', []) and row['actions'][0]['type'] == 'browse':
+        elif not is_show and row.get('actions', []) and row['actions'][0]['type'] in ('browse', 'legacyBrowse'):
             meta = row['visuals']['metastringParts']
             item = plugin.Item(
                 label = row['visuals']['title'],
                 art = _get_explore_art(row),
-                path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId']),
             )
+
+            if row['actions'][0]['type'] == 'browse':
+                item.path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
 
             if 'description' in row['visuals']:
                 item.info['plot'] = row['visuals']['description']['full']
@@ -891,9 +893,14 @@ def _process_explore(data):
             if b':movie' in info:
                 item.info['mediatype'] = 'movie'
                 item.playable = True
-                item.path = _get_explore_play_path(page_id=row['actions'][0]['pageId'])
+                if row['actions'][0]['type'] == 'legacyBrowse':
+                    item.path = _get_play_path(family_id=row['actions'][0]['refId'])
+                else:
+                    item.path = _get_explore_play_path(page_id=row['actions'][0]['pageId'])
             elif b':series' in info:
                 item.info['mediatype'] = 'tvshow'
+                if row['actions'][0]['type'] == 'legacyBrowse':
+                    item.path = plugin.url_for(series, series_id=row['actions'][0]['refId'])
             elif is_show:
                 item.specialsort = 'bottom'
 

@@ -49,26 +49,31 @@ class API(object):
         self._session.headers.update({'x-bamsdk-transaction-id': self._transaction_id()})
 
     def _set_token(self, force=False):
-        if self._cache.get('access_token'):
+        if self._cache.get('access_token') and self._cache.get('feature_flags'):
             self._set_authentication(self._cache['access_token'])
             return
 
         payload = {
-            'grant_type': 'refresh_token',
-            'refresh_token': userdata.get('refresh_token'),
-            'platform': 'android-tv',
+            'operationName': 'refreshToken',
+            'variables': {
+                'input': {
+                    'refreshToken': userdata.get('refresh_token'),
+                },
+            },
+            'query': queries.REFRESH_TOKEN,
         }
 
-        endpoint = self.get_config()['services']['token']['client']['endpoints']['exchange']['href']
-        data = self._session.post(endpoint, data=payload, headers={'authorization': 'Bearer {}'.format(API_KEY)}).json()
+        endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['refreshToken']['href']
+        data = self._session.post(endpoint, json=payload, headers={'authorization': API_KEY}).json()
         self._check_errors(data)
-        self._set_auth(data)
+        self._set_auth(data['extensions']['sdk'])
+        return data
 
-    def _set_auth(self, data):
-        self._cache['access_token'] = data.get('accessToken') or data['access_token']
+    def _set_auth(self, sdk):
+        self._cache['feature_flags'] = sdk['featureFlags']
+        self._cache['access_token'] = sdk['token']['accessToken']
         self._set_authentication(self._cache['access_token'])
-        refresh_token = data.get('refreshToken') or data['refresh_token']
-        userdata.set('refresh_token', refresh_token)
+        userdata.set('refresh_token', sdk['token']['refreshToken'])
 
     def register_device(self):
         self.logout()
@@ -123,7 +128,7 @@ class API(object):
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
         data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
         self._check_errors(data)
-        self._set_auth(data['extensions']['sdk']['token'])
+        self._set_auth(data['extensions']['sdk'])
 
     def request_otp(self, email, token):
         payload = {
@@ -176,23 +181,23 @@ class API(object):
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
         data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
         self._check_errors(data)
-        self._set_auth(data['extensions']['sdk']['token'])
+        self._set_auth(data['extensions']['sdk'])
 
-    def device_code(self):
-        token = self.register_device()
+    # def device_code(self):
+    #     token = self.register_device()
 
-        payload = {
-            'variables': {},
-            'query': queries.REQUEST_DEVICE_CODE,
-        }
+    #     payload = {
+    #         'variables': {},
+    #         'query': queries.REQUEST_DEVICE_CODE,
+    #     }
 
-        endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
-        data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
-        self._check_errors(data)
-        return data['data']['requestLicensePlate']['licensePlate']
+    #     endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
+    #     data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
+    #     self._check_errors(data)
+    #     return data['data']['requestLicensePlate']['licensePlate']
 
-    def device_login(self, code):
-        return False
+    # def device_login(self, code):
+    #     return False
 
     def _check_errors(self, data, error=_.API_ERROR, raise_on_error=True):
         if not type(data) is dict:
@@ -228,7 +233,6 @@ class API(object):
 
     def account(self):
         self._set_token()
-
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
 
         payload = {
@@ -260,7 +264,7 @@ class API(object):
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
         data = self._session.post(endpoint, json=payload).json()
         self._check_errors(data)
-        self._set_auth(data['extensions']['sdk']['token'])
+        self._set_auth(data['extensions']['sdk'])
 
     def set_imax(self, value):
         self._set_token()
@@ -278,7 +282,7 @@ class API(object):
         data = self._session.post(endpoint, json=payload).json()
         self._check_errors(data)
         if data['data']['updateProfileImaxEnhancedVersion']['accepted']:
-            self._set_auth(data['extensions']['sdk']['token'])
+            self._set_auth(data['extensions']['sdk'])
             return True
         else:
             return False
@@ -304,14 +308,15 @@ class API(object):
 
         href = href.format(**_args)
 
-        # on the app, this changes based on endpoint
-        api_version = '6.1' # [3.0, 3.1, 3.2, 5.0, 3.3, 5.1, 6.0, 5.2, 6.1]
-        # if '/CuratedSet/' in href or '/RecommendationSet/' in href or '/TrendingSet/' in href or '/WatchlistSet/' in href:
-        #     api_version = '3.1' #3.1 has description
+        # [3.0, 3.1, 3.2, 5.0, 3.3, 5.1, 6.0, 5.2, 6.1]
+        api_version = '6.1'
+        if '/search/' in href:
+            api_version = '5.1'
 
         return href.format(apiVersion=api_version)
 
     def profile(self):
+        self._set_token()
         session = self._cache.get('session')
         profile = self._cache.get('profile')
 
@@ -330,6 +335,10 @@ class API(object):
     def search(self, query, page_size=PAGE_SIZE_CONTENT):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getSearchResults']['href'], query=query, queryType=SEARCH_QUERY_TYPE, pageSize=page_size)
         return self._json_call(endpoint)['data']['search']
+
+    def feature_flags(self):
+        self._set_token()
+        return self._cache['feature_flags']
 
     def avatar_by_id(self, ids):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getAvatars']['href'], avatarIds=','.join(ids))
@@ -488,6 +497,13 @@ class API(object):
     def explore_season(self, season_id):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
         return self._json_call(endpoint)['data']['season']
+
+    def explore_search(self, query):
+        params = {
+            'query': query,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['search']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['page']
 
     def explore_playback(self, resource_id, wv_secure=False):
         self._set_token()
