@@ -25,9 +25,9 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, title=_.FEATURED))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-    folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(sport))
+    folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(page, slug='sport', title=_.SPORT))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
@@ -149,19 +149,10 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
-def featured(href=None, **kwargs):
-    folder = plugin.Folder( _.FEATURED)
-    for row in api.page():
-        folder.add_item(
-            label = row['name'],
-            path = plugin.url_for(section, href=row['href']),
-        )
-    return folder
-
-@plugin.route()
-def sport(**kwargs):
-    folder = plugin.Folder(_.SPORT)
-    for row in api.page('sport'):
+def page(title, slug='', **kwargs):
+    sections = api.page(slug)
+    folder = plugin.Folder(title)
+    for row in sections:
         folder.add_item(
             label = row['name'],
             path = plugin.url_for(section, href=row['href']),
@@ -367,14 +358,26 @@ def _parse_row(row):
     elif row['type'] == 'sportVideo':
         item = _process_sport_video(row)
         return item
+    elif row['type'] == 'sport':
+        slug = row['page']['href'].split('page/')[1]
+        return plugin.Item(
+            label = row['title'],
+            info = {'plot': row['searchDescription'] or row['synopsis']},
+            art = _get_sport_images(row),
+            path = plugin.url_for(page, title=row['title'], slug=row['page']['href'].split('page/')[1]),
+        )
+
+def _get_sport_images(row):
+    images = {}
+    for img in row.get('images', []):
+        if img['type'] == 'tile':
+            images['thumb'] = img['src']
+        elif img['type'] == 'cover':
+            images['fanart'] = img['src']
+    return images
 
 def _process_sport_video(row):
     now = arrow.now()
-
-    def get_image(type):
-        for img in row['images']:
-            if img['type'] == type:
-                return img['src']
 
     is_live = row['videoType'] == 'LIVE'
     title = row['title']
@@ -396,7 +399,7 @@ def _process_sport_video(row):
     item = plugin.Item(
         label = title,
         info = {'plot': row['description'] or row['synopsis'], 'duration': pthms_to_seconds(row['media']['duration'])},
-        art = {'thumb': get_image('tile'), 'fanart': get_image('cover')},
+        art = _get_sport_images(row),
         path = path,
         playable = True,
     )
