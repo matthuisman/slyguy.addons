@@ -8,6 +8,7 @@ from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
 from slyguy.util import async_tasks
+from slyguy.log import log
 
 from .api import API
 from .constants import *
@@ -629,10 +630,10 @@ def search(query, page, **kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(family_id, **kwargs):
-    return _play(family_id, **kwargs)
+def play(family_id=None, content_id=None, **kwargs):
+    return _play(family_id, content_id, **kwargs)
 
-def _play(family_id, **kwargs):
+def _play(family_id=None, content_id=None, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
     else:
@@ -648,7 +649,12 @@ def _play(family_id, **kwargs):
     if not ia.check() or not inputstream.require_version(ver_required):
         gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
 
-    data = api.video_bundle(family_id)
+    if family_id:
+        data = api.video_bundle(family_id)
+    else:
+        log.warning('play route using content_id is deprecated. Please use family_id.')
+        data = api.video(content_id)
+
     video = data.get('video')
     if not video:
         raise PluginError(_.NO_VIDEO_FOUND)
