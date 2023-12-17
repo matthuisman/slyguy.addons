@@ -8,7 +8,6 @@ from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
 from slyguy.util import async_tasks
-from slyguy.log import log
 
 from .api import API
 from .constants import *
@@ -291,24 +290,31 @@ def _process_rows(rows, content_class=None):
         if not item:
             continue
 
-        if watchlist_enabled:
+        ref_types = ['programId', 'seriesId']
+        ref_type = None
+        for _type in ref_types:
+            if row.get(_type):
+                ref_type = _type
+                break
+
+        if watchlist_enabled and ref_type:
             if content_class == 'WatchlistSet':
-                item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, content_id=row['contentId']))))
+                item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, ref_type=ref_type, ref_id=row[ref_type]))))
             elif (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
-                item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, content_id=row['contentId'], title=item.label, icon=item.art.get('thumb')))))
+                item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, ref_type=ref_type, ref_id=row[ref_type], title=item.label, icon=item.art.get('thumb')))))
 
         items.append(item)
 
     return items
 
 @plugin.route()
-def add_watchlist(content_id, title=None, icon=None, **kwargs):
+def add_watchlist(ref_type, ref_id, title=None, icon=None, **kwargs):
     gui.notification(_.ADDED_WATCHLIST, heading=title, icon=icon)
-    api.add_watchlist(content_id)
+    api.add_watchlist(ref_type, ref_id)
 
 @plugin.route()
-def delete_watchlist(content_id, **kwargs):
-    api.delete_watchlist(content_id)
+def delete_watchlist(ref_type, ref_id, **kwargs):
+    api.delete_watchlist(ref_type, ref_id)
     gui.refresh()
 
 def _parse_collection(row):
@@ -652,7 +658,6 @@ def _play(family_id=None, content_id=None, **kwargs):
     if family_id:
         data = api.video_bundle(family_id)
     else:
-        log.warning('play route using content_id is deprecated. Please use family_id.')
         data = api.video(content_id)
 
     video = data.get('video')

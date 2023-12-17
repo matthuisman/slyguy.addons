@@ -349,13 +349,14 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCWSet']['href'], setId=CONTINUE_WATCHING_SET_ID)
         return self._json_call(endpoint)['data']['ContinueWatchingSet']
 
-    def add_watchlist(self, content_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['addToWatchlist']['href'], contentId=content_id)
-        return self._json_call(endpoint)['data']['AddToWatchlist']
+    def add_watchlist(self, ref_type, ref_id):
+        self._set_token()
+        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['putItemInWatchlist']['href'], refIdType=ref_type, refId=ref_id)
+        return self._session.put(endpoint).ok
 
-    def delete_watchlist(self, content_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['deleteFromWatchlist']['href'], contentId=content_id)
-        return self._json_call(endpoint)['data']['DeleteFromWatchlist']
+    def delete_watchlist(self, ref_type, ref_id):
+        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['deleteItemFromWatchlist']['href'], refIdType=ref_type, refId=ref_id)
+        return self._session.delete(endpoint).ok
 
     def collection_by_slug(self, slug, content_class, sub_type='StandardCollection'):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCollection']['href'], collectionSubType=sub_type, contentClass=content_class, slug=slug)
