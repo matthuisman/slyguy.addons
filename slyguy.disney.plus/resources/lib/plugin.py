@@ -389,7 +389,7 @@ def _parse_video(row):
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
         art  = _get_art(row),
-        path = _get_play_path(family_id=row['family']['encodedFamilyId']),
+        path = _get_play_path(content_id=row['contentId']),
         playable = True,
     )
 
@@ -736,14 +736,14 @@ def _play(family_id=None, content_id=None, **kwargs):
         data = api.up_next(video['contentId'])
         for row in data.get('items', []):
             if row['type'] == 'DmcVideo' and row['programType'] == 'episode' and row['encodedSeriesId'] == video['encodedSeriesId']:
-                item.play_next['next_file'] = _get_play_path(family_id=row['family']['encodedFamilyId'])
+                item.play_next['next_file'] = _get_play_path(content_id=row['contentId'])
                 break
 
     elif video['programType'] != 'episode' and settings.getBool('play_next_movie', False):
         data = api.up_next(video['contentId'])
         for row in data.get('items', []):
             if row['type'] == 'DmcVideo' and row['programType'] != 'episode':
-                item.play_next['next_file'] = _get_play_path(family_id=row['family']['encodedFamilyId'])
+                item.play_next['next_file'] = _get_play_path(content_id=row['contentId'])
                 break
 
     if settings.getBool('sync_playback', False):
