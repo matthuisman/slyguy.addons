@@ -854,7 +854,7 @@ def process_news():
             log.debug('news only for users with add-on: {} '.format(news['requires']))
             return
 
-        if news['type'] == 'message':
+        if news['type'] in ('message', 'donate'):
             gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
 
         elif news['type'] == 'addon_release':

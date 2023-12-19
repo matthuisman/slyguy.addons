@@ -8,7 +8,7 @@ from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.drm import set_drm_level
-from slyguy.donor import check_donor
+from slyguy.donor import is_donor
 from slyguy.util import get_system_arch
 
 from .proxy import Proxy
@@ -33,6 +33,10 @@ def _check_news():
         return
 
     settings.set('_last_news_id', news['id'])
+
+    if news['type'] == 'donate' and is_donor():
+        return
+
     settings.set('_news', json.dumps(news))
 
 def _check_arch():
@@ -66,21 +70,13 @@ def start():
         log.error('Failed to start proxy server')
         log.exception(e)
 
+    is_donor(force=True)
+
     try:
         set_drm_level()
     except Exception as e:
         log.error('Failed to set DRM level')
         log.exception(e)
-
-    is_donor = False
-    try:
-        is_donor = check_donor()
-    except Exception as e:
-        log.error('Failed to check donor')
-        log.exception(e)
-
-    if is_donor:
-        log.info('Welcome SlyGuy donor!')
 
     try:
         _check_arch()
@@ -94,14 +90,17 @@ def start():
     try:
         while not monitor.abortRequested():
             try:
-                check_updates()
-                check_repo()
-                if not is_donor or settings.getBool('show_news'):
+                if is_donor() and settings.getBool('fast_updates'):
+                    check_updates()
+
+                if not is_donor() or settings.getBool('show_news'):
                     _check_news()
+
+                check_repo()
             except Exception as e:
                 log.debug('Service loop failed: {}'.format(e))
 
-            if monitor.waitForAbort(60):
+            if monitor.waitForAbort(30):
                 break
     except KeyboardInterrupt:
         pass

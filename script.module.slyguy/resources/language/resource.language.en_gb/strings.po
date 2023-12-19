@@ -178,6 +178,10 @@ msgctxt "#30039"
 msgid "AV1"
 msgstr ""
 
+msgctxt "#30040"
+msgid "Fast Updates"
+msgstr ""
+
 ## COMMON ##
 
 msgctxt "#32000"

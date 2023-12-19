@@ -27,5 +27,6 @@ class Language(BaseLanguage):
     SHOW_FOLDERS      = 30024
     ARCH_CHANGED      = 30036
     VIDEO_MENUS       = 30037
+    FAST_UPDATES      = 30040
 
 _ = Language()
