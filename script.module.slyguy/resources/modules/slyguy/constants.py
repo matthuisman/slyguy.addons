@@ -150,6 +150,6 @@ MIDDLEWARE_REGEX = 'regex'
 MIDDLEWARE_PLUGIN = 'plugin'
 
 REDIRECT_HOSTS = ['i.mjh.nz']
-DONOR_URL = 'https://d.mjh.nz/donors/{id}'
+DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
 UPDATE_TIME_LIMIT = 86400 #24 hours
 REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]
