@@ -281,6 +281,10 @@ class API(object):
     def update_marker(self, url, cut_id, runtime, playback_time):
         self._refresh_token()
 
+        headers = {
+            'x-hbo-headwaiter': self._headwaiter()
+        }
+
         payload = {
             #'appSessionId': session_id,
             #'videoSessionId': video_session,
@@ -290,7 +294,7 @@ class API(object):
             'runtime': runtime,
         }
 
-        resp = self._session.post(url, json=payload)
+        resp = self._session.post(url, json=payload, headers=headers)
         if not resp.ok:
             return False
         else:
