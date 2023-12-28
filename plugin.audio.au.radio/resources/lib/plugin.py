@@ -50,6 +50,7 @@ def play(slug, **kwargs):
     channel = get_channels(region)[slug]
 
     item = plugin.Item(
+        label = channel['name'],
         path = channel['mjh_master'],
         headers = channel['headers'],
         info = {'plot': channel.get('description')},

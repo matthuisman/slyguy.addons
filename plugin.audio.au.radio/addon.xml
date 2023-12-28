@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.audio.au.radio" name="RADIO AU" provider-name="SlyGuy" version="0.13.1">
+<addon id="plugin.audio.au.radio" name="RADIO AU" provider-name="SlyGuy" version="0.13.2">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
