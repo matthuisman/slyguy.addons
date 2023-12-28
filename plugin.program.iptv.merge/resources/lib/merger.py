@@ -2,13 +2,13 @@ import os
 import shutil
 import time
 import codecs
-import re
 import xml.parsers.expat
 
+import arrow
 from kodi_six import xbmc, xbmcvfs
 from six.moves.urllib.parse import unquote_plus
 
-from slyguy import settings, database, gui
+from slyguy import settings, database, gui, userdata
 from slyguy.log import log
 from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, run_plugin, safe_copy, unique
 from slyguy.session import Session, gdrivedl
@@ -124,6 +124,25 @@ class XMLParser(object):
 
         self._out.flush()
         epg.end_index = self._out.tell()
+
+
+def check_merge_required():
+    reload_time_hours = settings.getBool('auto_merge', True)
+    if reload_time_hours:
+        reload_time_hours = time.time() - userdata.get('last_run', 0) > settings.getInt('reload_time_hours', 12) * 3600
+
+    merge_at_hour = not reload_time_hours and settings.getBool('merge_at_hour', True)
+    if merge_at_hour:
+        now = arrow.now()
+        run_ts = now.replace(hour=int(settings.getInt('merge_hour', 3)), minute=0, second=0, microsecond=0).timestamp
+        merge_at_hour = userdata.get('last_run', 0) < run_ts and now.timestamp >= run_ts
+
+    if reload_time_hours or merge_at_hour:
+        userdata.set('last_run', int(time.time()))
+        return True
+    else:
+        return False
+
 
 class Merger(object):
     def __init__(self, output_path=None, forced=False):

@@ -1,12 +1,12 @@
 import os
-from difflib import SequenceMatcher
+import re
 from distutils.version import LooseVersion
 
 from kodi_six import xbmc, xbmcvfs
 
 from slyguy import plugin, settings, gui, userdata
 from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin, safe_copy
-from slyguy.constants import ADDON_PROFILE, ADDON_ICON, KODI_VERSION, ADDON_NAME
+from slyguy.constants import ADDON_PROFILE, ADDON_ID, ADDON_NAME
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.log import log
@@ -14,7 +14,7 @@ from slyguy.log import log
 from .language import _
 from .models import Playlist, EPG, Channel, Override, merge_info
 from .constants import *
-from .merger import Merger
+from .merger import Merger, check_merge_required
 
 @plugin.route('')
 def home(**kwargs):
@@ -524,10 +524,17 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
     if not addon:
         return False
 
-    output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
-    playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-    epg_path = os.path.join(output_dir, EPG_FILE_NAME)
     addon_path = xbmc.translatePath(addon.getAddonInfo('profile'))
+    if settings.getBool('http_method', False):
+        proxy_path = settings.common_settings.get('_proxy_path')
+        playlist_path = proxy_path + plugin.url_for(http_playlist)
+        epg_path = proxy_path + plugin.url_for(http_epg)
+        path_type = '1'
+    else:
+        output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
+        playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
+        epg_path = os.path.join(output_dir, EPG_FILE_NAME)
+        path_type = '0'
 
     is_multi_instance = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0')
     instance_filepath = os.path.join(addon_path, 'instance-settings-1.xml')
@@ -540,11 +547,14 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
             data = ''
 
         is_setup = 'id="kodi_addon_instance_name">{}</setting>'.format(ADDON_NAME) in data \
-            and 'id="m3uPathType">0</setting>' in data and 'id="epgPathType">0</setting>' in data \
-            and 'id="m3uPath">{}</setting>'.format(playlist_path) in data and 'id="epgPath">{}</setting>'.format(epg_path) in data
+            and 'id="m3uRefreshMode">1</setting>' in data and 'id="m3uRefreshIntervalMins">10</setting>' in data \
+            and 'id="m3uPathType">{}</setting>'.format(path_type) in data and re.search('id="epgPathType".*?>{}</setting>'.format(path_type), data) \
+            and 'id="m3uPath">{}</setting>'.format(playlist_path) in data and 'id="m3uUrl">{}</setting>'.format(playlist_path) \
+            and 'id="epgPath">{}</setting>'.format(epg_path) in data and 'id="epgUrl">{}</setting>'.format(epg_path) in data
     else:
-        is_setup = addon.getSetting('m3uPathType') == '0' and addon.getSetting('epgPathType') == '0' \
-                    and addon.getSetting('m3uPath') == playlist_path and addon.getSetting('epgPath') == epg_path
+        is_setup = addon.getSetting('m3uPathType') == path_type and addon.getSetting('epgPathType') == path_type \
+                    and addon.getSetting('m3uPath') == playlist_path and addon.getSetting('m3uUrl') == playlist_path \
+                    and addon.getSetting('epgPath') == epg_path and addon.getSetting('epgUrl') == epg_path
 
     if check_only:
         return is_setup
@@ -561,7 +571,7 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
         ## IMPORT ANY CURRENT URL SOURCES ##
         cur_epg_url = addon.getSetting('epgUrl')
         cur_epg_type = addon.getSetting('epgPathType')
-        if cur_epg_url:
+        if cur_epg_url and ADDON_ID.lower() not in cur_epg_url.lower():
             epg = EPG(source_type=EPG.TYPE_URL, path=cur_epg_url, enabled=cur_epg_type == '1')
             try: epg.save()
             except: pass
@@ -570,7 +580,7 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
         cur_m3u_type = addon.getSetting('m3uPathType')
         start_chno = int(addon.getSetting('startNum') or 1)
         #user_agent = addon.getSetting('userAgent')
-        if cur_m3u_url:
+        if cur_m3u_url and ADDON_ID.lower() not in cur_m3u_url.lower():
             playlist = Playlist(source_type=Playlist.TYPE_URL, path=cur_m3u_url, enabled=cur_m3u_type == '1')
             if start_chno != 1:
                 playlist.use_start_chno = True
@@ -582,16 +592,16 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
         addon.setSetting('epgPath', epg_path)
         addon.setSetting('m3uPath', playlist_path)
-        addon.setSetting('epgUrl', '')
-        addon.setSetting('m3uUrl', '')
-        addon.setSetting('m3uPathType', '0')
-        addon.setSetting('epgPathType', '0')
+        addon.setSetting('epgUrl', epg_path)
+        addon.setSetting('m3uUrl', playlist_path)
+        addon.setSetting('m3uPathType', path_type)
+        addon.setSetting('epgPathType', path_type)
 
         # newer PVR Simple uses instance settings that can't yet be set via python api
         # so do a workaround where we leverage the migration when no instance settings found
         if is_multi_instance:
-            # addon.setSetting('m3uRefreshMode', '1')
-            # addon.setSetting('m3uRefreshIntervalMins', '10')
+            addon.setSetting('m3uRefreshMode', '1')
+            addon.setSetting('m3uRefreshIntervalMins', '10')
             for file in os.listdir(addon_path):
                 if file.startswith('instance-settings-') and file.endswith('.xml'):
                     xbmcvfs.delete(os.path.join(addon_path, file))
@@ -615,7 +625,7 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
                     data = f.read()
 
                 data = data.replace('Migrated Add-on Config', ADDON_NAME)
-                data = data.replace('<setting id="m3uPathType" default="true">1</setting>', '<setting id="m3uPathType">0</setting>') #IPTV Simple 20.8.0 bug
+                data = data.replace('<setting id="m3uPathType" default="true">1</setting>', '<setting id="m3uPathType">{}</setting>'.format(path_type)) #IPTV Simple 20.8.0 bug
                 with open(instance_filepath, 'w') as f:
                     f.write(data)
             else:
@@ -686,3 +696,20 @@ def setup_addon(addon_id, **kwargs):
         run_plugin(path, wait=True)
 
     _setup(reinstall=False, run_merge=True)
+
+@plugin.route()
+@plugin.plugin_request()
+def http_playlist(**kwargs):
+    merge = Merger(forced=0)
+    refresh = check_merge_required()
+    path = merge.playlists(refresh)
+    merge.epgs(refresh)
+    return {'url': path}
+
+@plugin.route()
+@plugin.plugin_request()
+def http_epg(**kwargs):
+    # never refresh as playlist method does that
+    merge = Merger(forced=0)
+    path = merge.epgs(0)
+    return {'url': path}
