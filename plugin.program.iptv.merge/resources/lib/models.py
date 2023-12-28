@@ -14,7 +14,7 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 from slyguy import database, gui, settings, plugin, inputstream
 from slyguy.exceptions import Error
 from slyguy.util import hash_6, get_addon, kodi_rpc, run_plugin
-from slyguy.constants import KODI_VERSION, IA_ADDON_ID
+from slyguy.constants import QUALITY_DISABLED
 from slyguy.log import log
 
 from .constants import *
@@ -79,6 +79,9 @@ def play_channel(slug, **kwargs):
         headers = headers,
         use_proxy = settings.getBool('iptv_merge_proxy', True),
     )
+
+    if channel.radio:
+        item.quality = QUALITY_DISABLED
 
     ## To do: support other IA Add-ons here (eg. ffmpeg.direct)
     if license_type.lower() == 'com.widevine.alpha':
@@ -500,7 +503,7 @@ class Channel(database.Model):
         return plot
 
     def get_play_path(self, force_proxy=False):
-        if force_proxy or (not self.radio and self.url.lower().startswith('http') and settings.getBool('iptv_merge_proxy', True)):
+        if self.url.lower().startswith('http') and (force_proxy or settings.getBool('iptv_merge_proxy', True)):
             return plugin.url_for(play_channel, slug=self.slug)
         else:
             return self.url
@@ -527,7 +530,7 @@ class Channel(database.Model):
         if not self.is_live:
             lines += u'#EXT-X-PLAYLIST-TYPE:VOD\n'
 
-        if self.radio or not self.url.lower().startswith('http') or not settings.getBool('iptv_merge_proxy', True):
+        if not self.url.lower().startswith('http') or not settings.getBool('iptv_merge_proxy', True):
             for key in self.properties:
                 lines += u'#KODIPROP:{}={}\n'.format(key, self.properties[key])
 
