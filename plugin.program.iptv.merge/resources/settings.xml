@@ -6,17 +6,10 @@
         <setting label="30003" id="reload_time_hours" type="slider" default="12" range="1,1,48" option="int" visible="eq(-1,true)"/>
         <setting label="30098" id="merge_at_hour" type="bool" default="false" enable="eq(-2,false)"/>
         <setting label="30099" id="merge_hour" type="slider" default="3" range="0,1,23" option="int" visible="eq(-1,true)"/>
-        <setting label="30073" id="boot_merge" type="bool" default="false"/>
-        <setting label="30093" id="merge_playlists" type="bool" default="true"/>
-        <setting label="30094" id="merge_epgs" type="bool" default="true"/>
-        <setting label="30004" id="restart_pvr" type="bool" default="true"/>
-        <setting label="30079" id="http_api" type="bool" default="false"/>
-        <setting label="30080" id="http_force_merge" type="bool" default="true" visible="eq(-1,true)"/>
         <setting label="30070" id="start_ch_no" type="number" default="1"/>
         <setting label="30081" id="remove_epg_orphans" type="bool" default="false"/>
         <setting label="30097" id="hide_groups" type="text" default=""/>
         <setting label="30095" id="disable_groups" type="bool" default="false"/>
-        <!-- <setting label="Use HTTP Method" id="http_method" type="bool" default="false"/> -->
         <setting label="30078" id="group_order" type="text" default="" enable="eq(-1,false)"/>
         <setting label="30006" type="action" action="RunPlugin(plugin://$ID/?_=setup)"/>
     </category>

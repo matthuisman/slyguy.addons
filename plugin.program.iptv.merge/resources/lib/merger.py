@@ -127,6 +127,10 @@ class XMLParser(object):
 
 
 def check_merge_required():
+    output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
+    playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
+    epg_path = os.path.join(output_dir, EPG_FILE_NAME)
+
     reload_time_hours = settings.getBool('auto_merge', True)
     if reload_time_hours:
         reload_time_hours = time.time() - userdata.get('last_run', 0) > settings.getInt('reload_time_hours', 12) * 3600
@@ -137,7 +141,7 @@ def check_merge_required():
         run_ts = now.replace(hour=int(settings.getInt('merge_hour', 3)), minute=0, second=0, microsecond=0).timestamp
         merge_at_hour = userdata.get('last_run', 0) < run_ts and now.timestamp >= run_ts
 
-    if reload_time_hours or merge_at_hour:
+    if reload_time_hours or merge_at_hour or not xbmcvfs.exists(playlist_path) or not xbmcvfs.exists(epg_path):
         userdata.set('last_run', int(time.time()))
         return True
     else:
@@ -377,10 +381,6 @@ class Merger(object):
         playlist_path = os.path.join(self.output_path, PLAYLIST_FILE_NAME)
         working_path = os.path.join(self.working_path, PLAYLIST_FILE_NAME)
 
-        if not settings.getBool('merge_playlists', True):
-            log.debug('Merge playlists is disabled in settings')
-            return working_path
-
         if not refresh and xbmcvfs.exists(playlist_path) and xbmcvfs.exists(working_path):
             return working_path
 
@@ -519,10 +519,6 @@ class Merger(object):
         epg_path = os.path.join(self.output_path, EPG_FILE_NAME)
         working_path = os.path.join(self.working_path, EPG_FILE_NAME)
         epg_path_tmp = os.path.join(self.working_path, EPG_FILE_NAME+'_tmp')
-
-        if not settings.getBool('merge_epgs', True):
-            log.debug('Merge EPGs is disabled in settings')
-            return working_path
 
         if not refresh and xbmcvfs.exists(epg_path) and xbmcvfs.exists(working_path):
             return working_path
