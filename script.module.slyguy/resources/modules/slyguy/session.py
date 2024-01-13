@@ -3,6 +3,7 @@ import socket
 import shutil
 import re
 import ssl
+import os
 from gzip import GzipFile
 
 import requests
@@ -549,17 +550,18 @@ class Session(RawSession):
         return resp
 
 def gdrivedl(url, dst_path):
-    if 'drive.google.com' not in url.lower():
-        raise Error('Not a gdrive url')
-
     ID_PATTERNS = [
         re.compile('/file/d/([0-9A-Za-z_-]{10,})(?:/|$)', re.IGNORECASE),
         re.compile('id=([0-9A-Za-z_-]{10,})(?:&|$)', re.IGNORECASE),
         re.compile('([0-9A-Za-z_-]{10,})', re.IGNORECASE)
     ]
-    FILE_URL = 'https://docs.google.com/uc?export=download&id={id}&confirm={confirm}'
-    CONFIRM_PATTERN = re.compile("download_warning[0-9A-Za-z_-]+=([0-9A-Za-z_-]+);", re.IGNORECASE)
-    FILENAME_PATTERN = re.compile('attachment;filename="(.*?)"', re.IGNORECASE)
+    FILE_URL = "https://drive.usercontent.google.com/download?uc-download-link=Download%20anyway&id={id}&confirm={confirm}&uuid={uuid}"
+    CONFIRM_PATTERNS = [
+        re.compile(r"confirm=([0-9A-Za-z_-]+)", re.IGNORECASE),
+        re.compile(r"name=\"confirm\"\s+value=\"([0-9A-Za-z_-]+)\"", re.IGNORECASE),
+    ]
+    UUID_PATTERN = re.compile(r"name=\"uuid\"\s+value=\"([0-9A-Za-z_-]+)\"", re.IGNORECASE)
+    FILENAME_PATTERN = re.compile('filename="(.*?)"', re.IGNORECASE)
 
     id = None
     for pattern in ID_PATTERNS:
@@ -569,22 +571,39 @@ def gdrivedl(url, dst_path):
             break
 
     if not id:
-        raise Error('No file ID find in gdrive url')
+        raise Error('No Gdrive file ID found in url')
 
     with Session() as session:
-        resp = session.get(FILE_URL.format(id=id, confirm=''), stream=True)
+        resp = session.get(FILE_URL.format(id=id, confirm='', uuid=''), stream=True)
         if not resp.ok:
             raise Error('Gdrive url no longer exists')
 
         if 'ServiceLogin' in resp.url:
             raise Error('Gdrive url does not have link sharing enabled')
 
-        cookies = resp.headers.get('Set-Cookie') or ''
-        if 'download_warning' in cookies:
-            confirm = CONFIRM_PATTERN.search(cookies)
-            resp = session.get(FILE_URL.format(id=id, confirm=confirm.group(1)), stream=True)
+        content_disposition = resp.headers.get("content-disposition")
+        if not content_disposition:
+            html = resp.read()
 
-        filename = FILENAME_PATTERN.search(resp.headers.get('content-disposition')).group(1)
+            for pattern in CONFIRM_PATTERNS:
+                confirm = pattern.search(html)
+                if confirm: break
+
+            uuid = UUID_PATTERN.search(html)
+            if uuid:
+                uuid = uuid.group(1)
+            else:
+                uuid=''
+
+            if confirm:
+                resp = session.get(FILE_URL.format(id=id, confirm=confirm.group(1), uuid=uuid), stream=True)
+            elif b"Google Drive - Quota exceeded" in html:
+                raise Error("Quota exceeded for this file")
+            else:
+                log.debug("Trying confirmation 't' as a last resort")
+                resp = session.get(FILE_URL.format(id=id, confirm='t', uuid=uuid), stream=True)
+
+        filename = FILENAME_PATTERN.search(content_disposition).group(1)
         dst_path = dst_path if os.path.isabs(dst_path) else os.path.join(dst_path, filename)
 
         resp.raise_for_status()
