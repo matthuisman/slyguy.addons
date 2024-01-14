@@ -259,7 +259,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         self.poolmanager.connection_from_pool_key = self.connection_from_pool_key
 
     def get_connection(self, url, proxies=None):
-        conn = super().get_connection(url, proxies)
+        conn = super(SessionAdapter, self).get_connection(url, proxies)
         if isinstance(conn, HTTPSConnectionPool):
             conn.ConnectionCls = RequestsDoHHTTPSConnection
         else:
@@ -431,7 +431,8 @@ class RawSession(requests.Session):
         try:
             # Do request
             result = super(RawSession, self).request(method, session_data['url'], **kwargs)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
+            log.exception(e)
             if session_data['proxy']:
                 raise SessionError(_(_.CONNECTION_ERROR_PROXY, host=urlparse(session_data['url']).netloc.lower()))
             else:
@@ -490,7 +491,7 @@ class Session(RawSession):
             if self.before_request:
                 self.before_request()
 
-            log('{}{} {}'.format(attempt, method, log_url or url))
+            log.debug('{}{} {}'.format(attempt, method, log_url or url))
 
             try:
                 resp = super(Session, self).request(method, url, **kwargs)
@@ -499,7 +500,8 @@ class Session(RawSession):
                     raise
                 else:
                     continue
-            except Exception:
+            except Exception as e:
+                log.exception(e)
                 raise SessionError(error_msg or _.NO_RESPONSE_ERROR)
 
             if retry_not_ok and not resp.ok:
