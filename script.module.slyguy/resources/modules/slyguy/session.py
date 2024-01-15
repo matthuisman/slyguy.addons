@@ -501,7 +501,7 @@ class Session(RawSession):
                 else:
                     continue
             except Exception as e:
-                log.exception(e)
+                #log.exception(e) #causes log spam in service loop when no internet
                 raise SessionError(error_msg or _.NO_RESPONSE_ERROR)
 
             if retry_not_ok and not resp.ok:
