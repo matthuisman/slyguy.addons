@@ -149,7 +149,7 @@ MIDDLEWARE_CONVERT_SUB = 'convert_sub'
 MIDDLEWARE_REGEX = 'regex'
 MIDDLEWARE_PLUGIN = 'plugin'
 
-REDIRECT_HOSTS = ['i.mjh.nz']
+REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz']
 DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
 DONOR_CHECK_TIME = (60*60*6) #6 hours
 DONOR_TIMEOUT = 172800 #48 hours
