@@ -27,10 +27,10 @@ def start():
         forced = get_kodi_string('_iptv_merge_force_run') or 0
         merge_required = False
 
-        if userdata.get('http_method', False):
-            merge_required = False
-        else:
-            merge_required = check_merge_required()
+        # if userdata.get('http_method', False):
+        #     merge_required = False
+        # else:
+        merge_required = check_merge_required()
 
         if forced or merge_required:
             set_kodi_string('_iptv_merge_force_run', '1')

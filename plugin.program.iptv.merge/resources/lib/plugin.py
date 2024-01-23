@@ -529,6 +529,9 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
     is_http_compatible = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('21.7.0')
     instance_filepath = os.path.join(addon_path, 'instance-settings-1.xml')
 
+    # disable http method for now due to some issues. eg. [Errno 32] Broken pipe (https://forum.kodi.tv/showthread.php?tid=340691&pid=3180908#pid3180908)
+    is_http_compatible = False
+
     if is_http_compatible:
         proxy_path = settings.common_settings.get('_proxy_path')
         playlist_path = proxy_path + plugin.url_for(http_playlist)
