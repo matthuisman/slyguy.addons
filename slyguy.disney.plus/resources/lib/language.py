@@ -34,6 +34,7 @@ class Language(BaseLanguage):
     EMAIL_NOT_FOUND          = 30031
     OTP_INPUT                = 30032
     APP_LANGUAGE             = 30033
+    ADD_LIBRARY              = 30034
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
