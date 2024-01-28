@@ -48,8 +48,7 @@ class Config(object):
     @property
     def headers(self):
         return {
-            # if start getting 406 not acceptable, probably need to bump the below
-            'user-agent': 'okhttp/4.12.0',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         }
 
     def clear(self):
