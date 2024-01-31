@@ -6,8 +6,12 @@ from kodi_six import xbmc, xbmcaddon
 from .log import log
 from .mem_cache import cached
 from .constants import ADDON_ID, COMMON_ADDON_ID
+from .donor import is_donor
 
 def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
+    if not is_donor():
+        return []
+
     rewrites = _load_rewrites(addon_id)
 
     if COMMON_ADDON_ID != addon_id:

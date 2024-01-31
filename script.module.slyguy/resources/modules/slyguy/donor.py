@@ -1,7 +1,6 @@
 from time import time
 
 from . import settings
-from .session import Session
 from .constants import DONOR_URL, DONOR_CHECK_TIME, DONOR_TIMEOUT, COMMON_ADDON
 from .util import get_kodi_string, set_kodi_string
 from .log import log
@@ -9,6 +8,8 @@ from .log import log
 KEY = '_slyguy_donor_{}'.format(COMMON_ADDON.getAddonInfo('version'))
 
 def is_donor(force=False):
+    from .session import Session
+
     donor_id = settings.common_settings.get('donor_id')
     if not donor_id:
         return False
