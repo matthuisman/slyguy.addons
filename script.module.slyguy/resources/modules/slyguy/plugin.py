@@ -27,6 +27,7 @@ def exception(msg=''):
     raise PluginError(msg)
 
 logged_in = False
+donor_enabled = False
 
 # @plugin.no_error_gui()
 def no_error_gui():
@@ -587,27 +588,27 @@ class Item(gui.Item):
             self.art['thumb'] = self.art.get('thumb') or default_thumb
             self.art['fanart'] = self.art.get('fanart') or default_fanart
 
-#        if is_donor():
-        quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-        if self.path and self.playable and quality not in (QUALITY_DISABLED, QUALITY_ASK):
-            url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
-            self.context.append((_.PLAYBACK_QUALITY, 'PlayMedia({},noresume)'.format(url)))
+        if not donor_enabled or is_donor():
+            quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
+            if self.path and self.playable and quality not in (QUALITY_DISABLED, QUALITY_ASK):
+                url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
+                self.context.append((_.PLAYBACK_QUALITY, 'PlayMedia({},noresume)'.format(url)))
 
         return super(Item, self).get_li(*args, **kwargs)
 
     def play(self, **kwargs):
         self.playable = True
 
-#        if is_donor():
-        quality = kwargs.get(QUALITY_TAG, self.quality)
-        if quality is None:
-            quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-            if quality == QUALITY_CUSTOM:
-                quality = int(settings.getFloat('max_bandwidth')*1000000)
+        if not donor_enabled or is_donor():
+            quality = kwargs.get(QUALITY_TAG, self.quality)
+            if quality is None:
+                quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
+                if quality == QUALITY_CUSTOM:
+                    quality = int(settings.getFloat('max_bandwidth')*1000000)
+            else:
+                quality = int(quality)
         else:
-            quality = int(quality)
-        # else:
-        #     quality = QUALITY_DISABLED
+            quality = QUALITY_DISABLED
 
         self.proxy_data['quality'] = quality
 

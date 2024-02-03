@@ -763,7 +763,7 @@ msgid "Your OS does not yet support this version of Widevine\n"
 msgstr ""
 
 msgctxt "#32138"
-msgid "Donations"
+msgid "Supporters"
 msgstr ""
 
 msgctxt "#32139"
@@ -771,7 +771,8 @@ msgid "Look & Feel"
 msgstr ""
 
 msgctxt "#32140"
-msgid "Donate at [B]https://donate.slyguy.uk[/B]"
+msgid "Donate at [B]https://donate.slyguy.uk[/B]\n"
+"to unlock the below supporter only settings"
 msgstr ""
 
 msgctxt "#32141"
