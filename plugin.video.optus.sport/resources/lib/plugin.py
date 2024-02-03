@@ -247,7 +247,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
         from_start = True
 
     use_cmaf = False #settings.getBool('use_cmaf') and inputstream.require_version('20.3.1')
-    stream = api.play(asset, True, use_cmaf=False)
+    stream = api.play(asset, True, use_cmaf=use_cmaf)
     stream['url'] = stream['url'].strip()
 
     item = plugin.Item(
