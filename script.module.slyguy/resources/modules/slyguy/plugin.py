@@ -587,27 +587,27 @@ class Item(gui.Item):
             self.art['thumb'] = self.art.get('thumb') or default_thumb
             self.art['fanart'] = self.art.get('fanart') or default_fanart
 
-        if is_donor():
-            quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-            if self.path and self.playable and quality not in (QUALITY_DISABLED, QUALITY_ASK):
-                url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
-                self.context.append((_.PLAYBACK_QUALITY, 'PlayMedia({},noresume)'.format(url)))
+#        if is_donor():
+        quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
+        if self.path and self.playable and quality not in (QUALITY_DISABLED, QUALITY_ASK):
+            url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
+            self.context.append((_.PLAYBACK_QUALITY, 'PlayMedia({},noresume)'.format(url)))
 
         return super(Item, self).get_li(*args, **kwargs)
 
     def play(self, **kwargs):
         self.playable = True
 
-        if is_donor():
-            quality = kwargs.get(QUALITY_TAG, self.quality)
-            if quality is None:
-                quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-                if quality == QUALITY_CUSTOM:
-                    quality = int(settings.getFloat('max_bandwidth')*1000000)
-            else:
-                quality = int(quality)
+#        if is_donor():
+        quality = kwargs.get(QUALITY_TAG, self.quality)
+        if quality is None:
+            quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
+            if quality == QUALITY_CUSTOM:
+                quality = int(settings.getFloat('max_bandwidth')*1000000)
         else:
-            quality = QUALITY_DISABLED
+            quality = int(quality)
+        # else:
+        #     quality = QUALITY_DISABLED
 
         self.proxy_data['quality'] = quality
 
