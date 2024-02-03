@@ -9,14 +9,10 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
+        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
+        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="false" visible="false"/>
-    </category>
-
-    <category label="$ADDON[script.module.slyguy 32138]">
-        <setting label="$ADDON[script.module.slyguy 32140]" type="lsep"/>
-        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073" enable="Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
-        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)" enable="Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32081]">
