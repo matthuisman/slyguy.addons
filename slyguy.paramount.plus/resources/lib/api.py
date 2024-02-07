@@ -269,7 +269,7 @@ class API(object):
             'begin': 0,
         }
         data = self._session.get('/v2.0/androidphone/shows/{}/videos/config/{}.json'.format(show_id, config), params=self._params(params)).json()
-        if 'videoSectionMetadata' not in data:
+        if not data.get('videoSectionMetadata') or not data['numFound']:
             return None
 
         sections = data['videoSectionMetadata']
