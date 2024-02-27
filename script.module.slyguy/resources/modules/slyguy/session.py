@@ -4,17 +4,11 @@ import shutil
 import re
 import ssl
 import os
+import functools
 from gzip import GzipFile
 
 import requests
 import urllib3
-import six
-from urllib3.util.connection import allowed_gai_family, _set_socket_options
-from urllib3.exceptions import LocationParseError, ConnectTimeoutError, NewConnectionError
-from urllib3.connection import HTTPSConnection, HTTPConnection
-from urllib3.connectionpool import HTTPSConnectionPool
-from socket import error as SocketError
-from socket import timeout as SocketTimeout
 from six import BytesIO
 from six.moves.urllib_parse import urlparse
 from kodi_six import xbmc
@@ -110,95 +104,22 @@ class DOHResolver(object):
         raise SessionError('Unable to resolve host: {} with nameservers: {}'.format(host, self.nameservers))
 
 
-class RequestsDoHHTTPConnection(HTTPConnection):
-    def __init__(self, *args, **kw):
-        self.adapter = kw.pop('adapter')
-        super(RequestsDoHHTTPConnection, self).__init__(*args, **kw)
-
-    def create_connection(self, address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None, socket_options=None):
-        host, port = address
-        if host.startswith("["):
-            host = host.strip("[]")
-        err = None
-
-        family = allowed_gai_family()
-
-        try:
-            host.encode("idna")
-        except UnicodeError:
-            return six.raise_from(
-                LocationParseError(u"'%s', label empty or too long" % host), None
-            )
-
-        for res in self.adapter.getaddrinfo(host, port, family, socket.SOCK_STREAM):
-            af, socktype, proto, canonname, sa = res
-            sock = None
-            try:
-                sock = socket.socket(af, socktype, proto)
-
-                # If provided, set socket level options before connecting.
-                _set_socket_options(sock, socket_options)
-
-                if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
-                    sock.settimeout(timeout)
-                if source_address:
-                    sock.bind(source_address)
-                sock.connect(sa)
-                return sock
-
-            except socket.error as e:
-                err = e
-                if sock is not None:
-                    sock.close()
-                    sock = None
-
-        if err is not None:
-            raise err
-
-        raise socket.error("getaddrinfo returns an empty list")
-
-    # This code is copied from urllib3/connection.py version 1.26.8 (from requests v2.28.1)
-    def _new_conn(self):
-        extra_kw = {}
-        if self.source_address:
-            extra_kw["source_address"] = self.source_address
-
-        if self.socket_options:
-            extra_kw["socket_options"] = self.socket_options
-
-        try:
-            conn = self.create_connection((self._dns_host, self.port), self.timeout, **extra_kw)
-        except SocketTimeout:
-            raise ConnectTimeoutError(
-                self,
-                "Connection to %s timed out. (connect timeout=%s)"
-                % (self.host, self.timeout),
-            )
-        except SocketError as e:
-            raise NewConnectionError(
-                self, "Failed to establish a new connection: %s" % e
-            )
-
-        return conn
-
-
-class RequestsDoHHTTPSConnection(RequestsDoHHTTPConnection, HTTPSConnection):
-    def connect(self, *args, **kwargs):
-        retval = super(RequestsDoHHTTPSConnection, self).connect(*args, **kwargs)
-        self.adapter.on_connect(self)
-        return retval
-
-
 class SessionAdapter(requests.adapters.HTTPAdapter):
     def __init__(self):
         self.session_data = {}
         self._context_cache = {}
         super(SessionAdapter, self).__init__()
 
-    def on_connect(self, https_connection):
-        log.debug('SSL Cipher: {} - {}'.format(https_connection.sock.server_hostname, https_connection.sock.cipher()))
+    def init_poolmanager(self, *args, **kwargs):
+        super(SessionAdapter, self).init_poolmanager(*args, **kwargs)
+        self.poolmanager.connection_from_pool_key = functools.partial(self.connection_from_pool_key, self.poolmanager.connection_from_pool_key)
 
-    def connection_from_pool_key(self, pool_key, request_context):
+    def proxy_manager_for(self, *args, **kwargs):
+        manager = super(SessionAdapter, self).proxy_manager_for(*args, **kwargs)
+        manager.connection_from_pool_key = functools.partial(self.connection_from_pool_key, manager.connection_from_pool_key)
+        return manager
+
+    def connection_from_pool_key(self, func, pool_key, request_context):
         if self.session_data['ssl_ciphers'] or self.session_data['ssl_options']:
             context_key = (self.session_data['ssl_ciphers'], self.session_data['ssl_options'])
             request_context['ssl_context'] = self._context_cache[context_key] = self._context_cache.get(context_key, requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=SSL_CIPHERS, options=SSL_OPTIONS))
@@ -211,12 +132,26 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         # ensure we get a unique pool (socket) for same domain on different rewrite ips
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == request_context['host']:
             pool_key = pool_key._replace(key_server_hostname=self.session_data['rewrite'][1])
+
         # ensure we get a unique pool (socket) for same domain on different resolvers
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == request_context['host']:
             pool_key = pool_key._replace(key_server_hostname=self.session_data['resolver'][1].nameservers[0])
 
-        request_context['adapter'] = self
-        return self._connection_from_pool_key(pool_key, request_context)
+        pool = func(pool_key, request_context)
+        pool._new_conn = functools.partial(self._new_pool_conn, pool._new_conn)
+        return pool
+
+    def _new_pool_conn(self, func, *args, **kwargs):
+        conn = func(*args, **kwargs)
+        conn.connect = functools.partial(self.connect, conn.connect, conn)
+        conn.getaddrinfo = self.getaddrinfo
+        return conn
+
+    def connect(self, func, conn, *args, **kwargs):
+        retval = func(*args, **kwargs)
+        if hasattr(conn.sock, 'server_hostname'):
+            log.debug('SSL Cipher: {} - {}'.format(conn.sock.server_hostname, conn.sock.cipher()))
+        return retval
 
     def getaddrinfo(self, host, port, family=0, _type=0):
         orig_host = host
@@ -252,26 +187,6 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             log.debug('DNS Resolver: {} -> {}'.format(host, addresses[0][4][0]))
 
         return addresses
-
-    def init_poolmanager(self, *args, **kwargs):
-        super(SessionAdapter, self).init_poolmanager(*args, **kwargs)
-        self._connection_from_pool_key = self.poolmanager.connection_from_pool_key
-        self.poolmanager.connection_from_pool_key = self.connection_from_pool_key
-
-    def proxy_manager_for(self, *args, **kwargs):
-        manager = super(SessionAdapter, self).proxy_manager_for(*args, **kwargs)
-        self._connection_from_pool_key = manager.connection_from_pool_key
-        manager.connection_from_pool_key = self.connection_from_pool_key
-        return manager
-
-    def get_connection(self, url, proxies=None):
-        conn = super(SessionAdapter, self).get_connection(url, proxies)
-        if isinstance(conn, HTTPSConnectionPool):
-            conn.ConnectionCls = RequestsDoHHTTPSConnection
-        else:
-            # HTTP type
-            conn.ConnectionCls = RequestsDoHHTTPConnection
-        return conn
 
 
 class RawSession(requests.Session):
