@@ -241,7 +241,7 @@ def resolve():
         return
 
     if '_play=1' in sys.argv[2]:
-        path = settings.common_settings.get('_proxy_path')+STOP_URL
+        path = PROXY_PATH+STOP_URL
         xbmcplugin.setResolvedUrl(handle, True, Item(path=path).get_li())
     else:
         xbmcplugin.endOfDirectory(handle, succeeded=False, updateListing=False, cacheToDisc=False)

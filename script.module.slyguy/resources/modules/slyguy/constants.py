@@ -132,8 +132,9 @@ BOOKMARK_FILE = os.path.join(ADDON_PROFILE, 'bookmarks.json')
 REMOVE_IN_HEADERS = ['upgrade', 'host', 'accept-encoding']
 REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
 
-DEFAULT_PORT = 52103
-HOST = '127.0.0.1'
+PROXY_HOST = '127.0.0.1'
+PROXY_PORT = 52103
+PROXY_PATH = 'http://{}:{}/'.format(PROXY_HOST, PROXY_PORT)
 ERROR_URL = 'error.m3u8'
 STOP_URL = 'stop.m3u8'
 EMPTY_TS = 'empty.ts' if KODI_VERSION < 19 else ''
