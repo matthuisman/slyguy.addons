@@ -155,7 +155,8 @@ def create_connection(dest_pair,
                       proxy_type=None, proxy_addr=None,
                       proxy_port=None, proxy_rdns=True,
                       proxy_username=None, proxy_password=None,
-                      socket_options=None):
+                      socket_options=None,
+                      getaddrinfo = socket.getaddrinfo):
     """create_connection(dest_pair, *[, timeout], **proxy_args) -> socket object
 
     Like socket.create_connection(), but connects to proxy
@@ -177,7 +178,7 @@ def create_connection(dest_pair,
     err = None
 
     # Allow the SOCKS proxy to be on IPv4 or IPv6 addresses.
-    for r in socket.getaddrinfo(proxy_addr, proxy_port, 0, socket.SOCK_STREAM):
+    for r in getaddrinfo(proxy_addr, proxy_port, 0, socket.SOCK_STREAM):
         family, socket_type, proto, canonname, sa = r
         sock = None
         try:
