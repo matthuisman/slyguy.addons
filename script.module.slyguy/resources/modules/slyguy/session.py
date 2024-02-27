@@ -216,7 +216,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             pool_key = pool_key._replace(key_server_hostname=self.session_data['resolver'][1].nameservers[0])
 
         request_context['adapter'] = self
-        return self.poolmanager._connection_from_pool_key(pool_key, request_context)
+        return self._connection_from_pool_key(pool_key, request_context)
 
     def getaddrinfo(self, host, port, family=0, _type=0):
         orig_host = host
@@ -255,8 +255,14 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
     def init_poolmanager(self, *args, **kwargs):
         super(SessionAdapter, self).init_poolmanager(*args, **kwargs)
-        self.poolmanager._connection_from_pool_key = self.poolmanager.connection_from_pool_key
+        self._connection_from_pool_key = self.poolmanager.connection_from_pool_key
         self.poolmanager.connection_from_pool_key = self.connection_from_pool_key
+
+    def proxy_manager_for(self, *args, **kwargs):
+        manager = super(SessionAdapter, self).proxy_manager_for(*args, **kwargs)
+        self._connection_from_pool_key = manager.connection_from_pool_key
+        manager.connection_from_pool_key = self.connection_from_pool_key
+        return manager
 
     def get_connection(self, url, proxies=None):
         conn = super(SessionAdapter, self).get_connection(url, proxies)

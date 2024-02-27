@@ -26,7 +26,6 @@ def exception(msg=''):
     raise PluginError(msg)
 
 logged_in = False
-donor_enabled = False
 
 # @plugin.no_error_gui()
 def no_error_gui():
