@@ -16,6 +16,7 @@ def start():
     monitor = xbmc.Monitor()
     restart_queued = False
 
+    set_kodi_string('_iptv_merge_service_running', '1')
     set_kodi_string('_iptv_merge_force_run')
 
     delay = settings.getInt('service_delay', 0)

@@ -659,6 +659,10 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
 @plugin.route()
 def merge(**kwargs):
+    # no service running (kodi.proxy?), run_merge directly
+    if not get_kodi_string('_iptv_merge_service_running'):
+        return plugin.redirect(plugin.url_for(run_merge, forced=1))
+
     if get_kodi_string('_iptv_merge_force_run'):
         raise PluginError(_.MERGE_IN_PROGRESS)
     else:
