@@ -300,7 +300,7 @@ def install_widevine(reinstall=False):
                 continue
 
             if 'src' in selected:
-                url = widevine['base_url'] + selected['src']
+                url = os.path.dirname(IA_MODULES_URL) + '/widevine/' + selected['src']
                 if not _download(url, wv_path, selected['md5']):
                     continue
 
