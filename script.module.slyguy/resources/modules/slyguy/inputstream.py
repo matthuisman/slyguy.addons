@@ -264,8 +264,7 @@ def install_widevine(reinstall=False):
             wv['compatible'] = False
             wv['label'] = _(_.WV_REVOKED, label=wv['label'])
             wv['confirm'] = _.WV_REVOKED_CONFIRM
-
-        if wv.get('issues'):
+        elif wv.get('issues'):
             wv['compatible'] = False
             wv['label'] = _(_.WV_ISSUES, label=wv['label'])
             wv['confirm'] = _(_.WV_ISSUES_CONFIRM, issues=wv['issues'])
