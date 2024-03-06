@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.3.0">
+<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.3.1">
   <requires>
     <import addon="script.module.slyguy" version="0.63.1"/>
   </requires>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Initial live support!</news>
+    <news>Fix some large seasons listings</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

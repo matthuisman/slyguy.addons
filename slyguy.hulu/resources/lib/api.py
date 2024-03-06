@@ -103,10 +103,10 @@ class API(object):
         return data['items']
 
     def series(self, id, **kwargs):
-        return self.hub('series/{}'.format(id), limit=999, **kwargs)
+        return self.hub('series/{}'.format(id), limit=1999, **kwargs)
 
     def episodes(self, id, season, **kwargs):
-        return self.hub('series/{}/season/{}'.format(id, season), limit=999, **kwargs)
+        return self.hub('series/{}/season/{}'.format(id, season), limit=1999, **kwargs)
 
     def hub(self, slug, limit=100, page=1, view=False):
         self._refresh_token()
@@ -149,20 +149,20 @@ class API(object):
 
         self._refresh_token()
 
-        params = {
-            'schema': 1,
-            'eab_ids': ",".join(eab_ids),
-            'bowie_context': 'all',
-            #'device_info': 'android:4.32.0:compass-mvp:site-map',
-        }
-        params.update(self._lat_long())
-
-        data = self._session.get('https://discover.hulu.com/content/v5/me/state', params=params).json()
-        self._check_errors(data)
-
         states = {}
-        for row in data['items']:
-            states[row['eab_id']] = row
+        for chunk in chunked(eab_ids, 100):
+            params = {
+                'schema': 1,
+                'eab_ids': ",".join(chunk),
+                'bowie_context': 'all',
+                #'device_info': 'android:4.32.0:compass-mvp:site-map',
+            }
+            params.update(self._lat_long())
+
+            data = self._session.get('https://discover.hulu.com/content/v5/me/state', params=params).json()
+            self._check_errors(data)
+            for row in data['items']:
+                states[row['eab_id']] = row
 
         return states
 
