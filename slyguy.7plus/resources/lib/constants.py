@@ -8,3 +8,6 @@ IMAGE_URL = 'https://images.swm.digital/image?u={url}&q=70&w={width}'
 LIVE_TV_SLUG = 'live-tv'
 SHOWS_SLUG = 'shows-a-z'
 IMAGE_WIDTH = 400
+PLATFORM_ID = 'androidtv'
+PLATFORM_VERSION = '4.25.0.0'
+API_VERSION = '4.9.0.0'

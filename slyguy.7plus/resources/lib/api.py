@@ -48,7 +48,7 @@ class API(object):
             'platform-id': 'web',
             'market-id': self._market_id(),
             'platform-version': '1.0.67393',
-            'api-version': '4.3',
+            'api-version': API_VERSION,
         }
 
         return self._session.get('https://component-cdn.swm.digital/content/nav', params=params).json()['items']
@@ -58,18 +58,18 @@ class API(object):
             'searchTerm': query,
             'market-id': self._market_id(),
             'api-version': '4.4',
-            'platform-id': 'androidtv',
-            'platform-version': '4.25',
+            'platform-id': PLATFORM_ID,
+            'platform-version': PLATFORM_VERSION,
         }
 
         return self._session.get('https://searchapi.swm.digital/3.0/api/Search', params=params).json()
 
     def content(self, slug):
         params = {
-            'platform-id': 'androidtv',
+            'platform-id': PLATFORM_ID,
             'market-id': self._market_id(),
-            'platform-version': '4.25',
-            'api-version': '4.4',
+            'platform-version': PLATFORM_VERSION,
+            'api-version': API_VERSION,
         }
 
         return self._session.get('https://component-cdn.swm.digital/content/{slug}'.format(slug=slug), params=params).json()
@@ -77,10 +77,10 @@ class API(object):
     def component(self, slug, component_id):
         params = {
             'component-id': component_id,
-            'platform-id': 'AndroidTv',
+            'platform-id': PLATFORM_ID,
             'market-id': self._market_id(),
-            'platform-version': '4.25.0.0',
-            'api-version': '4.4.0.0',
+            'platform-version': PLATFORM_VERSION,
+            'api-version': API_VERSION,
             'signedUp': 'True',
         }
 
@@ -88,10 +88,10 @@ class API(object):
 
     def video_player(self, slug):
         params = {
-            'platform-id': 'AndroidTv',
+            'platform-id': PLATFORM_ID,
             'market-id': self._market_id(),
-            'platform-version': '4.25.0.0',
-            'api-version': '4.4.0.0',
+            'platform-version': PLATFORM_VERSION,
+            'api-version': API_VERSION,
             'signedUp': 'True',
         }
 
@@ -107,7 +107,7 @@ class API(object):
             'advertid': 'null',
             'deviceId': 'fm-k_zfMS1it5axvWRqkRt',
             'pc': 3350,
-            'deviceType': 'androidtv',
+            'deviceType': PLATFORM_ID,
             'ozid': 'b09f7dc3-3999-47c7-a09f-8dce404c0455',
             'encryptionType': 'cenc',
             'drmSystems': 'widevine',
