@@ -25,18 +25,17 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, title=_.FEATURED))
-    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-    folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(page, slug='sport', title=_.SPORT))
-    folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
-    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
-    if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
-
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, title=_.FEATURED))
+        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+        folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(page, slug='sport', title=_.SPORT))
+        folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+        if settings.getBool('bookmarks', True):
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
@@ -472,6 +471,7 @@ def live_tv(**kwargs):
 
 
 @plugin.route()
+@plugin.login_required()
 def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, play_type=None, **kwargs):
     headers = HEADERS
 
@@ -503,9 +503,6 @@ def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, p
                     plugin.exception(_.LIVE_HLS_REQUIRED)
 
     elif mediakindhref:
-        if not api.logged_in:
-            plugin.exception(_.PLUGIN_LOGIN_REQUIRED)
-
         data = api.play(mediakindhref)
         if 'message' in data:
             plugin.exception(data['message'])
