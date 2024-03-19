@@ -321,15 +321,7 @@ class API(object):
         }
         return self._session.get('/v3.0/androidphone/video/streams.json', params=self._params(params)).json()
 
-    def play(self, video_id):
-        self._refresh_token()
-
-        params = {'contentId': video_id}
-        session = self._session.get('/v3.1/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
-        if not session.get('success', True):
-            error = session.get('Error Message') or session.get('message') or str(session)
-            raise APIError('Failed to obtain session token\n{}'.format(error))
-
+    def _play_link_platform(self, url, session):
         order = ['HLS_AES', 'DASH_LIVE', 'DASH_CENC_HDR10', 'DASH_TA', 'DASH_CENC', 'DASH_CENC_PRECON', 'DASH_CENC_PS4']
         order.extend(['HLS_LIVE', 'HLS_FPS_HDR', 'HLS_FPS', 'HLS_FPS_PRECON']) #APPLE SAMPLE-AES - add last
         params = {
@@ -337,32 +329,18 @@ class API(object):
             'formats': 'MPEG-DASH,MPEG4,M3U',
             'format': 'SMIL',
         }
-        url = self._config.get_link_platform_url(video_id)
-        try:
-            resp = self._session.get(url, params=params)
-            resp.raise_for_status()
-            root = parseString(resp.content)
-            videos = root.getElementsByTagName('video')
-            if not videos:
-                error_msg = ''
-                for ref in root.getElementsByTagName('ref'):
-                    error_msg = ref.getAttribute('abstract')
-                    if error_msg:
-                        break
-                raise APIError(_(error_msg))
-        except Exception as e:
-            log.exception(e)
-            log.warning('link.theplatform.com failed. fallback to session-token data')
-            if session.get('streamingUrl'):
-                return {
-                    'url': session['streamingUrl'],
-                    'type': 'DASH' if '.mpd' in session['streamingUrl'].lower() else 'HLS',
-                    'widevine': 'widevine' in session['url'].lower(),
-                    'license_url': session['url'],
-                    'license_token': session['ls_session'],
-                }
-            else:
-                raise APIError("Unable to find playback url for {}".format(video_id))
+
+        resp = self._session.get(url, params=params)
+        resp.raise_for_status()
+        root = parseString(resp.content)
+        videos = root.getElementsByTagName('video')
+        if not videos:
+            error_msg = ''
+            for ref in root.getElementsByTagName('ref'):
+                error_msg = ref.getAttribute('abstract')
+                if error_msg:
+                    break
+            raise APIError(_(error_msg))
 
         switch = root.getElementsByTagName('switch')[0]
         ref = switch.getElementsByTagName('ref')[0]
@@ -375,7 +353,7 @@ class API(object):
             except:
                 continue
 
-        data = {
+        return {
             'url': ref.getAttribute('src'),
             'type': 'DASH' if ref.getAttribute('type') == 'application/dash+xml' else 'HLS',
             'widevine': ref.getAttribute('security') == 'widevine',
@@ -384,7 +362,37 @@ class API(object):
             'live': params.get('IsLive') == 'true',
         }
 
-        return data
+    def play(self, video_id):
+        self._refresh_token()
+
+        params = {'contentId': video_id}
+        session = self._session.get('/v3.1/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
+        if not session.get('success', True):
+            error = session.get('Error Message') or session.get('message') or str(session)
+            raise APIError('Failed to obtain session token\n{}'.format(error))
+
+        url = self._config.get_link_platform_url(video_id)
+        exception = None
+        if url:
+            try:
+                return self._play_link_platform(url, session)
+            except Exception as e:
+                exception = e
+                log.warning('link.theplatform.com failed. fallback to session-token streamingUrl')
+
+        if session.get('streamingUrl'):
+            return {
+                'url': session['streamingUrl'],
+                'type': 'DASH' if '.mpd' in session['streamingUrl'].lower() else 'HLS',
+                'widevine': 'widevine' in session['url'].lower(),
+                'license_url': session['url'],
+                'license_token': session['ls_session'],
+            }
+        else:
+            if exception:
+                raise exception
+            else:
+                raise APIError("Unable to find playback url for {}".format(video_id))
 
     def update_playhead(self, content_id, time):
         params = {
