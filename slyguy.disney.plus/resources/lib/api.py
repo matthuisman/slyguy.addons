@@ -343,7 +343,7 @@ class API(object):
 
     def up_next(self, content_id):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getUpNext']['href'], contentId=content_id)
-        return self._json_call(endpoint)['data']['UpNext']
+        return self._json_call(endpoint)['data']['UpNext'] or {}
 
     def continue_watching(self):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCWSet']['href'], setId=CONTINUE_WATCHING_SET_ID)
