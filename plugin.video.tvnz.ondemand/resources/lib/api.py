@@ -1,9 +1,11 @@
+from time import time
+
 from slyguy import util, mem_cache, userdata
 from slyguy.util import jwt_data
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
-from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, SHARED_TOKEN
+from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, TOKEN_URL
 
 
 class APIError(Error):
@@ -14,16 +16,6 @@ class API(object):
     def new_session(self):
         self.logged_in = False
         self._session = Session(HEADERS, base_url=API_URL)
-        #x-tvnz-active-profile-id (profile support)
-        self._set_authentication()
-
-    def _set_authentication(self):
-        token = userdata.get('token')
-        if not token:
-            token = SHARED_TOKEN
-        else:
-            self.logged_in = True
-        self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
 
     @mem_cache.cached(60*30)
     def _category(self, slug):
@@ -46,29 +38,19 @@ class API(object):
         
         return data['title'], shows
 
-    def login(self, username, password):
-        payload = {
-            'email': username,
-            'password': password,
-            'keepMeLoggedIn': True
-        }
-
-        resp = self._session.post('/api/v1/androidtv/consumer/login', json=payload)
-        if not resp.ok:
-            raise APIError('Invalid login details')
-
-        token = resp.headers['aat']
-        token_data = jwt_data(token)
-        expires = token_data['exp']
-
-        userdata.set('token', token)
-        userdata.set('token_expires', expires)
-        self._set_authentication()
-
-    def logout(self):
+    def _refresh_token(self):
         userdata.delete('token')
         userdata.delete('token_expires')
-        self.new_session()
+        token = userdata.get('shared_token')
+        if token:
+            token_data = jwt_data(token)
+            if token_data['exp'] > time() - 60:
+                self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
+                return
+
+        token = self._session.get(TOKEN_URL).text.strip()
+        userdata.set('shared_token', token)
+        self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
 
     def page(self, page=''):
         sections = []
@@ -169,4 +151,24 @@ class API(object):
         return util.process_brightcove(data)
 
     def play(self, href):
+        self._refresh_token()
         return self._session.get(href).json()
+
+    # def login(self, username, password):
+    #     payload = {
+    #         'email': username,
+    #         'password': password,
+    #         'keepMeLoggedIn': True
+    #     }
+
+    #     resp = self._session.post('/api/v1/androidtv/consumer/login', json=payload)
+    #     if not resp.ok:
+    #         raise APIError('Invalid login details')
+
+    #     userdata.set('token', resp.headers['aat'])
+    #     self._set_authentication()
+
+    # def logout(self):
+    #     userdata.delete('token')
+    #     userdata.delete('token_expires')
+    #     self.new_session()

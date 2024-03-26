@@ -34,10 +34,10 @@ def home(**kwargs):
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
-    if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
-    else:
-        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
+    # if not api.logged_in:
+    #     folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+    # else:
+    #     folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -125,28 +125,28 @@ def _process_video(data, showname, categories=None):
         path = path,
     )
 
-@plugin.route()
-def login(**kwargs):
-    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
-    if not username:
-        return
+# @plugin.route()
+# def login(**kwargs):
+#     username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+#     if not username:
+#         return
 
-    userdata.set('username', username)
+#     userdata.set('username', username)
 
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
+#     password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+#     if not password:
+#         return
 
-    api.login(username=username, password=password)
-    gui.refresh()
+#     api.login(username=username, password=password)
+#     gui.refresh()
 
-@plugin.route()
-def logout(**kwargs):
-    if not gui.yes_no(_.LOGOUT_YES_NO):
-        return
+# @plugin.route()
+# def logout(**kwargs):
+#     if not gui.yes_no(_.LOGOUT_YES_NO):
+#         return
 
-    api.logout()
-    gui.refresh()
+#     api.logout()
+#     gui.refresh()
 
 @plugin.route()
 def page(title, slug='', **kwargs):
