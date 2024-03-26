@@ -3,7 +3,7 @@ from slyguy.util import jwt_data
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
-from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT
+from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, SHARED_TOKEN
 
 
 class APIError(Error):
@@ -20,10 +20,10 @@ class API(object):
     def _set_authentication(self):
         token = userdata.get('token')
         if not token:
-            return
-
+            token = SHARED_TOKEN
+        else:
+            self.logged_in = True
         self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
-        self.logged_in = True
 
     @mem_cache.cached(60*30)
     def _category(self, slug):
