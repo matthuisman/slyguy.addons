@@ -359,13 +359,16 @@ class API(object):
 
         return self._process(_data, tab or slug)
 
-    def content(self, payload):
+    def content(self, payload, additional_headers=None):
         self._refresh_token()
 
         headers = {
             'x-hbo-headwaiter': self._headwaiter(),
             'accept-language': self._get_language(),
         }
+
+        if isinstance(additional_headers, dict):
+            headers = { **headers, **additional_headers }
 
         data = self._session.post(self.url('comet', '/content'), json=payload, headers=headers).json()
         self._check_errors(data)
@@ -424,6 +427,26 @@ class API(object):
 
         return None
 
+    def main_manifest(self, video_id, headers=None):
+        payload = [{
+            'id': video_id,
+            'headers' : {
+                'x-hbo-preferred-blends': 'DASH_WDV,HSS_PR',
+                'x-hbo-video-mlp': True, #multi-language
+            }
+        }]
+
+        data = self.content(payload, additional_headers=headers).get(video_id)
+        self._check_errors(data)
+
+        for row in data.get('manifests', []):
+            if row['type'] == 'urn:video:main':
+                return row
+
+        # Some videos return 404 when a headwaiter value is passed
+        if headers is None:
+            return self.main_manifest(video_id, headers={ 'x-hbo-headwaiter': None })
+
     def play(self, slug):
         self._refresh_token()
 
@@ -458,20 +481,10 @@ class API(object):
 
             edit = edits[index]
 
-        payload = [{
-            'id': edit['video'],
-            'headers' : {
-                'x-hbo-preferred-blends': 'DASH_WDV,HSS_PR',
-                'x-hbo-video-mlp': True, #multi-language
-            }
-        }]
+        row = self.main_manifest(edit['video'])
 
-        data = self.content(payload).get(edit['video'])
-        self._check_errors(data)
-
-        for row in data.get('manifests', []):
-            if row['type'] == 'urn:video:main':
-                return row, content_data, edit
+        if row:
+            return row, content_data, edit
 
         raise APIError(_.NO_VIDEO_FOUND)
 
