@@ -160,6 +160,8 @@ from .utils.networking import (
 )
 from .version import CHANNEL, RELEASE_GIT_HEAD, VARIANT, __version__
 
+
+compat_os_name = 'None'
 if compat_os_name == 'nt':
     import ctypes
 
