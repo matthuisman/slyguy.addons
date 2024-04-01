@@ -1477,7 +1477,7 @@ class LockingUnsupportedError(OSError):
 
 
 # Cross-platform file locking
-if sys.platform == 'win32':
+if sys.platform == 'none':
     import ctypes
     import ctypes.wintypes
     import msvcrt
