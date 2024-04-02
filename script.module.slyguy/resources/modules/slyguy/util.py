@@ -580,7 +580,7 @@ def replace_kids(cenc, kids, version0=False):
     uuid, version, old_data, old_kids = parse_cenc_init(cenc)
 
     old_data = binascii.hexlify(old_data).decode('utf8')
-    if '1210' in old_data:
+    if '1210' in old_data and old_kids:
         pre_data = re.search('^([0-9a-z]*?)1210', old_data)
         pre_data = pre_data.group(1) if pre_data else ''
 
