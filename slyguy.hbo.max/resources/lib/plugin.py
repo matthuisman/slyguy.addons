@@ -6,6 +6,8 @@ from slyguy import plugin, gui, userdata, signals, inputstream, settings, mem_ca
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG, NO_RESUME_TAG
 from slyguy.drm import is_wv_secure
+from slyguy.util import replace_kids
+from slyguy.log import log
 
 from .api import API
 from .constants import *
@@ -586,6 +588,22 @@ def mpd_request(_data, _path, **kwargs):
             else:
                 adap_set.parentNode.removeChild(adap_set)
                 continue
+
+    ## Fix of cenc pssh to only contain kids still present
+    kids = []
+    for elem in root.getElementsByTagName('ContentProtection'):
+        kids.append(elem.getAttribute('cenc:default_KID'))
+
+    if kids:
+        for elem in root.getElementsByTagName('ContentProtection'):
+            if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                    current_cenc = elem2.firstChild.nodeValue
+                    new_cenc = replace_kids(current_cenc, kids, version0=True)
+                    if current_cenc != new_cenc:
+                        elem2.firstChild.nodeValue = new_cenc
+                        log.info('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+    ################################################
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
