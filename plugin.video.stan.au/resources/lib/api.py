@@ -85,14 +85,16 @@ class API(object):
         }
         self._oauth(payload)
 
-    def login(self, username, password):
-        self.logout()
+    # def login(self, username, password):
+    #     self.logout()
 
-        payload = {
-            'email': username,
-            'password': password,
-        }
-        self._oauth(payload)
+    #     payload = {
+    #         'email': username,
+    #         'password': password,
+    #         'rnd': '',
+    #         'sign': '',
+    #     }
+    #     self._oauth(payload)
 
     def device_code(self):
         self.logout()
@@ -104,12 +106,7 @@ class API(object):
         resp = self._session.get(url)
         if resp.status_code != 200:
             return False
-
-        data = resp.json()
-        payload = {
-            'jwToken': data['jwToken'],
-        }
-        self._oauth(payload)
+        self._oauth(resp.json())
         return True
 
     def _device_data(self):
@@ -118,28 +115,30 @@ class API(object):
 
         return {
             'type': 'console', #console, tv
+          #  'clientId': '',
+          #  'deviceID': '',
             'screenSize': '3840x2160',
             'stanName': STAN_NAME,
-            'stanVersion': '4.9.1',
+            'stanVersion': '4.32.1',
             'manufacturer': 'NVIDIA', #NVIDIA, Sony
             'model': 'SHIELD Android TV' if (enable_4k or enable_h265) else '', #SHIELD Android TV, BRAVIA 4K 2020
             'os': 'Android-9',
-            'videoCodecs': 'h264,decode,h263,h265,hevc,mjpeg,mpeg2v,mp4,mpeg4,vc1,vp8,vp9',
-            'features': 'hdr10,hevc',
-            'capabilities.audioCodec': 'aac',
-            'capabilities.drm': 'widevine',
-            'capabilities.screenSize': '3840x2160',
-            'capabilities.videoCodec': 'h264,decode,h263,h265,hevc,mjpeg,mpeg2v,mp4,mpeg4,vc1,vp8,vp9',
-            'sdk': '28',
+            'videoCodecs': 'h264,decode,dovi,h263,h265,hevc,mjpeg,mpeg2v,mp4,mpeg4,vc1,vp8,vp9',
             'audioCodecs': 'aac',
-            'drm': 'widevine',
+            'drm': 'widevine', #playready
             'hdcpVersion': '2.2' if enable_4k else '0', #0, 1, 2, 2.2
             'colorSpace': 'hdr10',
+            #'tz': '',
         }
 
     def _oauth(self, payload):
+        headers = {
+            'Accept-Encoding': 'gzip',
+            'Accept': None,
+            'Connection': None,
+        }
         payload.update(self._device_data())
-        data = self._session.post('/login/v1/sessions/app', data=payload).json()
+        data = self._session.post('/login/v1/sessions/app', data=payload, headers=headers).json()
 
         if 'errors' in data:
             try:
