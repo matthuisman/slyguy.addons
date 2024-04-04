@@ -1491,12 +1491,26 @@ class Proxy(object):
         if self.started:
             return
 
-        self._server = ThreadedHTTPServer((PROXY_HOST, PROXY_PORT), RequestHandler)
+        target_port = settings.getInt('_proxy_port') or DEFAULT_PORT
+        port = check_port(target_port)
+        if not port:
+            port = check_port()
+            if not port:
+                log.error('Unable to find port to start proxy! Some addon features will not work')
+                return
+
+            log.warning('Port {} not available. Switched to port {}'.format(target_port, port))
+            settings.setInt('_proxy_port', port)
+
+        self._server = ThreadedHTTPServer((HOST, port), RequestHandler)
         self._server.allow_reuse_address = True
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
         self.started = True
-        log.info("Proxy Started: {}".format(PROXY_PATH))
+
+        proxy_path = 'http://{}:{}/'.format(HOST, port)
+        settings.set('_proxy_path', proxy_path)
+        log.info("Proxy Started: {}".format(proxy_path))
 
     def stop(self):
         if not self.started:
@@ -1514,4 +1528,5 @@ class Proxy(object):
             log.error('Failed to save proxy session')
             log.exception(e)
 
+        settings.set('_proxy_path', '')
         log.debug("Proxy: Stopped")

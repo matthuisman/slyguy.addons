@@ -44,9 +44,11 @@ def get_art_url(url, headers=None):
     _headers.update(get_headers_from_url(url))
 
     if settings.common_settings.getBool('proxy_enabled', True):
-        _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
-        if not url.lower().startswith(PROXY_PATH.lower()):
-            url = PROXY_PATH + url
+        proxy_path = settings.common_settings.get('_proxy_path')
+        if proxy_path:
+            _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
+            if not url.lower().startswith(proxy_path.lower()):
+                url = proxy_path + url
 
     return url.split('|')[0] + '|' + get_url_headers(_headers)
 
@@ -256,6 +258,8 @@ class Item(object):
         self._is_folder = value
 
     def get_li(self, playing=False):
+        proxy_path = settings.common_settings.get('_proxy_path')
+
         if KODI_VERSION < 18:
             li = xbmcgui.ListItem()
         else:
@@ -378,8 +382,8 @@ class Item(object):
         def get_url(url):
             _url = url.lower()
 
-            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or _url.startswith('plugin://') or (is_http(_url) and self.use_proxy and not _url.startswith(PROXY_PATH)) and settings.common_settings.getBool('proxy_enabled', True):
-                url = u'{}{}'.format(PROXY_PATH, url)
+            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or _url.startswith('plugin://') or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.common_settings.getBool('proxy_enabled', True):
+                url = u'{}{}'.format(proxy_path, url)
 
             return url
 
@@ -472,7 +476,7 @@ class Item(object):
             proxy_url = '{}{}.srt'.format(language, '.forced' if forced else '')
             proxy_data['path_subs'][proxy_url] = url
 
-            return u'{}{}'.format(PROXY_PATH, proxy_url)
+            return u'{}{}'.format(proxy_path, proxy_url)
 
         if self.path and playing:
             self.path = redirect_url(fix_url(self.path))

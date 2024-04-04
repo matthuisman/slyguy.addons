@@ -50,6 +50,8 @@
 
         <setting id="_fresh" type="bool" default="true" visible="false"/>
         <setting id="_userdata" type="text" default="{}" visible="false"/>
+
+        <setting id="_proxy_path" type="text" default="" visible="false"/>
         <setting id="_last_news_check" type="text" default="" visible="false"/>
         <setting id="_last_news_id" type="text" default="" visible="false"/>
         <setting id="_news" type="text" default="" visible="false"/>
