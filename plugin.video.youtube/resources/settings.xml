@@ -2,17 +2,18 @@
 <settings>
     <category label="$ADDON[script.module.slyguy 32035]">
         <setting label="30001" id="play_with_youtube_apk" type="bool" default="false" visible="system.platform.android"/>
-        <setting label="30002" id="fallback_youtube_apk" type="bool" default="true" visible="system.platform.android" enable="eq(-1,false)"/>
+        <setting label="30003" id="android_app_id" type="text" default="" visible="system.platform.android"/>
+        <setting label="30002" id="fallback_youtube_apk" type="bool" default="true" visible="system.platform.android" enable="eq(-2,false)"/>
 
-        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
-        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
+        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073" enable="eq(-3,false)"/>
+        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)" enable="eq(-4,false)"/>
 
-        <setting label="$ADDON[script.module.slyguy 30038]" id="vp9" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 30039]" id="av1" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 30027]" id="h265" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 30028]" id="hdr10" type="bool" default="false"/>
-        <setting label="$ADDON[script.module.slyguy 30031]" id="ac3" type="bool" default="true"/>
-        <setting label="$ADDON[script.module.slyguy 30032]" id="ec3" type="bool" default="true"/>
+        <setting label="$ADDON[script.module.slyguy 30038]" id="vp9" type="bool" default="false" enable="eq(-5,false)"/>
+        <setting label="$ADDON[script.module.slyguy 30039]" id="av1" type="bool" default="false" enable="eq(-6,false)"/>
+        <setting label="$ADDON[script.module.slyguy 30027]" id="h265" type="bool" default="false" enable="eq(-7,false)"/>
+        <setting label="$ADDON[script.module.slyguy 30028]" id="hdr10" type="bool" default="false" enable="eq(-8,false)"/>
+        <setting label="$ADDON[script.module.slyguy 30031]" id="ac3" type="bool" default="true" enable="eq(-9,false)"/>
+        <setting label="$ADDON[script.module.slyguy 30032]" id="ec3" type="bool" default="true" enable="eq(-10,false)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">

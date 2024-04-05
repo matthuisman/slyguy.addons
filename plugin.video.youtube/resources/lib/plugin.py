@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 
 from kodi_six import xbmc
@@ -9,7 +10,6 @@ from slyguy.util import get_system_arch
 
 
 from .language import _
-from .yt_dlp import YoutubeDL
 
 
 @plugin.route('/')
@@ -23,20 +23,23 @@ def home(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
 
-def play_android_apk(yturl):
-    start_activity = 'StartAndroidActivity(,android.intent.action.VIEW,,"{}")'.format(yturl)
+def play_android_apk(video_id):
+    # com.teamsmart.videomanager.tv, com.google.android.youtube, com.google.android.youtube.tv
+    app_id = settings.get('android_app_id', '')
+    intent = 'android.intent.action.VIEW'
+   # yturl = 'vnd.youtube://www.youtube.com/watch?v={}'.format(video_id)
+    yturl = 'https://www.youtube.com/watch?v={}'.format(video_id)
+    start_activity = 'StartAndroidActivity({},{},,"{}")'.format(app_id, intent, yturl)
     log.debug(start_activity)
     xbmc.executebuiltin(start_activity)
 
 @plugin.route('/play')
 def play(video_id, **kwargs):
-    yturl = "https://www.youtube.com/watch?v={}".format(video_id)
-    log.debug("YouTube URL {}".format(yturl))
+    log.debug("YouTube ID {}".format(video_id))
 
     is_android = get_system_arch()[0] == 'Android'
-
     if is_android and settings.getBool('play_with_youtube_apk', False):
-        return play_android_apk(yturl)
+        return play_android_apk(video_id)
 
     ydl_opts = {
         'quiet': True,
@@ -44,11 +47,14 @@ def play(video_id, **kwargs):
         'no_warnings': True,
     }
 
+    error = 'Unknown'
     try:
+        from .yt_dlp import YoutubeDL
         with YoutubeDL(ydl_opts) as ydl:
-            data = ydl.extract_info(yturl, download=False)
+            data = ydl.extract_info(video_id, download=False)
     except Exception as e:
         log.exception(e)
+        error = e
         data = {}
 
     groups = defaultdict(list)
@@ -68,9 +74,17 @@ def play(video_id, **kwargs):
 
     if not groups:
         if is_android and settings.getBool('fallback_youtube_apk', False):
-            return play_android_apk(yturl)
+            return play_android_apk(video_id)
 
-        raise plugin.PluginError('No videos found')
+        if sys.version_info[0] < 3:
+            if is_android:
+                error = _.PYTHON3_NOT_SUPPORTED_ANDROID
+            else:
+                error = _(_.PYTHON3_NOT_SUPPORTED, error=error)
+        else:
+            error  = _(_.NO_VIDEOS_FOUND, id=video_id, error=error)
+
+        raise plugin.PluginError(error)
 
     headers = {}
     str = '<MPD minBufferTime="PT1.5S" mediaPresentationDuration="PT{}S" type="static" profiles="urn:mpeg:dash:profile:isoff-main:2011"><Period>'.format(data["duration"])

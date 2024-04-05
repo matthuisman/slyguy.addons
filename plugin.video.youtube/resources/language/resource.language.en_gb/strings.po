@@ -15,11 +15,31 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30001"
-msgid "Play using Youtube Android App"
+msgid "Play using Native Android App"
 msgstr ""
 
 msgctxt "#30002"
-msgid "Fallback to Youtube Android App"
+msgid "Fallback to Native Android App"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Native Android App ID (Empty=Default)"
+msgstr ""
+
+msgctxt "#30004"
+msgid "This addon uses yt_dlp which does not support Python 2\n"
+"You need to update to Kodi 19 or higher to use this addon\n"
+"Error: {error}"
+msgstr ""
+
+msgctxt "#30005"
+msgid "This addon uses yt_dlp which does not support Python 2\n"
+"You can enable playback via Android native app instead in the addon settings"
+msgstr ""
+
+msgctxt "#30006"
+msgid "No content found for ID: {id}\n"
+"Error: {error}"
 msgstr ""
 
 ## COMMON SETTINGS ##
