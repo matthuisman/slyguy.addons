@@ -42,7 +42,13 @@ msgid "No content found for ID: {id}\n"
 "Error: {error}"
 msgstr ""
 
+msgctxt "#30007"
+msgid "This addon does not support searching"
+msgstr ""
+
+
 ## COMMON SETTINGS ##
+
 
 msgctxt "#32055"
 msgid "Ask"

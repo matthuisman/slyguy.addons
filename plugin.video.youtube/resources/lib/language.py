@@ -8,6 +8,7 @@ class Language(BaseLanguage):
     PYTHON3_NOT_SUPPORTED = 30004
     PYTHON3_NOT_SUPPORTED_ANDROID = 30005
     NO_VIDEOS_FOUND = 30006
+    NO_SEARCH_SUPPORT = 30007
 
 
 _ = Language()

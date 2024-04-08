@@ -23,6 +23,7 @@ def home(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
 
+
 def play_android_apk(video_id):
     # com.teamsmart.videomanager.tv, com.google.android.youtube, com.google.android.youtube.tv
     app_id = settings.get('android_app_id', '')
@@ -32,6 +33,7 @@ def play_android_apk(video_id):
     start_activity = 'StartAndroidActivity({},{},,"{}")'.format(app_id, intent, yturl)
     log.debug(start_activity)
     xbmc.executebuiltin(start_activity)
+
 
 @plugin.route('/play')
 def play(video_id, **kwargs):
@@ -118,3 +120,9 @@ def play(video_id, **kwargs):
         inputstream = inputstream.MPD(),
         headers = headers,
     )
+
+
+# stub out search so tmdbhelper works
+@plugin.route('/search')
+def search(**kwargs):
+    return plugin.Folder(no_items_label=_.NO_SEARCH_SUPPORT)
