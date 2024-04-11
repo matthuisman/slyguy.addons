@@ -1123,7 +1123,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             url = elem.firstChild.nodeValue
             if '://' not in url:
                 url = urljoin(response.url, url)
-                        elem.firstChild.nodeValue = self.proxy_path + url
+            elem.firstChild.nodeValue = self.proxy_path + url
             # update our manifest url to the location url
             self._session['manifest'] = url
         ################
