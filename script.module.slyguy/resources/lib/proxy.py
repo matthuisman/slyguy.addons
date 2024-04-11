@@ -20,7 +20,7 @@ from pycaption import detect_format, WebVTTWriter
 from slyguy import settings, gui
 from slyguy.log import log
 from slyguy.constants import *
-from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language, replace_kids
+from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
@@ -882,9 +882,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                         codecs = [x for x in attribs.get('codecs', '').split(',') if x]
 
-                        # disney+ uses hvc1.2 for non-hdr in HLS. HBO Max uses it for HDR
-                        # TODO: move this into HBO manifest proxy
-                        if any([x.lower().startswith(('hvc1.2', 'hev1.2')) for x in codecs]):
+                        if attribs.get('hdr') == 'true':
                             is_hdr = True
 
                         if is_hdr:
@@ -1125,8 +1123,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             url = elem.firstChild.nodeValue
             if '://' not in url:
                 url = urljoin(response.url, url)
-            if self.proxy_path not in url:
-                elem.firstChild.nodeValue = self.proxy_path + url
+                        elem.firstChild.nodeValue = self.proxy_path + url
             # update our manifest url to the location url
             self._session['manifest'] = url
         ################
