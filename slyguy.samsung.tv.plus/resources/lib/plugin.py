@@ -85,6 +85,10 @@ def _process_channels(channels, group=ALL, region=ALL):
         if group != ALL and channel['group'] != group:
             continue
 
+        # currently dont work :( as license server refuses
+        if channel.get('license_url'):
+            continue
+
         plot = u'[B]{} - {}[/B]\n'.format(channel['region'], channel['group'])
         if not epg_count:
             plot += channel.get('description', '')
