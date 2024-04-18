@@ -3,7 +3,7 @@ HEADERS = {
     'X-Forwarded-For': '52.62.247.239',
 }
 
-LIVESTREAM_URL = 'https://api.9now.com.au/livestreams'
+LIVESTREAM_URL = 'https://api.9now.com.au/ctv/livestreams'
 API_URL = 'https://tv-api.9now.com.au/v2/pages{}'
 EPG_URL = 'https://i.mjh.nz/au/all/epg.xml.gz'
 

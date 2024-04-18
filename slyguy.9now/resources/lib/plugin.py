@@ -226,7 +226,10 @@ def search(query, page, **kwargs):
 
 def _channels():
     region = settings.getEnum('region', REGIONS, default=NSW)
-    return api.channels(region)
+    data = api.channels(region)
+    data['channels'].extend([row for row in data['events'] if row['type'] == 'live-event' and row['nextEvent']['name']])
+    data['events'] = [row for row in data['events'] if row not in data['channels']]
+    return data
 
 @plugin.route()
 def live_events(**kwargs):
@@ -235,7 +238,7 @@ def live_events(**kwargs):
 
     folder = plugin.Folder(_.LIVE_EVENTS)
 
-    for row in data['events']:
+    for row in sorted(data.get('events', []), key=lambda row:arrow.get(row['startDate'])):
         start = arrow.get(row['startDate']).to('local')
         end = arrow.get(row['endDate']).to('local')
 
@@ -276,11 +279,16 @@ def live_tv(**kwargs):
                 else:
                     plot += u'[{} - {}]\n{}'.format(start.to('local').format('h:mma'), stop.to('local').format('h:mma'), listing['name'])
 
+        if row.get('type') == 'live-event':
+            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=True)
+        else:
+            path = plugin.url_for(play_channel, reference=row['referenceId'], _is_live=True)
+
         folder.add_item(
             label = row['name'],
             info = {'plot': plot},
             art = {'thumb': row['image']['sizes']['w768']},
-            path = plugin.url_for(play_channel, reference=row['referenceId'], _is_live=True),
+            path = path,
             playable = True,
         )
 
