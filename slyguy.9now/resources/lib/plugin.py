@@ -2,6 +2,7 @@ import string
 import codecs
 
 import arrow
+from six.moves.urllib.parse import urlencode, parse_qsl
 from kodi_six import xbmcplugin
 from slyguy import plugin, gui, settings, userdata, inputstream
 from slyguy.constants import *
@@ -309,12 +310,17 @@ def play_channel(reference, **kwargs):
     url = None
     for row in data['channels']:
         if row['referenceId'] == reference:
-            url = row['stream']['url'].split('?')[0]
+            url = row['stream']['url']
             break
 
+    # fix encoded query
+    if '?' in url:
+        url = url.split('?')[0] + '?' + urlencode(parse_qsl(url.split('?')[1]))
+
     return plugin.Item(
+        headers = HEADERS,
         path = url,
-       # inputstream = inputstream.HLS(live=True),
+        inputstream = inputstream.HLS(live=True),
     )
 
 def _parse_show(row):
