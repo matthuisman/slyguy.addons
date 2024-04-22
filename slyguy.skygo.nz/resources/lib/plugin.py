@@ -1,7 +1,9 @@
 import codecs
+from xml.dom.minidom import parseString
 
 import arrow
 from kodi_six import xbmcplugin
+from slyguy.constants import MIDDLEWARE_PLUGIN
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.util import pthms_to_seconds
 
@@ -264,6 +266,16 @@ def play_linear(asset_id, **kwargs):
 def play(asset_id, **kwargs):
     return _play(asset_id, is_linear=False, is_live=False)
 
+@plugin.route()
+@plugin.plugin_request()
+def mpd_request(_data, _path,  **kwargs):
+    root = parseString(_data)
+    mpd = root.getElementsByTagName("MPD")[0]
+    #latest manifest is 15S which leads to stalls. change to 5s
+    mpd.setAttribute('minimumUpdatePeriod', 'PT5S')
+    with open(_path, 'wb') as f:
+        f.write(root.toprettyxml(encoding='utf-8'))
+
 @plugin.login_required()
 def _play(asset_id, is_linear=False, is_live=False):
     url, license = api.play(asset_id, is_linear=is_linear)
@@ -277,6 +289,7 @@ def _play(asset_id, is_linear=False, is_live=False):
     )
 
     if is_live:
+        item.proxy_data['middleware'] = {url: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}}
         item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     return item
