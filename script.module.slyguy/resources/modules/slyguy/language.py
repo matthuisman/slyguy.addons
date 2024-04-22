@@ -96,6 +96,7 @@ class BaseLanguage(object):
     QUALITY_BEST                = 32043
     HTTP_TIMEOUT                = 32044
     HTTP_RETRIES                = 32045
+    IA_WEBOS_ERROR              = 32046
 
     QUALITY_SKIP                = 32048
     NO_AUTOPLAY_FOUND           = 32049

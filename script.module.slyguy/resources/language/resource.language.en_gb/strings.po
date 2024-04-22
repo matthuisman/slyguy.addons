@@ -380,6 +380,10 @@ msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr ""
 
+msgctxt "#32046"
+msgid "WebOS does not currently support Widevine playback on Kodi"
+msgstr ""
+
 msgctxt "#32048"
 msgid "Bypass"
 msgstr ""

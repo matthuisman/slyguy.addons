@@ -234,6 +234,9 @@ def install_widevine(reinstall=False):
         elif system == 'TVOS':
             raise InputStreamError(_.IA_TVOS_ERROR)
 
+        elif system == 'WebOS':
+            raise InputStreamError(_.IA_WEBOS_ERROR)
+
         elif arch == 'armv6':
             raise InputStreamError(_.IA_ARMV6_ERROR)
 

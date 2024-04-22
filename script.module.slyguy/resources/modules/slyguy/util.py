@@ -419,6 +419,8 @@ def process_brightcove(data):
 def get_system_arch():
     if xbmc.getCondVisibility('System.Platform.Android'):
         system = 'Android'
+    elif xbmc.getCondVisibility('System.Platform.WebOS') or os.path.exists('/var/run/nyx/os_info.json'):
+        system = 'WebOS'
     elif xbmc.getCondVisibility('System.Platform.UWP') or '4n2hpmxwrvr6p' in xbmc.translatePath('special://xbmc/'):
         system = 'UWP'
     elif xbmc.getCondVisibility('System.Platform.Windows'):
