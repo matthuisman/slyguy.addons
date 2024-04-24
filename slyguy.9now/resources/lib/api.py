@@ -49,8 +49,8 @@ class API(object):
 
     def channels(self, region):
         params = {
-            'device': 'ctv_androidtv',
-            'streamParams': 'ctv,android,app_v6-4-2',
+            'device': 'web',
+            'streamParams': 'web,chrome,windows',
             'region': region,
             'offset': 0,
         }

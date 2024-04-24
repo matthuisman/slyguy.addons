@@ -1,5 +1,6 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
     SHOWS                  = 30000
     ALL                    = 30001
@@ -25,5 +26,9 @@ class Language(BaseLanguage):
     NT                     = 30021
     WA                     = 30022
     TAS                    = 30023
+    GCQ                    = 30024
+    NLM                    = 30025
+    NEW                    = 30026
+
 
 _ = Language()

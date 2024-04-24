@@ -19,5 +19,8 @@ ACT = 'act'
 NT = 'nt'
 WA = 'wa'
 TAS = 'tas'
+GCQ = 'gold-coast'
+NLM = 'lismore' # Northern Rivers
+NEW = 'newcastle'
 
-REGIONS = [NSW, VIC, QLD, SA, ACT, NT, WA, TAS]
+REGIONS = [NSW, VIC, QLD, SA, ACT, NT, WA, TAS, GCQ, NLM, NEW]

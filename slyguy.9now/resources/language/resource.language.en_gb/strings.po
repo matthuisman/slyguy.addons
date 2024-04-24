@@ -93,6 +93,18 @@ msgctxt "#30023"
 msgid "TAS"
 msgstr ""
 
+msgctxt "#30024"
+msgid "Gold Coast"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Northern Rivers"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Newcastle"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
