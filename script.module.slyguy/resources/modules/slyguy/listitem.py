@@ -63,11 +63,6 @@ class _ListItemInfoTag():
                 continue
 
             try:
-                v = _tag_attr['convert'](v)  # Attempt to force conversion to correct type
-            except:
-                pass
-
-            try:
                 func = getattr(self._info_tag, _tag_attr['attr'])
                 func(v)
             except KeyError:
@@ -82,8 +77,12 @@ class _ListItemInfoTag():
                 log_msg = f'[script.module.infotagger] set_info:\nKeyError: {log_msg}'
                 kodi_log(log_msg, level=LOGINFO)
                 continue
-            except TypeError as e:
-                kodi_log(e, level=LOGINFO)
+
+            except TypeError:
+                try:
+                    func(_tag_attr['convert'](v))  # Attempt to force conversion to correct type
+                except:
+                    pass
 
 
 def strtol(value, convert=float):

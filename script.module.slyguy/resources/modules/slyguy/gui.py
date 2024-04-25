@@ -306,6 +306,12 @@ class Item(object):
         # see https://forum.kodi.tv/showthread.php?tid=374491&pid=3167595#pid3167595
         # Therefore, always calling the below even with empty info
         if KODI_VERSION >= 20:
+            if info.get('genre'):
+                if not isinstance(info['genre'], list):
+                    info['genre'] = [info['genre']]
+            else:
+                info.pop('genre', None)
+
             if info.get('date'):
                 try: li.setDateTime(info.pop('date'))
                 except: pass
