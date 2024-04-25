@@ -52,12 +52,11 @@ class _ListItemInfoTag():
     def set_info(self, infolabels: dict):
         """ Wrapper for compatibility with Matrix ListItem.setInfo() method """
         for k, v in infolabels.items():
-            if v is None:
+            if not v:
                 continue
 
             try:
                 _tag_attr = self._tag_attr[k]
-
             except KeyError:
                 log_msg = f'[script.module.infotagger] set_info:\nKeyError: {k}'
                 kodi_log(log_msg, level=LOGINFO)
