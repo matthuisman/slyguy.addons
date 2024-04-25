@@ -52,7 +52,7 @@ class _ListItemInfoTag():
     def set_info(self, infolabels: dict):
         """ Wrapper for compatibility with Matrix ListItem.setInfo() method """
         for k, v in infolabels.items():
-            if not v:
+            if v is None:
                 continue
 
             try:
@@ -61,6 +61,11 @@ class _ListItemInfoTag():
                 log_msg = f'[script.module.infotagger] set_info:\nKeyError: {k}'
                 kodi_log(log_msg, level=LOGINFO)
                 continue
+
+            try:
+                v = _tag_attr['convert'](v)  # Attempt to force conversion to correct type
+            except:
+                pass
 
             try:
                 func = getattr(self._info_tag, _tag_attr['attr'])
@@ -77,12 +82,8 @@ class _ListItemInfoTag():
                 log_msg = f'[script.module.infotagger] set_info:\nKeyError: {log_msg}'
                 kodi_log(log_msg, level=LOGINFO)
                 continue
-
-            except TypeError:
-                try:
-                    func(_tag_attr['convert'](v))  # Attempt to force conversion to correct type
-                except:
-                    pass
+            except TypeError as e:
+                kodi_log(e, level=LOGINFO)
 
 
 def strtol(value, convert=float):
