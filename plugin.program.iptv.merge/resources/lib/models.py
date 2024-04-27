@@ -5,7 +5,7 @@ import re
 import codecs
 import arrow
 from contextlib import contextmanager
-from distutils.version import LooseVersion
+from looseversion import LooseVersion
 
 import peewee
 from six.moves.urllib_parse import parse_qsl

@@ -1,8 +1,8 @@
 import os
 import re
-from distutils.version import LooseVersion
 
 from kodi_six import xbmc, xbmcvfs
+from looseversion import LooseVersion
 
 from slyguy import plugin, settings, gui, userdata
 from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin, safe_copy
