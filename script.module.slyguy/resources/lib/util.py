@@ -1,6 +1,6 @@
 import os
 from time import time
-from distutils.version import LooseVersion
+from looseversion import LooseVersion
 
 from kodi_six import xbmc
 
