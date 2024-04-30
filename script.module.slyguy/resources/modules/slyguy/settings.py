@@ -10,11 +10,13 @@ from .util import remove_file
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
-    #refresh settings
-    global ADDON
-    ADDON = xbmcaddon.Addon(ADDON.getAddonInfo('id'))
+    reset()
     check_corrupt(ADDON)
     common_settings.reset()
+
+def reset():
+    global ADDON
+    ADDON = xbmcaddon.Addon(ADDON.getAddonInfo('id'))
 
 def open():
     ADDON.openSettings()
