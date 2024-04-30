@@ -2,7 +2,7 @@ from kodi_six import xbmc, xbmcvfs, xbmcaddon
 from six.moves.urllib.parse import unquote_plus
 from looseversion import LooseVersion
 
-from slyguy import router, settings, gui
+from slyguy import router, settings, gui, userdata
 from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc
 from slyguy.log import log
 
@@ -13,6 +13,7 @@ from .merger import check_merge_required
 def start():
     monitor = xbmc.Monitor()
     restart_queued = False
+    just_booted = True
 
     set_kodi_string('_iptv_merge_service_running', '1')
     set_kodi_string('_iptv_merge_force_run')
@@ -26,10 +27,10 @@ def start():
         forced = get_kodi_string('_iptv_merge_force_run') or 0
         merge_required = False
 
-        # if userdata.get('http_method', False):
-        #     merge_required = False
-        # else:
-        merge_required = check_merge_required()
+        if userdata.get('http_method', False):
+            merge_required = False
+        else:
+            merge_required = check_merge_required()
 
         if forced or merge_required:
             set_kodi_string('_iptv_merge_force_run', '1')
@@ -40,6 +41,10 @@ def start():
             if result:
                 restart_queued = True
             set_kodi_string('_iptv_merge_force_run')
+
+        if just_booted:
+            forced = True
+            just_booted = False
 
         if not restart_queued:
             continue
@@ -63,6 +68,9 @@ def start():
             log.info('Merge complete. IPTV Simple should reload immediately')
             restart_queued = False
             addon.setSetting('m3uPathType', '0')
+            if forced:
+                progress.update(100)
+                progress.close()
 
         elif forced or (not xbmc.getCondVisibility('Pvr.IsPlayingTv') and not xbmc.getCondVisibility('Pvr.IsPlayingRadio')):
             restart_queued = False

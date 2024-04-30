@@ -526,13 +526,10 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
     addon_path = xbmc.translatePath(addon.getAddonInfo('profile'))
     is_multi_instance = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0')
-    is_http_compatible = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('21.7.0')
+    is_http_compatible = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('21.7.1')
     instance_filepath = os.path.join(addon_path, 'instance-settings-1.xml')
 
-    # disable http method for now due to some issues. eg. [Errno 32] Broken pipe (https://forum.kodi.tv/showthread.php?tid=340691&pid=3180908#pid3180908)
-    is_http_compatible = False
-
-    if is_http_compatible:
+    if is_http_compatible and settings.getBool('http_method', False):
         proxy_path = settings.common_settings.get('_proxy_path')
         playlist_path = proxy_path + plugin.url_for(http_playlist)
         epg_path = proxy_path + plugin.url_for(http_epg)

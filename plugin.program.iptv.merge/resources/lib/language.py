@@ -101,6 +101,6 @@ class Language(BaseLanguage):
     HIDE_GROUPS            = 30097
     MERGE_AT_HOUR          = 30098
     MERGE_HOUR             = 30099
-    MANUALLY_SETUP         = 30100
+    USE_HTTP_METHOD        = 30100
 
 _ = Language()
