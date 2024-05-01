@@ -1,11 +1,12 @@
 import re
+import os
 from base64 import b64decode
 
 from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream, settings
 from slyguy.exceptions import PluginError
-from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
+from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG, ADDON_PROFILE
 from slyguy.drm import is_wv_secure
 from slyguy.util import async_tasks
 
@@ -302,6 +303,7 @@ def _process_rows(rows, content_class=None):
                 item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, ref_type=ref_type, ref_id=row[ref_type]))))
             elif (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
                 item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, ref_type=ref_type, ref_id=row[ref_type], title=item.label, icon=item.art.get('thumb')))))
+        item.context.append((_.ADD_LIBRARY, 'RunPlugin({})'.format(plugin.url_for(add_library, content_id=row.get('contentId', row[ref_type]), mediatype=item.info['mediatype']))))
 
         items.append(item)
 
@@ -1031,3 +1033,38 @@ def explore_play(page_id=None, resource_id=None, **kwargs):
         headers = api.session.headers,
     )
 ### END EXPLORE ###
+
+@plugin.route()
+def add_library(content_id, mediatype, **kwargs):
+    path = ADDON_PROFILE
+    filename = None
+
+    if mediatype == 'movie':
+        data = api.video(content_id).get('video')
+        path = os.path.join(path, 'movies')
+        filename = '%s.strm' % _get_text(data, 'title', 'program')
+    elif mediatype == 'episode':
+        data = api.video(content_id).get('video')
+        path = os.path.join(
+            path,
+            'series',
+            _get_text(data, 'title', 'series'),
+            _(_.SEASON, season=data['seasonSequenceNumber']),
+        )
+        filename = 'S%sE%s.strm' % (
+            data['seasonSequenceNumber'],
+            data['episodeSequenceNumber'],
+        )
+    elif mediatype == 'season':
+        data = api.episodes(content_id, page=1)
+        for episode in data['videos']:
+            add_library(episode['contentId'], 'episode')
+    elif mediatype == 'tvshow':
+        data = api.series_bundle(content_id)
+        for season in data['seasons']['seasons']:
+            add_library(season['seasonId'], 'season')
+
+    if path and filename:
+        os.makedirs(path, exist_ok=True)
+        with open(os.path.join(path, filename), 'w+') as strm_file:
+            strm_file.write(_get_play_path(content_id=content_id))
