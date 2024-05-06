@@ -7,7 +7,6 @@
         <setting label="30020" type="bool" id="skip_credits" default="true"/>
         <setting label="30047" type="bool" id="sync_watchlist" default="true"/>
         <setting label="30016" type="bool" id="sync_playback" default="false"/>
-        <setting label="30033" type="text" id="app_language" default=""/>
         <setting label="$ADDON[script.module.slyguy 32143]" id="pagination_multiplier" type="slider" default="1" range="1,1,10" option="int"/>
         <setting label="$ADDON[script.module.slyguy 32104]" type="bool" id="kid_lockdown" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>

@@ -288,7 +288,7 @@ class API(object):
         region = session['portabilityLocation']['countryCode'] if session['portabilityLocation'] else session['location']['countryCode']
         maturity = session['preferredMaturityRating']['impliedMaturityRating'] if session['preferredMaturityRating'] else 1850
         kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
-        app_language = settings.get('app_language').strip() or (profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US')
+        app_language = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
 
         _args = {
             'apiVersion': '{apiVersion}',
@@ -410,43 +410,6 @@ class API(object):
         endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['postEvent']['href']
         return self._session.post(endpoint, json=payload).status_code
 
-    def logout(self):
-        userdata.delete('refresh_token')
-        mem_cache.delete('transaction_id')
-        mem_cache.delete('config')
-        userdata.delete('access_token') #LEGACY
-        userdata.delete('expires') #LEGACY
-        self.new_session()
-
-    ### EXPLORE ###
-    def explore_page(self, page_id):
-        params = {
-            'disableSmartFocus': 'true',
-            'limit': 999,
-            'enhancedContainersLimit': 0,
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
-        return self._json_call(endpoint, params=params)['data']['page']
-
-    def explore_set(self, set_id, page=1):
-        params = {
-            'limit': 999,
-            'offset': 30*(page-1),
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
-        return self._json_call(endpoint, params=params)['data']['set']
-
-    def explore_season(self, season_id):
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
-        return self._json_call(endpoint)['data']['season']
-
-    def explore_search(self, query):
-        params = {
-            'query': query,
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['search']['href'], version=EXPLORE_VERSION)
-        return self._json_call(endpoint, params=params)['data']['page']
-
     def playback_data(self, playback_url, wv_secure=False):
         self._set_token()
 
@@ -498,9 +461,60 @@ class API(object):
         self._check_errors(playback_data)
         return playback_data
 
+    def logout(self):
+        userdata.delete('refresh_token')
+        mem_cache.delete('transaction_id')
+        mem_cache.delete('config')
+        userdata.delete('access_token') #LEGACY
+        userdata.delete('expires') #LEGACY
+        self.new_session()
+
+    ### EXPLORE ###
+    def explore_page(self, page_id):
+        params = {
+            'disableSmartFocus': 'true',
+            'limit': 999,
+            'enhancedContainersLimit': 0,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
+        return self._json_call(endpoint, params=params)['data']['page']
+
+    def explore_set(self, set_id, page=1):
+        params = {
+            'limit': 999,
+            'offset': 30*(page-1),
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
+        return self._json_call(endpoint, params=params)['data']['set']
+
+    def explore_season(self, season_id):
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
+        return self._json_call(endpoint)['data']['season']
+
+    def explore_search(self, query):
+        params = {
+            'query': query,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['search']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['page']
+
+    def explore_upnext(self, content_id):
+        params = {
+            'contentId': content_id,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUpNext']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['upNext']
+
+    def explore_deeplink(self, family_id):
+        params = {
+            'refId': family_id,
+            'refIdType': 'encodedFamilyId',
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['deeplink']['actions'][0]['pageId'].replace('entity-','')
+
     def explore_playback(self, resource_id, wv_secure=False):
         self._set_token()
-
         headers = {'accept': 'application/vnd.media-service+json', 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         payload = {

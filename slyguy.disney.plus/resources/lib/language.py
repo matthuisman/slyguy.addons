@@ -33,7 +33,6 @@ class Language(BaseLanguage):
     ENTER_PIN                = 30030
     EMAIL_NOT_FOUND          = 30031
     OTP_INPUT                = 30032
-    APP_LANGUAGE             = 30033
 
     CONTINUE_WATCHING        = 30042
     NOT_ENTITLED             = 30043
