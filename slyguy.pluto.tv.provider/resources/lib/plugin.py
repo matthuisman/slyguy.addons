@@ -223,7 +223,7 @@ def play(id, **kwargs):
         label = channel['name'],
         info = {'plot': channel.get('description')},
         art = {'thumb': channel['logo']},
-        inputstream = inputstream.HLS(live=True),
+        inputstream = inputstream.HLS(live=True, properties={'manifest_config': '{"hls_ignore_endlist":true,"hls_fix_mediasequence":true,"hls_fix_discsequence":true}'}),
         headers = headers,
         path = _get_url(channel),
     )
