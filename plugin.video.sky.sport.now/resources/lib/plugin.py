@@ -261,30 +261,30 @@ def logout(**kwargs):
 @plugin.plugin_middleware()
 def mpd_request(_data, _path, live=False, **kwargs):
     root = parseString(_data)
-
     mpd = root.getElementsByTagName("MPD")[0]
 
-    # IA doesnt support multi-period with different baseurls in rep (https://github.com/xbmc/inputstream.adaptive/issues/1500)
-    # For now, lets remove all periods except the latest
-    if live:
-        periods_to_remove = [x for x in root.getElementsByTagName('Period')][:-1]
-        if periods_to_remove:
-            for period in periods_to_remove:
-                period.parentNode.removeChild(period)
-            mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
+    if not inputstream.require_version('21.0.0'):
+        # IA doesnt support multi-period with different baseurls in rep (https://github.com/xbmc/inputstream.adaptive/issues/1500)
+        # For now, lets remove all periods except the latest
+        if live:
+            periods_to_remove = [x for x in root.getElementsByTagName('Period')][:-1]
+            if periods_to_remove:
+                for period in periods_to_remove:
+                    period.parentNode.removeChild(period)
+                mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
 
-    # Fixes issues of being too close to head and getting 404 error
-    seconds_diff = 0
-    utc = mpd.getElementsByTagName("UTCTiming")
-    if utc:
-        utc_time = arrow.get(utc[0].getAttribute('value'))
-        seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
+        # Fixes issues of being too close to head and getting 404 error
+        seconds_diff = 0
+        utc = mpd.getElementsByTagName("UTCTiming")
+        if utc:
+            utc_time = arrow.get(utc[0].getAttribute('value'))
+            seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
 
-    avail = mpd.getAttribute('availabilityStartTime')
-    if avail:
-        seconds_diff += 30
-        avail_start = arrow.get(avail).shift(seconds=seconds_diff)
-        mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
+        avail = mpd.getAttribute('availabilityStartTime')
+        if avail:
+            seconds_diff += 30
+            avail_start = arrow.get(avail).shift(seconds=seconds_diff)
+            mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
