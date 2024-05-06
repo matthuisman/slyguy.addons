@@ -178,6 +178,18 @@ msgctxt "#30037"
 msgid "Video view for menus"
 msgstr "Widok wideo dla menu"
 
+msgctxt "#30038"
+msgid "VP9"
+msgstr "VP9"
+
+msgctxt "#30039"
+msgid "AV1"
+msgstr "AV1"
+
+msgctxt "#30040"
+msgid "Fast Updates"
+msgstr "Szybkie aktualizacje"
+
 ## COMMON ##
 
 msgctxt "#32000"
@@ -384,6 +396,10 @@ msgstr "Limit czasu HTTP (sekundy)"
 msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "Ponowienie HTTP"
+
+msgctxt "#32046"
+msgid "WebOS does not currently support Widevine playback on Kodi"
+msgstr "WebOS nie obsługuje obecnie odtwarzania Widevine na Kodi"
 
 msgctxt "#32048"
 msgid "Bypass"
@@ -838,3 +854,25 @@ msgstr "Ta wersja Widevine ma zgłoszone poniżej problemy ze stabilnością\n"
 msgctxt "#32147"
 msgid "Proxy Server"
 msgstr "Serwer Proxy"
+
+msgctxt "#32148"
+msgid "Trailer not found"
+msgstr "Trailer nie znaleziony"
+
+msgctxt "#32149"
+msgid "Failed to connect to host: {host}\n"
+"Check your internet connection"
+msgstr "Nie udało się połączyć z hostem: {host}\n"
+"Sprawdź swoje połączenie z internetem"
+
+msgctxt "#32150"
+msgid "Failed to connect to host: {host}\n"
+"Check your proxy and internet connections"
+msgstr "Nie udało się połączyć z hostem: {host}\n"
+"Sprawdź swoje połączenie proxy i internetowe"
+
+msgctxt "#32151"
+msgid "The below SlyGuy addons are outdated and must be updated or no support will be given\n"
+"{updates_required}"
+msgstr "Poniższe dodatki SlyGuy są nieaktualne i muszą zostać zaktualizowane, w przeciwnym razie nie będzie zapewniona pomoc.\n"
+"{updates_required}"
