@@ -304,7 +304,8 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
     item = plugin.Item(
         path = data['dash']['url'],
         inputstream = inputstream.Widevine(
-            license_key = data['dash']['drm']['url']
+            license_key = data['dash']['drm']['url'],
+            properties = {'manifest_config': '{"timeshift_bufferlimit":86400000}'},
         ),
         headers = headers,
         proxy_data = {
