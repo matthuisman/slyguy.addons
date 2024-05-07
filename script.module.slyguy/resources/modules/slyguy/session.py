@@ -34,7 +34,7 @@ DEFAULT_HEADERS = {
 }
 
 SSL_CIPHERS = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA:AES256-SHA'
-SSL_OPTIONS = ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_COMPRESSION
+SSL_OPTIONS = ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_COMPRESSION | ssl.OP_NO_TICKET
 DNS_CACHE = dns.resolver.Cache()
 
 
@@ -122,7 +122,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
     def connection_from_pool_key(self, func, pool_key, request_context):
         if self.session_data['ssl_ciphers'] or self.session_data['ssl_options']:
             context_key = (self.session_data['ssl_ciphers'], self.session_data['ssl_options'])
-            request_context['ssl_context'] = self._context_cache[context_key] = self._context_cache.get(context_key, requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=SSL_CIPHERS, options=SSL_OPTIONS))
+            request_context['ssl_context'] = self._context_cache[context_key] = self._context_cache.get(context_key, requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self.session_data['ssl_ciphers'], options=self.session_data['ssl_options']))
             pool_key = pool_key._replace(key_ssl_context=context_key)
 
         if self.session_data['interface_ip']:
@@ -317,8 +317,6 @@ class RawSession(requests.Session):
 
             self._session_cache[url] = session_data
 
-        self._adapter.session_data = session_data
-
         if session_data['url'] != url:
             log.debug("URL Changed: {}".format(session_data['url']))
 
@@ -342,6 +340,8 @@ class RawSession(requests.Session):
                 session_data['ssl_ciphers'] += '@SECLEVEL=0'
             kwargs['verify'] = False
             kwargs['cert'] = self._get_cert()
+
+        self._adapter.session_data = session_data
 
         if 'verify' not in kwargs:
             kwargs['verify'] = self._verify
