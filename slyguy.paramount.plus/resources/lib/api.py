@@ -365,7 +365,9 @@ class API(object):
     def play(self, video_id):
         self._refresh_token()
 
-        params = {'contentId': video_id}
+        params = {
+            'contentId': video_id,
+        }
         session = self._session.get('/v3.1/androidphone/irdeto-control/session-token.json', params=self._params(params)).json()
         if not session.get('success', True):
             error = session.get('Error Message') or session.get('message') or str(session)
@@ -377,8 +379,7 @@ class API(object):
             try:
                 return self._play_link_platform(url, session)
             except Exception as e:
-                exception = e
-                log.warning('link.theplatform.com failed. fallback to session-token streamingUrl')
+                log.warning('link.theplatform.com failed ({}). fallback to session-token streamingUrl'.format(e))
 
         if session.get('streamingUrl'):
             return {
@@ -389,10 +390,7 @@ class API(object):
                 'license_token': session['ls_session'],
             }
         else:
-            if exception:
-                raise exception
-            else:
-                raise APIError("Unable to find playback url for {}".format(video_id))
+            raise APIError("Unable to find playback url for {} in {}".format(video_id, session))
 
     def update_playhead(self, content_id, time):
         params = {
