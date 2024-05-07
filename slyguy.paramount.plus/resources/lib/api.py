@@ -419,19 +419,18 @@ class API(object):
 
         params = {
             'start': 0,
-            'rows': 30,
             '_clientRegion': self._config.country_code,
             'dma': dma['dma'] if dma else None,
             'showListing': 'true',
+            'addOns': '',
         }
 
-        data = self._session.get('/v3.0/androidphone/home/configurator/channels.json', params=self._params(params)).json()
+        data = self._session.get('/v3.0/androidphone/live/channels.json', params=self._params(params)).json()
 
         channels = []
-        for row in data.get('carousel', []):
+        for row in data.get('channels', []):
             if row['dma'] and dma:
                 row['dma'] = dma['tokenDetails']
-
             channels.append(row)
 
         return sorted(channels, key=lambda x: x['displayOrder'])
