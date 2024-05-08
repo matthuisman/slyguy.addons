@@ -165,7 +165,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == host:
             try:
-                host = self.session_data['resolver'][1].query(host)[0].to_text()
+                host = self.session_data['resolver'][1].query(host, source=self.session_data['interface_ip'])[0].to_text()
                 log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, self.session_data['resolver'][1].nameservers[0], host))
             except Exception as e:
                 log.exception(e)
@@ -319,6 +319,12 @@ class RawSession(requests.Session):
                 break
 
             self._session_cache[url] = session_data
+
+        # if no resolver set and have a forced interface, use dns.resolver so we can set the source IP to interface IP
+        if not session_data['resolver'] and session_data['interface_ip']:
+            resolver = dns.resolver.Resolver(configure=False)
+            resolver.cache = DNS_CACHE
+            session_data['resolver'] = [urlparse(session_data['url']).netloc.lower(), resolver]
 
         if session_data['url'] != url:
             log.debug("URL Changed: {}".format(session_data['url']))
