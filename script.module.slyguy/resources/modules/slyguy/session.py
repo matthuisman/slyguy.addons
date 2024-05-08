@@ -2,11 +2,11 @@ import json
 import socket
 import shutil
 import re
-import ssl
 import os
 import functools
 import random
 from gzip import GzipFile
+from ssl import OPENSSL_VERSION
 
 import requests
 import urllib3
@@ -28,7 +28,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # KODI 17.6/18.9: OpenSSL 1.0.2j  26 Sep 2016
 # KODI 19.5: OpenSSL 1.1.1d  10 Sep 2019
 # KODI 20.0: OpenSSL 1.1.1q  5 Jul 2022
-log.debug(ssl.OPENSSL_VERSION)
+# KODI 21.0: OpenSSL 1.1.1q  5 Jul 2022
+log.debug(OPENSSL_VERSION)
 
 DEFAULT_HEADERS = {
     'User-Agent': DEFAULT_USERAGENT,
@@ -38,7 +39,7 @@ SSL_CIPHERS = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE
 SSL_CIPHERS = SSL_CIPHERS.split(':')
 random.shuffle(SSL_CIPHERS)
 SSL_CIPHERS = ':'.join(SSL_CIPHERS)
-SSL_OPTIONS = ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_COMPRESSION | ssl.OP_NO_TICKET
+SSL_OPTIONS = urllib3.util.ssl_.OP_NO_SSLv2 | urllib3.util.ssl_.OP_NO_SSLv3 | urllib3.util.ssl_.OP_NO_COMPRESSION | urllib3.util.ssl_.OP_NO_TICKET
 DNS_CACHE = dns.resolver.Cache()
 
 def json_override(func, error_msg):
