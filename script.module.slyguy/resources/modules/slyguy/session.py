@@ -321,11 +321,11 @@ class RawSession(requests.Session):
 
             self._session_cache[url] = session_data
 
-        # if no resolver set and have a forced interface, use dns.resolver so we can set the source IP to interface IP
-        if not session_data['resolver'] and session_data['interface_ip']:
-            resolver = dns.resolver.Resolver(configure=False)
-            resolver.cache = DNS_CACHE
-            session_data['resolver'] = [urlparse(session_data['url']).netloc.lower(), resolver]
+        if session_data['interface_ip']:
+            if not session_data['resolver']:
+                log.warning("DNS leak! DNS requests will be going via the default interface. Specify a DNS server in smart urls to fix")
+            elif isinstance(session_data['resolver'][1], DOHResolver):
+                log.warning("DNS leak! The DOH DNS & request only will be made using the default interface (support coming soon). All other requests will use the specified interface.")
 
         if session_data['url'] != url:
             log.debug("URL Changed: {}".format(session_data['url']))
