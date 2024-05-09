@@ -62,7 +62,8 @@ class DOHResolver(object):
         self.nameservers = nameservers or []
         self._session = RawSession()
 
-    def query(self, host):
+    def query(self, host, source=None):
+        #TODO: use source ip address
         class DNSResultWrapper(object):
             def __init__(self, answer):
                 self.answer = answer
@@ -81,8 +82,7 @@ class DOHResolver(object):
                 info = self._adapter.getaddrinfo(server_host, 443 if server.lower().startswith('https') else 80)
                 families = [x[0] for x in info]
 
-                params = {'name': host, 'dns': host}
-
+                params = {'name': host}
                 # prefer IPV4
                 if socket.AF_INET in families or socket.AF_INET6 not in families:
                     params['type'] = 'A'
