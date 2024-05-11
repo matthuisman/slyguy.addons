@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.0.13">
+<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.0.14">
 	<requires>
 		<import addon="script.module.slyguy"/>
 		<import addon="repository.slyguy.globalsearch"/>
