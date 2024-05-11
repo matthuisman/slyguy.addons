@@ -526,21 +526,12 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
     addon_path = xbmc.translatePath(addon.getAddonInfo('profile'))
     is_multi_instance = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0')
-    is_http_compatible = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('21.7.1')
     instance_filepath = os.path.join(addon_path, 'instance-settings-1.xml')
 
-    if is_http_compatible and settings.getBool('http_method', False):
-        proxy_path = settings.common_settings.get('_proxy_path')
-        playlist_path = proxy_path + plugin.url_for(http_playlist)
-        epg_path = proxy_path + plugin.url_for(http_epg)
-        userdata.set('http_method', True)
-        path_type = '1'
-    else:
-        output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
-        playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-        epg_path = os.path.join(output_dir, EPG_FILE_NAME)
-        userdata.set('http_method', False)
-        path_type = '0'
+    output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
+    playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
+    epg_path = os.path.join(output_dir, EPG_FILE_NAME)
+    path_type = '0'
 
     if is_multi_instance:
         try:
