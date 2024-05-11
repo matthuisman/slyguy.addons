@@ -1,3 +1,5 @@
+from slyguy import settings
+
 ACTION_EXIT = (10,)
 ACTION_BACK = (9, 92, 216, 247, 257, 275, 61467, 61448,)
 ACTION_CONTEXT_MENU = (117,)
@@ -32,6 +34,14 @@ ACTORLABELS = ["cast"]
 
 DIRECTORLABELS = ["director"]
 
+_rules = []
+if settings.getBool('search_tags'):
+      _rules.append('{{"field":"title", "operator":"contains", "value":"{query}"}}')
+if settings.getBool('search_originaltitle'):
+      _rules.append('{{"field":"originaltitle", "operator":"contains", "value":"{query}"}}')
+if settings.getBool('search_tags'):
+      _rules.append('{{"field":"tag", "operator":"contains", "value":"{query}"}}')
+
 CATEGORIES = {
               'movies':{
                         'order':1,
@@ -41,7 +51,7 @@ CATEGORIES = {
                         'method':'VideoLibrary.GetMovies',
                         'properties':MOVIELABELS,
                         'sort':'title',
-                        'rule':'"filter":{{"or":[{{"field":"title", "operator":"contains", "value":"{query}"}}, {{"field":"originaltitle", "operator":"contains", "value":"{query}"}}]}}',
+                        'rule':'"filter":{{{{"or":[{}]}}}}'.format(', '.join(_rules)),
                         'streamdetails':True,
                         'label':342,
                         'icon':'DefaultVideo.png',
@@ -56,7 +66,7 @@ CATEGORIES = {
                          'method':'VideoLibrary.GetTVShows',
                          'properties':TVSHOWLABELS,
                          'sort':'label',
-                         'rule':'"filter":{{"field":"title", "operator":"contains", "value":"{query}"}}',
+                         'rule':'"filter":{{{{"or":[{}]}}}}'.format(', '.join(_rules)),
                          'streamdetails':False,
                          'label':20343,
                          'icon':'DefaultVideo.png',
@@ -71,7 +81,7 @@ CATEGORIES = {
                           'method':'VideoLibrary.GetEpisodes',
                           'properties':EPISODELABELS,
                           'sort':'title',
-                          'rule':'"filter":{{"field":"title", "operator":"contains", "value":"{query}"}}',
+                          'rule':'"filter":{{{{"or":[{}]}}}}'.format(', '.join(_rules)),
                           'streamdetails':True,
                           'label':20360,
                           'icon':'DefaultVideo.png',

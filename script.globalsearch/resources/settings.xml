@@ -3,6 +3,9 @@
 	<category label="128">
 		<setting label="30000" type="slider" id="history_length" default="20" range="0,1,100" option="int"/>
 		<setting label="30001" type="bool" id="smart_search" default="true"/>
+		<setting label="30002" type="bool" id="search_title" default="true"/>
+		<setting label="30003" type="bool" id="search_originaltitle" default="true"/>
+		<setting label="30004" type="bool" id="search_tags" default="false"/>
 	</category>
 	<category label="32000">
 		<setting label="32001" type="bool" id="movies" default="true"/>

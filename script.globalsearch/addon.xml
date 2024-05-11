@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.0.12">
+<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.0.13">
 	<requires>
 		<import addon="script.module.slyguy"/>
 		<import addon="repository.slyguy.globalsearch"/>
@@ -18,6 +18,6 @@ Drop-in replacement as uses the same addon id and much higher version number to 
 			<icon>icon.png</icon>
 			<fanart>fanart.jpg</fanart>
 		</assets>
-		<news></news>
+		<news>Add setting to search in Original Titles and Tags</news>
 	</extension>
 </addon>

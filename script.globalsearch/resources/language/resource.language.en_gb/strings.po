@@ -32,6 +32,18 @@ msgctxt "#30001"
 msgid "Smart Results Ordering"
 msgstr ""
 
+msgctxt "#30002"
+msgid "Search in Title"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Search in Original Title"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Search in Tags"
+msgstr ""
+
 msgctxt "#32000"
 msgid "General"
 msgstr ""
