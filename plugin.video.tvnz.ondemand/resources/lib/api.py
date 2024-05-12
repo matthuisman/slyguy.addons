@@ -1,3 +1,4 @@
+import json
 from time import time
 
 from slyguy import util, mem_cache, userdata
@@ -6,6 +7,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, TOKEN_URL
+from .queries import PLAYBACK
 
 
 class APIError(Error):
@@ -141,6 +143,19 @@ class API(object):
     
     def channel(self, slug):
         return self._session.get('/api/v1/android/play/channels/{}'.format(slug)).json()
+
+    # def get_brightcove_src(self, referenceID):
+    #     self._refresh_token()
+    #     query = PLAYBACK.replace('VIDEO_ID', referenceID)
+
+    #     headers = {
+    #         'content-type': 'application/graphql',
+    #     }
+
+    #     data = self._session.post('/play/v1/graphql', data=query, headers=headers).json()
+    #     data = json.loads(data['data']['video']['playback']['bcPayload'])
+
+    #     return util.process_brightcove(data)
 
     def get_brightcove_src(self, referenceID):
         brightcove_url = BRIGHTCOVE_URL.format(BRIGHTCOVE_ACCOUNT, referenceID)

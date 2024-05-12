@@ -83,7 +83,7 @@ def _process_video(data, showname, categories=None):
                 label = label.replace(replace, replaces[replace]())
         data['labels'][key] = label
 
-    label = '{}'.format(data['labels']['primary'])
+    label = u'{}'.format(data['labels']['primary'])
     if 'Movies' in categories:
         categories.remove('Movies')
         _type = 'movie'
@@ -91,7 +91,7 @@ def _process_video(data, showname, categories=None):
         _type = 'episode'
 
     if data['labels'].get('secondary'):
-        plot = '[B]{}[/B]\n\n{}'.format(data['labels']['secondary'], data['synopsis'])
+        plot = u'[B]{}[/B]\n\n{}'.format(data['labels']['secondary'], data['synopsis'])
     else:
         plot = data['synopsis']
 
@@ -106,6 +106,7 @@ def _process_video(data, showname, categories=None):
     path = None
     meta = data['publisherMetadata']
     if 'brightcoveVideoId' in meta:
+       # path = plugin.url_for(play, brightcoveId=data['videoId'])
         path = plugin.url_for(play, brightcoveId=meta['brightcoveVideoId'])
     elif 'liveStreamUrl' in meta:
         path = plugin.url_for(play, livestream=meta['liveStreamUrl'], _is_live=meta['state'] != 'dvr')
