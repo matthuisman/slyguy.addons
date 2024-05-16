@@ -1,3 +1,4 @@
+from .constants import REGION_ALL
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
@@ -11,6 +12,7 @@ class Language(BaseLanguage):
         'Darwin':       30006,
         'Hobart':       30007,
         'Canberra':     30008,
+        REGION_ALL:     30018,
     }
     LIVE_TV =           30009
     USE_NEW =           30010

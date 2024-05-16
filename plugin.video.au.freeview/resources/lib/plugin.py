@@ -24,8 +24,6 @@ def home(**kwargs):
 @plugin.route()
 def live_tv(**kwargs):
     region = get_region()
-    channels = get_channels(region)
-
     folder = plugin.Folder(_(_.REGIONS[region]))
     show_chnos = settings.getBool('show_chnos', False)
 
@@ -70,7 +68,7 @@ def live_tv(**kwargs):
 
 @plugin.route()
 def play(region, slug, **kwargs):
-    channel = get_channels(region, slug)
+    channel = get_channels(REGION_ALL, slug)
 
     item = plugin.Item(
         label = channel['name'],
@@ -92,11 +90,11 @@ def play(region, slug, **kwargs):
 
 def get_channels(region, slug=None):
     @cached(60*5)
-    def get_data():
+    def get_data(region):
         url = DATA_URL.format(region=region)
         return Session().gz_json(url)
 
-    channels = get_data()
+    channels = get_data(region)
     if slug:
         return channels[slug]
 

@@ -1,4 +1,5 @@
-REGIONS = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Darwin', 'Hobart', 'Canberra']
+REGION_ALL = 'all'
+REGIONS = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Darwin', 'Hobart', 'Canberra', REGION_ALL]
 DATA_URL = 'https://i.mjh.nz/au/{region}/tv.json.gz'
 EPG_URL = 'https://i.mjh.nz/au/{region}/epg.xml.gz'
 
