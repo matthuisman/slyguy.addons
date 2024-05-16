@@ -435,7 +435,11 @@ class API(object):
 
         # atmos not yet supported on version=6 (basic tier). Add in-case support is added
         if settings.getBool('dolby_atmos', False):
-            audio_types.append('atmos')
+            audio_types.append('ATMOS')
+
+        # DTSX works on both tiers
+        if settings.getBool('dtsx', False):
+            audio_types.append('DTS_X')
 
         if wv_secure and settings.getBool('dolby_vision', False):
             video_ranges.append('DOLBY_VISION')
@@ -536,9 +540,13 @@ class API(object):
         video_ranges = []
         audio_types = []
 
-        # atmos not yet supported on version=6 (basic tier). Add in-case support is added
+        # atmos not yet supported on basic tier. Add in-case support is added
         if settings.getBool('dolby_atmos', False):
-            audio_types.append('atmos')
+            audio_types.append('ATMOS')
+
+        # DTSX works on both tiers
+        if settings.getBool('dtsx', False):
+            audio_types.append('DTS_X')
 
         if wv_secure and settings.getBool('dolby_vision', False):
             video_ranges.append('DOLBY_VISION')
