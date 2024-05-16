@@ -601,7 +601,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if (not atmos_enabled and is_atmos) or (not ac3_enabled and codecs == 'ac-3') or (not ec3_enabled and codecs == 'ec-3') or (max_channels and channels > max_channels):
                             continue
 
-                        if is_atmos:
+                        if is_atmos and KODI_VERSION < 21:
                             new_set = adap_set.cloneNode(deep=True)
 
                             new_set.setAttribute('name', 'ATMOS')
@@ -1170,8 +1170,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if not atmos_enabled:
                     continue
 
-                attribs['NAME'] = _(_.ATMOS, name=attribs['NAME'])
-                attribs['CHANNELS'] = attribs['CHANNELS'].split('/')[0]
+                if KODI_VERSION < 21:
+                    attribs['NAME'] = _(_.ATMOS, name=attribs['NAME'])
+                    attribs['CHANNELS'] = attribs['CHANNELS'].split('/')[0]
 
             try:
                 channels = int(attribs['CHANNELS'])
