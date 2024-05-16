@@ -41,6 +41,10 @@ msgctxt "#30009"
 msgid "Stations"
 msgstr ""
 
+msgctxt "#30010"
+msgid "All"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

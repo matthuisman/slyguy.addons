@@ -1,3 +1,4 @@
+from .constants import ALL
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
@@ -11,6 +12,7 @@ class Language(BaseLanguage):
         'Darwin':       30006,
         'Hobart':       30007,
         'Canberra':     30008,
+        ALL:            30010,
     }
     STATIONS =          30009
 

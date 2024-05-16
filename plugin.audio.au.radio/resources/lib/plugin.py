@@ -5,7 +5,7 @@ from slyguy.session import Session
 from slyguy.mem_cache import cached
 from slyguy.constants import QUALITY_DISABLED
 
-from .constants import DATA_URL, REGIONS
+from .constants import DATA_URL, REGIONS, ALL
 from .language import _
 
 session = Session()
@@ -46,8 +46,8 @@ def _stations():
 
 @plugin.route()
 def play(slug, **kwargs):
-    region  = get_region()
-    channel = get_channels(region)[slug]
+    # use ALL so bookmarks work regardless of region
+    channel = get_channels(ALL)[slug]
 
     item = plugin.Item(
         label = channel['name'],
@@ -70,7 +70,7 @@ def get_region():
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    region   = get_region()
+    region = get_region()
     channels = get_channels(region)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
