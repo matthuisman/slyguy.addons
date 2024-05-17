@@ -27,7 +27,7 @@
 
         <setting label="30023" id="default_ratio" type="enum" default="1" lvalues="32055|30009|21377"/>
         <setting label="30052" type="bool" id="dolby_atmos" default="false"/>
-        <setting label="30033" type="bool" id="dtsx" default="false"/>
+        <setting label="30033" type="bool" id="dtsx" default="false" visible="false"/>
         <setting label="30019" type="bool" id="hevc" default="false"/>
         <setting label="30018" type="bool" id="hdr10" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
         <setting label="30015" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
