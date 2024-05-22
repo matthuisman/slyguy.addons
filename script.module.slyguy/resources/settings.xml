@@ -39,6 +39,7 @@
         <setting label="30005" id="proxy_enabled" type="bool" default="true"/>
         <setting label="30007" id="wv_level" type="enum" default="0" lvalues="30008|30009|30010"/>
         <setting label="30011" id="hdcp_level" type="enum" default="0" lvalues="30008|30012|30013|30014|30015"/>
+        <setting label="$ADDON[script.module.slyguy 32047]" id="disable_dns_overrides" type="bool" default="false"/>
         <setting label="30006" id="persist_cache" type="bool" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32147]" id="proxy_server" type="text" default="kodi"/>
         <setting label="$ADDON[script.module.slyguy 32037]" id="verify_ssl" type="bool" default="true"/>

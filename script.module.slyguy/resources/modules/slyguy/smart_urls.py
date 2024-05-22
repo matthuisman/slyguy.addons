@@ -6,6 +6,7 @@ from kodi_six import xbmc, xbmcaddon
 from .log import log
 from .mem_cache import cached
 from .constants import ADDON_ID, COMMON_ADDON_ID, DNS_OVERRIDE_DOMAINS, DNS_OVERRIDE_SERVER
+from .settings import common_settings
 
 
 @cached(expires=60*5)
@@ -21,9 +22,10 @@ def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
     if rewrites:
         log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
 
-    # add some defaults that are often blocked by networkwide dns
-    for domain in DNS_OVERRIDE_DOMAINS:
-        rewrites.append(['r:{}'.format(DNS_OVERRIDE_SERVER), domain])
+    if not common_settings.getBool('disable_dns_overrides', False):
+        # add some defaults that are often blocked by networkwide dns
+        for domain in DNS_OVERRIDE_DOMAINS:
+            rewrites.append(['r:{}'.format(DNS_OVERRIDE_SERVER), domain])
 
     return rewrites
 

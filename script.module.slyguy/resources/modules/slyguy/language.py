@@ -97,7 +97,7 @@ class BaseLanguage(object):
     HTTP_TIMEOUT                = 32044
     HTTP_RETRIES                = 32045
     IA_WEBOS_ERROR              = 32046
-
+    DISABLE_DNS_OVERRIDES       = 32047
     QUALITY_SKIP                = 32048
     NO_AUTOPLAY_FOUND           = 32049
     CONFIRM_MIGRATE             = 32050
