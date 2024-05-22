@@ -210,6 +210,8 @@ class BaseLanguage(object):
     PLAYBACK_FAILED             = 16026
     AUTO                        = 16316
     TRAILER                     = 20410
+    PLAY_NEXT                   = 10008
+    QUEUE_ITEM                  = 13347
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
