@@ -6,6 +6,7 @@
         <setting label="30003" id="reload_time_hours" type="slider" default="12" range="1,1,48" option="int" visible="eq(-1,true)"/>
         <setting label="30098" id="merge_at_hour" type="bool" default="false" enable="eq(-2,false)"/>
         <setting label="30099" id="merge_hour" type="slider" default="3" range="0,1,23" option="int" visible="eq(-1,true)"/>
+        <setting label="30004" id="restart_pvr" type="bool" default="true"/>
         <setting label="30070" id="start_ch_no" type="number" default="1"/>
         <setting label="30081" id="remove_epg_orphans" type="bool" default="false"/>
         <setting label="30097" id="hide_groups" type="text" default=""/>

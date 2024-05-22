@@ -41,7 +41,7 @@ def start():
             forced = True
             just_booted = False
 
-        if not restart_queued:
+        if not restart_queued or not settings.getBool('restart_pvr', False):
             continue
 
         try:
