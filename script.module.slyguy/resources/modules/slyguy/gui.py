@@ -357,15 +357,15 @@ class Item(object):
             if self.path:
                 self.path = add_url_args(self.path, _play=1)
 
-        if self.context:
-            items = [x for x in self.context]
-            # live/pvr already has these added in kodi 20+
-            if self.playable and (KODI_VERSION < 20 or ROUTE_LIVE_TAG not in self.path):
-                # PlayNext added in Kodi 18
-                if KODI_VERSION > 17:
-                    items.append((_.PLAY_NEXT, 'Action(PlayNext)'))
-                items.append((_.QUEUE_ITEM, 'Action(Queue)'))
-            li.addContextMenuItems(items)
+        context_items = [x for x in self.context]
+        if self.playable and (KODI_VERSION < 20 or ROUTE_LIVE_TAG not in self.path):
+            # PlayNext added in Kodi 18
+            if KODI_VERSION > 17:
+                context_items.append((_.PLAY_NEXT, 'Action(PlayNext)'))
+            context_items.append((_.QUEUE_ITEM, 'Action(Queue)'))
+
+        if context_items:
+            li.addContextMenuItems(context_items)
 
         if self.resume_from is not None:
             # Setting this on Kodi 18 or below removes all list item data (fixed in 19)
