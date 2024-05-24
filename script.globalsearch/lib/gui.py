@@ -114,15 +114,25 @@ class GUI(xbmcgui.WindowXML):
     def _cached_json_rpc(self, command):
         return json.loads(xbmc.executeJSONRPC(command))
 
+    def _get_rule(self, rule):
+        _rules = []
+        if settings.getBool('search_title'):
+            _rules.append('{{"field":"title", "operator":"contains", "value":"{query}"}}')
+        if settings.getBool('search_originaltitle'):
+            _rules.append('{{"field":"originaltitle", "operator":"contains", "value":"{query}"}}')
+        if settings.getBool('search_tags'):
+            _rules.append('{{"field":"tag", "operator":"contains", "value":"{query}"}}')
+        return rule.replace("[[RULES]]", '{{{{"or":[{}]}}}}'.format(', '.join(_rules)))
+
     def _get_items(self, cat, search):
         if cat['content'] == 'livetv':
             self._fetch_channelgroups(cat)
             return
         if cat['type'] == 'seasonepisodes':
             search = search[0], search[1]
-            rule = cat['rule'].format(query0 = search[0], query1 = search[1])
+            rule = self._get_rule(cat['rule']).format(query0 = search[0], query1 = search[1])
         else:
-            rule = cat['rule'].format(query = search)
+            rule = self._get_rule(cat['rule']).format(query = search)
         self.getControl(SEARCHCATEGORY).setLabel(xbmc.getLocalizedString(cat['label']))
         self.getControl(SEARCHCATEGORY).setVisible(True)
 
