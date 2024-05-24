@@ -49,8 +49,14 @@ class API(object):
 
     def channels(self, region):
         params = {
-            'device': 'web',
-            'streamParams': 'web,chrome,windows',
+            # 'device': 'web',
+            # 'streamParams': 'web,chrome,windows',
+            # 'token': '',
+
+            ## goldcoast,listmore,northern rivers wont work with atv
+            ## need to use web + token
+            'device': 'ctv_androidtv',
+            'streamParams': 'ctv,android,app_v6-4-2',
             'region': region,
             'offset': 0,
         }
