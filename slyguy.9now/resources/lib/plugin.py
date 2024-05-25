@@ -4,7 +4,8 @@ import codecs
 import arrow
 from six.moves.urllib.parse import urlencode, parse_qsl
 from kodi_six import xbmcplugin
-from slyguy import plugin, gui, settings, userdata, inputstream
+from slyguy import plugin, settings, inputstream
+from slyguy.mem_cache import cached
 from slyguy.constants import *
 
 from .api import API
@@ -224,6 +225,7 @@ def search(query, page, **kwargs):
 
     return items, False
 
+@cached(60*5)
 def _channels():
     region = settings.getEnum('region', REGIONS, default=NSW)
     data = api.channels(region)
