@@ -7,6 +7,7 @@ from six.moves.urllib_parse import unquote
 from slyguy import plugin, settings, inputstream
 from slyguy.log import log
 from slyguy.util import get_system_arch
+from slyguy.constants import ADDON_PROFILE
 
 
 from .language import _
@@ -45,15 +46,21 @@ def play(video_id, **kwargs):
 
     ydl_opts = {
         'quiet': True,
-        'cachedir': None,
+        'cachedir': ADDON_PROFILE,
         'no_warnings': True,
+        'player_client': 'ios',
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios',] #['ios', 'android', 'web']
+            }
+        },
     }
 
     error = 'Unknown'
     try:
         from .yt_dlp import YoutubeDL
         with YoutubeDL(ydl_opts) as ydl:
-            data = ydl.extract_info(video_id, download=False)
+            data = ydl.extract_info('https://www.youtube.com/watch?v={}'.format(video_id), download=False)
     except Exception as e:
         log.exception(e)
         error = e

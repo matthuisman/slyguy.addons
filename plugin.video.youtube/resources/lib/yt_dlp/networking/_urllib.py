@@ -47,6 +47,7 @@ from ..utils.networking import normalize_url
 from slyguy.session import Session
 
 
+SESSION = Session()
 SUPPORTED_ENCODINGS = ['gzip', 'deflate']
 CONTENT_DECODE_ERRORS = [zlib.error, OSError]
 
@@ -396,7 +397,7 @@ class UrllibRH(RequestHandler, InstanceStoreMixin):
         headers = self._merge_headers(request.headers)
         add_accept_encoding_header(headers, SUPPORTED_ENCODINGS)
         try:
-            res = Session().request(request.method, request.url, data=request.data, headers=dict(headers), cookies=request.extensions.get('cookiejar') or self.cookiejar, stream=True)       
+            res = SESSION.request(request.method, request.url, data=request.data, headers=dict(headers), cookies=request.extensions.get('cookiejar') or self.cookiejar, stream=True)       
         except urllib.error.HTTPError as e:
             if isinstance(e.fp, (http.client.HTTPResponse, urllib.response.addinfourl)):
                 # Prevent file object from being closed when urllib.error.HTTPError is destroyed.

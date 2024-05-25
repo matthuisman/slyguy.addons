@@ -1,9 +1,9 @@
 import collections
-import contextlib
+# import contextlib
 import copy
 import datetime
 import errno
-import fileinput
+# import fileinput
 import http.cookiejar
 import io
 import itertools
@@ -13,11 +13,11 @@ import operator
 import os
 import random
 import re
-import shutil
+#import shutil
 import string
 import subprocess
 import sys
-import tempfile
+#import tempfile
 import time
 import tokenize
 import traceback
@@ -27,11 +27,11 @@ from .cache import Cache
 from .compat import functools, urllib  # isort: split
 from .compat import compat_os_name, compat_shlex_quote, urllib_req_to_req
 from .cookies import LenientSimpleCookie, load_cookies
-from .downloader import FFmpegFD, get_suitable_downloader, shorten_protocol_name
-from .downloader.rtmp import rtmpdump_version
+from .downloader import shorten_protocol_name, FFmpegFD, get_suitable_downloader
+# from .downloader.rtmp import rtmpdump_version
 from .extractor import gen_extractor_classes, get_info_extractor
 from .extractor.common import UnsupportedURLIE
-from .extractor.openload import PhantomJSwrapper
+# from .extractor.openload import PhantomJSwrapper
 from .minicurses import format_text
 from .networking import HEADRequest, Request, RequestDirector
 from .networking.common import _REQUEST_HANDLERS, _RH_PREFERENCES
@@ -43,23 +43,23 @@ from .networking.exceptions import (
     _CompatHTTPError,
     network_exceptions,
 )
-from .plugins import directories as plugin_directories
-from .postprocessor import _PLUGIN_CLASSES as plugin_pps
-from .postprocessor import (
-    EmbedThumbnailPP,
-    FFmpegFixupDuplicateMoovPP,
-    FFmpegFixupDurationPP,
-    FFmpegFixupM3u8PP,
-    FFmpegFixupM4aPP,
-    FFmpegFixupStretchedPP,
-    FFmpegFixupTimestampPP,
-    FFmpegMergerPP,
-    FFmpegPostProcessor,
-    FFmpegVideoConvertorPP,
-    MoveFilesAfterDownloadPP,
-    get_postprocessor,
-)
-from .postprocessor.ffmpeg import resolve_mapping as resolve_recode_mapping
+# from .plugins import directories as plugin_directories
+# from .postprocessor import _PLUGIN_CLASSES as plugin_pps
+# from .postprocessor import (
+#     EmbedThumbnailPP,
+#     FFmpegFixupDuplicateMoovPP,
+#     FFmpegFixupDurationPP,
+#     FFmpegFixupM3u8PP,
+#     FFmpegFixupM4aPP,
+#     FFmpegFixupStretchedPP,
+#     FFmpegFixupTimestampPP,
+#     FFmpegMergerPP,
+#     FFmpegPostProcessor,
+#     FFmpegVideoConvertorPP,
+#     MoveFilesAfterDownloadPP,
+#     get_postprocessor,
+# )
+# from .postprocessor.ffmpeg import resolve_mapping as resolve_recode_mapping
 from .update import REPOSITORY, _get_system_deprecation, current_git_head, detect_variant
 from .utils import (
     DEFAULT_OUTTMPL,
@@ -158,7 +158,7 @@ from .utils.networking import (
     clean_proxies,
     std_headers,
 )
-from .version import CHANNEL, RELEASE_GIT_HEAD, VARIANT, __version__
+# from .version import CHANNEL, RELEASE_GIT_HEAD, VARIANT, __version__
 
 
 compat_os_name = 'None'
