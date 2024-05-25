@@ -2,6 +2,7 @@ from time import time
 
 from slyguy import util, userdata
 from slyguy.util import jwt_data
+from slyguy.mem_cache import cached
 from slyguy.session import Session
 
 from .constants import *
@@ -62,6 +63,7 @@ class API(object):
         userdata.set('shared_token', token)
         return token
 
+    @cached(60*5)
     def channels(self, region):
         params = {
             'device': 'web',
