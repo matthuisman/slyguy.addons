@@ -2,12 +2,12 @@ import sys
 from collections import defaultdict
 
 from kodi_six import xbmc
-from six.moves.urllib_parse import unquote
+from six.moves.urllib_parse import unquote, parse_qsl
 
 from slyguy import plugin, settings, inputstream
 from slyguy.log import log
 from slyguy.util import get_system_arch
-from slyguy.constants import ADDON_PROFILE
+from slyguy.constants import ADDON_PROFILE, ROUTE_CONTEXT
 
 
 from .language import _
@@ -35,9 +35,32 @@ def play_android_apk(video_id):
     log.debug(start_activity)
     xbmc.executebuiltin(start_activity)
 
+@plugin.route(ROUTE_CONTEXT)
+def context(listitem, **kwargs):
+    vid_tag = listitem.getVideoInfoTag()
+    yt_url = vid_tag.getTrailer()
+    params = dict(parse_qsl(yt_url.split('?')[1]))
+    video_id = params.get('video_id') or params['videoid']
+
+    li = _play(video_id)
+    li.label = u"{} ({})".format(listitem.getLabel(), _.TRAILER)
+    li.info = {
+        'plot': vid_tag.getPlot(),
+        'tagline': vid_tag.getTagLine(),
+        'year': vid_tag.getYear(),
+        'mediatype': vid_tag.getMediaType(),
+        'genre': vid_tag.getGenres(),
+    }
+    for key in ['thumb','poster','banner','fanart','clearart','clearlogo','landscape','icon']:
+        li.art[key] = listitem.getArt(key)
+
+    return li
 
 @plugin.route('/play')
 def play(video_id, **kwargs):
+    return _play(video_id)
+
+def _play(video_id):
     log.debug("YouTube ID {}".format(video_id))
 
     is_android = get_system_arch()[0] == 'Android'
@@ -48,7 +71,6 @@ def play(video_id, **kwargs):
         'quiet': True,
         'cachedir': ADDON_PROFILE,
         'no_warnings': True,
-        'player_client': 'ios',
         'extractor_args': {
             'youtube': {
                 'player_client': ['ios',] #['ios', 'android', 'web']
@@ -89,7 +111,7 @@ def play(video_id, **kwargs):
             if is_android:
                 error = _.PYTHON3_NOT_SUPPORTED_ANDROID
             else:
-                error = _(_.PYTHON3_NOT_SUPPORTED, error=error)
+                error = _.PYTHON3_NOT_SUPPORTED
         else:
             error  = _(_.NO_VIDEOS_FOUND, id=video_id, error=error)
 
@@ -117,13 +139,14 @@ def play(video_id, **kwargs):
         str += '</AdaptationSet>'
     str += '</Period></MPD>'
 
-    path = 'special://temp/test.mpd'
+    path = 'special://temp/yt.mpd'
     with open(xbmc.translatePath(path), 'w') as f:
         f.write(str)
 
     #TODO Subtitles
     return plugin.Item(
         path = path,
+        slug = video_id,
         inputstream = inputstream.MPD(),
         headers = headers,
     )

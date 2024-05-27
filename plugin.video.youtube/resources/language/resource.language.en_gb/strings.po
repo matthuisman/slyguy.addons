@@ -28,8 +28,7 @@ msgstr ""
 
 msgctxt "#30004"
 msgid "This addon uses yt_dlp which does not support Python 2\n"
-"You need to update to Kodi 19 or higher to use this addon\n"
-"Error: {error}"
+"You need to update to Kodi 19 or higher to use this addon"
 msgstr ""
 
 msgctxt "#30005"

@@ -10,5 +10,7 @@ class Language(BaseLanguage):
     NO_VIDEOS_FOUND = 30006
     NO_SEARCH_SUPPORT = 30007
 
+    TRAILER = 20410
+
 
 _ = Language()
