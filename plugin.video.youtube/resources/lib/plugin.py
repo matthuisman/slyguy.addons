@@ -40,7 +40,9 @@ def context(listitem, **kwargs):
     vid_tag = listitem.getVideoInfoTag()
     yt_url = vid_tag.getTrailer()
     params = dict(parse_qsl(yt_url.split('?')[1]))
-    video_id = params.get('video_id') or params['videoid']
+    video_id = params.get('video_id') or params.get('videoid')
+    if not video_id:
+        raise plugin.PluginError(_(_.NO_VIDEO_ID_FOUND, url=yt_url))
 
     li = _play(video_id)
     li.label = u"{} ({})".format(listitem.getLabel(), _.TRAILER)

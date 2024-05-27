@@ -45,6 +45,11 @@ msgctxt "#30007"
 msgid "This addon does not support searching"
 msgstr ""
 
+msgctxt "#30008"
+msgid "Could not find a valid video ID in the below url\n"
+"{url}"
+msgstr ""
+
 
 ## COMMON SETTINGS ##
 
