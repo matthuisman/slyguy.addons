@@ -51,8 +51,14 @@ def context(listitem, **kwargs):
         'tagline': vid_tag.getTagLine(),
         'year': vid_tag.getYear(),
         'mediatype': vid_tag.getMediaType(),
-        'genre': vid_tag.getGenres(),
     }
+
+    try:
+        # v20+
+        li.info['genre'] = vid_tag.getGenres()
+    except AttributeError:
+        li.info['genre'] = vid_tag.getGenre()
+
     for key in ['thumb','poster','banner','fanart','clearart','clearlogo','landscape','icon']:
         li.art[key] = listitem.getArt(key)
 
