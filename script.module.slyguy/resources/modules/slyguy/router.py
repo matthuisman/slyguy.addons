@@ -119,6 +119,9 @@ def dispatch(url=None):
         signals.emit(signals.BEFORE_DISPATCH)
         function, params = parse_url(url)
 
+        if hasattr(sys, 'listitem'):
+            params['listitem'] = sys.listitem
+
         try:
             function(**params)
         except TypeError as e:
