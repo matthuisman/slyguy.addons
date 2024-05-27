@@ -170,7 +170,7 @@ class BaseLanguage(object):
     RENAME_BOOKMARK             = 32117
     XZ_ERROR                    = 32118
     INSTALLING_APT_IA           = 32119
-
+    NO_CONTEXT_METHOD           = 32120
     DEFAULT_SUBTITLE            = 32121
     WV_REVOKED                  = 32122
     WV_REVOKED_CONFIRM          = 32123

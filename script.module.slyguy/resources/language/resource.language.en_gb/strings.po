@@ -694,7 +694,7 @@ msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr ""
 
 msgctxt "#32120"
-msgid "(Tv Show Folders setting moved to SlyGuy Common Settings)"
+msgid "No method found for this context menu item"
 msgstr ""
 
 msgctxt "#32121"

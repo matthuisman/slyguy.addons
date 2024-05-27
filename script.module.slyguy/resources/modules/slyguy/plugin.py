@@ -376,6 +376,10 @@ def _settings(**kwargs):
     settings.open()
     gui.refresh()
 
+@route(ROUTE_CONTEXT)
+def _context(**kwargs):
+    raise PluginError(_.NO_CONTEXT_METHOD)
+
 @route(ROUTE_RESET)
 def _reset(**kwargs):
     if not gui.yes_no(_.PLUGIN_RESET_YES_NO):

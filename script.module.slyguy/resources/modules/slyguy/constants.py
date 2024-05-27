@@ -79,6 +79,7 @@ ROUTE_DEL_BOOKMARK     = '_del_bookmark'
 ROUTE_BOOKMARKS        = '_bookmarks'
 ROUTE_MOVE_BOOKMARK    = '_move_bookmark'
 ROUTE_RENAME_BOOKMARK  = '_name_bookmark'
+ROUTE_CONTEXT          = '_context'
 #################
 
 #### INPUTSTREAM ADAPTIVE #####

@@ -105,7 +105,15 @@ def redirect(url):
 # router.dispatch('?_=_settings')
 def dispatch(url=None):
     if url is None:
-        url = sys.argv[0] + sys.argv[2]
+        if hasattr(sys, 'listitem'):
+            url = ROUTE_CONTEXT
+            try:
+                #Kodi 19+ only
+                url += '?' + sys.argv[1]
+            except IndexError:
+                pass
+        else:
+            url = sys.argv[0] + sys.argv[2]
 
     with signals.throwable():
         signals.emit(signals.BEFORE_DISPATCH)
