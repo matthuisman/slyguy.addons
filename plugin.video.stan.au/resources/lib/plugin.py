@@ -301,6 +301,14 @@ def _process_entries(entries):
             ))
 
 
+        elif row.get('liveStartDate') and 'episode' in row:
+            item = plugin.Item(
+                label = row['title'],
+                art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
+                path = plugin.url_for(program, program_id=row['id']),
+            )
+            items.append(item)
+
         elif row.get('liveStartDate'):
             is_live = False
             start_date = arrow.get(int(row['liveStartDate'])/1000)
@@ -323,21 +331,14 @@ def _process_entries(entries):
                 end_date = now.shift(hours=2)
 
             item.label = row['title']
-            item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(start_date.to('local').format('MMM Do h:mm A'), row.get('description'))
+            item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(start_date.to('local').format('MMM Do h:mm A'), row.get('description',''))
             if now < start_date:
                 item.label += u' [B][{}][/B]'.format(start_date.humanize())
             elif now > start_date and now < end_date:
                 is_live = True
                 item.label += u' [B][LIVE][/B]'
 
-            if 'episode' in row:
-                program_id = row['episode']['id']
-                if row['episode'].get('bonusFeature'):
-                    item.info['duration'] = None
-            else:
-                program_id = row['id']
-
-            item.path = _get_play_path(program_id=program_id, play_type=play_type, _is_live=is_live)
+            item.path = _get_play_path(program_id=row['id'], play_type=play_type, _is_live=is_live)
 
             if is_live:
                 item.context.append((_.PLAY_FROM_LIVE, "PlayMedia({})".format(
@@ -350,14 +351,14 @@ def _process_entries(entries):
 
             items.append(item)
 
-        elif row.get('programType') == 'movie':
+        elif row.get('programType') in ('extra', 'movie'):
             item = plugin.Item(
                 label = row['title'],
                 info = {
                     'plot': row.get('description'),
                     'year': row.get('releaseYear'),
                     'duration': row.get('runtime'),
-                    'mediatype': 'movie',
+                    'mediatype': 'movie' if row.get('programType') == 'movie' else 'video',
                 },
                 art = {'thumb': _art(row['images']), 'fanart': _art(row['images'], 'fanart')},
                 playable = True,
@@ -366,6 +367,22 @@ def _process_entries(entries):
             items.append(item)
 
     return items
+
+@plugin.route()
+def program(program_id, **kwargs):
+    data = api.program(program_id)
+    folder = plugin.Folder(data['title'])
+
+    entries = []
+    if 'extras' in data:
+        entries = api.url(data['extras']['url']).get('entries') or []
+
+    if not entries or data['title'] != entries[0]['title']:
+        entries.insert(0, data)
+
+    items = _process_entries(entries)
+    folder.add_items(items)
+    return folder
 
 @plugin.route()
 def series(series_id, **kwargs):
