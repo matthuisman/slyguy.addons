@@ -59,11 +59,15 @@ def _app_data():
     for key in data['regions']:
         data['regions'][key]['sort'] = 2
         for id in data['regions'][key]['channels']:
-            all_channels['channels'][id] = data['regions'][key]['channels'][id]
-            data['regions'][key]['channels'][id]['epg'] = key
-            data['regions'][key]['channels'][id]['region'] = data['regions'][key]['name']
+            channel = data['regions'][key]['channels'][id]
+            # currently dont work :( as license server refuses
+            if channel.get('license_url'):
+                continue
+            all_channels['channels'][id] = channel
+            channel['epg'] = key
+            channel['region'] = data['regions'][key]['name']
             if id in favourites:
-                my_channels['channels'][id] = data['regions'][key]['channels'][id]
+                my_channels['channels'][id] = channel
 
     data['regions'][ALL] = all_channels
     data['regions'][MY_CHANNELS] = my_channels
@@ -83,10 +87,6 @@ def _process_channels(channels, group=ALL, region=ALL):
     for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
         channel = channels[id]
         if group != ALL and channel['group'] != group:
-            continue
-
-        # currently dont work :( as license server refuses
-        if channel.get('license_url'):
             continue
 
         plot = u'[B]{} - {}[/B]\n'.format(channel['region'], channel['group'])
@@ -200,7 +200,7 @@ def search(query, page, **kwargs):
         if query.lower() in search_t.lower():
             results[id] = channel
 
-    return _process_channels(results), False
+    return _process_channels(results, group=ALL), False
 
 def _get_url(channel):
     return channel['url']
