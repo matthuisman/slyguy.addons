@@ -24,7 +24,7 @@ except: KODI_VERSION = 18
 
 REPO_DOMAIN = 'https://slyguy.uk'
 DNS_OVERRIDE_DOMAINS = ['slyguy.uk','i.mjh.nz','dai.google.com']
-DNS_OVERRIDE_SERVER = '1.1.1.1'
+DNS_OVERRIDE_SERVER = 'https://cloudflare-dns.com/dns-query'
 
 #### DATABASE #####
 DB_PATH         = os.path.join(ADDON_PROFILE, 'data.db')
