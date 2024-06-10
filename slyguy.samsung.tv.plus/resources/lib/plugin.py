@@ -59,17 +59,18 @@ def _app_data():
     for key in data['regions']:
         data['regions'][key]['sort'] = 2
         for id in list(data['regions'][key]['channels'].keys()):
+            channel = data['regions'][key]['channels'][id]
 
             # currently dont work :( as license server refuses
-            if data['regions'][key]['channels'][id].get('license_url'):
+            if channel.get('license_url'):
                 data['regions'][key]['channels'].pop(id)
                 continue
 
-            data['regions'][key]['channels'][id]['epg'] = key
-            data['regions'][key]['channels'][id]['region'] = data['regions'][key]['name']
-            all_channels['channels'][id] = data['regions'][key]['channels'][id]
+            channel['epg'] = key
+            channel['region'] = data['regions'][key]['name']
+            all_channels['channels'][id] = channel
             if id in favourites:
-                my_channels['channels'][id] = data['regions'][key]['channels'][id]
+                my_channels['channels'][id] = channel
 
     data['regions'][ALL] = all_channels
     data['regions'][MY_CHANNELS] = my_channels
