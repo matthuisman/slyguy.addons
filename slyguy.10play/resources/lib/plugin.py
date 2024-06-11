@@ -255,7 +255,6 @@ def live_tv(**kwargs):
 
     for row in api.live_channels():
         plot = u''
-        count = 0
 
         epg = []
         if row.get('liveShow'):
@@ -309,9 +308,6 @@ def playlist(output, **kwargs):
         f.write(u'#EXTM3U')
 
         for row in api.live_channels():
-            if 'TenSport' in row['channel']['id']:
-                continue
-
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=row['channel']['id'], name=row['channel']['name'], logo=row['channel']['logoUrl'] + '?image-profile=logo',
                     url=plugin.url_for(play_channel, id=row['channel']['id'], _is_live=True)))

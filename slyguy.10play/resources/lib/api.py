@@ -68,17 +68,25 @@ class API(object):
 
     @mem_cache.cached(60*5)
     def state(self):
-        return self._session.get('https://10play.com.au/geo-web').json()['state']
+        return self._session.get('https://10play.com.au/geo-web').json()
 
     def _get_state(self):
         state = STATES[settings.getInt('state')]
         if not state:
-            state = self.state()
+            state = self.state()['state']
         return state
 
     def play(self, id):
         data = self.videos([id])[0]
+
         url = self._session.head(data['HLSURL'], allow_redirects=True).url
+        if 'not-in-oz' in url.lower():
+            # same ips dont work with 10-selector.global.ssl.fastly.net
+            # user lower quality dai for them (like the website)
+            if self.state()['allow'] and 'googleDaiVideoId' in data:
+                return self._session.post('https://dai.google.com/ondemand/hls/content/{}/vid/{}/streams'.format(data['googleDaiCmsId'], data['googleDaiVideoId'])).json()['stream_manifest']
+            else:
+                return url
 
         new_url = url.replace(',150,',',300,150,')
         if self._session.head(new_url).ok:
@@ -91,7 +99,6 @@ class API(object):
 
         for row in channels:
             if row['channel']['id'] == id:
-                #return 'https://pubads.g.doubleclick.net/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
                 return 'https://dai.google.com/ssai/event/{}/master.m3u8'.format(row['liveShow']['streamKey'])
 
         raise APIError('Failed to find stream key')
