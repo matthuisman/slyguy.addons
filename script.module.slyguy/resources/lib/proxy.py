@@ -601,12 +601,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                         if (not atmos_enabled and is_atmos) or (not ac3_enabled and codecs == 'ac-3') or (not ec3_enabled and codecs == 'ec-3') or (max_channels and channels > max_channels):
                             continue
 
-                        if is_atmos and KODI_VERSION < 21:
+                        if is_atmos:
                             new_set = adap_set.cloneNode(deep=True)
 
                             new_set.setAttribute('name', 'ATMOS')
                             new_set.setAttribute('id', '{}-atmos'.format(attribs.get('id','')))
-                            new_set.setAttribute('lang', _(_.ATMOS, name=attribs.get('lang','')))
+                            new_set.setAttribute('lang', attribs.get('lang',''))
 
                             for elem in new_set.getElementsByTagName("Representation"):
                                 new_set.removeChild(elem)

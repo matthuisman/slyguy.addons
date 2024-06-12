@@ -665,9 +665,8 @@ def fix_language(language=None):
     if len(split) > 1 and split[1].lower() == split[0].lower():
         return split[0]
 
-    # Kodi only supports 2 letter codes before the -
-    # https://github.com/xbmc/xbmc/blob/master/xbmc/utils/LangCodeExpander.cpp
-    if len(split[0]) == 2:
+    # 19 and below only supported 2 letter language codes
+    if len(split[0]) == 2 and KODI_VERSION < 20:
         return split[0]
 
     return language
