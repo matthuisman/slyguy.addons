@@ -3,7 +3,7 @@ import json
 import uuid
 from time import time
 
-from slyguy import settings, signals, gui
+from slyguy import signals, gui, settings
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
@@ -19,34 +19,34 @@ from .language import _
 
 def _check_news():
     _time = int(time())
-    if _time < settings.getInt('_last_news_check', 0) + NEWS_CHECK_TIME:
+    if _time < settings.common_settings.getInt('_last_news_check', 0) + NEWS_CHECK_TIME:
         return
 
-    settings.setInt('_last_news_check', _time)
+    settings.common_settings.setInt('_last_news_check', _time)
 
     with Session(timeout=15) as session:
         news = session.gz_json(NEWS_URL)
     if not news:
         return
 
-    if 'id' not in news or news['id'] == settings.get('_last_news_id'):
+    if 'id' not in news or news['id'] == settings.common_settings.get('_last_news_id'):
         return
 
-    settings.set('_last_news_id', news['id'])
+    settings.common_settings.set('_last_news_id', news['id'])
 
     if news['type'] == 'donate' and is_donor():
         return
 
-    settings.set('_news', json.dumps(news))
+    settings.common_settings.set('_news', json.dumps(news))
 
 def _check_arch():
     arch = get_system_arch()[1]
     mac = str(uuid.getnode())
 
-    prev_mac = settings.get('_mac')
-    prev_arch = settings.get('_arch')
-    settings.set('_arch', arch)
-    settings.set('_mac', mac)
+    prev_mac = settings.common_settings.get('_mac')
+    prev_arch = settings.common_settings.get('_arch')
+    settings.common_settings.set('_arch', arch)
+    settings.common_settings.set('_mac', mac)
     if not prev_mac or not prev_arch:
         return
 
@@ -90,10 +90,10 @@ def start():
     try:
         while not monitor.abortRequested():
             try:
-                if is_donor() and settings.getBool('fast_updates'):
+                if is_donor() and settings.common_settings.getBool('fast_updates'):
                     check_updates()
 
-                if not is_donor() or settings.getBool('show_news'):
+                if not is_donor() or settings.common_settings.getBool('show_news'):
                     _check_news()
 
                 check_repo()

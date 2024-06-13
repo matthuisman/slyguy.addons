@@ -79,7 +79,10 @@ def get(key, default=''):
 
 def set(key, value='', addon=None):
     signals.skip_next(signals.ON_SETTINGS_CHANGE)
-    addon = addon or ADDON
+    if addon is None:
+        # stop in-memory values getting written
+        reset()
+        addon = ADDON
     addon.setSetting(key, str(value))
 
 class Settings(object):
@@ -150,6 +153,8 @@ class Settings(object):
         return self._addon.getSetting(key) or default
 
     def set(self, key, value=''):
+        # stop in-memory values getting written
+        self.reset()
         set(key, value, addon=self._addon)
 
 def check_corrupt(addon):
