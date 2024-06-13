@@ -659,15 +659,18 @@ def fix_language(language=None):
     if not language:
         return None
 
-    language = language.lower().strip()
+    language = language.strip()
+    if language.lower() == 'es-419':
+        return 'es-Latinoamerica'
+    elif language.lower() == 'pt-br':
+        return 'pb'
+
     split = language.split('-')
-
     if len(split) > 1 and split[1].lower() == split[0].lower():
-        return split[0]
+        return split[0].lower()
 
-    # 19 and below only supported 2 letter language codes
-    if len(split[0]) == 2 and KODI_VERSION < 20:
-        return split[0]
+    if len(split[0]) == 2:
+        return split[0].lower()
 
     return language
 
