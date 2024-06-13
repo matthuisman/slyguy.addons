@@ -660,16 +660,24 @@ def fix_language(language=None):
         return None
 
     language = language.strip()
-    if language.lower() == 'es-419':
-        return 'es-Latinoamerica'
-    elif language.lower() == 'pt-br':
-        return 'pb'
-
     split = language.split('-')
     if len(split) > 1 and split[1].lower() == split[0].lower():
         return split[0].lower()
 
-    if len(split[0]) == 2:
+    # any non es-ES, treat as Spanish Argentina
+    if len(split) > 1 and split[0].lower() == 'es':
+        return 'es-AR'
+
+    if language.lower() == 'pt-br':
+        return 'pb'
+
+    if split[0].lower() == 'en':
+        return 'en'
+
+    if language.lower() in ('nb','nn'):
+        return 'no'
+
+    if len(split[0]) == 2 and KODI_VERSION < 20:
         return split[0].lower()
 
     return language
