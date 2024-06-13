@@ -47,7 +47,7 @@
         <setting label="$ADDON[script.module.slyguy 32045]" id="http_retries" type="slider" default="1" range="1,1,10" option="int"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="slider" default="0" range="0,5,60" visible="false"/>
 
-        <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close" visible="false"/>
+        <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
 
         <setting id="_fresh" type="bool" default="true" visible="false"/>
         <setting id="_userdata" type="text" default="{}" visible="false"/>

@@ -613,7 +613,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 new_set.removeChild(elem)
                             new_set.appendChild(stream)
 
-                            if atmos_channels:
+                            if atmos_channels and KODI_VERSION < 21:
                                 for elem in stream.getElementsByTagName("AudioChannelConfiguration"):
                                     stream.removeChild(elem)
 
