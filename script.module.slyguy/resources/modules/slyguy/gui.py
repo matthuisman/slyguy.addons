@@ -560,7 +560,7 @@ class Item(object):
 
                 for key in legacy_map:
                     #add ourself so addon can override common
-                    legacy_map[key].append(key)
+                    legacy_map[key].insert(0, key)
                     for old_key in legacy_map[key]:
                         val = settings.getBool(old_key, None)
                         if val is not None:
