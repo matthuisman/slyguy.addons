@@ -14,9 +14,6 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073"/>
-        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)"/>
-
         <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32086]" id="audio_whitelist" type="text" default=""/>
@@ -28,12 +25,18 @@
         <setting label="30023" id="default_ratio" type="enum" default="1" lvalues="32055|30009|21377"/>
         <setting label="30052" type="bool" id="dolby_atmos" default="false"/>
         <setting label="30033" type="bool" id="dtsx" default="false" visible="false"/>
-        <setting label="30019" type="bool" id="hevc" default="false"/>
+        <setting label="30019" type="bool" id="h265" default="true"/>
         <setting label="30018" type="bool" id="hdr10" default="true" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
         <setting label="30015" type="bool" id="dolby_vision" default="false" visible="Integer.IsEqual(Window(10000).Property(wv_level),1)"/>
 
         <setting label="$ADDON[script.module.slyguy 32076]" type="bool" id="use_ia_hls_live" default="true" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32023]" type="bool" id="use_ia_hls_vod" default="true" visible="false"/>
+    </category>
+
+    <category label="$ADDON[script.module.slyguy 32138]">
+        <setting label="$ADDON[script.module.slyguy 32140]" type="lsep" visible="!Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
+        <setting label="$ADDON[script.module.slyguy 32061]" id="default_quality" type="enum" default="0" lvalues="32055|32043|32060|32048|32054|32073" enable="Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
+        <setting label="$ADDON[script.module.slyguy 32059]" id="max_bandwidth" type="slider" default="7" range="0.5,0.5,100" option="float" visible="eq(-1,4)" enable="Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)"/>
     </category>
 
     <category label="$ADDON[script.module.slyguy 32036]">
