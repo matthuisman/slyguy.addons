@@ -7,6 +7,7 @@ from .log import log
 from .mem_cache import cached
 from .constants import ADDON_ID, COMMON_ADDON_ID, DNS_OVERRIDE_DOMAINS, DNS_OVERRIDE_SERVER
 from .settings import common_settings
+from .donor import is_donor
 
 
 @cached(expires=60*5)
@@ -16,11 +17,15 @@ def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
     if COMMON_ADDON_ID != addon_id:
         rewrites.extend(_load_rewrites(COMMON_ADDON_ID))
 
+    if rewrites:
+        if is_donor():
+            log.debug('Smart URLs Loaded: {}'.format(len(rewrites)))
+        else:
+            log.warning('Smart URLs Ignored: {} (This is a donor only feature)'.format(len(rewrites)))
+            rewrites = []
+
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
-
-    if rewrites:
-        log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
 
     if not common_settings.getBool('disable_dns_overrides', False):
         # add some defaults that are often blocked by networkwide dns

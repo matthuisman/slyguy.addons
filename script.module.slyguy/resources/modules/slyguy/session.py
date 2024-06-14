@@ -22,7 +22,6 @@ from .log import log
 from .language import _
 from .exceptions import SessionError, Error
 from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
-from .donor import is_donor
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -293,7 +292,7 @@ class RawSession(requests.Session):
 
         if url in self._session_cache:
             session_data = self._session_cache[url]
-        elif is_donor() and self._rewrites:
+        elif self._rewrites:
             for row in self._rewrites:
                 if not row[0].search(url):
                     continue
