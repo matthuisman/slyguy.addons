@@ -1,12 +1,45 @@
 import re
 
 from kodi_six import xbmc
+from six.moves.urllib_parse import urlparse
 
 from slyguy import plugin, gui
 from slyguy.util import get_kodi_setting, get_addon
+from slyguy.constants import ROUTE_CONTEXT
 
 from .util import check_updates, get_slyguy_addons
 from .language import _
+
+
+@plugin.route(ROUTE_CONTEXT)
+def context(listitem, **kwargs):
+    vid_tag = listitem.getVideoInfoTag()
+    trailer_path = vid_tag.getTrailer()
+
+    parsed = urlparse(trailer_path)
+    if parsed.scheme.lower() == 'plugin':
+        addon_id = parsed.netloc
+        get_addon(addon_id, required=True)
+
+    li = plugin.Item(path=trailer_path)
+    li.label = u"{} ({})".format(listitem.getLabel(), _.TRAILER)
+    li.info = {
+        'plot': vid_tag.getPlot(),
+        'tagline': vid_tag.getTagLine(),
+        'year': vid_tag.getYear(),
+        'mediatype': vid_tag.getMediaType(),
+    }
+
+    try:
+        # v20+
+        li.info['genre'] = vid_tag.getGenres()
+    except AttributeError:
+        li.info['genre'] = vid_tag.getGenre()
+
+    for key in ['thumb','poster','banner','fanart','clearart','clearlogo','landscape','icon']:
+        li.art[key] = listitem.getArt(key)
+
+    return li
 
 
 @plugin.route()

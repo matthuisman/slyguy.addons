@@ -398,10 +398,10 @@ class Item(object):
         def is_http(url):
             return url.lower().startswith('http://') or url.lower().startswith('https://')
 
-        def get_url(url):
+        def get_url(url, plugin_proxy=False):
             _url = url.lower()
 
-            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or _url.startswith('plugin://') or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.common_settings.getBool('proxy_enabled', True):
+            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or (plugin_proxy and _url.startswith('plugin://')) or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.common_settings.getBool('proxy_enabled', True):
                 url = u'{}{}'.format(proxy_path, url)
 
             return url
@@ -453,7 +453,7 @@ class Item(object):
                 license_url = self.inputstream.license_key
                 license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
                 li.setProperty('{}.license_key'.format(self.inputstream.addon_id), u'{url}|Content-Type={content_type}{headers}|{challenge}|{response}'.format(
-                    url = get_url(redirect_url(fix_url(self.inputstream.license_key))),
+                    url = get_url(redirect_url(fix_url(self.inputstream.license_key)), plugin_proxy=True),
                     content_type = self.inputstream.content_type,
                     headers = '&' + license_headers if license_headers else '',
                     challenge = self.inputstream.challenge,

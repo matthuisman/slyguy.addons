@@ -6,4 +6,3 @@ sys.path.insert(1, os.path.realpath(os.path.join(path, 'resources/modules')))
 
 from resources.lib.plugin import plugin
 plugin.dispatch()
-

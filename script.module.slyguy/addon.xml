@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.81.9">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.82.0">
   <requires>
     <import addon="slyguy.dependencies" version="0.0.18"/>
     <import addon="repository.slyguy" version="0.0.4"/>
   </requires>
+  <extension point="kodi.context.item">
+    <menu id="kodi.core.main">
+      <item library="default.py">
+        <label>$LOCALIZE[20410]</label>
+        <visible>!String.IsEmpty(ListItem.Trailer) + ![String.StartsWith(Container.FolderPath,plugin://) + String.Contains(Container.FolderPath,trailer)]</visible>
+      </item>
+    </menu>
+  </extension>
   <extension point="xbmc.python.script" library="script.py">
     <provides>executable</provides>
   </extension>
