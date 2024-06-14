@@ -892,7 +892,7 @@ def _process_explore(data):
                 item.info['year'] = meta['releaseYearRange']['startYear']
 
             if 'genres' in meta:
-                item.info['genres'] = meta['genres']['values']
+                item.info['genre'] = meta['genres']['values']
 
             if 'ratingInfo' in meta:
                 item.info['rating'] = meta['ratingInfo']['rating']['text']
