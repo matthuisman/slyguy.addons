@@ -328,7 +328,6 @@ def _parse_series(row):
 
     if not item.info['plot']:
         item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))))
-    item.context.append((_.TRAILER, 'RunPlugin({})'.format(item.info['trailer'])))
 
     return item
 
@@ -373,7 +372,6 @@ def _parse_video(row):
     else:
         if not item.info['plot']:
             item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
-        item.context.append((_.TRAILER, 'RunPlugin({})'.format(item.info['trailer'])))
         item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, family_id=row['family']['encodedFamilyId']))))
         item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
 
