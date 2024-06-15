@@ -1,0 +1,88 @@
+# Language file for Kodi
+# Addon Name: Max
+# Addon id: slyguy.max
+# Addon Provider: SlyGuy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: https://github.com/matthuisman/slyguy.addons\n"
+"Last-Translator: matthuisman\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "{name} [PIN]"
+msgstr ""
+
+msgctxt "#30001"
+msgid "{name} [KIDS]"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Enter Your Profile PIN"
+msgstr ""
+
+msgctxt "#30003"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Your auth token has became invalid\n"
+"This is often caused by out of region IP address\n"
+"You will need to logout and login again"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Failed to check device login. Please try again"
+msgstr ""
+
+msgctxt "#30006"
+msgid "TV Provider Login"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Home"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Series"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Go to Series"
+msgstr ""
+
+## COMMON SETTINGS ##
+
+msgctxt "#32055"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Best"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Lowest"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Bypass"
+msgstr ""
+
+msgctxt "#32054"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#32073"
+msgid "Disabled"
+msgstr ""
