@@ -5,7 +5,7 @@ BRAND_ID = 'beam'
 REALM = 'bolt'
 APP_VERSION = '4.0.1'
 SEARCH_PAGE_SIZE = 25
-L3_MAX_HEIGHT = 600  #TODO: confirm actual limit for L3
+L3_MAX_HEIGHT = 580  #TODO: confirm actual limit for L3 or find better way (cenc data / lowest quality set?)
 
 HEADERS = {
     'x-disco-client': 'ANDROIDTV:9:{}:{}'.format(SITE_ID, APP_VERSION),
