@@ -61,6 +61,10 @@ msgctxt "#30010"
 msgid "Go to Series"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Remove Chapters [Experimental]"
+msgstr ""
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"

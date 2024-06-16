@@ -7,6 +7,7 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
+        <setting label="30011" id="remove_chapters" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32086]" id="audio_whitelist" type="text" default=""/>

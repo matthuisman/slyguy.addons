@@ -371,7 +371,7 @@ def mpd_request(_data, _path, **kwargs):
             new_periods.append(period)
 
     # remove all except the first period
-    if len(new_periods) > 1:
+    if len(new_periods) > 1 and settings.getBool('remove_chapters', True):
         for period in new_periods[1:]:
             period.parentNode.removeChild(period)
         # duration will be wrong now so remove it
