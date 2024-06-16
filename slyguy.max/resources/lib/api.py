@@ -41,7 +41,7 @@ class API(object):
         params = {
             'include': 'default',
             'decorators': 'viewingHistory,isFavorite,contentAction,badges',
-            'page[items.size]': 10,
+            'page[items.size]': 0,
         }
         data = self._session.get(self._endpoint('/cms/routes/{}'.format(route)), params=params, json={}).json()
         return self._process_data(data)[0]['target']
@@ -62,7 +62,7 @@ class API(object):
             'include': 'default',
             'decorators': 'viewingHistory,badges,isFavorite,contentAction',
             'page[items.number]': page,
-            'page[items.size]': 10,
+            'page[items.size]': 100,
         }
         data = self._session.get(self._endpoint('/cms/collections/{}'.format(id)), params=params, json={}).json()
         return self._process_data(data)[0]

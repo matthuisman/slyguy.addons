@@ -29,7 +29,7 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-      #  folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
+    #    folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -108,19 +108,22 @@ def _art(images, only_keys=None):
 
 
 def _process_item(data, from_search=False):
+    data['name'] = data.get('title', data['name'])
+
     try:
         data['name'] = re.sub(r'\([0-9]{4}\)$', '', data['name']).strip()
         data['originaltitle'] = re.sub(r'\([0-9]{4}\)$', '', data['originaltitle']).strip()
     except:
         pass
 
+    label = data['name']
     for badge in data.get('badges', []):
         if badge['id'] == 'release-state-coming-soon':
             data['premiereDate'] = data['firstAvailableDate']
-        data['name'] += ' [B][{}][/B]'.format(badge['displayText'])
+        label += ' [B][{}][/B]'.format(badge['displayText'])
 
     item = plugin.Item(
-        label = data['name'],
+        label = label,
         info = {
             'sorttitle': data['name'],
             'originaltitle': data.get('originalName'),
@@ -174,6 +177,8 @@ def _process_item(data, from_search=False):
         item.playable = True
         item.path = plugin.url_for(play, edit_id=data['edit']['id'], _is_live=data['videoType'] == 'LIVE')
 
+    elif data.get('kind') in ('genre', 'Internal Link'):
+        pass
     else:
         log.warning("Unexpected data: {}".format(data))
         return None
@@ -189,14 +194,12 @@ def _process_items(rows, from_search=False):
                 label = row['collection'].get('title'),
                 path = plugin.url_for(collection, id=row['collection']['id']),
             ))
-
-        elif 'show' in row or 'video' in row:
-            data = row.get('show') or row.get('video')
+        else:
+            data = row.get('show') or row.get('video') or row.get('taxonomyNode') or row.get('link')
+            if not data:
+                raise Exception(row)
             item = _process_item(data, from_search=from_search)
             items.append(item)
-
-        else:
-            raise Exception(row)
 
     return items
 
@@ -324,6 +327,32 @@ def mpd_request(_data, _path, **kwargs):
     root = parseString(data.encode('utf8'))
     wv_secure = is_wv_secure()
 
+    def fix_sub(adap_set):
+        lang = adap_set.getAttribute('lang')
+        _type = 'sub'
+        for elem in adap_set.getElementsByTagName('Role'):
+            if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011':
+                value = elem.getAttribute('value')
+                if value == 'caption':
+                    _type = 'sdh'
+                elif value == 'forced-subtitle':
+                    _type = 'forced'
+                break
+
+        for repr in adap_set.getElementsByTagName('Representation'):
+            segments = repr.getElementsByTagName('SegmentTemplate')
+            if not segments:
+                continue
+
+            for seg in segments:
+                stub = seg.getAttribute('media').split('/')[1]
+                repr.removeChild(seg)
+
+            elem = root.createElement('BaseURL')
+            elem2 = root.createTextNode('t/{stub}/{lang}_{type}.vtt'.format(stub='sub' if stub.startswith('t') else stub, lang=lang, type=_type))
+            elem.appendChild(elem2)
+            repr.appendChild(elem)
+
     # remove bumpers (content without encryption)
     periods = root.getElementsByTagName('Period')
     new_periods = []
@@ -347,7 +376,10 @@ def mpd_request(_data, _path, **kwargs):
     except: pass
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
-        if adap_set.getAttribute('contentType') != 'video':
+        if adap_set.getAttribute('contentType') == 'text':
+            fix_sub(adap_set)
+            continue
+        elif adap_set.getAttribute('contentType') != 'video':
             continue
 
         # Set HDR10 flag
