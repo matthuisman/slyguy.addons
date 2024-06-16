@@ -29,7 +29,7 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-    #    folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
+        #folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -217,6 +217,10 @@ def series(id, season=None, **kwargs):
         return folder
 
     for row in data.get('seasons', []):
+        # ignore empty seasons
+        if not 'videoCountByType' in row or not row['videoCountByType'].get('EPISODE'):
+            continue
+
         folder.add_item(
             label = _(_.SEASON, number=row['displayName']),
             info = {
