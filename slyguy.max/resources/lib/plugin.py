@@ -29,7 +29,8 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        #folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
+        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(page, route='series'))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -74,7 +75,8 @@ def collection(id, page=1, **kwargs):
         return folder, False
 
     folder.add_items(_process_items(data['items']))
-    return folder, data['meta']['itemsCurrentPage'] < data['meta']['itemsTotalPages']
+    more_pages = data['meta'].get('itemsCurrentPage', 1) < data['meta'].get('itemsTotalPages', 1)
+    return folder, more_pages
 
 
 @plugin.route()
@@ -84,7 +86,7 @@ def search(query, page, **kwargs):
     if 'items' not in data:
         return [], False
 
-    more_pages = data['meta']['itemsCurrentPage'] < data['meta']['itemsTotalPages']
+    more_pages = data['meta'].get('itemsCurrentPage', 1) < data['meta'].get('itemsTotalPages', 1)
     return _process_items(data['items'], from_search=True), more_pages
 
 
@@ -107,9 +109,12 @@ def _art(images, only_keys=None):
     return art
 
 
-def _process_item(data, from_search=False):
-    data['name'] = data.get('title', data['name'])
+def _process_item(row, from_search=False):
+    data = row.get('show') or row.get('video') or row.get('taxonomyNode') or row.get('link') or row.get('collection')
+    if not data:
+        raise Exception(row)
 
+    data['name'] = data.get('title', data['name'])
     try:
         data['name'] = re.sub(r'\([0-9]{4}\)$', '', data['name']).strip()
         data['originaltitle'] = re.sub(r'\([0-9]{4}\)$', '', data['originaltitle']).strip()
@@ -120,7 +125,7 @@ def _process_item(data, from_search=False):
     for badge in data.get('badges', []):
         if badge['id'] == 'release-state-coming-soon':
             data['premiereDate'] = data['firstAvailableDate']
-        label += ' [B][{}][/B]'.format(badge['displayText'])
+      #  label += ' [B][{}][/B]'.format(badge['displayText'])
 
     item = plugin.Item(
         label = label,
@@ -177,8 +182,16 @@ def _process_item(data, from_search=False):
         item.playable = True
         item.path = plugin.url_for(play, edit_id=data['edit']['id'], _is_live=data['videoType'] == 'LIVE')
 
-    elif data.get('kind') in ('genre', 'Internal Link'):
-        pass
+    elif row.get('collection'):
+        # ignore collections without title
+        if not data.get('title'):
+            return None
+        item.path = plugin.url_for(collection, id=row['collection']['id'])
+
+    # elif data.get('kind') in ('genre', 'Internal Link'):
+    #     #TODO
+    #     return None
+
     else:
         log.warning("Unexpected data: {}".format(data))
         return None
@@ -189,18 +202,8 @@ def _process_item(data, from_search=False):
 def _process_items(rows, from_search=False):
     items = []
     for row in rows:
-        if row.get('collection'):
-            items.append(plugin.Item(
-                label = row['collection'].get('title'),
-                path = plugin.url_for(collection, id=row['collection']['id']),
-            ))
-        else:
-            data = row.get('show') or row.get('video') or row.get('taxonomyNode') or row.get('link')
-            if not data:
-                raise Exception(row)
-            item = _process_item(data, from_search=from_search)
-            items.append(item)
-
+        item = _process_item(row, from_search=from_search)
+        items.append(item)
     return items
 
 

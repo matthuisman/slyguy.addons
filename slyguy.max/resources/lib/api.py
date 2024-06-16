@@ -5,7 +5,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import jwt_data
 
-from .constants import HEADERS, BASE_URL, SITE_ID, APP_VERSION, CLIENT_ID, BRAND_ID, REALM, SEARCH_PAGE_SIZE
+from .constants import HEADERS, BASE_URL, SITE_ID, APP_VERSION, CLIENT_ID, BRAND_ID, REALM, PAGE_SIZE
 from .language import _
 
 
@@ -41,7 +41,7 @@ class API(object):
         params = {
             'include': 'default',
             'decorators': 'viewingHistory,isFavorite,contentAction,badges',
-            'page[items.size]': 0,
+            'page[items.size]': PAGE_SIZE,
         }
         data = self._session.get(self._endpoint('/cms/routes/{}'.format(route)), params=params, json={}).json()
         return self._process_data(data)[0]['target']
@@ -62,7 +62,7 @@ class API(object):
             'include': 'default',
             'decorators': 'viewingHistory,badges,isFavorite,contentAction',
             'page[items.number]': page,
-            'page[items.size]': 100,
+            'page[items.size]': PAGE_SIZE,
         }
         data = self._session.get(self._endpoint('/cms/collections/{}'.format(id)), params=params, json={}).json()
         return self._process_data(data)[0]
@@ -79,7 +79,7 @@ class API(object):
             'decorators': 'viewingHistory,badges,isFavorite,contentAction',
             'pf[query]': query,
             'page[items.number]': page,
-            'page[items.size]': SEARCH_PAGE_SIZE,
+            'page[items.size]': PAGE_SIZE,
         }
         data = self._session.get(self._endpoint('/cms/collections/{}'.format(get_collection_id())), params=params, json={}).json()
         return self._process_data(data)[0]
@@ -89,7 +89,7 @@ class API(object):
         params = {
             'include': 'default',
             'decorators': 'viewingHistory,badges,isFavorite,contentAction',
-            'page[items.size]': 10,
+            'page[items.size]': PAGE_SIZE,
         }
         data = self._session.get(self._endpoint('/cms/routes/show/{}'.format(id)), params=params, json={}).json()
         return self._process_data(data)[0]['target']['primaryContent']
