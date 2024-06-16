@@ -37,6 +37,15 @@ class API(object):
     def _device_id(self):
         return str(uuid.uuid1())
 
+    def route(self, route):
+        params = {
+            'include': 'default',
+            'decorators': 'viewingHistory,isFavorite,contentAction,badges',
+            'page[items.size]': 10,
+        }
+        data = self._session.get(self._endpoint('/cms/routes/{}'.format(route)), params=params, json={}).json()
+        return self._process_data(data)[0]['target']
+
     @mem_cache.cached(60*30, key='config')
     def _get_config(self):
         if not self.logged_in:
@@ -47,6 +56,16 @@ class API(object):
         data = self._session.post(BASE_URL+'/session-context/headwaiter/v1/bootstrap', json={}).json()
         self._check_errors(data)
         return data
+
+    def collection(self, id, page=1):
+        params = {
+            'include': 'default',
+            'decorators': 'viewingHistory,badges,isFavorite,contentAction',
+            'page[items.number]': page,
+            'page[items.size]': 10,
+        }
+        data = self._session.get(self._endpoint('/cms/collections/{}'.format(id)), params=params, json={}).json()
+        return self._process_data(data)[0]
 
     def search(self, query, page=1):
         @mem_cache.cached(60*30)

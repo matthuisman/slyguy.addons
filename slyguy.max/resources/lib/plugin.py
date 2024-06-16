@@ -29,6 +29,7 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
+      #  folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -45,14 +46,46 @@ def index(**kwargs):
 
 
 @plugin.route()
+def page(route, **kwargs):
+    data = api.route(route)
+    folder = plugin.Folder(data['title'])
+    for row in data.get('items', []):
+        if 'collection' not in row:
+            continue
+
+        if 'component' in row['collection'] and row['collection']['component'].get('id') in ('hero','tab-group'):
+            folder.add_items(_process_items(row['collection'].get('items', [])))
+            continue
+
+        folder.add_item(
+            label = row['collection'].get('title'),
+            path = plugin.url_for(collection, id=row['collection']['id']),
+        )
+
+    return folder
+
+
+@plugin.route()
+@plugin.pagination()
+def collection(id, page=1, **kwargs):
+    data = api.collection(id, page=page)
+    folder = plugin.Folder(data['title'])
+    if 'items' not in data:
+        return folder, False
+
+    folder.add_items(_process_items(data['items']))
+    return folder, data['meta']['itemsCurrentPage'] < data['meta']['itemsTotalPages']
+
+
+@plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    collection = api.search(query=query, page=page)
-    if 'items' not in collection:
+    data = api.search(query=query, page=page)
+    if 'items' not in data:
         return [], False
 
-    more_pages = collection['meta']['itemsCurrentPage'] < collection['meta']['itemsTotalPages']
-    return _process_items(collection['items'], from_search=True), more_pages
+    more_pages = data['meta']['itemsCurrentPage'] < data['meta']['itemsTotalPages']
+    return _process_items(data['items'], from_search=True), more_pages
 
 
 def _art(images, only_keys=None):
@@ -151,12 +184,19 @@ def _process_item(data, from_search=False):
 def _process_items(rows, from_search=False):
     items = []
     for row in rows:
-        data = row.get('show') or row.get('video')
-        if not data:
-            raise Exception(data)
+        if row.get('collection'):
+            items.append(plugin.Item(
+                label = row['collection'].get('title'),
+                path = plugin.url_for(collection, id=row['collection']['id']),
+            ))
 
-        item = _process_item(data, from_search=from_search)
-        items.append(item)
+        elif 'show' in row or 'video' in row:
+            data = row.get('show') or row.get('video')
+            item = _process_item(data, from_search=from_search)
+            items.append(item)
+
+        else:
+            raise Exception(row)
 
     return items
 
@@ -169,7 +209,7 @@ def series(id, season=None, **kwargs):
 
     if season:
         data = api.season(id, season)
-        items = _process_items(data['items'])
+        items = _process_items(data.get('items',[]))
         folder.add_items(items)
         return folder
 
@@ -285,10 +325,26 @@ def mpd_request(_data, _path, **kwargs):
     wv_secure = is_wv_secure()
 
     # remove bumpers (content without encryption)
-    for period in root.getElementsByTagName('Period'):
+    periods = root.getElementsByTagName('Period')
+    new_periods = []
+    for period in periods:
         protections = [elem for elem in period.getElementsByTagName('ContentProtection') if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed']
         if not protections:
             period.parentNode.removeChild(period)
+        else:
+            new_periods.append(period)
+
+    # remove all except the first period
+    if len(new_periods) > 1:
+        for period in new_periods[1:]:
+            period.parentNode.removeChild(period)
+        # duration will be wrong now so remove it
+        try: new_periods[0].removeAttribute('duration')
+        except: pass
+
+    # in case of bumper removal or merge periods - remove incorrect start
+    try: new_periods[0].setAttribute('start', periods[0].getAttribute('start'))
+    except: pass
 
     for adap_set in root.getElementsByTagName('AdaptationSet'):
         if adap_set.getAttribute('contentType') != 'video':
