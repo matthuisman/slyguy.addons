@@ -426,6 +426,10 @@ msgctxt "#30099"
 msgid "Hour of day (24h)"
 msgstr "Godzina (24h)"
 
+msgctxt "#30100"
+msgid "Use HTTP Merge Method (IPTV Simple 21.7.1+ required)"
+msgstr "Użyj metody łączenia HTTP (wymagany IPTV Simple 21.7.1+)"
+
 ## COMMON SETTINGS ##
 
 msgctxt "#32055"
