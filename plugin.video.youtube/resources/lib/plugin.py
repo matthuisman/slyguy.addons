@@ -19,7 +19,7 @@ def home(**kwargs):
         return plugin.redirect(plugin.url_for(play, video_id=kwargs.get('videoid')))
 
     folder = plugin.Folder()
-    folder.add_item(label='TEST 4K', playable=True, path=plugin.url_for(play, video_id='NECyQhw4-_c'))
+    folder.add_item(label='TEST 4K', info={'trailer': plugin.url_for(play, video_id='NECyQhw4-_c')}, playable=True, path=plugin.url_for(play, video_id='NECyQhw4-_c'))
     folder.add_item(label='TEST 4K HDR', playable=True, path=plugin.url_for(play, video_id='tO01J-M3g0U'))
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
