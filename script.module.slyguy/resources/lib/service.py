@@ -8,7 +8,7 @@ from slyguy.session import Session
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.drm import set_drm_level
-from slyguy.donor import is_donor
+from slyguy.donor import is_donor, check_donor
 from slyguy.util import get_system_arch
 
 from .proxy import Proxy
@@ -70,7 +70,9 @@ def start():
         log.error('Failed to start proxy server')
         log.exception(e)
 
-    is_donor(force=True)
+    check_donor(force=True)
+    if is_donor():
+        log.info('Welcome SlyGuy donor!')
 
     try:
         set_drm_level()
@@ -90,6 +92,9 @@ def start():
     try:
         while not monitor.abortRequested():
             try:
+                settings.common_settings.reset()
+                check_donor()
+
                 if is_donor() and settings.common_settings.getBool('fast_updates'):
                     check_updates()
 

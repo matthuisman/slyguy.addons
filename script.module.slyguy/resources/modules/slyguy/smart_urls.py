@@ -10,19 +10,13 @@ from .settings import common_settings
 from .donor import is_donor
 
 
-@cached(expires=60*5)
 def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
-    rewrites = _load_rewrites(addon_id)
-
-    if COMMON_ADDON_ID != addon_id:
-        rewrites.extend(_load_rewrites(COMMON_ADDON_ID))
-
-    if rewrites:
-        if is_donor():
-            log.debug('Smart URLs Loaded: {}'.format(len(rewrites)))
-        else:
-            log.warning('Smart URLs Ignored: {} (This is a donor only feature)'.format(len(rewrites)))
-            rewrites = []
+    if is_donor():
+        rewrites = _load_rewrites(addon_id)
+        if COMMON_ADDON_ID != addon_id:
+            rewrites.extend(_load_rewrites(COMMON_ADDON_ID))
+    else:
+        rewrites = []
 
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
@@ -34,10 +28,12 @@ def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
 
     return rewrites
 
+
 @cached(expires=60*5)
 def _get_url(url):
     log.debug('Request DNS URL: {}'.format(url))
     return requests.get(url).text
+
 
 def _load_rewrites(addon_id):
     rewrites = []
