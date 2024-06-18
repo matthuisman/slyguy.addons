@@ -143,10 +143,12 @@ class API(object):
         self._set_authentication(token)
         token_data = jwt_data(token)
 
-        data = self._session.get(self._endpoint('/users/me'), json={}).json()
-        self._check_errors(data)
         userdata.set('access_token', token)
         userdata.set('token_expires', token_data['exp'] - 30)
+        mem_cache.empty()
+
+        data = self._session.get(self._endpoint('/users/me'), json={}).json()
+        self._check_errors(data)
         userdata.set('user_id', data['data']['id'])
         userdata.set('profile', {'id': data['data']['attributes']['selectedProfileId']})      
 

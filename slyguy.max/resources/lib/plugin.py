@@ -341,7 +341,7 @@ def mpd_request(_data, _path, **kwargs):
             if elem.getAttribute('schemeIdUri') == 'urn:mpeg:dash:role:2011':
                 value = elem.getAttribute('value')
                 if value == 'caption':
-                    _type = 'sdh'
+                    _type = 'cc'
                 elif value == 'forced-subtitle':
                     _type = 'forced'
                 break
