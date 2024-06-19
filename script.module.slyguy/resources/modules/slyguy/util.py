@@ -671,6 +671,9 @@ def fix_language(language=None):
     if language.lower() == 'pt-br':
         return 'pb'
 
+    if language.lower() == 'cmn-tw':
+        return 'zh-TW'
+
     if split[0].lower() == 'en':
         return 'en'
 
