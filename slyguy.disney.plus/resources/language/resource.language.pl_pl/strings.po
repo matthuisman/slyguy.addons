@@ -149,8 +149,8 @@ msgstr "Sprawdź {email}, aby znaleźć 6 cyfrowy kod i wpisz go poniżej\n"
 "Kod wygasa po 15 minutach."
 
 msgctxt "#30033"
-msgid "App Language (empty = profile language)"
-msgstr "Język aplikacji (pusty = język profilu)"
+msgid "DTS-X (IMAX Enhanced)"
+msgstr "DTS-X (ulepszony IMAX)"
 
 msgctxt "#30042"
 msgid "Continue Watching"
