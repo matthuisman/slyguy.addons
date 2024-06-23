@@ -408,7 +408,7 @@ class Merger(object):
                     if playlist.source_type != Playlist.TYPE_CUSTOM:
                         self._process_source(playlist, METHOD_PLAYLIST, self.tmp_file)
 
-                        with database.db.atomic() as transaction:
+                        with Channel._meta.database.atomic() as transaction:
                             try:
                                 added = self._process_playlist(playlist, self.tmp_file)
                             except:
