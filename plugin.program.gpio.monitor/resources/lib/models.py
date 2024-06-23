@@ -138,4 +138,5 @@ class Button(database.Model):
         self.when_held = when_held
         return True
 
-database.tables.append(Button)
+
+database.init([Button])
