@@ -600,7 +600,7 @@ class Channel(database.Model):
             yield
             return
 
-        with database.db.atomic() as transaction:
+        with cls._meta.database.atomic() as transaction:
             try:
                 Channel.bulk_update(channel_updates, fields=Channel._meta.fields)
                 yield
@@ -739,4 +739,6 @@ class Override(database.Model):
     def clean(cls):
         cls.delete().where((cls.fields=={}) & (cls.attribs=={}) & (cls.properties=={}) & (cls.headers=={})).execute()
 
-database.tables.extend([Playlist, EPG, Channel, Override])
+
+database.init([Playlist, EPG, Channel, Override])
+
