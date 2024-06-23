@@ -114,4 +114,5 @@ def clear_cache(key, **kwargs):
     msg = _(_.PLUGIN_CACHE_REMOVED, delete_count=delete_count)
     gui.notification(msg)
 
-database.tables.append(Cache)
+
+database.init([Cache])

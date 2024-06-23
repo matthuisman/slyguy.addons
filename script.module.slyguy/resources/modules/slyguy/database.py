@@ -1,20 +1,14 @@
 import os
 import json
-import codecs
 
 import peewee
 from six.moves import cPickle
 
-from . import userdata, signals
+from . import signals
 from .log import log
 from .util import hash_6
-from .constants import DB_PATH, DB_PRAGMAS, DB_MAX_INSERTS, DB_TABLENAME, ADDON_DEV
+from .constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
 
-path = os.path.dirname(DB_PATH)
-if not os.path.exists(path):
-    os.makedirs(path)
-
-db = peewee.SqliteDatabase(DB_PATH, pragmas=DB_PRAGMAS, timeout=10)
 
 if ADDON_DEV and not int(os.environ.get('QUIET', 0)):
     import logging
@@ -22,9 +16,11 @@ if ADDON_DEV and not int(os.environ.get('QUIET', 0)):
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.DEBUG)
 
+
 class HashField(peewee.TextField):
     def db_value(self, value):
         return hash_6(value)
+
 
 class PickleField(peewee.BlobField):
     def python_value(self, value):
@@ -38,6 +34,7 @@ class PickleField(peewee.BlobField):
             pickled = cPickle.dumps(value)
             return self._constructor(pickled)
 
+
 class JSONField(peewee.TextField):
     field_type = 'JSON'
 
@@ -49,12 +46,13 @@ class JSONField(peewee.TextField):
         if value is not None:
             return json.loads(value)
 
+
 class Model(peewee.Model):
     checksum = ''
 
     @classmethod
     def get_checksum(cls):
-        ctx = db.get_sql_context()
+        ctx = cls._meta.database.get_sql_context()
         query = cls._schema._create_table()
         return hash_6([cls.checksum, ctx.sql(query).query(), cls._meta.indexes])
 
@@ -121,21 +119,21 @@ class Model(peewee.Model):
     def __repr__(self):
         return self.__str__
 
-    class Meta:
-        database = db
 
 class KeyStore(Model):
-    key     = peewee.TextField(unique=True)
-    value   = peewee.TextField()
+    key = peewee.TextField(unique=True)
+    value = peewee.TextField()
 
     class Meta:
         table_name = DB_TABLENAME
 
-tables = [KeyStore]
-def check_tables():
+
+def check_tables(db, tables):
+    tables.insert(0, KeyStore)
+    KeyStore._meta.database = db
     with db.atomic():
         for table in tables:
-            key      = table.table_name()
+            key = table.table_name()
             checksum = table.get_checksum()
 
             if KeyStore.exists_or_false(KeyStore.key == key, KeyStore.value == checksum):
@@ -146,19 +144,57 @@ def check_tables():
 
             KeyStore.set(key=key, value=checksum)
 
-@signals.on(signals.AFTER_RESET)
-def delete():
-    close()
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
 
-@signals.on(signals.ON_CLOSE)
-def close():
-    try:  db.execute_sql('VACUUM')
-    except: log.debug('Failed to vacuum db')
-    db.close()
-
-@signals.on(signals.BEFORE_DISPATCH)
-def connect():
+def connect(db=None, tables=None):
+    db = db or get_db()
+    if not db:
+        return
+    log.info("Connecting to db: {}".format(db.database))
     db.connect(reuse_if_open=True)
-    check_tables()
+    if tables:
+        check_tables(db, tables)
+
+
+def close(db=None):
+    db = db or get_db()
+    if not db:
+        return
+    if db.database:
+        log.info("Closing db: {}".format(db.database))
+        try: db.execute_sql('VACUUM')
+        except: log.debug('Failed to vacuum db')
+        db.close()
+
+
+def delete(db=None):
+    db = db or get_db()
+    if not db:
+        return
+    close(db)
+    if os.path.exists(db.database):
+        log.info("Deleting db: {}".format(db.database))
+        os.remove(db.database)
+
+
+DBS = {}
+def get_db(db_path=DB_PATH):
+    return DBS.get(db_path)
+
+
+def init(tables=None, db_path=DB_PATH):
+    if db_path in DBS:
+        return DBS[db_path]
+
+    path = os.path.dirname(db_path)
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    db = peewee.SqliteDatabase(db_path)
+    tables = tables or []
+    for table in tables:
+        table._meta.database = db
+
+    signals.add(signals.BEFORE_DISPATCH, lambda db=db, tables=tables: connect(db, tables))
+    signals.add(signals.ON_CLOSE, lambda db=db: close(db))
+    signals.add(signals.AFTER_RESET, lambda db=db: delete(db))
+    DBS[db_path] = db
