@@ -150,37 +150,34 @@ class RequestHandler(BaseHTTPRequestHandler):
             if key not in REMOVE_IN_HEADERS:
                 self._headers[key] = value
 
-        session_type = self._headers.pop('session_type', DEFAULT_SESSION_NAME)
         session_addonid = self._headers.pop('session_addonid', None)
-        self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
-
-        if session_addonid and session_addonid != self._session.get('addon_id'):
+        if session_addonid:
+            session_type = self._headers.pop('session_type', DEFAULT_SESSION_NAME)
+            self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
+            if session_addonid != self._session.get('addon_id'):
+                self._session = {
+                    'addon_id': session_addonid,
+                    'verify': settings.getBool('verify_ssl', True),
+                    'timeout': settings.getInt('http_timeout', 30),
+                    'dns_rewrites': get_dns_rewrites(addon_id=session_addonid),
+                    'proxy_server': settings.get('proxy_server'),
+                }
+                log.debug('Session created from header addon_id: {}'.format(session_addonid))
+        else:
+            session_type = DEFAULT_SESSION_NAME
+            self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
             try:
-                _settings = settings.Settings(xbmcaddon.Addon(session_addonid))
+                proxy_data = json.loads(get_kodi_string('_slyguy_proxy_data'))
+                set_kodi_string('_slyguy_proxy_data', '')
+
+                if self._session.get('session_id') != proxy_data['session_id']:
+                    self._session = {}
+
+                if not self._session:
+                    log.debug('Session created from proxy data')
+                    self._session.update(proxy_data)
             except:
-                _settings = {}
-
-            self._session = {
-                'addon_id': session_addonid,
-                'verify': settings.common_settings.getBool('verify_ssl', True),
-                'timeout': settings.common_settings.getInt('http_timeout', 30),
-                'dns_rewrites': get_dns_rewrites(addon_id=session_addonid),
-                'proxy_server': _settings.get('proxy_server') or settings.common_settings.get('proxy_server'),
-            }
-            log.debug('Session created from header addon_id: {}'.format(session_addonid))
-
-        try:
-            proxy_data = json.loads(get_kodi_string('_slyguy_proxy_data'))
-            set_kodi_string('_slyguy_proxy_data', '')
-
-            if self._session.get('session_id') != proxy_data['session_id']:
-                self._session = {}
-
-            if not self._session:
-                log.debug('Session created from proxy data')
-                self._session.update(proxy_data)
-        except:
-            pass
+                pass
 
         PROXY_GLOBAL['sessions'][session_type] = self._session
 
