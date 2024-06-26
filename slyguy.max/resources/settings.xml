@@ -7,7 +7,6 @@
     </category>
 
     <category label="$ADDON[script.module.slyguy 32035]">
-        <setting label="30011" id="remove_chapters" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32072]" id="default_language" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32121]" id="default_subtitle" type="text" default=""/>
         <setting label="$ADDON[script.module.slyguy 32086]" id="audio_whitelist" type="text" default=""/>
@@ -33,6 +32,7 @@
 
     <category label="$ADDON[script.module.slyguy 32036]">
         <setting label="$ADDON[script.module.slyguy 32021]" type="action" action="RunPlugin(plugin://$ID/?_=_ia_install)" option="close" visible="!system.platform.android"/>
+        <setting label="30011" id="enable_chapters" type="bool" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32039]" id="service_delay" type="number" default="0" visible="false"/>
         <setting label="$ADDON[script.module.slyguy 32019]" type="action" action="RunPlugin(plugin://$ID/?_=_reset)" option="close"/>
 
