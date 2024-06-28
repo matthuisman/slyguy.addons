@@ -302,20 +302,20 @@ def live_tv(**kwargs):
 
     return folder
 
+
 @plugin.route()
 def play(reference, **kwargs):
-    item = api.get_brightcove_src(reference)
-    item.headers = HEADERS
-    if ROUTE_LIVE_TAG in kwargs and item.inputstream:
-        item.inputstream.live = True
+    return _play(reference, is_live=ROUTE_LIVE_TAG in kwargs)
 
-    return item
 
 @plugin.route()
 def play_channel(reference, **kwargs):
-    data = _channels()
+    if settings.getBool('use_legacy_live', False):
+        return _play(reference, is_live=True)
 
+    data = _channels()
     url = None
+    data = _channels()
     for row in data['channels']:
         if row['referenceId'] == reference:
             url = row['stream']['url']
@@ -330,6 +330,14 @@ def play_channel(reference, **kwargs):
         path = url,
         inputstream = inputstream.HLS(live=True),
     )
+
+
+def _play(reference, is_live=False):
+    item = api.get_brightcove_src(reference)
+    item.headers = HEADERS
+    if is_live and item.inputstream:
+        item.inputstream.live = True
+    return item
 
 def _parse_show(row):
     if not row['episodeCount']:

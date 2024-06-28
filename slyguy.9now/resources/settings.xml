@@ -4,6 +4,7 @@
         <setting label="30012" type="enum" id="region" default="0" lvalues="30016|30017|30018|30019|30020|30021|30022|30023|30024|30025|30026" />
         <setting label="30011" type="bool" id="flatten_single_season" default="true"/>
         <setting label="30014" type="bool" id="hide_suggested" default="false"/>
+        <setting label="30013" type="bool" id="use_legacy_live" default="false"/>
         <setting label="$ADDON[script.module.slyguy 32143]" id="pagination_multiplier" type="slider" default="1" range="1,1,10" option="int"/>
         <setting label="$ADDON[script.module.slyguy 32111]" id="bookmarks" type="bool" default="true"/>
         <setting label="$ADDON[script.module.slyguy 32078]" id="kiosk" type="bool" default="false"/>

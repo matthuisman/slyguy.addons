@@ -53,6 +53,10 @@ msgctxt "#30012"
 msgid "Region"
 msgstr ""
 
+msgctxt "#30013"
+msgid "Use Legacy Live Streams"
+msgstr ""
+
 msgctxt "#30014"
 msgid "Hide Suggested"
 msgstr ""

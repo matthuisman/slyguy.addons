@@ -15,7 +15,7 @@ class Language(BaseLanguage):
     CLIPS                  = 30010
     FLATTEN_SINGLE_SEASONS = 30011
     REGION                 = 30012
-
+    USE_LEGACY_LIVE        = 30013
     HIDE_SUGGESTED         = 30014
     EVENT_COUNT            = 30015
     NSW                    = 30016
