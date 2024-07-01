@@ -22,9 +22,18 @@ COMMON_ADDON = xbmcaddon.Addon(COMMON_ADDON_ID)
 try: KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split('.')[0])
 except: KODI_VERSION = 18
 
-REPO_DOMAIN = 'https://slyguy.uk'
-DNS_OVERRIDE_DOMAINS = ['slyguy.uk','i.mjh.nz','dai.google.com']
+REPO_HOST = 'slyguy.uk'
+REPO_DOMAIN = 'https://' + REPO_HOST
+REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz', 'jmp2.uk']
+DNS_OVERRIDE_DOMAINS = ['dai.google.com']
 DNS_OVERRIDE_SERVER = 'https://cloudflare-dns.com/dns-query'
+DNS_OVERRIDE_DOMAINS.extend(REDIRECT_HOSTS)
+DNS_OVERRIDE_DOMAINS.append(REPO_HOST)
+DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
+DONOR_CHECK_TIME = (60*60*6) #6 hours
+DONOR_TIMEOUT = 172800 #48 hours
+UPDATE_TIME_LIMIT = 86400 #24 hours
+REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]
 
 #### DATABASE #####
 DB_PATH         = os.path.join(ADDON_PROFILE, 'data.db')
@@ -151,10 +160,3 @@ MAX_QUALITY_HISTORY = 10
 MIDDLEWARE_CONVERT_SUB = 'convert_sub'
 MIDDLEWARE_REGEX = 'regex'
 MIDDLEWARE_PLUGIN = 'plugin'
-
-REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz']
-DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
-DONOR_CHECK_TIME = (60*60*6) #6 hours
-DONOR_TIMEOUT = 172800 #48 hours
-UPDATE_TIME_LIMIT = 86400 #24 hours
-REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]
