@@ -25,10 +25,8 @@ except: KODI_VERSION = 18
 REPO_HOST = 'slyguy.uk'
 REPO_DOMAIN = 'https://' + REPO_HOST
 REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz', 'jmp2.uk']
-DNS_OVERRIDE_DOMAINS = ['dai.google.com']
+DNS_OVERRIDE_DOMAINS = REDIRECT_HOSTS + ['dai.google.com', REPO_HOST]
 DNS_OVERRIDE_SERVER = 'https://cloudflare-dns.com/dns-query'
-DNS_OVERRIDE_DOMAINS.extend(REDIRECT_HOSTS)
-DNS_OVERRIDE_DOMAINS.append(REPO_HOST)
 DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
 DONOR_CHECK_TIME = (60*60*6) #6 hours
 DONOR_TIMEOUT = 172800 #48 hours
