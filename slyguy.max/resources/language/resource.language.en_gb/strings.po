@@ -62,7 +62,7 @@ msgid "Go to Series"
 msgstr ""
 
 msgctxt "#30011"
-msgid "Enable Chapters [Known issues]"
+msgid "Enable Chapters [Known Issues]"
 msgstr ""
 
 ## COMMON SETTINGS ##
