@@ -810,8 +810,8 @@ msgstr "Twój system operacyjny nie obsługuje jeszcze tej wersji Widevine\n"
 "Wybierz Tak, aby zainstalować mimo to"
 
 msgctxt "#32138"
-msgid "Donations"
-msgstr "Dotacje"
+msgid "Supporters"
+msgstr "Wspierający"
 
 msgctxt "#32139"
 msgid "Look & Feel"
