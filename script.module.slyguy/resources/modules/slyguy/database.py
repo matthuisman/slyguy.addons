@@ -118,11 +118,6 @@ class KeyStore(Model):
         table_name = DB_TABLENAME
 
 
-def check_tables(db, tables):
-    with db.atomic():
-        db.create_tables(tables, fail_silently=True)
-
-
 def connect(db=None, tables=None):
     db = db or get_db()
     if not db:
@@ -131,7 +126,8 @@ def connect(db=None, tables=None):
     with FileLock("{}.lock".format(db.database)):
         log.info("Connecting to db: {}".format(db.database))
         if db.connect(reuse_if_open=True) and tables:
-            check_tables(db, tables)
+            with db.atomic():
+                db.create_tables(tables, fail_silently=True)
 
 
 def close(db=None):
