@@ -400,6 +400,12 @@ class Item(object):
             self.properties.pop('ResumeTime', None)
             self.properties.pop('TotalTime', None)
 
+        if KODI_VERSION >= 20 and 'ResumeTime' in self.properties:
+            li.getVideoInfoTag().setResumePoint(
+                self.properties.pop('ResumeTime'),
+                self.properties.pop('TotalTime', 1)
+            )
+
         for key in self.properties:
             li.setProperty(key, u'{}'.format(self.properties[key]))
 
