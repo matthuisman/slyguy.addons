@@ -358,10 +358,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             # Same bandwidth - compare framerate
             if a['frame_rate'] and b['frame_rate']:
-                if a['frame_rate'] > b['frame_rate']:
-                    return 1
-                elif a['frame_rate'] < b['frame_rate']:
-                    return -1
+                try:
+                    if float(a['frame_rate']) > float(b['frame_rate']):
+                        return 1
+                    elif float(a['frame_rate']) < float(b['frame_rate']):
+                        return -1
+                except:
+                    pass
 
             return 0
 
