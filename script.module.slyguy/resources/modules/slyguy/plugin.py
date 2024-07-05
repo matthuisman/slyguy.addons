@@ -589,7 +589,7 @@ class Item(gui.Item):
             url = url_for(ROUTE_ADD_BOOKMARK, path=self.path, label=self.label, thumb=self.art.get('thumb'), folder=int(self.is_folder), playable=int(self.playable))
             self.context.append((_.ADD_BOOKMARK, 'RunPlugin({})'.format(url)))
 
-        if self.no_resume is None and (ROUTE_LIVE_TAG in self.path or NO_RESUME_TAG in self.path):
+        if self.no_resume is None and self.path and (ROUTE_LIVE_TAG in self.path or NO_RESUME_TAG in self.path):
             self.no_resume = True
 
         if self.hide_favourites is None and self.specialsort or (not self.bookmark and self.path != url_for(ROUTE_BOOKMARKS)):
