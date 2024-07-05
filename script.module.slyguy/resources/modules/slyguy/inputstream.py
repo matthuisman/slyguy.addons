@@ -7,15 +7,15 @@ from looseversion import LooseVersion
 
 from kodi_six import xbmc
 
-from . import gui, settings
-from .settings import common_settings
-from .session import Session
-from .log import log
-from .constants import *
-from .language import _
-from .util import md5sum, remove_file, get_system_arch, get_addon, hash_6
-from .exceptions import InputStreamError, CancelDialog
-from .drm import is_wv_secure
+from slyguy import gui, settings
+from slyguy.session import Session
+from slyguy.log import log
+from slyguy.constants import *
+from slyguy.language import _
+from slyguy.util import md5sum, remove_file, get_system_arch, get_addon, hash_6
+from slyguy.exceptions import InputStreamError, CancelDialog
+from slyguy.drm import is_wv_secure
+
 
 def get_id():
     return IA_ADDON_ID
@@ -80,9 +80,8 @@ class HLS(InputstreamItem):
         self.live  = live
 
     def do_check(self):
-        legacy = settings.getBool('use_ia_hls', False)
-        hls_live = settings.getBool('use_ia_hls_live', legacy)
-        hls_vod = settings.getBool('use_ia_hls_vod', legacy)
+        hls_live = settings.getBool('use_ia_hls_live', False)
+        hls_vod = settings.getBool('use_ia_hls_vod', False)
         return (self.force or (self.live and hls_live) or (not self.live and hls_vod)) and require_version(self.minversion, required=self.force)
 
 class MPD(InputstreamItem):
@@ -222,7 +221,7 @@ def install_widevine(reinstall=False):
     wv_path = os.path.join(decryptpath, DST_FILES[system])
     installed = md5sum(wv_path)
     log.info('Widevine Current MD5: {}'.format(installed))
-    last_check = int(common_settings.get('_wv_last_check', 0))
+    last_check = int(settings.common_settings.get('_wv_last_check', 0))
 
     if not installed:
         if system == 'UWP':
@@ -280,7 +279,7 @@ def install_widevine(reinstall=False):
             has_compatible = True
 
     new_wv_hash = hash_6(json.dumps([x for x in wv_versions if not x.get('hidden')]))
-    if new_wv_hash != common_settings.get('_wv_latest_hash') and (current and not current['compatible'] and has_compatible):
+    if new_wv_hash != settings.common_settings.get('_wv_latest_hash') and (current and not current['compatible'] and has_compatible):
         reinstall = True
 
     if reinstall:
@@ -311,8 +310,8 @@ def install_widevine(reinstall=False):
         gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
         log.info('Widevine - Install ok: {}'.format(selected['ver']))
 
-    common_settings.set('_wv_last_check', int(time.time()))
-    common_settings.set('_wv_latest_hash', new_wv_hash)
+    settings.common_settings.set('_wv_last_check', int(time.time()))
+    settings.common_settings.set('_wv_latest_hash', new_wv_hash)
 
     return True
 

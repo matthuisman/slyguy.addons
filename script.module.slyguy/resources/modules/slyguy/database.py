@@ -3,11 +3,12 @@ import json
 
 import peewee
 from six.moves import cPickle
+from filelock import FileLock
 
-from . import signals
-from .log import log
-from .util import hash_6
-from .constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
+from slyguy import signals
+from slyguy.log import log
+from slyguy.util import hash_6
+from slyguy.constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
 
 
 if ADDON_DEV and not int(os.environ.get('QUIET', 0)):
@@ -36,8 +37,6 @@ class PickleField(peewee.BlobField):
 
 
 class JSONField(peewee.TextField):
-    field_type = 'JSON'
-
     def db_value(self, value):
         if value is not None:
             return json.dumps(value, ensure_ascii=False)
@@ -131,6 +130,7 @@ class KeyStore(Model):
 def check_tables(db, tables):
     tables.insert(0, KeyStore)
     KeyStore._meta.database = db
+    log.info("Checking tables: {} ({})".format(tables, db.database))
     with db.atomic():
         for table in tables:
             key = table.table_name()
@@ -149,16 +149,18 @@ def connect(db=None, tables=None):
     db = db or get_db()
     if not db:
         return
-    log.info("Connecting to db: {}".format(db.database))
-    db.connect(reuse_if_open=True)
-    if tables:
-        check_tables(db, tables)
+
+    with FileLock("{}.lock".format(db.database)):
+        log.info("Connecting to db: {}".format(db.database))
+        if db.connect(reuse_if_open=True) and tables:
+            check_tables(db, tables)
 
 
 def close(db=None):
     db = db or get_db()
     if not db:
         return
+
     if db.database:
         log.info("Closing db: {}".format(db.database))
         try: db.execute_sql('VACUUM')
@@ -181,7 +183,7 @@ def get_db(db_path=DB_PATH):
     return DBS.get(db_path)
 
 
-def init(tables=None, db_path=DB_PATH):
+def init(tables=None, db_path=DB_PATH, do_connect=False):
     if db_path in DBS:
         return DBS[db_path]
 
@@ -189,10 +191,13 @@ def init(tables=None, db_path=DB_PATH):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    db = peewee.SqliteDatabase(db_path)
+    db = peewee.SqliteDatabase(db_path, pragmas=DB_PRAGMAS, timeout=10)
     tables = tables or []
     for table in tables:
         table._meta.database = db
+
+    if do_connect:
+        connect(db, tables)
 
     signals.add(signals.BEFORE_DISPATCH, lambda db=db, tables=tables: connect(db, tables))
     signals.add(signals.ON_CLOSE, lambda db=db: close(db))

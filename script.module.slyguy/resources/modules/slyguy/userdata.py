@@ -1,5 +1,6 @@
-from . import settings
-from .constants import ADDON, USERDATA_KEY
+from slyguy import settings
+from slyguy.constants import ADDON, USERDATA_KEY
+
 
 def _get_data():
     return settings.getDict(USERDATA_KEY, {})

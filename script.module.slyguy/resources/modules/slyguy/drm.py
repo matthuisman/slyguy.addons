@@ -1,9 +1,10 @@
 import re
 
-from . import settings
-from .log import log
-from .constants import KODI_VERSION
-from .util import get_kodi_string, set_kodi_string
+from slyguy import settings
+from slyguy.log import log
+from slyguy.constants import KODI_VERSION
+from slyguy.util import get_kodi_string, set_kodi_string
+
 
 AUTO = -1
 WV_L1 = 1

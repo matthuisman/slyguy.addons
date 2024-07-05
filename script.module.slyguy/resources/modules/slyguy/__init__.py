@@ -1,7 +1,8 @@
 import sys
 
-from .log import log
-from .constants import ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID
+from slyguy.log import log
+from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID
+
 
 log.debug('sys.path: {}'.format(sys.path))
 if ADDON_ID not in sys.path[0]:

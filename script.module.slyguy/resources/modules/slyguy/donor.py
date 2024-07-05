@@ -1,12 +1,12 @@
 from time import time
 
-from . import settings
-from .constants import DONOR_URL, DONOR_CHECK_TIME, DONOR_TIMEOUT, COMMON_ADDON
-from .util import get_kodi_string, set_kodi_string
-from .log import log
+from slyguy import settings
+from slyguy.constants import DONOR_URL, DONOR_CHECK_TIME, DONOR_TIMEOUT, COMMON_ADDON
+from slyguy.util import get_kodi_string, set_kodi_string
+from slyguy.log import log
+
 
 KEY = '_slyguy_donor_{}'.format(COMMON_ADDON.getAddonInfo('version'))
-
 
 def is_donor():
     return bool(int(get_kodi_string(KEY, 0)))

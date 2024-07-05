@@ -3,11 +3,11 @@ from functools import wraps
 
 import peewee
 
-from . import database, settings, signals, gui, router
-from .constants import CACHE_TABLENAME, CACHE_EXPIRY, CACHE_CHECKSUM, CACHE_CLEAN_INTERVAL, CACHE_CLEAN_KEY, ROUTE_CLEAR_CACHE
-from .util import hash_6
-from .log import log
-from .language import _
+from slyguy import database, settings, signals, gui, router
+from slyguy.constants import CACHE_TABLENAME, CACHE_EXPIRY, CACHE_CHECKSUM, CACHE_CLEAN_INTERVAL, CACHE_CLEAN_KEY, ROUTE_CLEAR_CACHE
+from slyguy.util import hash_6
+from slyguy.log import log
+from slyguy.language import _
 
 funcs   = []
 

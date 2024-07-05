@@ -3,10 +3,11 @@ import os
 
 from kodi_six import xbmc, xbmcaddon
 
-from .constants import ADDON, ADDON_ID, COMMON_ADDON
-from . import signals
-from .log import log
-from .util import remove_file
+from slyguy import signals
+from slyguy.constants import ADDON, ADDON_ID, COMMON_ADDON
+from slyguy.log import log
+from slyguy.util import remove_file
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():

@@ -1,8 +1,9 @@
 from contextlib import contextmanager
 from collections import defaultdict
 
-from .log import log
-from .exceptions import Error, Exit
+from slyguy.log import log
+from slyguy.exceptions import Error, Exit
+
 
 _signals = defaultdict(list)
 _skip = defaultdict(int)

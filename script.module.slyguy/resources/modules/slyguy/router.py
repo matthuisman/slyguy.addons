@@ -1,11 +1,12 @@
 import sys
 from six.moves.urllib_parse import parse_qsl, urlparse, urlencode
 
-from . import signals
-from .constants import *
-from .log import log
-from .language import _
-from .exceptions import RouterError, Exit
+from slyguy import signals
+from slyguy.constants import *
+from slyguy.log import log
+from slyguy.language import _
+from slyguy.exceptions import RouterError, Exit
+
 
 _routes = {}
 

@@ -5,9 +5,10 @@ import time
 
 from kodi_six import xbmc, xbmcaddon, xbmcplugin
 
-from .language import _
-from .constants import ADDON_ID, ADDON_NAME, ADDON_PROFILE, ROUTE_MIGRATE_DONE
-from . import gui, router
+from slyguy import gui, router
+from slyguy.language import _
+from slyguy.constants import ADDON_ID, ADDON_PROFILE, ROUTE_MIGRATE_DONE
+
 
 def get_addon(addon_id):
     try:

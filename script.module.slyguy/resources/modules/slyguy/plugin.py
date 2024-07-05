@@ -9,13 +9,14 @@ from six.moves.urllib_parse import quote_plus
 
 from kodi_six import xbmc, xbmcplugin
 
-from . import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache
-from .constants import *
-from .log import log
-from .language import _
-from .exceptions import Error, PluginError, CancelDialog
-from .util import set_kodi_string, get_addon, remove_file, user_country
-from .donor import is_donor
+from slyguy import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache
+from slyguy.constants import *
+from slyguy.log import log
+from slyguy.language import _
+from slyguy.exceptions import Error, PluginError, CancelDialog
+from slyguy.util import set_kodi_string, get_addon, remove_file, user_country
+from slyguy.donor import is_donor
+
 
 ## SHORTCUTS
 url_for = router.url_for
@@ -588,6 +589,12 @@ class Item(gui.Item):
             url = url_for(ROUTE_ADD_BOOKMARK, path=self.path, label=self.label, thumb=self.art.get('thumb'), folder=int(self.is_folder), playable=int(self.playable))
             self.context.append((_.ADD_BOOKMARK, 'RunPlugin({})'.format(url)))
 
+        if self.no_resume is None and (ROUTE_LIVE_TAG in self.path or NO_RESUME_TAG in self.path):
+            self.no_resume = True
+
+        if self.hide_favourites is None and self.specialsort or (not self.bookmark and self.path != url_for(ROUTE_BOOKMARKS)):
+            self.hide_favourites = True
+
         if not self.playable:
             self.art['thumb'] = self.art.get('thumb') or default_thumb
             self.art['fanart'] = self.art.get('fanart') or default_fanart
@@ -832,7 +839,7 @@ def require_update():
         log.error(_(_.UPDATES_REQUIRED, updates_required='\n'.join(['{} ({})'.format(entry[1], entry[2]) for entry in need_updated])))
 
 def process_news():
-    news = settings.common_settings.get('_news')
+    news = settings.common_settings.getDict('_news')
     if not news:
         return
 
@@ -841,7 +848,7 @@ def process_news():
         if news.get('show_in') and ADDON_ID.lower() not in [x.lower() for x in news['show_in'].split(',')]:
             return
 
-        settings.common_settings.set('_news', '')
+        settings.common_settings.setDict('_news', {})
 
         if news.get('country'):
             valid = False

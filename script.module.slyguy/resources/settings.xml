@@ -56,5 +56,7 @@
         <setting id="_last_news_check" type="text" default="" visible="false"/>
         <setting id="_last_news_id" type="text" default="" visible="false"/>
         <setting id="_news" type="text" default="" visible="false"/>
+        <setting id="_mac" type="text" default="" visible="false"/>
+        <setting id="_arch" type="text" default="" visible="false"/>
     </category>
 </settings>

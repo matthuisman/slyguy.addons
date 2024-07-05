@@ -7,13 +7,13 @@ from contextlib import contextmanager
 from six.moves.urllib_parse import urlparse
 from kodi_six import xbmcgui, xbmc
 
-from . import settings
-from .constants import *
-from .router import add_url_args
-from .language import _
-from .smart_urls import get_dns_rewrites
-from .util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
-from .session import Session
+from slyguy import settings
+from slyguy.constants import *
+from slyguy.router import add_url_args
+from slyguy.language import _
+from slyguy.smart_urls import get_dns_rewrites
+from slyguy.util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
+from slyguy.session import Session
 
 
 if KODI_VERSION >= 20:
@@ -219,7 +219,7 @@ class Item(object):
     def __init__(self, id=None, label='', path=None, playable=False, info=None, context=None,
             headers=None, cookies=None, properties=None, is_folder=None, art=None, inputstream=None,
             video=None, audio=None, subtitles=None, use_proxy=True, specialsort=None, custom=None, proxy_data=None,
-            resume_from=None, force_resume=False, dns_rewrites=None, slug=None):
+            resume_from=None, force_resume=False, dns_rewrites=None, slug=None, hide_favourites=None, no_resume=None):
 
         self.id          = id
         self.label       = label
@@ -244,7 +244,9 @@ class Item(object):
         self.use_proxy   = use_proxy
         self.resume_from = resume_from
         self.force_resume = force_resume
+        self.hide_favourites = hide_favourites
         self.slug = slug
+        self.no_resume = no_resume
         if self.slug is None:
             try:
                 self.slug = sys.argv[2]
@@ -274,6 +276,11 @@ class Item(object):
         info = self.info.copy()
         if self.label:
             li.setLabel(self.label)
+
+        if self.no_resume:
+            self.resume_from = 0
+            info['duration'] = 0
+            info['playcount'] = 0
 
         if info:
             if not info.get('title') and self.label and info.get('mediatype'):
@@ -321,8 +328,10 @@ class Item(object):
             if info.get('date'):
                 try: li.setDateTime(info.pop('date'))
                 except: pass
-            #TODO: do own 20+ wrapper layer
-            ListItemInfoTag(li, 'video').set_info(info)
+
+            if info or self.is_folder:
+                #TODO: do own 20+ wrapper layer
+                ListItemInfoTag(li, 'video').set_info(info)
         else:
             if info.get('date'):
                 try: info['date'] = '{}.{}.{}'.format(info['date'][8:10], info['date'][5:7], info['date'][0:4])
@@ -331,10 +340,9 @@ class Item(object):
             if info.get('cast'):
                 try: info['cast'] = [(member['name'], member['role']) for member in info['cast']]
                 except: pass
-            li.setInfo('video', info)
 
-        if self.specialsort:
-            li.setProperty('specialsort', self.specialsort)
+            if info or self.is_folder:
+                li.setInfo('video', info)
 
         if self.video:
             li.addStreamInfo('video', self.video)
@@ -359,17 +367,26 @@ class Item(object):
 
             li.setArt(art)
 
-        if self.playable and not playing:
-            li.setProperty('IsPlayable', 'true')
-            if self.path:
-                self.path = add_url_args(self.path, _play=1)
+        if self.specialsort:
+            self.properties['specialsort'] = self.specialsort
+
+        if self.hide_favourites and KODI_VERSION > 20:
+            # Kodi 21+ only
+            self.properties['hide_add_remove_favourite'] = 'true'
 
         context_items = [x for x in self.context]
-        if self.playable and (KODI_VERSION < 20 or ROUTE_LIVE_TAG not in self.path):
-            # PlayNext added in Kodi 18
-            if KODI_VERSION > 17:
-                context_items.append((_.PLAY_NEXT, 'Action(PlayNext)'))
-            context_items.append((_.QUEUE_ITEM, 'Action(Queue)'))
+        if not playing:
+            if self.playable:
+                self.properties['IsPlayable'] = 'true'
+                if self.path:
+                    self.path = add_url_args(self.path, _play=1)
+                if KODI_VERSION < 20 or ROUTE_LIVE_TAG not in self.path:
+                    # PlayNext added in Kodi 18
+                    if KODI_VERSION > 17:
+                        context_items.append((_.PLAY_NEXT, 'Action(PlayNext)'))
+                    context_items.append((_.QUEUE_ITEM, 'Action(Queue)'))
+            else:
+                self.properties['IsPlayable'] = 'false'
 
         if context_items:
             li.addContextMenuItems(context_items)

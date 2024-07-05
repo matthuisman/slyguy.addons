@@ -1,7 +1,8 @@
 from kodi_six import xbmc
 
-from .log import log
-from .constants import ADDON, COMMON_ADDON
+from slyguy.log import log
+from slyguy.constants import ADDON, COMMON_ADDON
+
 
 def format_string(string, *args, **kwargs):
     style = {}
@@ -212,6 +213,9 @@ class BaseLanguage(object):
     TRAILER                     = 20410
     PLAY_NEXT                   = 10008
     QUEUE_ITEM                  = 13347
+
+    def __getattr__(self, name):
+        return str(name)
 
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)

@@ -37,16 +37,16 @@ def _check_news():
     if news['type'] == 'donate' and is_donor():
         return
 
-    settings.common_settings.set('_news', json.dumps(news))
+    settings.common_settings.setDict('_news', json.dumps(news))
 
 def _check_arch():
     arch = get_system_arch()[1]
-    mac = str(uuid.getnode())
+    mac = int(uuid.getnode())
 
-    prev_mac = settings.common_settings.get('_mac')
+    prev_mac = settings.common_settings.getInt('_mac')
     prev_arch = settings.common_settings.get('_arch')
     settings.common_settings.set('_arch', arch)
-    settings.common_settings.set('_mac', mac)
+    settings.common_settings.setInt('_mac', mac)
     if not prev_mac or not prev_arch:
         return
 

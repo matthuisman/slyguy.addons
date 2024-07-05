@@ -1,8 +1,8 @@
 import os
-import json
 
-from .constants import BOOKMARK_FILE
-from .util import load_json, save_json
+from slyguy.constants import BOOKMARK_FILE
+from slyguy.util import load_json, save_json
+
 
 path = os.path.dirname(BOOKMARK_FILE)
 if not os.path.exists(path):

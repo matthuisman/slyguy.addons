@@ -1,15 +1,14 @@
-import sys
 from time import time
 from functools import wraps
 from copy import deepcopy
 
 from six.moves import cPickle
 
-from . import signals, router
-from .log import log
-from .util import hash_6, set_kodi_string, get_kodi_string
-from .constants import ADDON_ID, CACHE_EXPIRY, ROUTE_CLEAR_CACHE, ADDON_VERSION
-from .settings import common_settings as settings
+from slyguy import signals, router, settings
+from slyguy.log import log
+from slyguy.util import hash_6, set_kodi_string, get_kodi_string
+from slyguy.constants import ADDON_ID, CACHE_EXPIRY, ROUTE_CLEAR_CACHE, ADDON_VERSION
+
 
 cache_key = 'cache.'+ADDON_ID+ADDON_VERSION
 
@@ -20,7 +19,7 @@ cache = Cache()
 
 @signals.on(signals.BEFORE_DISPATCH)
 def load():
-    if not cache.data and settings.getBool('persist_cache', True):
+    if not cache.data and settings.common_settings.getBool('persist_cache', True):
         cache.data = {}
 
         try:
@@ -137,7 +136,7 @@ def remove_expired():
     if delete:
         log('Mem Cache: Deleted {} Expired Rows'.format(len(delete)))
 
-    if settings.getBool('persist_cache', True):
+    if settings.common_settings.getBool('persist_cache', True):
         set_kodi_string(cache_key, cPickle.dumps(cache.data, protocol=0).decode('latin1'))
         cache.data.clear()
 

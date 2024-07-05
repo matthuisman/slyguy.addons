@@ -28,10 +28,11 @@ else:
     from six.moves.html_parser import HTMLParser
     html = HTMLParser()
 
-from .language import _
-from .log import log
-from .exceptions import Error
-from .constants import *
+from slyguy.language import _
+from slyguy.log import log
+from slyguy.exceptions import Error
+from slyguy.constants import *
+
 
 def run_plugin(path, wait=False):
     if wait:
