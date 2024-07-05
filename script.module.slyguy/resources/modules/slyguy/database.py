@@ -35,7 +35,6 @@ class PickleField(peewee.BlobField):
             pickled = cPickle.dumps(value)
             return self._constructor(pickled)
 
-
 class JSONField(peewee.TextField):
     def db_value(self, value):
         if value is not None:
@@ -47,14 +46,6 @@ class JSONField(peewee.TextField):
 
 
 class Model(peewee.Model):
-    checksum = ''
-
-    @classmethod
-    def get_checksum(cls):
-        ctx = cls._meta.database.get_sql_context()
-        query = cls._schema._create_table()
-        return hash_6([cls.checksum, ctx.sql(query).query(), cls._meta.indexes])
-
     @classmethod
     def delete_where(cls, *args, **kwargs):
         return super(Model, cls).delete().where(*args, **kwargs).execute()
@@ -128,21 +119,8 @@ class KeyStore(Model):
 
 
 def check_tables(db, tables):
-    tables.insert(0, KeyStore)
-    KeyStore._meta.database = db
-    log.info("Checking tables: {} ({})".format(tables, db.database))
     with db.atomic():
-        for table in tables:
-            key = table.table_name()
-            checksum = table.get_checksum()
-
-            if KeyStore.exists_or_false(KeyStore.key == key, KeyStore.value == checksum):
-                continue
-
-            db.drop_tables([table])
-            db.create_tables([table])
-
-            KeyStore.set(key=key, value=checksum)
+        db.create_tables(tables, fail_silently=True)
 
 
 def connect(db=None, tables=None):
