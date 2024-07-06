@@ -1,5 +1,4 @@
 import sys
-import json
 import uuid
 from time import time
 
@@ -36,8 +35,7 @@ def _check_news():
 
     if news['type'] == 'donate' and is_donor():
         return
-
-    settings.common_settings.setDict('_news', json.dumps(news))
+    settings.common_settings.setDict('_news', news)
 
 def _check_arch():
     arch = get_system_arch()[1]

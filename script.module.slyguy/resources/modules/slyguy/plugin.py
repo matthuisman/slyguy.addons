@@ -844,7 +844,6 @@ def process_news():
         return
 
     try:
-        news = json.loads(news)
         if news.get('show_in') and ADDON_ID.lower() not in [x.lower() for x in news['show_in'].split(',')]:
             return
 
