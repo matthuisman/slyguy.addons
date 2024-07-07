@@ -2,6 +2,7 @@ import os
 import json
 
 import peewee
+from kodi_six import xbmc
 from six.moves import cPickle
 from filelock import FileLock
 
@@ -118,16 +119,12 @@ class KeyStore(Model):
         table_name = DB_TABLENAME
 
 
-def connect(db=None, tables=None):
+def connect(db=None):
     db = db or get_db()
     if not db:
         return
-
-    with FileLock("{}.lock".format(db.database)):
-        log.info("Connecting to db: {}".format(db.database))
-        if db.connect(reuse_if_open=True) and tables:
-            with db.atomic():
-                db.create_tables(tables, fail_silently=True)
+    if db.database:
+        db.connect()
 
 
 def close(db=None):
@@ -157,23 +154,35 @@ def get_db(db_path=DB_PATH):
     return DBS.get(db_path)
 
 
-def init(tables=None, db_path=DB_PATH, do_connect=False):
-    if db_path in DBS:
-        return DBS[db_path]
+class Database(peewee.SqliteDatabase):
+    def __init__(self, database, *args, **kwargs):
+        self._tables = kwargs.pop('tables', [])
+        for table in self._tables:
+            table._meta.database = self
+        signals.add(signals.ON_CLOSE, lambda db=self: close(db))
+        signals.add(signals.AFTER_RESET, lambda db=self: delete(db))
+        super(Database, self).__init__(database, *args, **kwargs)
 
-    path = os.path.dirname(db_path)
-    if not os.path.exists(path):
-        os.makedirs(path)
+    def connect(self, *args, **kwargs):
+        if not self.is_closed():
+            return
 
-    db = peewee.SqliteDatabase(db_path, pragmas=DB_PRAGMAS, timeout=10)
-    tables = tables or []
-    for table in tables:
-        table._meta.database = db
+        log.info("Connecting db: {}".format(self.database))
+        lock_file = xbmc.translatePath('special://temp/{}.lock'.format(os.path.basename(self.database)))
+        with FileLock(lock_file):
+            log.info("Got lock. Opening db: {}".format(self.database))
+            path = os.path.dirname(self.database)
+            if not os.path.exists(path):
+                os.makedirs(path)
 
-    if do_connect:
-        connect(db, tables)
+            result = super(Database, self).connect(*args, **kwargs)
+            if result and self._tables:
+                self.create_tables(self._tables, fail_silently=True)
 
-    signals.add(signals.BEFORE_DISPATCH, lambda db=db, tables=tables: connect(db, tables))
-    signals.add(signals.ON_CLOSE, lambda db=db: close(db))
-    signals.add(signals.AFTER_RESET, lambda db=db: delete(db))
-    DBS[db_path] = db
+        return result
+
+
+def init(tables=None, db_path=DB_PATH):
+    if db_path not in DBS:
+        DBS[db_path] = Database(db_path, pragmas=DB_PRAGMAS, timeout=10, autoconnect=True, tables=tables)
+    return DBS[db_path]
