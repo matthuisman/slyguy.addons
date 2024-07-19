@@ -4,8 +4,7 @@ from looseversion import LooseVersion
 
 from kodi_six import xbmc
 
-from slyguy import settings
-from slyguy.log import log
+from slyguy import settings, log
 from slyguy.session import Session
 from slyguy.util import kodi_rpc, get_addon, safe_copy
 from slyguy.constants import UPDATE_TIME_LIMIT, REPO_ADDON_ID, REPO_DOMAIN
@@ -23,13 +22,11 @@ def check_updates(force=False):
         return
 
     settings.common_settings.setInt('_last_updates_check', _time)
-
     with Session(timeout=15) as session:
         new_md5 = session.get(ADDONS_MD5).text.split(' ')[0]
 
     if not force and new_md5 == settings.common_settings.get('addon_md5'):
         return 0
-
     settings.common_settings.set('_addon_md5', new_md5)
 
     pending_updates = {}

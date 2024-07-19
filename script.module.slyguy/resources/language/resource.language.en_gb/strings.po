@@ -41,7 +41,7 @@ msgid "{name} [Atmos]"
 msgstr ""
 
 msgctxt "#30005"
-msgid "SlyProxy Enabled (Required for some addons and features)"
+msgid "Use SlyGuy Proxy"
 msgstr ""
 
 msgctxt "#30006"
@@ -49,7 +49,7 @@ msgid "Persist Cache"
 msgstr ""
 
 msgctxt "#30007"
-msgid "Widevine Level (Restart Kodi after changing)"
+msgid "Widevine Level"
 msgstr ""
 
 msgctxt "#30008"
@@ -65,11 +65,11 @@ msgid "L3"
 msgstr ""
 
 msgctxt "#30011"
-msgid "HDCP Level (Restart Kodi after changing)"
+msgid "HDCP Level"
 msgstr ""
 
 msgctxt "#30012"
-msgid "None"
+msgid "Off"
 msgstr ""
 
 msgctxt "#30013"
@@ -101,7 +101,7 @@ msgid "Check Kodi log for SlyGuy errors"
 msgstr ""
 
 msgctxt "#30020"
-msgid "Donor ID (Restart Kodi after changing)"
+msgid "Supporter ID"
 msgstr ""
 
 msgctxt "#30021"
@@ -448,7 +448,7 @@ msgid "Lowest"
 msgstr ""
 
 msgctxt "#32061"
-msgid "Playback Quality"
+msgid "Select quality"
 msgstr ""
 
 msgctxt "#32062"
@@ -494,10 +494,6 @@ msgstr ""
 
 msgctxt "#32072"
 msgid "Default Audio"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""
 
 msgctxt "#32074"
@@ -731,10 +727,6 @@ msgctxt "#32128"
 msgid "SlyGuy News"
 msgstr ""
 
-msgctxt "#32129"
-msgid "(Video view setting moved to SlyGuy Common Settings)"
-msgstr ""
-
 msgctxt "#32130"
 msgid "Play from live"
 msgstr ""
@@ -779,7 +771,7 @@ msgid "Look & Feel"
 msgstr ""
 
 msgctxt "#32140"
-msgid "Donate at [B]https://donate.slyguy.uk[/B]\n"
+msgid "Donate at [B]donate.slyguy.uk[/B]\n"
 "to unlock the below supporter only settings"
 msgstr ""
 
@@ -834,3 +826,92 @@ msgctxt "#32151"
 msgid "The below SlyGuy addons are outdated and must be updated or no support will be given\n"
 "{updates_required}"
 msgstr ""
+
+msgctxt "#32153"
+msgid "Codecs"
+msgstr ""
+
+msgctxt "#32156"
+msgid "This is a supporter only setting\n"
+"Visit [B]donate.slyguy.uk[/B] to become a supporter!"
+msgstr ""
+
+msgctxt "#32157"
+msgid "Reset to default"
+msgstr ""
+
+msgctxt "#32158"
+msgid "Not a supporter"
+msgstr ""
+
+msgctxt "#32159"
+msgid "IPv4/IPv6 Preference"
+msgstr ""
+
+msgctxt "#32160"
+msgid "Proxy server"
+msgstr ""
+
+msgctxt "#32161"
+msgid "Visit [B]donate.slyguy.uk[/B] to become a supporter and then enter your Supporter ID here"
+msgstr ""
+
+msgctxt "#32162"
+msgid "Warning: Disabling the SlyGuy proxy will stop a lot of features and even break some SlyGuy addons completely. "
+"It should only be disabled temporally while debugging specific issues\n"
+"Are you sure you want to disable?"
+msgstr ""
+
+msgctxt "#32163"
+msgid "Warning: Changing the systems Widevine DRM level will likely cause playback issues. "
+"Its useful for forcing a lower level (L3) or testing what features are available at a higher level (L1).\n"
+"Are you sure you want to change?"
+msgstr ""
+
+msgctxt "#32164"
+msgid "Warning: Changing the systems HDCP level will likely cause playback issues. "
+"Its useful for forcing a lower level or testing what features are available at a higher level.\n"
+"Are you sure you want to change?"
+msgstr ""
+
+msgctxt "#32165"
+msgid "Quality Select Mode"
+msgstr ""
+
+msgctxt "#32166"
+msgid "Welcome SlyGuy Supporter!"
+msgstr ""
+
+msgctxt "#32167"
+msgid "Supporter ID '{id}' not found"
+msgstr ""
+
+msgctxt "#32168"
+msgid "[Common]"
+msgstr ""
+
+msgctxt "#32169"
+msgid "Prefer IPv4"
+msgstr ""
+
+msgctxt "#32170"
+msgid "Prefer IPv6"
+msgstr ""
+
+msgctxt "#32171"
+msgid "IPv4 Only"
+msgstr ""
+
+msgctxt "#32172"
+msgid "IPv6 Only"
+msgstr ""
+
+msgctxt "#32173"
+msgid "Are you sure you want to reset {count} settings to default?"
+msgstr ""
+
+msgctxt "#32174"
+msgid "Media Default"
+msgstr ""
+
+

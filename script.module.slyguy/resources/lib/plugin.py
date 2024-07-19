@@ -5,10 +5,15 @@ from six.moves.urllib_parse import urlparse
 
 from slyguy import plugin, gui
 from slyguy.util import get_kodi_setting, get_addon
-from slyguy.constants import ROUTE_CONTEXT
+from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS
 
 from .util import check_updates, get_slyguy_addons
 from .language import _
+
+
+@plugin.route('')
+def home(**kwargs):
+    return plugin.redirect(ROUTE_SETTINGS)
 
 
 @plugin.route(ROUTE_CONTEXT)

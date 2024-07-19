@@ -3,11 +3,10 @@ import os
 import requests
 from kodi_six import xbmc, xbmcaddon
 
-from slyguy import settings
+from slyguy import settings, is_donor, log
 from slyguy.log import log
 from slyguy.mem_cache import cached
 from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, DNS_OVERRIDE_DOMAINS, DNS_OVERRIDE_SERVER
-from slyguy.donor import is_donor
 
 
 def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
@@ -25,6 +24,9 @@ def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
         # add some defaults that are often blocked by networkwide dns
         for domain in DNS_OVERRIDE_DOMAINS:
             rewrites.append(['r:{}'.format(DNS_OVERRIDE_SERVER), domain])
+
+    if settings.common_settings.get('dns_server'):
+        rewrites.append(['r:{}'.format(settings.common_settings.get('dns_server')), '*'])
 
     return rewrites
 

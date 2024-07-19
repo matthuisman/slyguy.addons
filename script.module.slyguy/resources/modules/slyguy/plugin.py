@@ -9,13 +9,12 @@ from six.moves.urllib_parse import quote_plus
 
 from kodi_six import xbmc, xbmcplugin
 
-from slyguy import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache
+from slyguy import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache, is_donor, log
 from slyguy.constants import *
-from slyguy.log import log
 from slyguy.language import _
 from slyguy.exceptions import Error, PluginError, CancelDialog
 from slyguy.util import set_kodi_string, get_addon, remove_file, user_country
-from slyguy.donor import is_donor
+from slyguy.settings.types import Category
 
 
 ## SHORTCUTS
@@ -275,24 +274,28 @@ def _exception(e):
 
     resolve()
 
+
 @route('')
 def _home(**kwargs):
     raise PluginError(_.PLUGIN_NO_DEFAULT_ROUTE)
 
-@route(ROUTE_ADD_BOOKMARK)
-def _add_bookmark(path, label=None, thumb=None, folder=1, playable=0, **kwargs):
+
+@route()
+def add_bookmark(path, label=None, thumb=None, folder=1, playable=0, **kwargs):
     bookmarks.add(path, label, thumb, int(folder), int(playable))
     gui.notification(label, heading=_.BOOKMARK_ADDED, icon=thumb)
 
-@route(ROUTE_DEL_BOOKMARK)
-def _del_bookmark(index, **kwargs):
+
+@route()
+def del_bookmark(index, **kwargs):
     if bookmarks.delete(int(index)):
         gui.refresh()
     else:
         gui.redirect(url_for(''))
 
-@route(ROUTE_RENAME_BOOKMARK)
-def _rename_bookmark(index, name, **kwargs):
+
+@route()
+def rename_bookmark(index, name, **kwargs):
     new_name = gui.input(_.RENAME_BOOKMARK, default=name)
     if not new_name or new_name == name:
         return
@@ -300,10 +303,12 @@ def _rename_bookmark(index, name, **kwargs):
     bookmarks.rename(int(index), new_name)
     gui.refresh()
 
-@route(ROUTE_MOVE_BOOKMARK)
-def _move_bookmark(index, shift, **kwargs):
+
+@route()
+def move_bookmark(index, shift, **kwargs):
     bookmarks.move(int(index), int(shift))
     gui.refresh()
+
 
 @route(ROUTE_BOOKMARKS)
 def _bookmarks(**kwargs):
@@ -321,12 +326,12 @@ def _bookmarks(**kwargs):
         )
 
         if index > 0:
-            item.context.append((_.MOVE_UP, 'RunPlugin({})'.format(url_for(ROUTE_MOVE_BOOKMARK, index=index, shift=-1))))
+            item.context.append((_.MOVE_UP, 'RunPlugin({})'.format(url_for(move_bookmark, index=index, shift=-1))))
         if index < len(_bookmarks)-1:
-            item.context.append((_.MOVE_DOWN, 'RunPlugin({})'.format(url_for(ROUTE_MOVE_BOOKMARK, index=index, shift=1))))
+            item.context.append((_.MOVE_DOWN, 'RunPlugin({})'.format(url_for(move_bookmark, index=index, shift=1))))
 
-        item.context.append((_.RENAME_BOOKMARK, 'RunPlugin({})'.format(url_for(ROUTE_RENAME_BOOKMARK, index=index, name=row['label']))))
-        item.context.append((_.DELETE_BOOKMARK, 'RunPlugin({})'.format(url_for(ROUTE_DEL_BOOKMARK, index=index))))
+        item.context.append((_.RENAME_BOOKMARK, 'RunPlugin({})'.format(url_for(rename_bookmark, index=index, name=row['label']))))
+        item.context.append((_.DELETE_BOOKMARK, 'RunPlugin({})'.format(url_for(del_bookmark, index=index))))
 
         folder.add_items(item)
 
@@ -365,23 +370,92 @@ def _migrate_done(old_addon_id, **kwargs):
     _close()
     migrate.migrate_done(old_addon_id)
 
+@route(ROUTE_SETTINGS)
+def _settings(category=0, **kwargs):
+    if not NEW_SETTINGS:
+        _close()
+        settings.open()
+        return gui.refresh()
+
+    category = Category.get(int(category))
+    folder = Folder(category.label, content='files')
+
+    for subcat in category.categories:
+        folder.add_item(
+            label = subcat.label,
+            path = url_for(_settings, category=subcat.id),
+            bookmark = False,
+        )
+
+    for setting in category.settings:
+        item = Item(
+            label = setting.label,
+            path = url_for(setting_select, id=setting.id),
+            bookmark = False,
+            context = ((_.RESET_TO_DEFAULT, 'RunPlugin({})'.format(url_for(setting_clear, id=setting.id))),) if setting.can_clear() else None,
+            is_folder = False,            
+        )
+
+        if setting.description:
+            item.info['plot'] = setting.description
+            item.context.append((_.HELP, 'RunPlugin({})'.format(url_for(setting_help, id=setting.id))))
+        
+        folder.add_items([item])
+
+    if any(setting.can_bulk_clear() for setting in category.settings):
+        folder.add_item(
+            label = _(_.RESET_ALL_SETTINGS, _bold=True),
+            path = url_for(clear_settings, category=category.id),
+            specialsort = 'bottom',
+            is_folder = False,
+            bookmark = False,
+        )
+
+    return folder
+
+
+@route()
+def setting_help(id, **kwargs):
+    setting = settings.common_settings.get_setting(id)
+    gui.ok(setting.description, setting._label)
+
+
+@route()
+def setting_select(id, **kwargs):
+    setting = settings.common_settings.get_setting(id)
+    if setting.on_select():
+        gui.refresh()
+
+
+@route()
+def setting_clear(id, **kwargs):
+    setting = settings.common_settings.get_setting(id)
+    if setting.on_clear():
+        gui.refresh()
+
+
+@route()
+def clear_settings(category=0, **kwargs):
+    category = Category.get(int(category))
+    to_clear = [setting for setting in category.settings if setting.can_bulk_clear()]
+    if gui.yes_no(_(_.CONFIRM_CLEAR_BULK, count=len(to_clear))) and any([setting.on_clear() for setting in to_clear]):
+        gui.refresh()
+
+
 def reboot():
     _close()
     xbmc.executebuiltin('Reboot')
+
 
 @signals.on(signals.AFTER_DISPATCH)
 def _close():
     signals.emit(signals.ON_CLOSE)
 
-@route(ROUTE_SETTINGS)
-def _settings(**kwargs):
-    _close()
-    settings.open()
-    gui.refresh()
 
 @route(ROUTE_CONTEXT)
 def _context(**kwargs):
     raise PluginError(_.NO_CONTEXT_METHOD)
+
 
 @route(ROUTE_RESET)
 def _reset(**kwargs):
@@ -584,43 +658,43 @@ class Item(gui.Item):
         # if settings.getBool('use_cache', True) and self.cache_key:
         #     url = url_for(ROUTE_CLEAR_CACHE, key=self.cache_key)
         #     self.context.append((_.PLUGIN_CONTEXT_CLEAR_CACHE, 'RunPlugin({})'.format(url)))
-
         if settings.getBool('bookmarks', True) and self.bookmark:
-            url = url_for(ROUTE_ADD_BOOKMARK, path=self.path, label=self.label, thumb=self.art.get('thumb'), folder=int(self.is_folder), playable=int(self.playable))
+            url = url_for(add_bookmark, path=self.path, label=self.label, thumb=self.art.get('thumb'), folder=int(self.is_folder), playable=int(self.playable))
             self.context.append((_.ADD_BOOKMARK, 'RunPlugin({})'.format(url)))
 
         if self.no_resume is None and self.path and (ROUTE_LIVE_TAG in self.path or NO_RESUME_TAG in self.path):
             self.no_resume = True
 
-        if self.hide_favourites is None and self.specialsort or (not self.bookmark and self.path != url_for(ROUTE_BOOKMARKS)):
+        if self.hide_favourites is None and self.specialsort or (not self.bookmark and self.path != url_for(_bookmarks)):
             self.hide_favourites = True
 
         if not self.playable:
             self.art['thumb'] = self.art.get('thumb') or default_thumb
             self.art['fanart'] = self.art.get('fanart') or default_fanart
 
-        if not donor_enabled or is_donor():
-            quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-            if self.path and self.playable and quality not in (QUALITY_DISABLED, QUALITY_ASK):
-                url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
-                self.context.append((_.PLAYBACK_QUALITY, 'PlayMedia({},noresume)'.format(url)))
+        if self.path and self.playable and ((not donor_enabled and not NEW_SETTINGS) or is_donor()):
+            url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
+            self.context.append((_.SELECT_QUALITY, 'PlayMedia({},noresume)'.format(url)))
 
         return super(Item, self).get_li(*args, **kwargs)
 
     def play(self, **kwargs):
         self.playable = True
 
-        if not donor_enabled or is_donor():
+        quality = QUALITY_SKIP
+        if (not donor_enabled and not NEW_SETTINGS) or is_donor():
             quality = kwargs.get(QUALITY_TAG, self.quality)
             if quality is None:
-                quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-                if quality == QUALITY_CUSTOM:
-                    quality = int(settings.getFloat('max_bandwidth')*1000000)
+                if NEW_SETTINGS:
+                    quality = settings.QUALITY_MODE.value
+                else:
+                    self.proxy_data['max_bandwidth'] = 0
+                    quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
+                    if quality == QUALITY_CUSTOM:
+                        quality = QUALITY_BEST
+                        self.proxy_data['max_bandwidth'] = settings.getInt('max_bandwidth', 0)
             else:
                 quality = int(quality)
-        else:
-            quality = QUALITY_DISABLED
-
         self.proxy_data['quality'] = quality
 
         if self.resume_from is not None and self.resume_from < 0:
@@ -713,7 +787,7 @@ class Folder(object):
                 if not media_type and item.playable:
                     item.info['mediatype'] = media_type = 'video'
 
-                if not (item.info.get('plot') or '').strip() and not item.info.get('mediatype') and video_view_menus:
+                if not (item.info.get('plot') or '').strip() and not item.info.get('mediatype'):
                     item.info['plot'] = '[B][/B]'
 
                 if media_type != 'episode' or not item.info.get('episode') or not show_name or (last_show_name and show_name != last_show_name):
@@ -820,6 +894,7 @@ class Folder(object):
         else:
             raise Exception('add_items only accepts an Item or list of Items')
 
+
 def require_update():
     updates = settings.common_settings.getDict('_updates')
     if not updates:
@@ -837,6 +912,7 @@ def require_update():
 
     if need_updated:
         log.error(_(_.UPDATES_REQUIRED, updates_required='\n'.join(['{} ({})'.format(entry[1], entry[2]) for entry in need_updated])))
+
 
 def process_news():
     news = settings.common_settings.getDict('_news')

@@ -36,11 +36,12 @@ def format_string(string, *args, **kwargs):
 
     return string
 
-def addon_string(id):
+
+def addon_string(id, addon=ADDON):
     if id >= 32000:
         string = COMMON_ADDON.getLocalizedString(id)
     elif id >= 30000:
-        string = ADDON.getLocalizedString(id)
+        string = addon.getLocalizedString(id)
     else:
         string = xbmc.getLocalizedString(id)
 
@@ -49,6 +50,7 @@ def addon_string(id):
         string = str(id)
 
     return string
+
 
 class BaseLanguage(object):
     PLUGIN_LOGIN_REQUIRED       = 32000
@@ -72,9 +74,7 @@ class BaseLanguage(object):
     INPUTSTREAM_SETTINGS        = 32018
     CLEAR_DATA                  = 32019
     PLUGIN_ERROR                = 32020
-    INSTALL_WV_DRM              = 32021
     IA_WV_INSTALL_OK            = 32022
-    IA_HLS_FOR_VOD              = 32023
     LOGIN                       = 32024
     LOGOUT                      = 32025
     SETTINGS                    = 32026
@@ -85,9 +85,6 @@ class BaseLanguage(object):
     NO_RESULTS                  = 32031
     PLUGIN_EXCEPTION            = 32032
     ERROR_DOWNLOADING_FILE      = 32033
-    GENERAL                     = 32034
-    PLAYBACK                    = 32035
-    ADVANCED                    = 32036
     VERIFY_SSL                  = 32037
     SELECT_IA_VERSION           = 32038
     SERVICE_DELAY               = 32039
@@ -112,7 +109,6 @@ class BaseLanguage(object):
     WV_INSTALLED                = 32058
     MAX_BANDWIDTH               = 32059
     QUALITY_LOWEST              = 32060
-    PLAYBACK_QUALITY            = 32061
     LIVE_HLS_REQUIRED           = 32062
     PLAY_DEFAULT_ACTION         = 32063
     PLAY_FROM_START             = 32064
@@ -124,12 +120,9 @@ class BaseLanguage(object):
     SELECT_WV_VERSION           = 32070
     WV_UNKNOWN                  = 32071
     DEFAULT_LANGUAGE            = 32072
-    DISABLED                    = 32073
     QUALITY_HTTP_ERROR          = 32074
     IA_ANDROID_REINSTALL        = 32075
-    IA_HLS_FOR_LIVE             = 32076
     GEO_ERROR                   = 32077
-    KIOSK_MODE                  = 32078
     SETUP_IPTV_MERGE            = 32079
     EPG_DAYS                    = 32080
     TV_EPG_CATEGORY             = 32081
@@ -137,11 +130,6 @@ class BaseLanguage(object):
     PROFILE_ACTIVATED           = 32083
     SELECT_PROFILE              = 32084
     GEO_COUNTRY_ERROR           = 32085
-    AUDIO_ALLOW_LIST            = 32086
-    SUBTITLE_ALLOW_LIST         = 32087
-    INCLUDE_FORCED              = 32088
-    INCLUDE_NON_FORCED          = 32089
-    INCLUDE_CC                  = 32090
     ADD_PROFILE                 = 32091
     DELETE_PROFILE              = 32092
     RANDOM_AVATAR               = 32093
@@ -189,7 +177,6 @@ class BaseLanguage(object):
     DEVICE_LINK_STEPS           = 32135
     WV_UNSUPPORTED_OS           = 32136
     WV_UNSUPPORTED_OS_CONFIRM   = 32137
-    DONATIONS                   = 32138
     LOOK_AND_FEEL               = 32139
     DONATE_HEADER               = 32140
     SEASON                      = 32141
@@ -203,9 +190,85 @@ class BaseLanguage(object):
     CONNECTION_ERROR            = 32149
     CONNECTION_ERROR_PROXY      = 32150
     UPDATES_REQUIRED            = 32151
+    SELECT_QUALITY              = 32061
+
+    # SETTINGS
+    CODECS                      = 32153
+    SUPPORTERS                  = 32138
+    SUPPORTER_ONLY              = 32156
+    WV_LEVEL_L1                 = 30009
+    WV_LEVEL_L3                 = 30010
+    HDCP_OFF                    = 30012
+    HDCP_1                      = 30013
+    HDCP_2_2                    = 30014
+    HDCP_3_0                    = 30015
+    MAX_WIDTH                   = 30025
+    MAX_HEIGHT                  = 30026
+    MAX_AUDIO_CHANNELS          = 30033
+    IGNORE_DISPLAY_RESOLUTION   = 30022
+    USE_IA_HLS_LIVE             = 32076
+    USE_IA_HLS_VOD              = 32023
+    AUDIO_WHITELIST             = 32086
+    SUBS_WHITELIST              = 32087
+    AUDIO_DESCRIPTION           = 32090
+    SUBS_FORCED                 = 32088
+    SUBS_NON_FORCED             = 32089
+    H265                        = 30027
+    VP9                         = 30038
+    AV1                         = 30039
+    HDR10                       = 30028
+    DOLBY_VISION                = 30029
+    DOLBY_ATMOS                 = 30030
+    AC3                         = 30031
+    EC3                         = 30032
+    PROXY_ENABLED               = 30005
+    WV_LEVEL                    = 30007
+    HDCP_LEVEL                  = 30011
+    DONOR_ID                    = 30020
+    SHOW_NEWS                   = 30021
+    FAST_UPDATES                = 30040
+    KIOSK                       = 32078
+    MENU_VIEW_SHOWS_SEASONS     = 30024
+    VIDEO_VIEW_MEDIA            = 30023
+    VIDEO_VIEW_MENUS            = 30037
+    REINSTALL_WV                = 32021
+    UPDATE_ADDONS               = 30000
+    CHECK_LOG                   = 30019
+    RESET_TO_DEFAULT            = 32157
+    NOT_A_SUPPORTER             = 32158
+    IP_MODE                     = 32159
+    PROXY_SERVER                = 32160
+    SKIP_NEXT_CHANNEL           = 30034
+    SUPPORTER_HELP              = 32161
+    CONFIRM_DISABLE_PROXY       = 32162
+    CONFIRM_CHANGE_WV_LEVEL     = 32163
+    CONFIRM_CHANGE_HDCP_LEVEL   = 32164
+    QUALITY_SELECT_MODE         = 32165
+    WELCOME_SUPPORTER           = 32166
+    SUPPORTER_NOT_FOUND         = 32167
+    INHERITED_SETTING           = 32168
+    PREFER_IPV4                 = 32169
+    PREFER_IPV6                 = 32170
+    ONLY_IPV4                   = 32171
+    ONLY_IPV6                   = 32172
+    CONFIRM_CLEAR_BULK          = 32173
+    MEDIA_DEFAULT               = 32174
 
     # Kodi strings
+    PLAYER                      = 14200
+    NETWORK                     = 13279
+    INTERFACE                   = 14206
+    SYSTEM                      = 13000
+    ADVANCED                    = 10038
+    GENERAL                     = 128
+    ALL                         = 593
+    QUALITY                     = 622
     LANGUAGE                    = 304
+    DEFAULT                     = 13278
+    YES                         = 107
+    NO                          = 106
+    DISABLED                    = 13106
+    NO_LIMIT                    = 21428
     RESUME_FROM                 = 12022
     PLAY_FROM_BEGINNING         = 12021
     PLAYBACK_FAILED             = 16026
@@ -213,8 +276,16 @@ class BaseLanguage(object):
     TRAILER                     = 20410
     PLAY_NEXT                   = 10008
     QUEUE_ITEM                  = 13347
+    RESET_ALL_SETTINGS          = 10041
+    ARE_YOU_SURE                = 750
+    DNS_SERVER                  = 722
+    HELP                        = 10043
 
+    def __init__(self, addon=ADDON):
+        self._addon = addon
+    
     def __getattr__(self, name):
+       # raise Exception("{} missing".format(name))
         return str(name)
 
     def __getattribute__(self, name):
@@ -222,12 +293,13 @@ class BaseLanguage(object):
         if not isinstance(attr, int):
             return attr
 
-        return addon_string(attr)
+        return addon_string(attr, self._addon)
 
     def __call__(self, string, *args, **kwargs):
         if isinstance(string, int):
-            string = addon_string(string)
+            string = addon_string(string, self._addon)
 
         return format_string(string, *args, **kwargs)
+
 
 _ = BaseLanguage()

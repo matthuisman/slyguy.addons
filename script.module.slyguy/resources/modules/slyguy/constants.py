@@ -18,6 +18,7 @@ REPO_ADDON_ID = 'repository.slyguy'
 DEPENDENCIES_ADDON_ID = 'slyguy.dependencies'
 COMMON_ADDON_ID = 'script.module.slyguy'
 COMMON_ADDON = xbmcaddon.Addon(COMMON_ADDON_ID)
+NEW_SETTINGS = not os.path.exists(os.path.join(ADDON_PATH, 'resources', 'settings.xml'))
 
 try: KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split('.')[0])
 except: KODI_VERSION = 18
@@ -81,11 +82,7 @@ FORCE_RUN_FLAG         = '_force_run'
 ROUTE_AUTOPLAY_TAG     = '_autoplay'
 ROUTE_AUTOFOLDER_TAG   = '_autofolder'
 ROUTE_MIGRATE_DONE     = '_migrated'
-ROUTE_ADD_BOOKMARK     = '_add_bookmark'
-ROUTE_DEL_BOOKMARK     = '_del_bookmark'
 ROUTE_BOOKMARKS        = '_bookmarks'
-ROUTE_MOVE_BOOKMARK    = '_move_bookmark'
-ROUTE_RENAME_BOOKMARK  = '_name_bookmark'
 ROUTE_CONTEXT          = '_context'
 #################
 
@@ -130,8 +127,6 @@ PLAY_FROM_TYPES = [PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START]
 WIDEVINE_UUID = bytearray([237, 239, 139, 169, 121, 214, 74, 206, 163, 200, 39, 220, 213, 29, 33, 237])
 WIDEVINE_PSSH = bytearray([112, 115, 115, 104])
 
-#DEFAULT_USERAGENT = xbmc.getUserAgent()
-#DEFAULT_USERAGENT = 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)'
 DEFAULT_USERAGENT = 'okhttp/4.9.3'
 DEFAULT_WORKERS = 5
 

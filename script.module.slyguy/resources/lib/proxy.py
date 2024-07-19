@@ -14,11 +14,10 @@ from requests import ConnectionError
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
-from kodi_six import xbmc, xbmcaddon
+from kodi_six import xbmc
 from pycaption import detect_format, WebVTTWriter
 
-from slyguy import settings, gui
-from slyguy.log import log
+from slyguy import gui, settings, log
 from slyguy.constants import *
 from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
 from slyguy.exceptions import Exit
@@ -178,7 +177,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                     self._session.update(proxy_data)
             except:
                 pass
-
         PROXY_GLOBAL['sessions'][session_type] = self._session
 
         # must remove content-length header as the length can change once we read it / resend it
@@ -456,17 +454,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
 
         if quality in (QUALITY_DISABLED, QUALITY_SKIP):
-            quality = quality
+            pass
         elif quality == QUALITY_BEST:
             quality = streams[0]
         elif quality == QUALITY_LOWEST:
             quality = streams[len(ok_streams)-1]
-        elif quality not in streams:
-            options = [streams[len(ok_streams)-1]]
-            for stream in streams:
-                if quality >= stream['bandwidth']:
-                    options.append(stream)
-            quality = sorted(options, key=quality_compare, reverse=True)[0]
 
         if quality in qualities:
             self._session['selected_quality'] = qualities.index(quality)
@@ -541,6 +533,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
         default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
+        max_bandwidth = self._session.get('max_bandwidth') or float('inf')
         max_width = self._session.get('max_width') or float('inf')
         max_height = self._session.get('max_height') or float('inf')
         max_channels = self._session.get('max_channels') or 0
@@ -664,6 +657,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                             codecs.append('hdr')
 
                         stream_data = {'bandwidth': bandwidth, 'width': int(attribs.get('width','0')), 'height': int(attribs.get('height','0')), 'frame_rate': frame_rate, 'codecs': codecs, 'elem': stream, 'res_ok': True, 'compatible': True}
+                        if stream_data['bandwidth'] > max_bandwidth*1000000:
+                            stream_data['res_ok'] = False
+
                         if stream_data['width'] > max_width or stream_data['height'] > max_height:
                             stream_data['res_ok'] = False
 
@@ -1036,6 +1032,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         original_language = self._session.get('original_language', '').lower().strip()
         default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
+        max_bandwidth = self._session.get('max_bandwidth') or float('inf')
         max_width = self._session.get('max_width') or float('inf')
         max_height = self._session.get('max_height') or float('inf')
 
@@ -1104,6 +1101,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     codecs.append('hdr')
 
                 stream_data = {'bandwidth': bandwidth, 'width': width, 'height': height, 'frame_rate': frame_rate, 'codecs': codecs, 'url': url, 'index': len(video), 'res_ok': True, 'compatible': True}
+                if stream_data['bandwidth'] > max_bandwidth*1000000:
+                    stream_data['res_ok'] = False
+
                 if stream_data['width'] > max_width or stream_data['height'] > max_height:
                     stream_data['res_ok'] = False
 
@@ -1302,7 +1302,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 f.write(self._post_data)
 
         if not self._session.get('session'):
-            self._session['session'] = RawSession(verify=self._session.get('verify'), timeout=self._session.get('timeout'), auto_close=False)
+            self._session['session'] = RawSession(
+                verify = self._session.get('verify'),
+                timeout = self._session.get('timeout'),
+                ip_mode = self._session.get('ip_mode'),
+                auto_close = False,
+            )
             self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
             self._session['session'].set_proxy(self._session.get('proxy_server'))
             self._session['session'].set_cert(self._session.get('cert'))

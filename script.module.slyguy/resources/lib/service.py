@@ -2,12 +2,9 @@ import sys
 import uuid
 from time import time
 
-from slyguy import signals, gui, settings
+from slyguy import signals, gui, settings, log, check_donor, is_donor, set_drm_level
 from slyguy.session import Session
-from slyguy.log import log
 from slyguy.monitor import monitor
-from slyguy.drm import set_drm_level
-from slyguy.donor import is_donor, check_donor
 from slyguy.util import get_system_arch
 
 from .proxy import Proxy
@@ -15,6 +12,7 @@ from .player import Player
 from .util import check_updates, check_repo
 from .constants import *
 from .language import _
+
 
 def _check_news():
     _time = int(time())
@@ -30,14 +28,14 @@ def _check_news():
 
     if 'id' not in news or news['id'] == settings.common_settings.get('_last_news_id'):
         return
-
     settings.common_settings.set('_last_news_id', news['id'])
 
     if news['type'] == 'donate' and is_donor():
         return
     settings.common_settings.setDict('_news', news)
 
-def _check_arch():
+
+def check_arch():
     arch = get_system_arch()[1]
     mac = int(uuid.getnode())
 
@@ -51,42 +49,26 @@ def _check_arch():
     if prev_mac == mac and prev_arch != arch:
         gui.ok(_(_.ARCH_CHANGED, old=prev_arch, new=arch))
 
+
 @signals.on(signals.ON_SETTINGS_CHANGE)
 def settings_changed():
     log.debug('Shared Service: Settings Changed')
+
 
 def start():
     log.debug('Shared Service: Started')
     log.info('Python Version: {}'.format(sys.version))
 
-    proxy = Proxy()
     player = Player()
+    proxy = Proxy()
+    proxy.start()
 
-    try:
-        proxy.start()
-    except Exception as e:
-        log.error('Failed to start proxy server')
-        log.exception(e)
-
-    check_donor(force=True)
-    if is_donor():
-        log.info('Welcome SlyGuy donor!')
-
-    try:
-        set_drm_level()
-    except Exception as e:
-        log.error('Failed to set DRM level')
-        log.exception(e)
-
-    try:
-        _check_arch()
-    except Exception as e:
-        log.error('Failed to check arch')
-        log.exception(e)
+    check_donor()
+    set_drm_level()
+    check_arch()
 
     ## Inital wait on boot
     monitor.waitForAbort(10)
-
     try:
         while not monitor.abortRequested():
             try:
@@ -111,6 +93,9 @@ def start():
         log.exception(e)
 
     try: proxy.stop()
+    except: pass
+
+    try: del player
     except: pass
 
     log.debug('Shared Service: Stopped')

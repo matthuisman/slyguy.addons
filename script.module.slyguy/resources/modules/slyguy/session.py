@@ -22,7 +22,7 @@ from slyguy.log import log
 from slyguy.language import _
 from slyguy.exceptions import SessionError, Error
 from slyguy.constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
-
+from slyguy.settings import IPMode
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -58,55 +58,59 @@ def close_sessions():
 
 
 class DOHResolver(object):
-    def __init__(self, adapter, nameservers=None):
-        self._adapter = adapter
+    def __init__(self, nameservers=None):
         self.nameservers = nameservers or []
-        self._session = RawSession()
 
-    def query(self, host, source=None):
-        #TODO: use source ip address
-        class DNSResultWrapper(object):
-            def __init__(self, answer):
-                self.answer = answer
-
-            def to_text(self):
-                return self.answer
-
+    def resolve(self, host, family, interface_ip=None):
+        ip_type = 'AAAA' if family == socket.AF_INET6 else 'A'
         for server in self.nameservers:
-            key = (server, host)
-            ips = mem_cache.get(key)
+            key = (server, host, ip_type)
+            ips = mem_cache.get(key, None)
 
-            if not ips:
+            if ips is None:
                 headers = {'accept': 'application/dns-json'}
+                params = {'name': host, 'type': ip_type}
 
-                server_host = urlparse(server).netloc.lower()
-                info = self._adapter.getaddrinfo(server_host, 443 if server.lower().startswith('https') else 80)
-                families = [x[0] for x in info]
-
-                params = {'name': host}
-                # prefer IPV4
-                if socket.AF_INET in families or socket.AF_INET6 not in families:
-                    params['type'] = 'A'
-                else:
-                    params['type'] = 'AAAA'
-
-                log.debug("DOH Request: {} for {} type {}".format(server, host, params['type']))
-
+                log.debug("DOH Request: {} for {} type {}".format(server, host, ip_type))
                 try:
-                    data = self._session.get(server, params=params, headers=headers).json()
+                    session = RawSession(ip_mode=IPMode.ONLY_IPV6 if ip_type == 'AAAA' else IPMode.ONLY_IPV4, interface_ip=interface_ip)
+                    data = super(RawSession, session).request('get', server, params=params, headers=headers).json()
                 except Exception as e:
-                    log.debug(e)
+                    log.debug("DOH request failed: {}".format(e))
                     continue
 
-                suitable = [x for x in data['Answer'] if x['type'] in (1, 28)] #ipv4 or ipv6
+                ip_type = 28 if ip_type == 'AAAA' else 1
+                suitable = [x for x in data['Answer'] if x['type'] == ip_type]
                 ttl = min([x['TTL'] for x in suitable])
                 ips = [x['data'] for x in suitable]
                 mem_cache.set(key, ips, expires=ttl)
 
             if ips:
-                return [DNSResultWrapper(ip) for ip in ips]
+                return ips
 
-        raise SessionError('Unable to resolve host: {} with nameservers: {}'.format(host, self.nameservers))
+        return []
+
+
+class SocketResolver(object):
+    def __init__(self):
+        self.nameservers = ['system dns']
+
+    def resolve(self, host, family, interface_ip=None):
+        if interface_ip:
+            log.warning("DNS leak! DNS request sent using default interface and not specified '{}'. Specify a DNS server in smart urls to fix".format(interface_ip))
+
+        try:
+            return [x[4][0] for x in socket.getaddrinfo(host, None, family)]
+        except:
+            return []
+
+
+class DNSResolver(dns.resolver.Resolver):
+    def resolve(self, host, family, interface_ip=None):
+        try:
+            return [x.to_text() for x in self.query(host, rdtype='AAAA' if family == socket.AF_INET6 else 'A', source=interface_ip)]
+        except:
+            return []
 
 
 class SessionAdapter(requests.adapters.HTTPAdapter):
@@ -154,54 +158,68 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
     def connect(self, func, conn, *args, **kwargs):
         retval = func(*args, **kwargs)
+        ip, port = conn.sock.getpeername()[:2]
         if hasattr(conn.sock, 'server_hostname'):
-            log.debug('SSL Cipher: {} - {}'.format(conn.sock.server_hostname, conn.sock.cipher()))
+            log.debug('Opening secure connection on port {} to {} {}'.format(port, ip, conn.sock.cipher()))
+        else:
+            log.debug('Opening connection on port {} to {}'.format(port, ip))
         return retval
 
-    def getaddrinfo(self, host, port, family=0, _type=0):
-        orig_host = host
+    def getaddrinfo(self, host, *args, **kwargs):
+        ips = []
+        resolvers = []
 
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == host:
-            host = self.session_data['rewrite'][1]
-            log.debug("DNS Rewrite: {} -> {}".format(orig_host, host))
+            ip = self.session_data['rewrite'][1]
+            ips.append(ips)
+            log.debug("DNS Rewrite: {} -> {}".format(host, ip))
 
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == host:
-            try:
-                host = self.session_data['resolver'][1].query(host, source=self.session_data['interface_ip'])[0].to_text()
-                log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, self.session_data['resolver'][1].nameservers[0], host))
-            except Exception as e:
-                log.exception(e)
-                log.error('Failed to resolve. Falling back to dns lookup')
-                host = orig_host
+            resolvers.append(self.session_data['resolver'][1])
+        # fallback to socket resolver
+        resolvers.append(SocketResolver())
 
-        if ':' in host:
-            first, second = (family, None)
-        else:
-            first = socket.AF_INET
-            second = socket.AF_INET6 if family == socket.AF_UNSPEC else None
-
-        try:
-            addresses = socket.getaddrinfo(host, port, first, _type)
-        except socket.gaierror:
-            if second:
-                addresses = socket.getaddrinfo(host, port, second, _type)
+        def resolve(host):
+            if self.session_data['ip_mode'] == IPMode.PREFER_IPV4:
+                families = (socket.AF_INET, socket.AF_INET6)
+            elif self.session_data['ip_mode'] == IPMode.ONLY_IPV4:
+                families = (socket.AF_INET,)
+            elif self.session_data['ip_mode'] == IPMode.PREFER_IPV6:
+                families = (socket.AF_INET6, socket.AF_INET)
+            elif self.session_data['ip_mode'] == IPMode.ONLY_IPV6:
+                families = (socket.AF_INET6,)
             else:
-                raise
+                families = (socket.AF_UNSPEC,)
 
-        if addresses[0][4][0] != host:
-            log.debug('DNS Resolver: {} -> {}'.format(host, addresses[0][4][0]))
+            for resolver in resolvers:
+                for family in families:
+                    ips = resolver.resolve(host, family=family, interface_ip=self.session_data['interface_ip'])
+                    if ips:
+                        log.debug('DNS Resolve: {} -> {} -> {}'.format(host, ', '.join(resolver.nameservers), ', '.join(ips)))
+                        return ips
 
+            raise socket.gaierror('Unable to resolve host: {} using ip mode: {}'.format(host, self.session_data['ip_mode']))
+
+        if not ips:
+            ips = resolve(host)
+
+        # convert ips into correct object
+        addresses = []
+        for ip in ips:
+            addresses.extend(socket.getaddrinfo(ip, *args, **kwargs))
         return addresses
 
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None, ip_mode=None, interface_ip=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
         self._rewrites = []
         self._session_cache = {}
         self._proxy = proxy
+        self._ip_mode = ip_mode
+        self._interface_ip = interface_ip
         self._cert = None
         self._ssl_ciphers = ssl_ciphers
         self._ssl_options = ssl_options
@@ -212,6 +230,18 @@ class RawSession(requests.Session):
         self._adapter = SessionAdapter()
         for prefix in ('http://', 'https://'):
             self.mount(prefix, self._adapter)
+
+        session_data = {
+            'ip_mode': self._ip_mode,
+            'interface_ip': self._interface_ip,
+            'ssl_ciphers': self._ssl_ciphers,
+            'ssl_options': self._ssl_options,
+            'proxy': None,
+            'rewrite': None,
+            'resolver': None,
+            'url': None,
+        }
+        self._adapter.session_data = session_data
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
@@ -265,7 +295,7 @@ class RawSession(requests.Session):
         self._proxy = proxy
 
     def _get_proxy(self):
-        if self._proxy and self._proxy.lower().strip() == 'kodi':
+        if not self._proxy or self._proxy.lower().strip() == 'kodi':
             self._proxy = get_kodi_proxy()
         return self._proxy
 
@@ -282,10 +312,11 @@ class RawSession(requests.Session):
         url = req.prepare().url
 
         session_data = {
+            'ip_mode': self._ip_mode,
+            'interface_ip': self._interface_ip,
             'ssl_ciphers': self._ssl_ciphers,
             'ssl_options': self._ssl_options,
             'proxy': None,
-            'interface_ip': None,
             'rewrite': None,
             'resolver': None,
             'url': url,
@@ -311,9 +342,9 @@ class RawSession(requests.Session):
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
                         if entry[1].lower().startswith('http'):
-                            resolver = DOHResolver(self._adapter)
+                            resolver = DOHResolver()
                         else:
-                            resolver = dns.resolver.Resolver(configure=False)
+                            resolver = DNSResolver(configure=False)
                             resolver.cache = DNS_CACHE
 
                         resolver.nameservers = [entry[1],]
@@ -321,12 +352,6 @@ class RawSession(requests.Session):
                 break
 
             self._session_cache[url] = session_data
-
-        if session_data['interface_ip']:
-            if not session_data['resolver']:
-                log.warning("DNS leak! DNS requests will be going via the default interface. Specify a DNS server in smart urls to fix")
-            elif isinstance(session_data['resolver'][1], DOHResolver):
-                log.warning("DNS leak! The DOH DNS & request only will be made using the default interface (support coming soon). All other requests will use the specified interface.")
 
         if session_data['url'] != url:
             log.debug("URL Changed: {}".format(session_data['url']))
@@ -375,7 +400,7 @@ class RawSession(requests.Session):
 class Session(RawSession):
     def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, return_json=False, **kwargs):
         super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
-            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, **kwargs)
+            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ip_mode=settings.common_settings.IP_MODE.value, **kwargs)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key

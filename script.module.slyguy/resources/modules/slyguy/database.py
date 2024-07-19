@@ -167,13 +167,12 @@ class Database(peewee.SqliteDatabase):
         if not self.is_closed():
             return
 
-        log.info("Connecting db: {}".format(self.database))
         lock_file = xbmc.translatePath('special://temp/{}.lock'.format(os.path.basename(self.database)))
         with FileLock(lock_file):
-            log.info("Got lock. Opening db: {}".format(self.database))
-            path = os.path.dirname(self.database)
-            if not os.path.exists(path):
-                os.makedirs(path)
+            log.info("Connecting to db: {}".format(self.database))
+            db_dir = os.path.dirname(self.database)
+            if not os.path.exists(db_dir):
+                os.makedirs(db_dir)
 
             result = super(Database, self).connect(*args, **kwargs)
             if result and self._tables:
