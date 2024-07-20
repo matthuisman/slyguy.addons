@@ -206,7 +206,10 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         # convert ips into correct object
         addresses = []
         for ip in ips:
-            addresses.extend(socket.getaddrinfo(ip, *args, **kwargs))
+            try:
+                addresses.extend(socket.getaddrinfo(ip, *args, **kwargs))
+            except:
+                pass
         return addresses
 
 
