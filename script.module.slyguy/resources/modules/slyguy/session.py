@@ -165,7 +165,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             log.debug('Opening connection on port {} to {}'.format(port, ip))
         return retval
 
-    def getaddrinfo(self, host, *args, **kwargs):
+    def getaddrinfo(self, host, port, family=0, type=0):
         ips = []
         resolvers = []
 
@@ -189,11 +189,11 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             elif self.session_data['ip_mode'] == IPMode.ONLY_IPV6:
                 families = (socket.AF_INET6,)
             else:
-                families = (socket.AF_UNSPEC,)
+                families = (family,)
 
             for resolver in resolvers:
-                for family in families:
-                    ips = resolver.resolve(host, family=family, interface_ip=self.session_data['interface_ip'])
+                for address_family in families:
+                    ips = resolver.resolve(host, family=address_family, interface_ip=self.session_data['interface_ip'])
                     if ips:
                         log.debug('DNS Resolve: {} -> {} -> {}'.format(host, ', '.join(resolver.nameservers), ', '.join(ips)))
                         return ips
@@ -206,7 +206,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         # convert ips into correct object
         addresses = []
         for ip in ips:
-            addresses.extend(socket.getaddrinfo(ip, *args, **kwargs))
+            addresses.extend(socket.getaddrinfo(ip, port, family, type))
         return addresses
 
 
