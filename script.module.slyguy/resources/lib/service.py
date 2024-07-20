@@ -6,6 +6,7 @@ from slyguy import signals, gui, settings, log, check_donor, is_donor, set_drm_l
 from slyguy.session import Session
 from slyguy.monitor import monitor
 from slyguy.util import get_system_arch
+from slyguy.settings.db_storage import db
 
 from .proxy import Proxy
 from .player import Player
@@ -98,4 +99,6 @@ def start():
     try: del player
     except: pass
 
+    try: db.close()
+    except: pass
     log.debug('Shared Service: Stopped')
