@@ -158,6 +158,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     'addon_id': session_addonid,
                     'verify': settings.getBool('verify_ssl', True),
                     'timeout': settings.getInt('http_timeout', 30),
+                    'ip_mode': settings.common_settings.IP_MODE.value,
                     'dns_rewrites': get_dns_rewrites(addon_id=session_addonid),
                     'proxy_server': settings.get('proxy_server'),
                 }

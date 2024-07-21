@@ -180,19 +180,19 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         resolvers.append(SocketResolver())
 
         def resolve(host):
-            if self.session_data['ip_mode'] == IPMode.PREFER_IPV4:
-                families = (socket.AF_INET, socket.AF_INET6)
-            elif self.session_data['ip_mode'] == IPMode.ONLY_IPV4:
+            if self.session_data['ip_mode'] == IPMode.ONLY_IPV4:
                 families = (socket.AF_INET,)
-            elif self.session_data['ip_mode'] == IPMode.PREFER_IPV6:
-                families = (socket.AF_INET6, socket.AF_INET)
             elif self.session_data['ip_mode'] == IPMode.ONLY_IPV6:
                 families = (socket.AF_INET6,)
+            elif self.session_data['ip_mode'] == IPMode.PREFER_IPV6:
+                families = (socket.AF_INET6, socket.AF_INET)
             else:
-                families = (family,)
+                families = (socket.AF_INET, socket.AF_INET6 if family == socket.AF_UNSPEC else None)
 
             for resolver in resolvers:
                 for address_family in families:
+                    if not address_family:
+                        continue
                     ips = resolver.resolve(host, family=address_family, interface_ip=self.session_data['interface_ip'])
                     if ips:
                         log.debug('DNS Resolve: {} -> {} -> {}'.format(host, ', '.join(resolver.nameservers), ', '.join(ips)))
