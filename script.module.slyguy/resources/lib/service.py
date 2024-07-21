@@ -2,7 +2,7 @@ import sys
 import uuid
 from time import time
 
-from slyguy import signals, gui, settings, log, check_donor, is_donor, set_drm_level
+from slyguy import gui, settings, log, check_donor, is_donor, set_drm_level
 from slyguy.session import Session
 from slyguy.monitor import monitor
 from slyguy.util import get_system_arch
@@ -51,13 +51,8 @@ def check_arch():
         gui.ok(_(_.ARCH_CHANGED, old=prev_arch, new=arch))
 
 
-@signals.on(signals.ON_SETTINGS_CHANGE)
-def settings_changed():
-    log.debug('Shared Service: Settings Changed')
-
-
 def start():
-    log.debug('Shared Service: Started')
+    log.info('Shared Service: Started')
     log.info('Python Version: {}'.format(sys.version))
 
     player = Player()
@@ -99,6 +94,7 @@ def start():
     try: del player
     except: pass
 
+    log.info("Closing DB")
     try: db.close()
     except: pass
-    log.debug('Shared Service: Stopped')
+    log.info('Shared Service: Stopped')

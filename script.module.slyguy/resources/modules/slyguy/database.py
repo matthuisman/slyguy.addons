@@ -133,7 +133,7 @@ def close(db=None):
         return
 
     if db.database:
-        log.info("Closing db: {}".format(db.database))
+        log.debug("Closing db: {}".format(db.database))
         try: db.execute_sql('VACUUM')
         except: log.debug('Failed to vacuum db')
         db.close()
@@ -163,13 +163,18 @@ class Database(peewee.SqliteDatabase):
         signals.add(signals.AFTER_RESET, lambda db=self: delete(db))
         super(Database, self).__init__(database, *args, **kwargs)
 
+    def register_function(self, fn, name=None, num_params=-1):
+        # override this as it breaks db closing on older kodi / linux
+        # https://github.com/matthuisman/slyguy.addons/issues/804
+        pass
+
     def connect(self, *args, **kwargs):
         if not self.is_closed():
             return
 
         lock_file = xbmc.translatePath('special://temp/{}.lock'.format(os.path.basename(self.database)))
         with FileLock(lock_file):
-            log.info("Connecting to db: {}".format(self.database))
+            log.debug("Connecting to db: {}".format(self.database))
             db_dir = os.path.dirname(self.database)
             if not os.path.exists(db_dir):
                 os.makedirs(db_dir)
