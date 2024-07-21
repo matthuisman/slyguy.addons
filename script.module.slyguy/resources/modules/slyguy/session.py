@@ -185,9 +185,9 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             elif self.session_data['ip_mode'] == IPMode.ONLY_IPV6:
                 families = (socket.AF_INET6,)
             elif self.session_data['ip_mode'] == IPMode.PREFER_IPV6:
-                families = (socket.AF_INET6 if family == socket.AF_UNSPEC else None, socket.AF_INET)
+                families = (socket.AF_INET6, socket.AF_INET)
             else:
-                families = (socket.AF_INET, socket.AF_INET6 if family == socket.AF_UNSPEC else None)
+                families = (socket.AF_INET, socket.AF_INET6)
 
             for resolver in resolvers:
                 for address_family in families:
