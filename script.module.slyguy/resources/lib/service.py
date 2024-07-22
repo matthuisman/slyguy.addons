@@ -94,7 +94,6 @@ def start():
     try: del player
     except: pass
 
-    log.info("Closing DB")
     try: db.close()
     except: pass
     log.info('Shared Service: Stopped')

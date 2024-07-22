@@ -121,21 +121,13 @@ class KeyStore(Model):
 
 def connect(db=None):
     db = db or get_db()
-    if not db:
-        return
-    if db.database:
+    if db:
         db.connect()
 
 
 def close(db=None):
     db = db or get_db()
-    if not db:
-        return
-
-    if db.database:
-        log.debug("Closing db: {}".format(db.database))
-        try: db.execute_sql('VACUUM')
-        except: log.debug('Failed to vacuum db')
+    if db:
         db.close()
 
 
@@ -143,6 +135,7 @@ def delete(db=None):
     db = db or get_db()
     if not db:
         return
+
     close(db)
     if os.path.exists(db.database):
         log.info("Deleting db: {}".format(db.database))
@@ -159,7 +152,7 @@ class Database(peewee.SqliteDatabase):
         self._tables = kwargs.pop('tables', [])
         for table in self._tables:
             table._meta.database = self
-        signals.add(signals.ON_CLOSE, lambda db=self: close(db))
+        signals.add(signals.ON_EXIT, lambda db=self: close(db))
         signals.add(signals.AFTER_RESET, lambda db=self: delete(db))
         super(Database, self).__init__(database, *args, **kwargs)
 
@@ -167,6 +160,14 @@ class Database(peewee.SqliteDatabase):
         # override this as it breaks db closing on older kodi / linux
         # https://github.com/matthuisman/slyguy.addons/issues/804
         pass
+
+    def close(self, *args, **kwargs):
+        if self.is_closed():
+            return
+
+        log.debug("Closing db: {}".format(self.database))
+        self.execute_sql('VACUUM')
+        super(Database, self).close(*args, **kwargs)
 
     def connect(self, *args, **kwargs):
         if not self.is_closed():

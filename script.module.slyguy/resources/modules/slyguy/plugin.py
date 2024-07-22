@@ -450,6 +450,8 @@ def reboot():
 @signals.on(signals.AFTER_DISPATCH)
 def _close():
     signals.emit(signals.ON_CLOSE)
+    if KODI_VERSION < 19:
+        signals.emit(signals.ON_EXIT)
 
 
 @route(ROUTE_CONTEXT)

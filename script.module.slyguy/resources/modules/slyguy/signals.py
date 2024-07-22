@@ -8,6 +8,8 @@ from slyguy.exceptions import Error, Exit
 _signals = defaultdict(list)
 _skip = defaultdict(int)
 
+
+ON_ENTRY        = 'on_entry'
 AFTER_RESET     = 'after_reset'
 ON_SERVICE      = 'on_service'
 BEFORE_DISPATCH = 'before_dispatch'
@@ -16,6 +18,7 @@ ON_ERROR        = 'on_error'
 ON_EXCEPTION    = 'on_exception'
 ON_CLOSE        = 'on_close'
 ON_SETTINGS_CHANGE = 'on_settings_changed'
+ON_EXIT = 'on_exit'
 
 
 def skip_next(signal):
