@@ -4,8 +4,7 @@ import arrow
 from slyguy import plugin, inputstream
 from slyguy.session import Session
 from slyguy.mem_cache import cached
-
-from .language import _
+from slyguy.language import _
 from .settings import settings, ChannelMode, DATA_URL, EPG_URL
 
 
@@ -59,7 +58,7 @@ def live_tv(**kwargs):
         )
 
         if channel.get('chno') and show_chnos:
-            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
+            item.label = u'{} | {}'.format(channel['chno'], item.label)
 
         folder.add_items(item)
 
@@ -103,7 +102,7 @@ def get_channels(slug=None):
         channel = channels[slug]
         channel['slug'] = slug
 
-        if settings.CHANNEL_MODE.value == ChannelMode.FREEVIEW_ONLY and not channel.get('chno'):
+        if settings.CHANNEL_MODE.value == ChannelMode.OTA_ONLY and not channel.get('chno'):
             continue
         elif settings.CHANNEL_MODE.value == ChannelMode.FAST_ONLY and channel.get('chno'):
             continue
