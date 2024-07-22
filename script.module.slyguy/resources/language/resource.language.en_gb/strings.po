@@ -914,4 +914,26 @@ msgctxt "#32174"
 msgid "Media Default"
 msgstr ""
 
+msgctxt "#32175"
+msgid "Live TV"
+msgstr ""
 
+msgctxt "#32176"
+msgid "Show Mini EPG"
+msgstr ""
+
+msgctxt "#32177"
+msgid "Show Channel Numbers"
+msgstr ""
+
+msgctxt "#32178"
+msgid "Show Channels"
+msgstr ""
+
+msgctxt "#32179"
+msgid "Over the Air Only"
+msgstr ""
+
+msgctxt "#32180"
+msgid "FAST Only"
+msgstr ""

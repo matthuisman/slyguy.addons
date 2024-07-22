@@ -253,6 +253,12 @@ class BaseLanguage(object):
     ONLY_IPV6                   = 32172
     CONFIRM_CLEAR_BULK          = 32173
     MEDIA_DEFAULT               = 32174
+    LIVE_TV                     = 32175
+    SHOW_EPG                    = 32176
+    SHOW_CHNOS                  = 32177
+    CHANNEL_MODE                = 32178
+    OTA_ONLY                    = 32179
+    FAST_ONLY                   = 32180
 
     # Kodi strings
     PLAYER                      = 14200
