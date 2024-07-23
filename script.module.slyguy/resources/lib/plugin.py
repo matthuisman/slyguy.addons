@@ -18,6 +18,7 @@ def home(**kwargs):
     folder.add_item(
         label = ADDON_NAME,
         path = plugin.url_for(ROUTE_SETTINGS),
+        bookmark = False,
     )
 
     for addon_id in STORAGE.get_addon_ids():
@@ -30,6 +31,7 @@ def home(**kwargs):
             label = addon.getAddonInfo('name'),
             art = {'thumb': addon.getAddonInfo('icon')},
             path = plugin.url_for(ROUTE_SETTINGS, _addon_id=addon_id),
+            bookmark = False,
         )
 
     return folder
