@@ -15,12 +15,12 @@ import socket
 import binascii
 from contextlib import closing
 
+import requests
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 from six.moves import queue, range
 from six.moves.urllib.parse import urlparse, urlunparse, quote, parse_qsl
 from requests.models import PreparedRequest
 from six import PY2
-import requests
 
 if sys.version_info >= (3, 8):
     import html
@@ -28,8 +28,7 @@ else:
     from six.moves.html_parser import HTMLParser
     html = HTMLParser()
 
-from slyguy.language import _
-from slyguy.log import log
+from slyguy import log, _
 from slyguy.exceptions import Error
 from slyguy.constants import *
 

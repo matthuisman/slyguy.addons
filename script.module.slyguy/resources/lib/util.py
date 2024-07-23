@@ -4,17 +4,18 @@ from looseversion import LooseVersion
 
 from kodi_six import xbmc
 
-from slyguy import settings, log
+from slyguy import settings, log, _
 from slyguy.session import Session
 from slyguy.util import kodi_rpc, get_addon, safe_copy
 from slyguy.constants import UPDATE_TIME_LIMIT, REPO_ADDON_ID, REPO_DOMAIN
 
-from .language import _
 from .constants import *
+
 
 def get_slyguy_addons():
     with Session(timeout=15) as session:
         return session.gz_json(ADDONS_URL)
+
 
 def check_updates(force=False):
     _time = int(time())

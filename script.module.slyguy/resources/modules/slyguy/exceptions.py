@@ -1,4 +1,4 @@
-from slyguy.language import _
+from slyguy import _
 from slyguy.constants import ADDON_NAME
 
 

@@ -15,11 +15,9 @@ from six.moves.urllib_parse import urlparse
 from kodi_six import xbmc
 import dns.resolver
 
-from slyguy import userdata, settings, signals, mem_cache
+from slyguy import userdata, settings, signals, mem_cache, log, _
 from slyguy.util import get_kodi_proxy
 from slyguy.smart_urls import get_dns_rewrites
-from slyguy.log import log
-from slyguy.language import _
 from slyguy.exceptions import SessionError, Error
 from slyguy.constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
 from slyguy.settings import IPMode

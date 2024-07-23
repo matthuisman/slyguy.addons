@@ -2,7 +2,7 @@ import sys
 import uuid
 from time import time
 
-from slyguy import gui, settings, log, check_donor, is_donor, set_drm_level
+from slyguy import gui, settings, log, check_donor, is_donor, set_drm_level, _
 from slyguy.session import Session
 from slyguy.monitor import monitor
 from slyguy.util import get_system_arch
@@ -12,7 +12,6 @@ from .proxy import Proxy
 from .player import Player
 from .util import check_updates, check_repo
 from .constants import *
-from .language import _
 
 
 def _check_news():

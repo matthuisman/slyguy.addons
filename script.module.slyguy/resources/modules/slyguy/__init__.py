@@ -1,5 +1,6 @@
 import sys
 
+from slyguy.language import _
 from slyguy.log import log
 from slyguy.settings import is_donor, check_donor, set_drm_level
 from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, NEW_SETTINGS

@@ -3,11 +3,9 @@ from functools import wraps
 
 import peewee
 
-from slyguy import database, settings, signals, gui, router
+from slyguy import database, settings, signals, gui, router, log, _
 from slyguy.constants import CACHE_TABLENAME, CACHE_EXPIRY, CACHE_CHECKSUM, ROUTE_CLEAR_CACHE
 from slyguy.util import hash_6
-from slyguy.log import log
-from slyguy.language import _
 
 funcs = []
 

@@ -848,10 +848,6 @@ msgctxt "#32159"
 msgid "IPv4/IPv6 Preference"
 msgstr ""
 
-msgctxt "#32160"
-msgid "Proxy server"
-msgstr ""
-
 msgctxt "#32161"
 msgid "Visit [B]donate.slyguy.uk[/B] to become a supporter and then enter your Supporter ID here"
 msgstr ""
@@ -936,4 +932,55 @@ msgstr ""
 
 msgctxt "#32180"
 msgid "FAST Only"
+msgstr ""
+
+msgctxt "#32181"
+msgid "{name} [PIN]"
+msgstr ""
+
+msgctxt "#32182"
+msgid "{name} [KIDS]"
+msgstr ""
+
+msgctxt "#32183"
+msgid "Enter Your Profile PIN"
+msgstr ""
+
+msgctxt "#32184"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr ""
+
+msgctxt "#32185"
+msgid "Your auth token has became invalid\n"
+"This is often caused by out of region IP address\n"
+"You will need to logout and login again"
+msgstr ""
+
+msgctxt "#32186"
+msgid "Failed to check device login. Please try again"
+msgstr ""
+
+msgctxt "#32187"
+msgid "TV Provider Login"
+msgstr ""
+
+msgctxt "#32188"
+msgid "Home"
+msgstr ""
+
+msgctxt "#32189"
+msgid "Series"
+msgstr ""
+
+msgctxt "#32190"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#32191"
+msgid "Go to Series"
+msgstr ""
+
+msgctxt "#32192"
+msgid "Enable Chapters [Known Issues]"
 msgstr ""

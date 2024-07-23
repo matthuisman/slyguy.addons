@@ -5,14 +5,14 @@ import time
 from six.moves.urllib_parse import urlparse
 from kodi_six import xbmcgui, xbmc
 
-from slyguy import settings
+from slyguy import settings, _
 from slyguy.constants import *
 from slyguy.router import add_url_args
-from slyguy.language import _
 from slyguy.smart_urls import get_dns_rewrites
 from slyguy.util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
 from slyguy.session import Session
 from slyguy.dialog import * #backwards compatb
+
 
 if KODI_VERSION >= 20:
     from .listitem import ListItemInfoTag

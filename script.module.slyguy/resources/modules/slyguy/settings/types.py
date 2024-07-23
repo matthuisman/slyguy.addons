@@ -8,7 +8,7 @@ from slyguy import dialog, log, signals
 from slyguy.language import _, BaseLanguage
 from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, NEW_SETTINGS, ADDON_PROFILE, ADDON_NAME, COMMON_ADDON
 
-from .db_storage import DBStorage
+from slyguy.settings.db_storage import DBStorage
 
 
 class Category(object):

@@ -53,6 +53,17 @@ def addon_string(id, addon=ADDON):
 
 
 class BaseLanguage(object):
+    NO_UPDATES                  = 30001
+    UPDATES_INSTALLED           = 30002
+    UPDATES_AVAILABLE           = 30003
+    ATMOS_LABEL                 = 30004
+    PERSIST_CACHE               = 30006
+    NO_LOG_ERRORS               = 30016
+    LOG_ERRORS                  = 30017
+    UPLOAD_LOG                  = 30018
+    ARCH_CHANGED                = 30036
+    VIDEO_MENUS                 = 30037
+
     PLUGIN_LOGIN_REQUIRED       = 32000
     PLUGIN_NO_DEFAULT_ROUTE     = 32001
     PLUGIN_RESET_YES_NO         = 32002
@@ -237,7 +248,6 @@ class BaseLanguage(object):
     RESET_TO_DEFAULT            = 32157
     NOT_A_SUPPORTER             = 32158
     IP_MODE                     = 32159
-    PROXY_SERVER                = 32160
     SKIP_NEXT_CHANNEL           = 30034
     SUPPORTER_HELP              = 32161
     CONFIRM_DISABLE_PROXY       = 32162

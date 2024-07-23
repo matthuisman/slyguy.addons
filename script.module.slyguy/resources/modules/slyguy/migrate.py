@@ -5,8 +5,7 @@ import time
 
 from kodi_six import xbmc, xbmcaddon, xbmcplugin
 
-from slyguy import gui, router
-from slyguy.language import _
+from slyguy import gui, router, _
 from slyguy.constants import ADDON_ID, ADDON_PROFILE, ROUTE_MIGRATE_DONE
 
 

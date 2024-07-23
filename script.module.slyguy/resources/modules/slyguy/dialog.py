@@ -4,8 +4,8 @@ from contextlib import contextmanager
 
 from kodi_six import xbmcgui, xbmc
 
-from .constants import *
-from .language import _
+from slyguy import _
+from slyguy.constants import *
 
 
 def make_heading(heading=None):

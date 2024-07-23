@@ -882,3 +882,58 @@ msgid "The below SlyGuy addons are outdated and must be updated or no support wi
 "{updates_required}"
 msgstr "Poniższe dodatki SlyGuy są nieaktualne i muszą zostać zaktualizowane, w przeciwnym razie nie będzie zapewniona pomoc.\n"
 "{updates_required}"
+
+
+msgctxt "#32181"
+msgid "{name} [PIN]"
+msgstr "{name} [PIN]"
+
+msgctxt "#32182"
+msgid "{name} [KIDS]"
+msgstr "{name} [DZIECI]"
+
+msgctxt "#32183"
+msgid "Enter Your Profile PIN"
+msgstr "Wprowadź PIN swojego profilu"
+
+msgctxt "#32184"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "Żądanie API nie powiodło się\n"
+"Błąd serwera: {msg}"
+
+msgctxt "#32185"
+msgid "Your auth token has became invalid\n"
+"This is often caused by out of region IP address\n"
+"You will need to logout and login again"
+msgstr "Twój token autoryzacji stał się nieprawidłowy\n"
+"Jest to często spowodowane adresem IP spoza regionu\n"
+"Będziesz musiał się wylogować i zalogować ponownie"
+
+msgctxt "#32186"
+msgid "Failed to check device login. Please try again"
+msgstr "Nie udało się sprawdzić logowania urządzenia. Spróbuj ponownie"
+
+msgctxt "#32187"
+msgid "TV Provider Login"
+msgstr "Logowanie przez dostawcę TV"
+
+msgctxt "#32188"
+msgid "Home"
+msgstr "Strona główna"
+
+msgctxt "#32189"
+msgid "Series"
+msgstr "Seriale"
+
+msgctxt "#32190"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#32191"
+msgid "Go to Series"
+msgstr "Idź do seriali"
+
+msgctxt "#32192"
+msgid "Enable Chapters [Known Issues]"
+msgstr "Włącz rozdziały [znane problemy]"
