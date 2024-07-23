@@ -1,19 +1,38 @@
 import re
 
-from kodi_six import xbmc
+from kodi_six import xbmc, xbmcaddon
 from six.moves.urllib_parse import urlparse
 
 from slyguy import plugin, gui, _
+from slyguy.settings.types import STORAGE
 from slyguy.util import get_kodi_setting, get_addon
-from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS
+from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS, ADDON_NAME
 
 from .util import check_updates, get_slyguy_addons
 
 
 @plugin.route('')
 def home(**kwargs):
-    return plugin.redirect(ROUTE_SETTINGS)
+    folder = plugin.Folder(_.SETTINGS)
 
+    folder.add_item(
+        label = ADDON_NAME,
+        path = plugin.url_for(ROUTE_SETTINGS),
+    )
+
+    for addon_id in STORAGE.get_addon_ids():
+        try:
+            addon = xbmcaddon.Addon(addon_id)
+        except:
+            continue
+
+        folder.add_item(
+            label = addon.getAddonInfo('name'),
+            art = {'thumb': addon.getAddonInfo('icon')},
+            path = plugin.url_for(ROUTE_SETTINGS, _addon_id=addon_id),
+        )
+
+    return folder
 
 @plugin.route(ROUTE_CONTEXT)
 def context(listitem, **kwargs):

@@ -92,5 +92,8 @@ class DBStorage():
         Settings.delete_where(Settings.addon_id == addon_id)
         self._cache.pop(addon_id, None)
 
+    def get_addon_ids(self):
+        return [x.addon_id for x in Settings.select(Settings.addon_id).where(Settings.addon_id != COMMON_ADDON_ID).distinct()]
+
     def reset(self):
         self._cache.clear()
