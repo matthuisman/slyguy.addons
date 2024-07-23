@@ -13,19 +13,20 @@ def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
-    if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
-    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), bookmark=False)
 
+    if settings.BOOKMARKS.value:
+        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+
+    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
 
 
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
-    show_chnos = settings.getBool('show_chnos', True)
+    show_chnos = settings.SHOW_CHNOS.value
 
-    if settings.getBool('show_epg', True):
+    if settings.SHOW_EPG.value:
         now = arrow.now()
         epg_count = 5
     else:
