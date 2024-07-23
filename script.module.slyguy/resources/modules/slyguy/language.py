@@ -154,7 +154,6 @@ class BaseLanguage(object):
     KIDS_PROFILE                = 32101
     PROFILE_NAME                = 32102
     PROFILE_NAME_TAKEN          = 32103
-    KIDS_MODE_SETTING           = 32104
     IA_VERSION_REQUIRED         = 32105
     IA_ARMV6_ERROR              = 32106
     IA_IOS_ERROR                = 32107
@@ -245,6 +244,7 @@ class BaseLanguage(object):
     REINSTALL_WV                = 32021
     UPDATE_ADDONS               = 30000
     CHECK_LOG                   = 30019
+    KID_LOCKDOWN                = 32104
     RESET_TO_DEFAULT            = 32157
     NOT_A_SUPPORTER             = 32158
     IP_MODE                     = 32159
@@ -269,6 +269,18 @@ class BaseLanguage(object):
     CHANNEL_MODE                = 32178
     OTA_ONLY                    = 32179
     FAST_ONLY                   = 32180
+    PROFILE_WITH_PIN            = 32181
+    PROFILE_KIDS                = 32182
+    ENTER_PIN                   = 32183
+    API_ERROR                   = 32184
+    INVALID_TOKEN               = 32185
+    DEVICE_LOGIN_ERROR          = 32186
+    PROVIDER_LOGIN              = 32187
+    HOME                        = 32188
+    SERIES                      = 32189
+    MOVIES                      = 32190
+    GOTO_SERIES                 = 32191
+    ENABLE_CHAPTERS             = 32192
 
     # Kodi strings
     PLAYER                      = 14200

@@ -243,6 +243,7 @@ class CommonSettings(BaseSettings):
 
     # INTERFACE
     BOOKMARKS = Bool('bookmarks', default=True, owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
+    KID_LOCKDOWN = Bool('kid_lockdown', default=False, owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
     KIOSK = Bool('kiosk', owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
     MENU_VIEW_SHOWS_SEASONS = Bool('menu_view_shows_seasons', owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
     VIDEO_VIEW_MEDIA = Bool('video_view_media', owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
