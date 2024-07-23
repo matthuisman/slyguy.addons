@@ -1,12 +1,11 @@
 import uuid
 
-from slyguy import userdata, mem_cache
+from slyguy import userdata, mem_cache, _
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import jwt_data
 
 from .constants import HEADERS, BASE_URL, SITE_ID, APP_VERSION, CLIENT_ID, BRAND_ID, REALM, PAGE_SIZE
-from .language import _
 
 
 class APIError(Error):
@@ -131,7 +130,7 @@ class API(object):
         if resp.status_code == 204:
             return False
         elif resp.status_code != 200:
-            raise APIError(_.LOGIN_ERROR)
+            raise APIError(_.DEVICE_LOGIN_ERROR)
 
         data = resp.json()
         self._login(data)

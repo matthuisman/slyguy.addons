@@ -2,15 +2,14 @@ import re
 from xml.dom.minidom import parseString
 
 from kodi_six import xbmc
-from slyguy import plugin, gui, userdata, signals, settings, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream, log, _
 from slyguy.constants import MIDDLEWARE_PLUGIN
 from slyguy.drm import is_wv_secure
 from slyguy.util import replace_kids
-from slyguy.log import log
 
 from .api import API
-from .language import _
 from .constants import L3_MAX_HEIGHT
+from .settings import settings
 
 
 api = API()
@@ -33,7 +32,7 @@ def index(**kwargs):
         folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
-        if settings.getBool('bookmarks', True):
+        if settings.BOOKMARKS.value:
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
         if not userdata.get('kid_lockdown', False):
@@ -317,7 +316,7 @@ def _set_profile(profile, switching=True):
             pin = gui.input(_.ENTER_PIN, hide_input=True).strip()
         api.switch_profile(profile, pin=pin)
 
-    if settings.getBool('kid_lockdown', False) and profile.get('ageRestricted'):
+    if settings.KID_LOCKDOWN.value and profile.get('ageRestricted'):
         userdata.set('kid_lockdown', True)
 
     profile = {'id': profile['id'], 'name': profile['profileName'], 'avatar': profile['_avatar']}
@@ -371,7 +370,7 @@ def mpd_request(_data, _path, **kwargs):
             new_periods.append(period)
 
     # remove all except the first period
-    if len(new_periods) > 1 and not settings.getBool('enable_chapters', False):
+    if len(new_periods) > 1 and not settings.ENABLE_CHAPTERS.value:
         for period in new_periods[1:]:
             period.parentNode.removeChild(period)
         # duration will be wrong now so remove it
