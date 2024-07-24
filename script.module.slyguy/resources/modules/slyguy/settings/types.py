@@ -343,21 +343,21 @@ class Enum(Setting):
 
 
 def migrate(settings):
-    settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
-    if not NEW_SETTINGS or not os.path.exists(settings_path) or BaseSettings.MIGRATED.value:
+    if not NEW_SETTINGS or BaseSettings.MIGRATED.value:
         return
 
     old_settings = {}
-    try:
-        tree = ET.parse(settings_path)
-        for elem in tree.findall('setting'):
-            if 'id' in elem.attrib and elem.attrib.get('default', 'false') != 'true':
-                value = elem.text or elem.attrib.get('value')
-                if value:
-                    old_settings[elem.attrib['id']] = value
-    except Exception as e:
-        log.error("Failed to parse and migrate old settings: {} ({})".format(settings_path, e))
-        return
+    settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
+    if os.path.exists(settings_path):
+        try:
+            tree = ET.parse(settings_path)
+            for elem in tree.findall('setting'):
+                if 'id' in elem.attrib and elem.attrib.get('default', 'false') != 'true':
+                    value = elem.text or elem.attrib.get('value')
+                    if value:
+                        old_settings[elem.attrib['id']] = value
+        except Exception as e:
+            log.error("Failed to parse old settings: {} ({})".format(settings_path, e))
 
     count = 0
     for key in old_settings:
