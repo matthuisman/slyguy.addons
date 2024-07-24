@@ -310,8 +310,8 @@ def play(reference, **kwargs):
 
 @plugin.route()
 def play_channel(reference, **kwargs):
-    if settings.getBool('use_legacy_live', False):
-        return _play(reference, is_live=True)
+    # if settings.getBool('use_legacy_live', False):
+    #     return _play(reference, is_live=True)
 
     data = _channels()
     url = None
