@@ -139,5 +139,6 @@ def dispatch(url=None):
 
 signals.emit(signals.ON_ENTRY)
 if KODI_VERSION >= 19:
+    # doesnt work on android?
     import atexit
     atexit.register(lambda: signals.emit(signals.ON_EXIT))

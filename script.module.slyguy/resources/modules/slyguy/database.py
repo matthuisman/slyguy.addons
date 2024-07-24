@@ -152,7 +152,7 @@ class Database(peewee.SqliteDatabase):
         self._tables = kwargs.pop('tables', [])
         for table in self._tables:
             table._meta.database = self
-        signals.add(signals.ON_EXIT, lambda db=self: close(db))
+        signals.add(signals.ON_CLOSE, lambda db=self: close(db))
         signals.add(signals.AFTER_RESET, lambda db=self: delete(db))
         super(Database, self).__init__(database, *args, **kwargs)
 
