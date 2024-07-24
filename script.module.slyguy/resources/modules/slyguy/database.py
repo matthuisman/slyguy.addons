@@ -152,7 +152,7 @@ class Database(peewee.SqliteDatabase):
         self._tables = kwargs.pop('tables', [])
         for table in self._tables:
             table._meta.database = self
-        signals.add(signals.ON_CLOSE, lambda db=self: close(db))
+        signals.add(signals.ON_EXIT, lambda db=self: close(db))
         signals.add(signals.AFTER_RESET, lambda db=self: delete(db))
         super(Database, self).__init__(database, *args, **kwargs)
 
@@ -173,8 +173,9 @@ class Database(peewee.SqliteDatabase):
         if not self.is_closed():
             return
 
-        lock_file = xbmc.translatePath('special://temp/{}.lock'.format(os.path.basename(self.database)))
-        with FileLock(lock_file):
+        lock_file = self.database + '.lock'
+        log.debug("Acquiring lock on: {}".format(lock_file))
+        with FileLock(lock_file, timeout=5):
             log.debug("Connecting to db: {}".format(self.database))
             db_dir = os.path.dirname(self.database)
             if not os.path.exists(db_dir):
