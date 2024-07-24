@@ -173,14 +173,18 @@ class Database(peewee.SqliteDatabase):
         if not self.is_closed():
             return
 
+        log.debug("Connecting to db: {}".format(self.database))
+        if os.path.exists(self.database):
+            return super(Database, self).connect(*args, **kwargs)
+
+        try:
+            os.makedirs(os.path.dirname(self.database))
+        except FileExistsError:
+            pass
+
         lock_file = self.database + '.lock'
         log.debug("Acquiring lock on: {}".format(lock_file))
         with FileLock(lock_file, timeout=5):
-            log.debug("Connecting to db: {}".format(self.database))
-            db_dir = os.path.dirname(self.database)
-            if not os.path.exists(db_dir):
-                os.makedirs(db_dir)
-
             result = super(Database, self).connect(*args, **kwargs)
             if result and self._tables:
                 self.create_tables(self._tables, fail_silently=True)
