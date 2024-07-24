@@ -17,11 +17,11 @@ api = API()
 def home(**kwargs):
     folder = plugin.Folder()
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
     folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -253,7 +253,7 @@ def live_events(**kwargs):
             label = label,
             info = {'plot': plot},
             art = {'thumb': row['image']['sizes']['w768'], 'fanart': row['image']['sizes']['w1920']},
-            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=row['type'] == 'live-event'),
+            path = plugin.url_for(play_event, reference=row['referenceId'], _is_live=row['type'] == 'live-event'),
             playable = True,
         )
 
@@ -309,11 +309,32 @@ def play(reference, **kwargs):
 
 
 @plugin.route()
-def play_channel(reference, **kwargs):
-    # if settings.getBool('use_legacy_live', False):
-    #     return _play(reference, is_live=True)
-
+def play_event(reference, **kwargs):
+    event = None
     data = _channels()
+    for row in data.get('events', []):
+        if row['referenceId'] == reference:
+            event = row
+            break
+
+    if not event:
+        raise Exception('could not find event')
+
+    item = api.get_brightcove_src(event['referenceId'])
+    try:
+        item.path += '?{}'.format(event['ssai']['postfixParams'])
+    except KeyError:
+        pass
+
+    item.headers = HEADERS
+    if ROUTE_LIVE_TAG in kwargs and item.inputstream:
+        item.inputstream.live = True
+
+    return item
+
+
+@plugin.route()
+def play_channel(reference, **kwargs):
     url = None
     data = _channels()
     for row in data['channels']:
