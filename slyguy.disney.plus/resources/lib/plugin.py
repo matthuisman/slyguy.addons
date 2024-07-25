@@ -3,7 +3,7 @@ from base64 import b64decode
 
 from kodi_six import xbmc
 
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
@@ -12,6 +12,7 @@ from slyguy.util import async_tasks
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings
 
 api = API()
 

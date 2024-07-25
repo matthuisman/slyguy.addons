@@ -48,7 +48,7 @@ class Language(BaseLanguage):
     DOLBY_ATMOS              = 30052
     PROFILE_SETTINGS         = 30053
     CONTINUE_WATCHING        = 30054
-
+    ASK                      = 32055
     WIDESCREEN               = 21377
 
 _ = Language()

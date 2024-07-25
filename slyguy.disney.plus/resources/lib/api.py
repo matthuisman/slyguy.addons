@@ -1,22 +1,26 @@
 import uuid
 from time import time
 
-from slyguy import userdata, settings, mem_cache
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from . import queries
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
+
 
 ERROR_MAP = {
     'not-entitled': _.NOT_ENTITLED,
     'idp.error.identity.bad-credentials': _.BAD_CREDENTIALS,
     'account.profile.pin.invalid': _.BAD_PIN,
 }
+
 
 class API(object):
     def new_session(self):
