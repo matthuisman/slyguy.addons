@@ -1,24 +1,16 @@
-from .constants import REGION_ALL
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
-    REGION  =           30000,
-    REGIONS = {
-        'Sydney':       30001,
-        'Melbourne':    30002,
-        'Brisbane':     30003,
-        'Perth':        30004,
-        'Adelaide':     30005,
-        'Darwin':       30006,
-        'Hobart':       30007,
-        'Canberra':     30008,
-        REGION_ALL:     30018,
-    }
-    LIVE_TV =           30009
-    USE_NEW =           30010
-    SHOW_MINI_EPG =     30011
-    SHOW_CHNOS    =     30012
-    LIVE_CHNO     =     30013
-    HIDE_FAST     =     30014
+    REGION  =           30000
+    SYDNEY  =           30001
+    MELBOURNE =         30002
+    BRISBANE =          30003
+    PERTH =             30004
+    ADELAIDE =          30005
+    DARWIN =            30006
+    HOBART =            30007
+    CANBERRA =          30008
+
 
 _ = Language()
