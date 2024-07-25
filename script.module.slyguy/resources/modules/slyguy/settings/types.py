@@ -335,6 +335,10 @@ class Enum(Setting):
         if index != -1:
             self.value = self._options[index][1]
 
+    @property
+    def value_label(self):
+        return self.get_value_label(self.value)
+
     def get_value_label(self, value):
         return [x[0] for x in self._options if x[1] == value][0]
 

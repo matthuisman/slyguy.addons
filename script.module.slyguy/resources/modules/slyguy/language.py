@@ -281,6 +281,7 @@ class BaseLanguage(object):
     MOVIES                      = 32190
     GOTO_SERIES                 = 32191
     ENABLE_CHAPTERS             = 32192
+    DTSX                        = 32193
 
     # Kodi strings
     PLAYER                      = 14200
