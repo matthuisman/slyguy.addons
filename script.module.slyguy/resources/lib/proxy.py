@@ -1136,11 +1136,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         # select quality
         selected = self._quality_select(streams)
         if selected:
-            adjust = 0
-            for stream in all_streams:
-                if stream['url'] != selected['url']:
-                    video.pop(stream['index']-adjust)
-                    adjust += 1
+            video = [video[selected['index']]]
 
         def set_default_laguage(defaults, rows):
             found = False
