@@ -79,6 +79,7 @@ class API(object):
         }
 
         data = self._session.post('/v2/token/refresh', json=payload).json()
+        self._check_errors(data)
         self._parse_auth(data)
 
     def page(self, content_id, last_seen=None):
@@ -159,10 +160,13 @@ class API(object):
         return data
 
     def _check_errors(self, data):
-        code = data.get('statusCode') or data.get('status')
-        if code and code != 200:
-            error = data.get('message') or data.get('statusText') or data.get('messages', [''])[0]
+        if 'statusCode' in data and data['statusCode'] != 200:
+            error = data.get('message') or data.get('statusText')
             raise APIError(error)
+        # code = data.get('statusCode') or data.get('status')
+        # if code and code != 200:
+        #     error = data.get('message') or data.get('statusText') or data.get('messages', [''])[0]
+        #     raise APIError(error)
 
     def channels(self, page=1):
         self._refresh_token()
