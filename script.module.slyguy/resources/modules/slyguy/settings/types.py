@@ -378,6 +378,9 @@ def migrate(settings):
 
         try:
             value = setting.from_text(xml_val)
+            if key == 'max_bandwidth' and value == 7:
+                value = 0
+
             if value != setting._default:
                 setting._set_value(value)
                 log.info("Migrated '{}' -> '{}' -> '{}'".format(key, setting.id, value))
