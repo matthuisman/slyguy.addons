@@ -13,7 +13,7 @@ class Language(BaseLanguage):
     SUGGESTED              = 30008
     EPIOSDE_COUNT          = 30009
     CLIPS                  = 30010
-    FLATTEN_SINGLE_SEASONS = 30011
+    FLATTEN_SINGLE_SEASON  = 30011
     REGION                 = 30012
     USE_LEGACY_LIVE        = 30013
     HIDE_SUGGESTED         = 30014

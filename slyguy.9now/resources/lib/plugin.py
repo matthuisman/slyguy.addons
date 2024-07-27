@@ -3,32 +3,82 @@ import codecs
 
 import arrow
 from six.moves.urllib.parse import urlencode, parse_qsl
-from kodi_six import xbmcplugin
-from slyguy import plugin, settings, inputstream
+from kodi_six import xbmc, xbmcplugin
+from slyguy import plugin, inputstream, gui, signals
 from slyguy.constants import *
 
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings
 
 api = API()
+
+
+@signals.on(signals.BEFORE_DISPATCH)
+def before_dispatch():
+    api.new_session()
+    plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
-    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
-    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-    folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
-    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
+    if not api.logged_in:
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+    else:
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+        folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
-    if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        if settings.getBool('bookmarks', True):
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+
+        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
+
+@plugin.route()
+def login(**kwargs):
+    options = [
+        [_.DEVICE_CODE, _device_code],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    gui.refresh()
+
+
+def _device_code():
+    monitor = xbmc.Monitor()
+    data = api.device_code()
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=data['auth_code'], url=ACTIVATE_URL), heading=_.DEVICE_CODE) as progress:
+        for i in range(data['expires_in']):
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
+
+            progress.update(int((i / float(data['expires_in'])) * 100))
+
+            if i % data['interval'] == 0 and api.device_login(data['auth_code'], data['device_code']):
+                return True
+
+
+@plugin.route()
+def logout(**kwargs):
+    if not gui.yes_no(_.LOGOUT_YES_NO):
+        return
+
+    api.logout()
+    gui.refresh()
+
 
 @plugin.route()
 def featured(rail=None, **kwargs):
@@ -225,7 +275,7 @@ def search(query, page, **kwargs):
     return items, False
 
 def _channels():
-    region = settings.getEnum('region', REGIONS, default=NSW)
+    region = settings.REGION.value
     data = api.channels(region)
     data['channels'].extend([row for row in data['events'] if row['type'] == 'live-event' and row['nextEvent']['name']])
     data['events'] = [row for row in data['events'] if row not in data['channels']]
