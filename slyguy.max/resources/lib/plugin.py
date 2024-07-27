@@ -29,8 +29,6 @@ def index(**kwargs):
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         add_menu_items(folder)
-        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-
         if settings.BOOKMARKS.value:
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
@@ -47,8 +45,14 @@ def index(**kwargs):
 @mem_cache.cached(60*30, key='menu_items')
 def add_menu_items(folder):
     data = api.collection('web-menu-bar')
+
     ignore = ['search-menu-item', 'my-stuff-menu-item']
+    search_title = _.SEARCH
     for row in data['items']:
+        if row['collection']['name'] == 'search-menu-item':
+            search_title = row['collection']['title']
+            continue
+
         if row.get('hidden') or row['collection']['name'] in ignore:
             continue
 
@@ -56,6 +60,8 @@ def add_menu_items(folder):
             label = _(row['collection']['title'], _bold=True),
             path = plugin.url_for(page, route=row['collection']['items'][0]['link']['linkedContentRoutes'][0]['url'].lstrip('/'))
         )
+
+    folder.add_item(label=_(search_title, _bold=True), path=plugin.url_for(search))
 
 
 @plugin.route()
