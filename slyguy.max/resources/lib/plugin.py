@@ -2,7 +2,7 @@ import re
 from xml.dom.minidom import parseString
 
 from kodi_six import xbmc
-from slyguy import plugin, gui, userdata, signals, inputstream, log, _
+from slyguy import plugin, gui, userdata, signals, inputstream, log, _, mem_cache
 from slyguy.constants import MIDDLEWARE_PLUGIN
 from slyguy.drm import is_wv_secure
 from slyguy.util import replace_kids
@@ -28,8 +28,7 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(page, route='series'))
-        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(page, route='movies'))
+        add_menu_items(folder)
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.BOOKMARKS.value:
@@ -43,6 +42,20 @@ def index(**kwargs):
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
+
+
+@mem_cache.cached(60*30, key='menu_items')
+def add_menu_items(folder):
+    data = api.collection('web-menu-bar')
+    ignore = ['search-menu-item', 'my-stuff-menu-item']
+    for row in data['items']:
+        if row.get('hidden') or row['collection']['name'] in ignore:
+            continue
+
+        folder.add_item(
+            label = _(row['collection']['title'], _bold=True),
+            path = plugin.url_for(page, route=row['collection']['items'][0]['link']['linkedContentRoutes'][0]['url'].lstrip('/'))
+        )
 
 
 @plugin.route()

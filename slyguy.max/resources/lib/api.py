@@ -229,6 +229,7 @@ class API(object):
     def _check_errors(self, data):
         if 'errors' in data:
             if data['errors'][0].get('code')  == 'invalid.token':
+                self.logout(api_logout=False)
                 raise APIError(_.INVALID_TOKEN)
             else:
                 raise APIError(data['errors'][0]['detail'])
@@ -339,8 +340,8 @@ class API(object):
         self._check_errors(data)
         return data
 
-    def logout(self):
-        if userdata.get('access_token'):
+    def logout(self, api_logout=True):
+        if userdata.get('access_token') and api_logout:
             try:
                 self._session.post(self._endpoint('/logout'), json={})
             except:
