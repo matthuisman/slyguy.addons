@@ -1,18 +1,22 @@
 import arrow
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.monitor import monitor
 from slyguy.constants import ROUTE_LIVE_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -21,15 +25,8 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        if not userdata.get('profile_kids', False):
-            folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured, key='sitemap', title=_.FEATURED))
-            folder.add_item(label=_(_.TV, _bold=True), path=plugin.url_for(nav, key='tv', title=_.TV))
-            folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(nav, key='movies', title=_.MOVIES))
-
-            if not settings.getBool('hide_sport', False):
-                folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(nav, key='sport', title=_.SPORT))
-
-        folder.add_item(label=_(_.KIDS, _bold=True), path=plugin.url_for(nav, key='kids', title=_.KIDS))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured, key='sitemap', title=_.FEATURED))
+        get_nav(folder)
         folder.add_item(label=_(_.MY_LIST, _bold=True), path=plugin.url_for(my_list))
         folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
@@ -45,6 +42,22 @@ def index(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
+
+
+def get_nav(folder):
+    skip = ['mylist', 'history', 'index']
+    data = api.page('index')
+    for row in data['mainNav']:
+        if 'path' not in row['cta']:
+            continue
+        key = row['cta']['path'].lstrip('/')
+        if key in skip:
+            continue
+        folder.add_item(
+            label = _(row['title'], _bold=True),
+            path=plugin.url_for(nav, key=key, title=row['title']),
+        )
+
 
 @plugin.route()
 def login(**kwargs):

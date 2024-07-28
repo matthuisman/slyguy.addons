@@ -1,21 +1,21 @@
 import time
-import json
 
-from six.moves.urllib_parse import quote_plus, urlencode
-from kodi_six import xbmc
+from six.moves.urllib_parse import urlencode
 
-from slyguy import userdata, settings
+from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.log import log
 from slyguy.util import cenc_init
 from slyguy.drm import req_wv_level, req_hdcp_level, WV_L1, HDCP_2_2
 
 from .constants import *
+from .settings import settings
 from .language import _
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -110,8 +110,8 @@ class API(object):
         return True
 
     def _device_data(self):
-        enable_h265 = settings.getBool('enable_h265', True)
-        enable_4k = settings.getBool('enable_4k', True) if (req_wv_level(WV_L1) and req_hdcp_level(HDCP_2_2)) else False
+        enable_h265 = settings.H265.value
+        enable_4k = True if (enable_h265 and req_wv_level(WV_L1) and req_hdcp_level(HDCP_2_2)) else False
 
         return {
             'type': 'console', #console, tv

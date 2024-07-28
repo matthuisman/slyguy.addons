@@ -10,28 +10,8 @@ msgctxt "#30005"
 msgid "Stan detected your not using an Australian IP address or may be using a VPN"
 msgstr ""
 
-msgctxt "#30008"
-msgid "H265"
-msgstr ""
-
-msgctxt "#30009"
-msgid "TV"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Movies"
-msgstr ""
-
-msgctxt "#30011"
-msgid "Kids"
-msgstr ""
-
 msgctxt "#30012"
 msgid "Featured"
-msgstr ""
-
-msgctxt "#30013"
-msgid "4K"
 msgstr ""
 
 msgctxt "#30015"
@@ -69,50 +49,4 @@ msgstr ""
 
 msgctxt "#30036"
 msgid "[B]Go to {series}[/B]"
-msgstr ""
-
-msgctxt "#30037"
-msgid "Sport"
-msgstr ""
-
-msgctxt "#30038"
-msgid "Hide Sport"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr ""
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr ""
-
-msgctxt "#32064"
-msgid "From Start"
 msgstr ""
