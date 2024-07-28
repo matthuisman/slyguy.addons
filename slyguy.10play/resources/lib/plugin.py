@@ -3,10 +3,11 @@ import string
 import codecs
 import re
 
-from slyguy import plugin, settings, signals, inputstream, userdata, gui
+from slyguy import plugin, signals, inputstream
 
 from .api import API
 from .language import _
+from .settings import settings
 from .constants import *
 
 api = API()
@@ -20,11 +21,11 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
     folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
