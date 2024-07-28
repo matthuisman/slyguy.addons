@@ -2,14 +2,10 @@ from slyguy.language import BaseLanguage
 
 
 class Language(BaseLanguage):
-    HOME                  = 30000
     LAT_LONG              = 30001
     HIDE_CLIPS            = 30002
-    LIVE_TV               = 30004
     NEWS                  = 30008
     CATEGORIES            = 30009
-    SHOWS                 = 30010
-    ALL                   = 30011
     FEATURED              = 30012
     SHOWS_LETTER          = 30013
     HIDE_SUGGESTED        = 30014

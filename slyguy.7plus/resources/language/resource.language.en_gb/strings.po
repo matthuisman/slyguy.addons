@@ -14,10 +14,6 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#30000"
-msgid "Home"
-msgstr ""
-
 msgctxt "#30001"
 msgid "Latitude,Longitude"
 msgstr ""
@@ -26,24 +22,12 @@ msgctxt "#30002"
 msgid "Hide Clips"
 msgstr ""
 
-msgctxt "#30004"
-msgid "Live"
-msgstr ""
-
 msgctxt "#30008"
 msgid "News"
 msgstr ""
 
 msgctxt "#30009"
 msgid "Categories"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Shows"
-msgstr ""
-
-msgctxt "#30011"
-msgid "ALL"
 msgstr ""
 
 msgctxt "#30012"
