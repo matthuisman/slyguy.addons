@@ -27,6 +27,7 @@ HDCP_1 = 10
 HDCP_2_2 = 22
 HDCP_3_0 = 30
 
+
 class IPMode:
     SYSTEM_DEFAULT = 'system_default'
     PREFER_IPV4 = 'prefer_ipv4'
@@ -36,16 +37,15 @@ class IPMode:
 
 
 def is_donor():
-    return bool(int(get_kodi_string(KEY, 0)))
+    return settings.DONOR_ID_CHK.value and settings.DONOR_ID_CHK.value == settings.DONOR_ID.value
 
 
-def _set_donor():
-    set_kodi_string(KEY, '1')
+def _set_donor(donor_id):
     set_kodi_string('_slyguy_donor', '1')
+    settings.set('donor_id_chk', donor_id)
 
 
 def _unset_donor():
-    set_kodi_string(KEY, '0')
     set_kodi_string('_slyguy_donor', '0')
     settings.remove('donor_id_chk')
 
@@ -114,8 +114,7 @@ def check_donor(donor_id=None):
         if not is_donor():
             log.info('Welcome SlyGuy Supporter!')
 
-        _set_donor()
-        settings.set('donor_id_chk', donor_id)
+        _set_donor(donor_id)
         if force:
             from slyguy import gui
             gui.notification(_.WELCOME_SUPPORTER)
@@ -254,7 +253,7 @@ class CommonSettings(BaseSettings):
 
     # SYSTEM
     DONOR_ID = Text('donor_id', before_save=check_donor, after_clear=check_donor, override=False, default_label=_.NOT_A_SUPPORTER,
-            description=_.SUPPORTER_HELP if not is_donor() else '', confirm_clear=True, value_str="{value:.2}******", owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+            description=_.SUPPORTER_HELP, confirm_clear=True, value_str="{value:.2}******", owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
