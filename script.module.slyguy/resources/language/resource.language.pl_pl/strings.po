@@ -1061,7 +1061,7 @@ msgstr Sieć""
 
 msgctxt "#32196"
 msgid "Interface"
-msgstr "Wygląd"
+msgstr "Interfejs"
 
 msgctxt "#32197"
 msgid "System"
