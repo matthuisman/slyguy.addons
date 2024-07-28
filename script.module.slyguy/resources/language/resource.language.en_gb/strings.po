@@ -988,3 +988,103 @@ msgstr ""
 msgctxt "#32193"
 msgid "DTS-X (IMAX Enhanced)"
 msgstr ""
+
+msgctxt "#32194"
+msgid "Player"
+msgstr ""
+
+msgctxt "#32195"
+msgid "Network"
+msgstr ""
+
+msgctxt "#32196"
+msgid "Interface"
+msgstr ""
+
+msgctxt "#32197"
+msgid "System"
+msgstr ""
+
+msgctxt "#32198"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#32199"
+msgid "General"
+msgstr ""
+
+msgctxt "#32200"
+msgid "All"
+msgstr ""
+
+msgctxt "#32201"
+msgid "Quality"
+msgstr ""
+
+msgctxt "#32202"
+msgid "Language"
+msgstr ""
+
+msgctxt "#32203"
+msgid "Default"
+msgstr ""
+
+msgctxt "#32204"
+msgid "Yes"
+msgstr ""
+
+msgctxt "#32205"
+msgid "No"
+msgstr ""
+
+msgctxt "#32206"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32207"
+msgid "No limit"
+msgstr ""
+
+msgctxt "#32208"
+msgid "Resume from {0:s}"
+msgstr ""
+
+msgctxt "#32209"
+msgid "Play from beginning"
+msgstr ""
+
+msgctxt "#32210"
+msgid "Playback failed"
+msgstr ""
+
+msgctxt "#32211"
+msgid "Auto"
+msgstr ""
+
+msgctxt "#32212"
+msgid "Trailer"
+msgstr ""
+
+msgctxt "#32213"
+msgid "Play next"
+msgstr ""
+
+msgctxt "#32214"
+msgid "Queue item"
+msgstr ""
+
+msgctxt "#32215"
+msgid "Reset above settings to default"
+msgstr ""
+
+msgctxt "#32216"
+msgid "Are you sure?"
+msgstr ""
+
+msgctxt "#32217"
+msgid "DNS Server"
+msgstr ""
+
+msgctxt "#32218"
+msgid "Help"
+msgstr ""
