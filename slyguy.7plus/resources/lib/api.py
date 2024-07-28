@@ -1,4 +1,4 @@
-from slyguy import mem_cache, settings
+from slyguy import mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import process_brightcove
@@ -6,9 +6,12 @@ from slyguy.log import log
 
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):

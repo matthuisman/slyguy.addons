@@ -5,12 +5,13 @@ from xml.sax.saxutils import escape
 import arrow
 from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
-from slyguy import plugin, settings, signals, mem_cache
+from slyguy import plugin, signals, mem_cache
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG
 
 from .api import API
 from .language import _
+from .settings import settings
 from .constants import *
 
 api = API()
