@@ -1050,3 +1050,103 @@ msgstr "Włącz rozdziały [znane problemy]"
 msgctxt "#32193"
 msgid "DTS-X (IMAX Enhanced)"
 msgstr "DTS-X (ulepszony IMAX)"
+
+msgctxt "#32194"
+msgid "Player"
+msgstr "Odtwarzacz"
+
+msgctxt "#32195"
+msgid "Network"
+msgstr Sieć""
+
+msgctxt "#32196"
+msgid "Interface"
+msgstr "Wygląd"
+
+msgctxt "#32197"
+msgid "System"
+msgstr "System"
+
+msgctxt "#32198"
+msgid "Advanced"
+msgstr "Zaawansowane"
+
+msgctxt "#32199"
+msgid "General"
+msgstr "Główne"
+
+msgctxt "#32200"
+msgid "All"
+msgstr "Wszystko"
+
+msgctxt "#32201"
+msgid "Quality"
+msgstr "Jakość"
+
+msgctxt "#32202"
+msgid "Language"
+msgstr "Język"
+
+msgctxt "#32203"
+msgid "Default"
+msgstr "Domyślne"
+
+msgctxt "#32204"
+msgid "Yes"
+msgstr "Tak"
+
+msgctxt "#32205"
+msgid "No"
+msgstr "Nie"
+
+msgctxt "#32206"
+msgid "Disabled"
+msgstr "Wyłączone"
+
+msgctxt "#32207"
+msgid "No limit"
+msgstr "Bez limitu"
+
+msgctxt "#32208"
+msgid "Resume from {0:s}"
+msgstr "Wznów od {0:s}"
+
+msgctxt "#32209"
+msgid "Play from beginning"
+msgstr "Odtwórz od początku"
+
+msgctxt "#32210"
+msgid "Playback failed"
+msgstr "Odtwarzanie nie powiodło się""
+
+msgctxt "#32211"
+msgid "Auto"
+msgstr "Automatycznie"
+
+msgctxt "#32212"
+msgid "Trailer"
+msgstr "Zwiastun"
+
+msgctxt "#32213"
+msgid "Play next"
+msgstr "Odtwórz następny"
+
+msgctxt "#32214"
+msgid "Queue item"
+msgstr "W kolejce"
+
+msgctxt "#32215"
+msgid "Reset above settings to default"
+msgstr "Przywróć powyższe ustawienia do domyślnych"
+
+msgctxt "#32216"
+msgid "Are you sure?"
+msgstr "Jesteś pewny?"
+
+msgctxt "#32217"
+msgid "DNS Server"
+msgstr "Serwer DNS"
+
+msgctxt "#32218"
+msgid "Help"
+msgstr "Pomoc"
