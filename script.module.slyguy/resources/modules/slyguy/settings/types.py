@@ -282,7 +282,10 @@ class Action(Setting):
 
     @property
     def label(self):
-        return self._label
+        value = self._label
+        if not self.is_enabled:
+            value = _(value, _color='gray')
+        return value
 
     def select(self):
         value = self._action
