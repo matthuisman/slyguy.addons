@@ -767,10 +767,6 @@ msgctxt "#32128"
 msgid "SlyGuy News"
 msgstr "Informacje o SlyGuy"
 
-msgctxt "#32129"
-msgid "(Video view setting moved to SlyGuy Common Settings)"
-msgstr "(Ustawienia widoku wideo zostały przeniesione do ustawień wspólnych SlyGuy)"
-
 msgctxt "#32130"
 msgid "Play from live"
 msgstr "Odtwarzaj na żywo"
@@ -883,6 +879,119 @@ msgid "The below SlyGuy addons are outdated and must be updated or no support wi
 msgstr "Poniższe dodatki SlyGuy są nieaktualne i muszą zostać zaktualizowane, w przeciwnym razie nie będzie zapewniona pomoc.\n"
 "{updates_required}"
 
+msgctxt "#32153"
+msgid "Codecs"
+msgstr "Kodeki"
+
+msgctxt "#32156"
+msgid "This is a supporter only setting\n"
+"Visit [B]donate.slyguy.uk[/B] to become a supporter!"
+msgstr "To ustawienie jest dostępne tylko dla wspierających\n"
+"Odwiedź [B]donate.slyguy.uk[/B] i zostań darczyńcą!"
+
+msgctxt "#32157"
+msgid "Reset to default"
+msgstr "Przywróć ustawienia domyślne"
+
+msgctxt "#32158"
+msgid "Not a supporter"
+msgstr "Nie wspierane"
+
+msgctxt "#32159"
+msgid "IPv4/IPv6 Preference"
+msgstr "Preferencje IPv4/IPv6"
+
+msgctxt "#32161"
+msgid "Visit [B]donate.slyguy.uk[/B] to become a supporter and then enter your Supporter ID here"
+msgstr "Odwiedź [B]donate.slyguy.uk[/B], aby zostać darczyńcą, a następnie wprowadź tutaj swój identyfikator darczyńcy"
+
+msgctxt "#32162"
+msgid "Warning: Disabling the SlyGuy proxy will stop a lot of features and even break some SlyGuy addons completely. "
+"It should only be disabled temporally while debugging specific issues\n"
+"Are you sure you want to disable?"
+msgstr "Ostrzeżenie: Wyłączenie serwera proxy SlyGuy zatrzyma wiele funkcji, a nawet całkowicie uszkodzi niektóre dodatki SlyGuy."
+"Należy je tymczasowo wyłączyć tylko podczas debugowania określonych problemów\n"
+"Czy na pewno chcesz wyłączyć?"
+
+msgctxt "#32163"
+msgid "Warning: Changing the systems Widevine DRM level will likely cause playback issues. "
+"Its useful for forcing a lower level (L3) or testing what features are available at a higher level (L1).\n"
+"Are you sure you want to change?"
+msgstr "Ostrzeżenie: Zmiana poziomu DRM Widevine w systemie prawdopodobnie spowoduje problemy z odtwarzaniem."
+"Przydatne do wymuszenia niższego poziomu (L3) lub testowania, jakie funkcje są dostępne na wyższym poziomie (L1).\n"
+"Czy na pewno chcesz zmienić?"
+
+msgctxt "#32164"
+msgid "Warning: Changing the systems HDCP level will likely cause playback issues. "
+"Its useful for forcing a lower level or testing what features are available at a higher level.\n"
+"Are you sure you want to change?"
+msgstr "Ostrzeżenie: Zmiana poziomu HDCP systemu najprawdopodobniej spowoduje problemy z odtwarzaniem."
+"Przydatne do wymuszenia niższego poziomu lub testowania, jakie funkcje są dostępne na wyższym poziomie.\n"
+"Czy na pewno chcesz zmienić?"
+
+msgctxt "#32165"
+msgid "Quality Select Mode"
+msgstr "Tryb wyboru jakości"
+
+msgctxt "#32166"
+msgid "Welcome SlyGuy Supporter!"
+msgstr "Witaj, darczyńco SlyGuy!"
+
+msgctxt "#32167"
+msgid "Supporter ID '{id}' not found"
+msgstr "Nie znaleziono identyfikatora darczyńcy '{id}'"
+
+msgctxt "#32168"
+msgid "[Common]"
+msgstr "[Common]"
+
+msgctxt "#32169"
+msgid "Prefer IPv4"
+msgstr "Preferuj IPv4"
+
+msgctxt "#32170"
+msgid "Prefer IPv6"
+msgstr "Preferuj IPv6"
+
+msgctxt "#32171"
+msgid "IPv4 Only"
+msgstr "Tylko IPv4"
+
+msgctxt "#32172"
+msgid "IPv6 Only"
+msgstr "Tylko IPv6"
+
+msgctxt "#32173"
+msgid "Are you sure you want to reset {count} settings to default?"
+msgstr "Czy na pewno chcesz przywrócić ustawienia domyślne {count}?"
+
+msgctxt "#32174"
+msgid "Media Default"
+msgstr "Domyślne media"
+
+msgctxt "#32175"
+msgid "Live TV"
+msgstr "Telewizja na żywo"
+
+msgctxt "#32176"
+msgid "Show Mini EPG"
+msgstr "Pokaż mini EPG"
+
+msgctxt "#32177"
+msgid "Show Channel Numbers"
+msgstr "Pokaź numery kanałów"
+
+msgctxt "#32178"
+msgid "Show Channels"
+msgstr "Pokaż kanały"
+
+msgctxt "#32179"
+msgid "Over the Air Only"
+msgstr "Tylko Over the Air"
+
+msgctxt "#32180"
+msgid "FAST Only"
+msgstr "Tylko FAST"
 
 msgctxt "#32181"
 msgid "{name} [PIN]"
@@ -937,3 +1046,107 @@ msgstr "Idź do seriali"
 msgctxt "#32192"
 msgid "Enable Chapters [Known Issues]"
 msgstr "Włącz rozdziały [znane problemy]"
+
+msgctxt "#32193"
+msgid "DTS-X (IMAX Enhanced)"
+msgstr "DTS-X (ulepszony IMAX)"
+
+msgctxt "#32194"
+msgid "Player"
+msgstr "Odtwarzacz"
+
+msgctxt "#32195"
+msgid "Network"
+msgstr Sieć""
+
+msgctxt "#32196"
+msgid "Interface"
+msgstr "Interfejs"
+
+msgctxt "#32197"
+msgid "System"
+msgstr "System"
+
+msgctxt "#32198"
+msgid "Advanced"
+msgstr "Zaawansowane"
+
+msgctxt "#32199"
+msgid "General"
+msgstr "Główne"
+
+msgctxt "#32200"
+msgid "All"
+msgstr "Wszystko"
+
+msgctxt "#32201"
+msgid "Quality"
+msgstr "Jakość"
+
+msgctxt "#32202"
+msgid "Language"
+msgstr "Język"
+
+msgctxt "#32203"
+msgid "Default"
+msgstr "Domyślne"
+
+msgctxt "#32204"
+msgid "Yes"
+msgstr "Tak"
+
+msgctxt "#32205"
+msgid "No"
+msgstr "Nie"
+
+msgctxt "#32206"
+msgid "Disabled"
+msgstr "Wyłączone"
+
+msgctxt "#32207"
+msgid "No limit"
+msgstr "Bez limitu"
+
+msgctxt "#32208"
+msgid "Resume from {0:s}"
+msgstr "Wznów od {0:s}"
+
+msgctxt "#32209"
+msgid "Play from beginning"
+msgstr "Odtwórz od początku"
+
+msgctxt "#32210"
+msgid "Playback failed"
+msgstr "Odtwarzanie nie powiodło się""
+
+msgctxt "#32211"
+msgid "Auto"
+msgstr "Automatycznie"
+
+msgctxt "#32212"
+msgid "Trailer"
+msgstr "Zwiastun"
+
+msgctxt "#32213"
+msgid "Play next"
+msgstr "Odtwórz następny"
+
+msgctxt "#32214"
+msgid "Queue item"
+msgstr "W kolejce"
+
+msgctxt "#32215"
+msgid "Reset above settings to default"
+msgstr "Przywróć powyższe ustawienia do domyślnych"
+
+msgctxt "#32216"
+msgid "Are you sure?"
+msgstr "Jesteś pewny?"
+
+msgctxt "#32217"
+msgid "DNS Server"
+msgstr "Serwer DNS"
+
+msgctxt "#32218"
+msgid "Help"
+msgstr "Pomoc"
