@@ -14,7 +14,7 @@ from kodi_six import xbmc, xbmcgui, xbmcaddon
 from slyguy import database, gui, settings, plugin, inputstream
 from slyguy.exceptions import Error
 from slyguy.util import hash_6, get_addon, kodi_rpc, run_plugin
-from slyguy.constants import QUALITY_DISABLED
+from slyguy.constants import QUALITY_DISABLED, MERGE_SETTING_FILE
 from slyguy.log import log
 
 from .constants import *
