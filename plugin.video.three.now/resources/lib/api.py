@@ -6,6 +6,7 @@ from six.moves.urllib_parse import urljoin
 
 from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, SEARCH_MATCH_RATIO
 
+
 class API(object):
     def __init__(self):
         self._session = Session(HEADERS, base_url=API_URL)

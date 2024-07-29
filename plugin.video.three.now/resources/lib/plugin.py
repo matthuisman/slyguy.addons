@@ -2,28 +2,31 @@ import string
 
 import arrow
 
-from slyguy import plugin, settings, inputstream
+from slyguy import plugin, inputstream
 
 from .api import API
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.GENRE, _bold=True), path=plugin.url_for(genres))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def shows(sort=None, **kwargs):
