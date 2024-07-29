@@ -58,6 +58,7 @@ class Categories(object):
     PLAYER_ADVANCED = Category(_.ADVANCED, parent=PLAYER)
     NETWORK = Category(_.NETWORK, parent=ROOT)
     INTERFACE = Category(_.INTERFACE, parent=ROOT)
+    PVR_LIVE_TV = Category(_.PVR_LIVE_TV, parent=ROOT)
     SYSTEM = Category(_.SYSTEM, parent=ROOT)
 
 

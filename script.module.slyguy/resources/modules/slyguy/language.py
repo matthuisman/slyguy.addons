@@ -307,6 +307,8 @@ class BaseLanguage(object):
     ARE_YOU_SURE                = 32216
     DNS_SERVER                  = 32217
     HELP                        = 32218
+    PVR_LIVE_TV                 = 32219
+    MERGE_NOT_SUPPORTED         = 32220
 
     def __init__(self, addon=ADDON):
         self._addon = addon

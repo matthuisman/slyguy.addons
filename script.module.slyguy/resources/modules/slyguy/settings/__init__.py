@@ -1,3 +1,4 @@
+import os
 import re
 from time import time
 
@@ -224,7 +225,6 @@ class CommonSettings(BaseSettings):
                     loop=True, default=PLAY_FROM_ASK, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_LIVE = Bool('use_ia_hls_live', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_VOD = Bool('use_ia_hls_vod', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
-    SKIP_NEXT_CHANNEL = Bool('skip_next_channel', default=False, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     PROXY_ENABLED = Bool('proxy_enabled', default=True, before_save=lambda val: val or dialog.yes_no(_.CONFIRM_DISABLE_PROXY), owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     WV_LEVEL = Enum('wv_level', before_save=lambda val: settings.WV_LEVEL.value != WV_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_WV_LEVEL), after_save=set_drm_level,
                     options=[[_.AUTO, WV_AUTO], [_.WV_LEVEL_L1, WV_L1], [_.WV_LEVEL_L3, WV_L3]],
@@ -252,6 +252,10 @@ class CommonSettings(BaseSettings):
     VIDEO_VIEW_MEDIA = Bool('video_view_media', owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
     VIDEO_VIEW_MENUS = Bool('video_view_menus', owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
     SHOW_NEWS = Bool('show_news', default=True, enable=is_donor, disabled_value=True, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
+
+    # PVR
+    SKIP_NEXT_CHANNEL = Bool('skip_next_channel', default=False, owner=COMMON_ADDON_ID, category=Categories.PVR_LIVE_TV)
+    SETUP_IPTV_MERGE = Action("RunPlugin(plugin://{}/?_=_setup_merge)".format(ADDON_ID), enable=lambda: os.path.exists(MERGE_SETTING_FILE), disabled_reason=_.MERGE_NOT_SUPPORTED, category=Categories.PVR_LIVE_TV)
 
     # SYSTEM
     DONOR_ID = Text('donor_id', before_save=check_donor, after_clear=check_donor, override=False, default_label=_.NOT_A_SUPPORTER,

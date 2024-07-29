@@ -1088,3 +1088,11 @@ msgstr ""
 msgctxt "#32218"
 msgid "Help"
 msgstr ""
+
+msgctxt "#32219"
+msgid "PVR & Live TV"
+msgstr ""
+
+msgctxt "#32220"
+msgid "IPTV Merge integration is not available for this add-on"
+msgstr ""

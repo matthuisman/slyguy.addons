@@ -60,6 +60,7 @@ CACHE_CLEAN_KEY      = '_cache_cleaned'
 #################
 
 IPTV_MERGE_ID        = 'plugin.program.iptv.merge'
+MERGE_SETTING_FILE   = os.path.join(ADDON_PATH, '.iptv_merge')
 
 #### ROUTING ####
 ROUTE_TAG              = '_'
