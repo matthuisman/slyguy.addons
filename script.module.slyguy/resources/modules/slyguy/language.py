@@ -121,7 +121,7 @@ class BaseLanguage(object):
     MAX_BANDWIDTH               = 32059
     QUALITY_LOWEST              = 32060
     LIVE_HLS_REQUIRED           = 32062
-    PLAY_DEFAULT_ACTION         = 32063
+    LIVE_PLAY_TYPE              = 32063
     PLAY_FROM_START             = 32064
     PLAY_FROM_LIVE              = 32065
     PLAY_FROM_ASK               = 32066
