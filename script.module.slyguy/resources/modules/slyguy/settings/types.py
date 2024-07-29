@@ -370,6 +370,7 @@ def migrate(settings):
     default_overrides = {
         'max_bandwidth': 7,
         'epg_days': 3,
+        'pagination_multiplier': 1,
     }
 
     count = 0
