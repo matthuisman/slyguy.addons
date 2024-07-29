@@ -354,11 +354,13 @@ def live_tv(**kwargs):
 
 
 @plugin.route()
+@plugin.login_required()
 def play(reference, **kwargs):
     return _play(reference, is_live=ROUTE_LIVE_TAG in kwargs)
 
 
 @plugin.route()
+@plugin.login_required()
 def play_event(reference, **kwargs):
     event = None
     data = _channels()
@@ -384,6 +386,7 @@ def play_event(reference, **kwargs):
 
 
 @plugin.route()
+@plugin.login_required()
 def play_channel(reference, **kwargs):
     url = None
     data = _channels()
@@ -449,7 +452,7 @@ def _parse_episode(row):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = _channels()
-    region = settings.getEnum('region', REGIONS, default=NSW)
+    region = settings.REGION.value
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
