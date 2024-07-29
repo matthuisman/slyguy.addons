@@ -111,7 +111,6 @@ class API(object):
 
     def _device_data(self):
         enable_h265 = settings.H265.value
-        enable_4k = True if (enable_h265 and req_wv_level(WV_L1) and req_hdcp_level(HDCP_2_2)) else False
 
         return {
             'type': 'console', #console, tv
@@ -121,12 +120,12 @@ class API(object):
             'stanName': STAN_NAME,
             'stanVersion': '4.32.1',
             'manufacturer': 'NVIDIA', #NVIDIA, Sony
-            'model': 'SHIELD Android TV' if (enable_4k or enable_h265) else '', #SHIELD Android TV, BRAVIA 4K 2020
+            'model': 'SHIELD Android TV' if enable_h265 else '', #SHIELD Android TV, BRAVIA 4K 2020
             'os': 'Android-9',
             'videoCodecs': 'h264,decode,dovi,h263,h265,hevc,mjpeg,mpeg2v,mp4,mpeg4,vc1,vp8,vp9',
             'audioCodecs': 'aac',
             'drm': 'widevine', #playready
-            'hdcpVersion': '2.2' if enable_4k else '0', #0, 1, 2, 2.2
+            'hdcpVersion': '2.2', #0, 1, 2, 2.2
             'colorSpace': 'hdr10',
             #'tz': '',
         }
