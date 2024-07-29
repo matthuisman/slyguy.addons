@@ -943,7 +943,7 @@ msgstr "Nie znaleziono identyfikatora darczyńcy '{id}'"
 
 msgctxt "#32168"
 msgid "[Common]"
-msgstr "[Common]"
+msgstr "[Wspólne]"
 
 msgctxt "#32169"
 msgid "Prefer IPv4"
@@ -1057,7 +1057,7 @@ msgstr "Odtwarzacz"
 
 msgctxt "#32195"
 msgid "Network"
-msgstr Sieć""
+msgstr "Sieć"
 
 msgctxt "#32196"
 msgid "Interface"
