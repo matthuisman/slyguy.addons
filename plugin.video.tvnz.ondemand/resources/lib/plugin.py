@@ -1,36 +1,39 @@
-import os
 import string
 
 import arrow
 from kodi_six import xbmcplugin
-from slyguy import plugin, gui, settings, userdata, inputstream, signals
-from slyguy.constants import *
+from slyguy import plugin, inputstream, signals, log
 from slyguy.util import pthms_to_seconds
 from slyguy.session import Session
 from slyguy.router import add_url_args
-from slyguy.log import log
+from slyguy.constants import *
 
 from .api import API
 from .constants import HEADERS, EPG_URL
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
 
+
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
     folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, title=_.FEATURED))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(page, slug='sport', title=_.SPORT))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
