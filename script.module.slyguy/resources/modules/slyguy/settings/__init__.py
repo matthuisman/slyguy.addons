@@ -254,8 +254,9 @@ class CommonSettings(BaseSettings):
     SHOW_NEWS = Bool('show_news', default=True, enable=is_donor, disabled_value=True, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.INTERFACE)
 
     # PVR
-    SKIP_NEXT_CHANNEL = Bool('skip_next_channel', default=False, owner=COMMON_ADDON_ID, category=Categories.PVR_LIVE_TV)
-    SETUP_IPTV_MERGE = Action("RunPlugin(plugin://{}/?_=_setup_merge)".format(ADDON_ID), enable=lambda: os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), disabled_reason=_.MERGE_NOT_SUPPORTED, category=Categories.PVR_LIVE_TV)
+    SETUP_IPTV_MERGE = Action("RunPlugin(plugin://{}/?_=_setup_merge)".format(ADDON_ID), owner=COMMON_ADDON_ID, visible=lambda: os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), category=Categories.PVR_LIVE_TV)
+    SKIP_NEXT_CHANNEL = Bool('skip_next_channel', default=False, owner=COMMON_ADDON_ID, visible=lambda: ADDON_ID == COMMON_ADDON_ID or os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), category=Categories.PVR_LIVE_TV)
+    EPG_DAYS = Number('epg_days', default=3, lower_limit=1, upper_limit=7, owner=COMMON_ADDON_ID, visible=lambda: ADDON_ID == COMMON_ADDON_ID or os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), category=Categories.PVR_LIVE_TV)
 
     # SYSTEM
     DONOR_ID = Text('donor_id', before_save=check_donor, after_clear=check_donor, override=False, default_label=_.NOT_A_SUPPORTER,

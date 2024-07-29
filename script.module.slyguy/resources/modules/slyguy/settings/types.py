@@ -367,6 +367,11 @@ def migrate(settings):
         except Exception as e:
             log.error("Failed to parse old settings: {} ({})".format(settings_path, e))
 
+    default_overrides = {
+        'max_bandwidth': 7,
+        'epg_days': 3,
+    }
+
     count = 0
     for key in old_settings:
         xml_val = old_settings[key]
@@ -382,8 +387,8 @@ def migrate(settings):
 
         try:
             value = setting.from_text(xml_val)
-            if key == 'max_bandwidth' and value == 7:
-                value = 0
+            if key in default_overrides and default_overrides[key] == value:
+                value = setting._default
 
             if value != setting._default:
                 setting._set_value(value)
