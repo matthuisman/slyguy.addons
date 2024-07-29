@@ -255,7 +255,7 @@ class CommonSettings(BaseSettings):
 
     # PVR
     SKIP_NEXT_CHANNEL = Bool('skip_next_channel', default=False, owner=COMMON_ADDON_ID, category=Categories.PVR_LIVE_TV)
-    SETUP_IPTV_MERGE = Action("RunPlugin(plugin://{}/?_=_setup_merge)".format(ADDON_ID), enable=lambda: os.path.exists(MERGE_SETTING_FILE), disabled_reason=_.MERGE_NOT_SUPPORTED, category=Categories.PVR_LIVE_TV)
+    SETUP_IPTV_MERGE = Action("RunPlugin(plugin://{}/?_=_setup_merge)".format(ADDON_ID), enable=lambda: os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), disabled_reason=_.MERGE_NOT_SUPPORTED, category=Categories.PVR_LIVE_TV)
 
     # SYSTEM
     DONOR_ID = Text('donor_id', before_save=check_donor, after_clear=check_donor, override=False, default_label=_.NOT_A_SUPPORTER,
