@@ -1257,8 +1257,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             return match.group(0).replace(match.group(1), urljoin(response.url, match.group(1)))
 
         m3u8 = re.sub(r'^/', r'{}'.format(base_url), m3u8, flags=re.I|re.M)
-        m3u8 = re.sub('^(\.\./.*)$', relative_replace, m3u8, flags=re.I|re.M)
-        m3u8 = re.sub('URI="(\.\./.*)"', relative_replace, m3u8, flags=re.I|re.M)
+        m3u8 = re.sub(r'^(\.\./.*)$', relative_replace, m3u8, flags=re.I|re.M)
+        m3u8 = re.sub(r'URI="(\.\./.*)"', relative_replace, m3u8, flags=re.I|re.M)
         m3u8 = re.sub(r'URI="/', r'URI="{}'.format(base_url), m3u8, flags=re.I|re.M)
 
         ## Convert to proxy paths

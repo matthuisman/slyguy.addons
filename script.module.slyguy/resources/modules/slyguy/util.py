@@ -67,7 +67,7 @@ def kodi_db(name):
     for file in os.listdir(db_dir):
         db_path = os.path.join(db_dir, file)
 
-        result = re.match('{}([0-9]+)\.db'.format(name.lower()), file.lower())
+        result = re.match(r'{}([0-9]+)\.db'.format(name.lower()), file.lower())
         if result:
             options.append([db_path, int(result.group(1))])
 
@@ -626,7 +626,7 @@ def strip_html_tags(text):
     if not text:
         return ''
 
-    text = re.sub('\([^\)]*\)', '', text)
+    text = re.sub(r'\([^\)]*\)', '', text)
     text = re.sub('<[^>]*>', '', text)
     text = html.unescape(text)
     return text
