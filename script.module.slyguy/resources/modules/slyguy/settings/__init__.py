@@ -11,7 +11,6 @@ from slyguy.util import get_kodi_string, set_kodi_string
 from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action
 
 
-KEY = '_slyguy_donor_{}'.format(COMMON_ADDON.getAddonInfo('version'))
 _ = BaseLanguage(COMMON_ADDON)
 
 WV_AUTO = -1
@@ -88,17 +87,12 @@ def check_donor(donor_id=None):
     if not donor_id:
         if is_donor():
             _unset_donor()
-            set_kodi_string(KEY, '')
         return
 
-    _is_donor = get_kodi_string(KEY, None)
+    _is_donor = is_donor()
     _time = int(time())
     if not force and _is_donor is not None and _time < settings.getInt('_last_donor_check', 0) + DONOR_CHECK_TIME:
         return bool(int(_is_donor))
-
-    if _is_donor is None:
-        _is_donor = settings.get('donor_id_chk') == donor_id
-    _is_donor = bool(int(_is_donor))
 
     try:
         from slyguy.session import Session
@@ -111,10 +105,8 @@ def check_donor(donor_id=None):
     else:
         settings.setInt('_last_donor_check', _time)
 
+    log.debug('SlyGuy Supporter: {}'.format(result))
     if result:
-        if not is_donor():
-            log.info('Welcome SlyGuy Supporter!')
-
         _set_donor(donor_id)
         if force:
             from slyguy import gui

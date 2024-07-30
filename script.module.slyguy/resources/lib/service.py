@@ -59,6 +59,8 @@ def start():
     proxy.start()
 
     check_donor()
+    if is_donor():
+        log.info("Welcome SlyGuy Supporter!")
     set_drm_level()
     check_arch()
 
