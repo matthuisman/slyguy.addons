@@ -1,12 +1,13 @@
 import codecs
 
 import arrow
-from slyguy import plugin, inputstream, mem_cache, settings, userdata, gui
+from slyguy import plugin, inputstream, mem_cache, userdata, gui
 from slyguy.session import Session
 from slyguy.exceptions import PluginError
 
 from .language import _
-from .constants import *
+from .settings import settings, MY_CHANNELS, DATA_URL, EPG_URL, ALL
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -79,7 +80,7 @@ def _app_data():
 def _process_channels(channels, group=ALL, region=ALL):
     items = []
 
-    show_chno = settings.getBool('show_chno', True)
+    show_chnos = settings.getBool('show_chnos', True)
 
     if settings.getBool('show_epg', True):
         now = arrow.now()
@@ -87,7 +88,7 @@ def _process_channels(channels, group=ALL, region=ALL):
     else:
         epg_count = None
 
-    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chno else channels[x]['name']):
+    for id in sorted(channels.keys(), key=lambda x: channels[x]['chno'] if show_chnos else channels[x]['name']):
         channel = channels[id]
         if group != ALL and channel['group'] != group:
             continue
@@ -109,7 +110,7 @@ def _process_channels(channels, group=ALL, region=ALL):
                         break
 
         item = plugin.Item(
-            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chno else channel['name'],
+            label = u'{} | {}'.format(channel['chno'], channel['name']) if show_chnos else channel['name'],
             info = {'plot': plot},
             art = {'thumb': channel['logo']},
             playable = True,
