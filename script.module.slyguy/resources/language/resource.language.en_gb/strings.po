@@ -879,7 +879,7 @@ msgid "Welcome SlyGuy Supporter!"
 msgstr ""
 
 msgctxt "#32167"
-msgid "Supporter ID '{id}' not found"
+msgid "Supporter ID not found"
 msgstr ""
 
 msgctxt "#32168"
@@ -1095,4 +1095,8 @@ msgstr ""
 
 msgctxt "#32220"
 msgid "IPTV Merge integration is not available for this add-on"
+msgstr ""
+
+msgctxt "#32221"
+msgid "Trailer Context Menu Item"
 msgstr ""

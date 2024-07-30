@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.84.32">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.84.34">
   <requires>
     <import addon="slyguy.dependencies" version="0.0.19"/>
     <import addon="repository.slyguy" version="0.0.9"/>
@@ -12,7 +12,7 @@
     <menu id="kodi.core.main">
       <item library="default.py">
         <label>$LOCALIZE[20410]</label>
-        <visible>!String.IsEmpty(ListItem.Trailer) + ![String.StartsWith(Container.FolderPath,plugin://) + String.Contains(Container.FolderPath,trailer)] + Integer.IsEqual(Window(10000).Property(_slyguy_donor),1)</visible>
+        <visible>!String.IsEmpty(ListItem.Trailer) + ![String.StartsWith(Container.FolderPath,plugin://) + String.Contains(Container.FolderPath,trailer)] + Integer.IsEqual(Window(10000).Property(_slyguy_trailer_context_menu),1)</visible>
       </item>
     </menu>
   </extension>

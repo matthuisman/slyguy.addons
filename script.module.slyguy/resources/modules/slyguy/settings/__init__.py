@@ -37,17 +37,19 @@ class IPMode:
 
 
 def is_donor():
-    return settings.DONOR_ID_CHK.value and settings.DONOR_ID_CHK.value == settings.DONOR_ID.value
+    return bool(settings.DONOR_ID_CHK.value and settings.DONOR_ID_CHK.value == settings.DONOR_ID.value)
 
 
 def _set_donor(donor_id):
     set_kodi_string('_slyguy_donor', '1')
     settings.set('donor_id_chk', donor_id)
+    set_trailer_context()
 
 
 def _unset_donor():
     set_kodi_string('_slyguy_donor', '0')
     settings.remove('donor_id_chk')
+    set_trailer_context()
 
 
 def is_wv_secure():
@@ -78,45 +80,40 @@ def hdcp_level():
         return hdcp_level
 
 
-def check_donor(donor_id=None):
-    force = True
-    if donor_id is None:
-        donor_id = settings.DONOR_ID.value
-        force = False
+def set_trailer_context():
+    if settings.TRAILER_CONTEXT_MENU.value:
+        set_kodi_string('_slyguy_trailer_context_menu', '1')
+    else:
+        set_kodi_string('_slyguy_trailer_context_menu', '0')
 
-    if not donor_id:
-        if is_donor():
-            _unset_donor()
+
+def check_donor(force=False):
+    if not settings.DONOR_ID.value:
+        _unset_donor()
         return
 
-    _is_donor = is_donor()
     _time = int(time())
-    if not force and _is_donor is not None and _time < settings.getInt('_last_donor_check', 0) + DONOR_CHECK_TIME:
-        return bool(int(_is_donor))
+    if not force and _time < settings.getInt('last_donor_check', 0) + DONOR_CHECK_TIME:
+        return is_donor()
 
     try:
         from slyguy.session import Session
-        result = Session().head(DONOR_URL.format(id=donor_id), log_url=DONOR_URL.format(id='xxxxx')).status_code == 200
-    except:
-        if _time > settings.getInt('_last_donor_check', 0) + DONOR_TIMEOUT:
+        result = Session().head(DONOR_URL.format(id=settings.DONOR_ID.value), log_url=DONOR_URL.format(id='xxxxx')).status_code == 200
+    except Exception as e:
+        log.warning("Failed to check donor id due to: {}".format(e))
+        if _time > settings.getInt('last_donor_check', 0) + DONOR_TIMEOUT:
             result = False
         else:
-            result = _is_donor
+            log.debug("Using previous supporter status")
+            result = is_donor()
     else:
-        settings.setInt('_last_donor_check', _time)
+        settings.setInt('last_donor_check', _time)
 
     log.debug('SlyGuy Supporter: {}'.format(result))
     if result:
-        _set_donor(donor_id)
-        if force:
-            from slyguy import gui
-            gui.notification(_.WELCOME_SUPPORTER)
-        return True
+        _set_donor(settings.DONOR_ID.value)
     else:
         _unset_donor()
-        if force:
-            from slyguy import gui
-            gui.notification(_(_.SUPPORTER_NOT_FOUND, id=donor_id))
 
 
 def set_drm_level(*args, **kwargs):
@@ -180,6 +177,51 @@ def set_drm_level(*args, **kwargs):
     log.info('HDCP Level ({}): {}'.format(hdcp_mode, hdcp_level/10.0))
 
 
+class Donor(Text):
+    def __init__(self, *args, **kwargs):
+        super(Donor, self).__init__(*args, **kwargs)
+        self._after_save = self.after_save
+        self._after_clear = self.after_clear
+
+    def after_save(self, value):
+        check_donor(force=True)
+        from slyguy import gui
+        if is_donor():
+            gui.notification(_.WELCOME_SUPPORTER)
+        else:
+            gui.notification(_.SUPPORTER_NOT_FOUND)
+
+    def after_clear(self):
+        _unset_donor()
+
+    @property
+    def label(self):
+        value = self.value
+        value = u"{}{}".format(value[0:2], '*'*(len(value)-2))
+
+        if not value:
+            value = _.NOT_A_SUPPORTER
+        elif self.can_clear():
+            value = _(value, _bold=True)
+
+        if is_donor():
+            value = _(value, _color='green')
+        else:
+            value = _(value, _color='red')
+
+        label = u'{}: {}'.format(self._label, value)
+        return label
+
+    @property
+    def description(self):
+        if is_donor():
+            return _.WELCOME_SUPPORTER
+        elif self.value:
+            return u'{}\n\n{}'.format(_(_.SUPPORTER_NOT_FOUND, _color='red'), _.SUPPORTER_HELP)
+        else:
+            return _.SUPPORTER_HELP
+
+
 class CommonSettings(BaseSettings):
     # PLAYER / QUALITY
     QUALITY_MODE = Enum('quality_mode', legacy_ids=['default_quality'], label=_.QUALITY_SELECT_MODE, default=QUALITY_ASK, disabled_value=QUALITY_SKIP, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY,
@@ -218,10 +260,10 @@ class CommonSettings(BaseSettings):
     USE_IA_HLS_LIVE = Bool('use_ia_hls_live', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_VOD = Bool('use_ia_hls_vod', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     PROXY_ENABLED = Bool('proxy_enabled', default=True, before_save=lambda val: val or dialog.yes_no(_.CONFIRM_DISABLE_PROXY), owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
-    WV_LEVEL = Enum('wv_level', before_save=lambda val: settings.WV_LEVEL.value != WV_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_WV_LEVEL), after_save=set_drm_level,
+    WV_LEVEL = Enum('wv_level', before_save=lambda _: settings.WV_LEVEL.value != WV_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_WV_LEVEL), after_save=set_drm_level,
                     options=[[_.AUTO, WV_AUTO], [_.WV_LEVEL_L1, WV_L1], [_.WV_LEVEL_L3, WV_L3]],
                     loop=True, default=WV_AUTO, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
-    HDCP_LEVEL = Enum('hdcp_level', before_save=lambda val: settings.HDCP_LEVEL.value != HDCP_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_HDCP_LEVEL), after_save=set_drm_level,
+    HDCP_LEVEL = Enum('hdcp_level', before_save=lambda _: settings.HDCP_LEVEL.value != HDCP_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_HDCP_LEVEL), after_save=set_drm_level,
                       options=[[_.AUTO, HDCP_AUTO], [_.HDCP_OFF, HDCP_NONE], [_.HDCP_1, HDCP_1], [_.HDCP_2_2, HDCP_2_2], [_.HDCP_3_0, HDCP_3_0]], 
                       loop=True, default=HDCP_AUTO, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
 
@@ -251,9 +293,10 @@ class CommonSettings(BaseSettings):
     EPG_DAYS = Number('epg_days', default=3, lower_limit=1, upper_limit=7, owner=COMMON_ADDON_ID, visible=lambda: ADDON_ID == COMMON_ADDON_ID or os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), category=Categories.PVR_LIVE_TV)
 
     # SYSTEM
-    DONOR_ID = Text('donor_id', before_save=check_donor, after_clear=check_donor, override=False, default_label=_.NOT_A_SUPPORTER,
-            description=_.SUPPORTER_HELP, confirm_clear=True, value_str="{value:.2}******", owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+    DONOR_ID = Donor('donor_id', override=False, confirm_clear=True, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda _:set_trailer_context(),
+        after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
 
