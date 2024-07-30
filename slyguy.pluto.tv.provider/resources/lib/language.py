@@ -1,12 +1,8 @@
 from slyguy.language import BaseLanguage
-from .constants import *
+
 
 class Language(BaseLanguage):
-    LIVE_TV          = 30000
-    SHOW_CH_NO       = 30001
     REGION           = 30002
-    ALL              = 30003
-    SHOW_EPG         = 30004
     SELECT_REGIONS   = 30005
     CHANNEL_COUNT    = 30006
     NO_REGIONS       = 30007
@@ -17,5 +13,6 @@ class Language(BaseLanguage):
     SHOW_GROUPS      = 30012
     SHOW_COUNTRIES   = 30013
     USE_ALT_URL      = 30014
+
 
 _ = Language()
