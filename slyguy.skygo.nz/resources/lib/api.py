@@ -8,12 +8,14 @@ from slyguy.log import log
 from slyguy.exceptions import Error
 from slyguy.util import jwt_data
 
-from .constants import *
 from .language import _
+from .settings import HEADERS, CLIENT_ID, GRAPH_URL
 from . import queries
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):

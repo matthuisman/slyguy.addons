@@ -4,19 +4,22 @@ from xml.dom.minidom import parseString
 import arrow
 from kodi_six import xbmcplugin
 from slyguy.constants import MIDDLEWARE_PLUGIN
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.util import pthms_to_seconds
 
 from .api import API
-from .constants import *
 from .language import _
+from .settings import settings, HEADERS, EPG_URL
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -25,8 +28,8 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
         folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
         _ondemand(folder)
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
@@ -36,8 +39,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 def _ondemand(folder):
     for row in api.vod_categories():
@@ -45,6 +48,7 @@ def _ondemand(folder):
             label = _(row['title'], _bold=True),
             path = plugin.url_for(collection, id=row['id']),
         )
+
 
 @plugin.route()
 def featured(**kwargs):
@@ -76,7 +80,7 @@ def group(id, **kwargs):
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
