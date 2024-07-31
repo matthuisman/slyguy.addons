@@ -1,13 +1,13 @@
 import os
 import json
 
+import time
 import peewee
-from kodi_six import xbmc
 from six.moves import cPickle
 
 from slyguy import signals
 from slyguy.log import log
-from slyguy.util import hash_6, file_lock
+from slyguy.util import hash_6
 from slyguy.constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
 
 
@@ -181,11 +181,22 @@ class Database(peewee.SqliteDatabase):
         except FileExistsError:
             pass
 
-        with file_lock(self.database):
-            result = super(Database, self).connect(*args, **kwargs)
-            if result and self._tables:
-                self.create_tables(self._tables, fail_silently=True)
-
+        timeout = time.time() + 5
+        result = False
+        exception = ''
+        while time.time() < timeout:
+            try:
+                result = super(Database, self).connect(*args, **kwargs)
+                if self._tables:
+                    self.create_tables(self._tables, fail_silently=True)
+            except Exception as e:
+                exception = str(e)
+                pass
+            else:
+                break
+            time.sleep(0.1)
+        else:
+            raise TimeoutError("Failed to create db: '{}' within 5s due to: '{}'".format(self.database, exception))
         return result
 
 

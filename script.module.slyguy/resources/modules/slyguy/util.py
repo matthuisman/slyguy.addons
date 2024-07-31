@@ -13,7 +13,7 @@ import re
 import threading
 import socket
 import binascii
-from contextlib import closing, contextmanager
+from contextlib import closing
 
 import requests
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
@@ -21,7 +21,6 @@ from six.moves import queue, range
 from six.moves.urllib.parse import urlparse, urlunparse, quote, parse_qsl
 from requests.models import PreparedRequest
 from six import PY2
-from filelock import FileLock, SoftFileLock
 
 if sys.version_info >= (3, 8):
     import html
@@ -754,18 +753,3 @@ def get_headers_from_url(url):
         headers[key.lower()] = _headers[key]
 
     return headers
-
-
-@contextmanager
-def file_lock(file, timeout=5):
-    lock = FileLock
-
-    # # unix lock on some android doesnt seem to work (https://github.com/matthuisman/slyguy.addons/issues/809)
-    # if xbmc.getCondVisibility('System.Platform.Android'):
-    #     lock = SoftFileLock
-
-    lock_file = file + '.lock'
-    log.debug("Acquiring '{}' on '{}' with a timeout of {}s".format(lock.__name__, lock_file, timeout))
-    with lock(lock_file, timeout=timeout):
-        log.debug("Lock Acquired")
-        yield
