@@ -4,11 +4,10 @@ import json
 import peewee
 from kodi_six import xbmc
 from six.moves import cPickle
-from filelock import FileLock
 
 from slyguy import signals
 from slyguy.log import log
-from slyguy.util import hash_6
+from slyguy.util import hash_6, file_lock
 from slyguy.constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
 
 
@@ -182,9 +181,7 @@ class Database(peewee.SqliteDatabase):
         except FileExistsError:
             pass
 
-        lock_file = self.database + '.lock'
-        log.debug("Acquiring lock on: {}".format(lock_file))
-        with FileLock(lock_file, timeout=5):
+        with file_lock(self.database):
             result = super(Database, self).connect(*args, **kwargs)
             if result and self._tables:
                 self.create_tables(self._tables, fail_silently=True)
