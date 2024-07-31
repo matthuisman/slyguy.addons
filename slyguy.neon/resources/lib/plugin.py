@@ -1,4 +1,4 @@
-from slyguy import plugin, gui, userdata, signals, settings, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.constants import ROUTE_LIVE_TAG
 from slyguy.exceptions import Error
 from slyguy.log import log
@@ -6,13 +6,17 @@ from slyguy.log import log
 from .api import API
 from .language import _
 from .constants import HEADERS, TV_ID, MOVIES_ID
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -34,12 +38,12 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -125,6 +129,9 @@ def _parse_content(rows):
         return x['header'].lower()
 
     for row in sorted(rows, key=lambda  x: _sort(x)):
+        if not row.get('contentItem'):
+            row['contentItem'] = row['item']
+
         if row['contentItem']['isComingSoon'] or row['contentItem']['isRental']:
             continue
 
@@ -149,7 +156,7 @@ def _parse_movie(row):
             'mediatype': 'movie',
         },
         art = {
-            'thumb': row['image'],
+            'thumb': row['image']['uri'] if isinstance(row['image'], dict) else row['image'],
             'fanart': row['contentItem']['keyart']['uri'],
         },
         playable = True,
@@ -164,7 +171,7 @@ def _parse_show(row):
             'mediatype': 'tvshow',
         },
         art = {
-            'thumb': row['image'],
+            'thumb': row['image']['uri'] if isinstance(row['image'], dict) else row['image'],
             'fanart': row['contentItem']['keyart']['uri'],
         },
         path = plugin.url_for(show, path=row['contentItem']['path']),
@@ -177,7 +184,7 @@ def show(path, **kwargs):
 
     for season in show['seasons']:
         folder.add_item(
-            label = _(_.SEASON, season_number=season['seasonNumber']),
+            label = _(_.SEASON, number=season['seasonNumber']),
             info = {
                 'plot': season['description'],
                 'mediatype': 'season',

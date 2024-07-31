@@ -10,8 +10,10 @@ from slyguy.drm import widevine_level
 from .constants import API_URL, HEADERS, BRIGHTCOVE_URL, BRIGHTCOVE_ACCOUNT, BRIGHTCOVE_KEY
 from . import queries
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -111,18 +113,15 @@ class API(object):
         self._check_token()
 
         variables = {
-            'input': {
+            'pagedSearchInput': {
+                'after': 0,
+                'pageSize': 999,
                 'query': query,
+                'typeFilters': ['series','movies'],
             },
         }
-
-        data = self._query_request(queries.SEARCH, variables)['data']['search']['components']
-
-        results = []
-        for row in data:
-            results.extend(row['tiles'])
-
-        return results
+        data = self._query_request(queries.SEARCH, variables)
+        return data['data']['pagedSearch'].get('tiles', [])
 
     def playback_auth(self, contentID):
         self._check_token()
