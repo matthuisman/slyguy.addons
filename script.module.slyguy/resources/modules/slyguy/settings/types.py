@@ -2,7 +2,7 @@ import os
 import json
 import xml.etree.ElementTree as ET
 
-from kodi_six import xbmc
+from kodi_six import xbmc, xbmcgui
 
 from slyguy import dialog, log, signals
 from slyguy.util import remove_file
@@ -193,7 +193,7 @@ class Setting(object):
 
     def get_value_label(self, value):
         if value is None or value == "":
-            return _.NO_VALUE
+            return _.NOT_SET
         else:
             return _(self._value_str, value=value)
 
@@ -262,9 +262,12 @@ class Bool(Setting):
 
 class Text(Setting):
     DEFAULT = ""
+    def __init__(self, *args, **kwargs):
+        self._input_type = kwargs.pop('input_type', xbmcgui.INPUT_ALPHANUM)
+        super(Text, self).__init__(*args, **kwargs)
 
     def select(self):
-        value = dialog.input(self._label, default=self.value)
+        value = dialog.input(self._label, default=self.value, type=self._input_type)
         if value:
             self.value = value
 

@@ -310,6 +310,7 @@ class BaseLanguage(object):
     PVR_LIVE_TV                 = 32219
     MERGE_NOT_SUPPORTED         = 32220
     TRAILER_CONTEXT_MENU        = 32221
+    NOT_SET                     = 32222
 
     def __init__(self, addon=ADDON):
         self._addon = addon
