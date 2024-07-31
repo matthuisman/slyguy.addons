@@ -42,7 +42,7 @@ DB_PRAGMAS      = {
     'cache_size': -1 * 10000,  #10MB
     'foreign_keys': 1,
     'ignore_check_constraints': 0,
-    'synchronous': 0
+    'synchronous': 1
 }
 DB_TABLENAME = '_db'
 ###################

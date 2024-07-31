@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from kodi_six import xbmc
 
 from slyguy import dialog, log, signals
+from slyguy.util import remove_file
 from slyguy.language import _, BaseLanguage
 from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, NEW_SETTINGS, ADDON_PROFILE, ADDON_NAME, COMMON_ADDON
 
@@ -351,11 +352,16 @@ class Enum(Setting):
 
 
 def migrate(settings):
-    if not NEW_SETTINGS or BaseSettings.MIGRATED.value:
+    if not NEW_SETTINGS:
+        return
+
+    settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
+    if BaseSettings.MIGRATED.value:
+        if remove_file(settings_path):
+            log.info("Removed old settings.xml: '{}'".format(settings_path))
         return
 
     old_settings = {}
-    settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
     if os.path.exists(settings_path):
         try:
             tree = ET.parse(settings_path)
