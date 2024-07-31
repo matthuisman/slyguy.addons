@@ -5,7 +5,7 @@ from xml.sax.saxutils import escape
 
 import arrow
 from six.moves.urllib_parse import quote
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.log import log
@@ -13,14 +13,17 @@ from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, PLAY_FROM_LIVE, PLAY_FRO
 
 from .api import API
 from .language import _
-from .constants import *
+from .settings import settings, DEVICE_ACTIVATE_URL, HEADERS
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -30,11 +33,9 @@ def home(**kwargs):
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login))
     else:
         if not userdata.get('is_kids', False):
-            folder.add_item(label=_(_.HOME, _bold=True), path=_hub_path('home'))
-
             if not settings.getBool('hide_live_channels', False):
-                folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
-
+                folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live))
+            folder.add_item(label=_(_.HOME, _bold=True), path=_hub_path('home'))
             folder.add_item(label=_(_.TV, _bold=True), path=_hub_path('tv'))
             folder.add_item(label=_(_.MOVIES, _bold=True), path=_hub_path('movies'))
             folder.add_item(label=_(_.SPORTS, _bold=True), path=_hub_path('sports'))
@@ -329,7 +330,7 @@ def series(id, **kwargs):
 
     for season in sorted(series):
         folder.add_item(
-            label = _(_.SEASON_NUM, season=season),
+            label = _(_.SEASON, number=season),
             info = {
                 'plot': data['details']['entity']['description'],
                 'mpaa': data['details']['entity']['rating'].get('code'),

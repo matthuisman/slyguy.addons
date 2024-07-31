@@ -3,23 +3,26 @@ import uuid
 from time import time
 
 import arrow
-from slyguy import userdata, settings, mem_cache
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import get_system_arch, chunked
 from slyguy.log import log
 from slyguy.drm import req_hdcp_level, HDCP_2_2, is_wv_secure
 
-from .constants import *
 from .language import _
+from .settings import settings, API_URL, HEADERS, DEEJAY_DEVICE_ID, DEEJAY_KEY_VERSION
+
 
 class APIError(Error):
     pass
+
 
 ERROR_MAP = {
     1003: _.GEO_ERROR,
     'HOME-002': _.EXPIRED_TOKEN,
 }
+
 
 class API(object):
     def new_session(self):
