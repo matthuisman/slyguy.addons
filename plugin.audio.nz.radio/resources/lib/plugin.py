@@ -1,14 +1,16 @@
 import codecs
 
-from slyguy import plugin, settings
+from slyguy import plugin
 from slyguy.mem_cache import cached
 from slyguy.session import Session
 from slyguy.constants import QUALITY_DISABLED
 
-from .constants import DATA_URL
+from .settings import settings, DATA_URL
 from .language import _
 
+
 session = Session()
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -19,12 +21,13 @@ def home(**kwargs):
     folder.add_item(label=_(_.STATIONS, _bold=True), path=plugin.url_for(stations))
     folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def stations(**kwargs):
     return _stations()
+
 
 def _stations():
     folder = plugin.Folder(_.STATIONS)
@@ -43,6 +46,7 @@ def _stations():
 
     return folder
 
+
 @plugin.route()
 def play(slug, **kwargs):
     channel = get_channels()[slug]
@@ -57,6 +61,7 @@ def play(slug, **kwargs):
     )
 
     return item
+
 
 @cached(60*5)
 def get_channels():
