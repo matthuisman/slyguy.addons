@@ -1,8 +1,6 @@
 from slyguy.language import BaseLanguage
 
 class Language(BaseLanguage):
-    ASK_USERNAME       = 30001
-    ASK_PASSWORD       = 30002
     FEATURED           = 30003
     MY_VIDEOS          = 30004
     VIDEOS             = 30005
@@ -12,7 +10,6 @@ class Language(BaseLanguage):
     FOLLOW_CREATOR     = 30009
     VIDE_PLOT          = 30010
     PODCASTS           = 30011
-    PAGE_SIZE          = 30012
     CREATOR_CHANNEL    = 30013
     FOLLOWED_CREATOR   = 30014
     UNFOLLOW_CREATOR   = 30015
