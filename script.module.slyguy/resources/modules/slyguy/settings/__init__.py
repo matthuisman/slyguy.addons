@@ -293,12 +293,14 @@ class CommonSettings(BaseSettings):
     EPG_DAYS = Number('epg_days', default=3, lower_limit=1, upper_limit=7, owner=COMMON_ADDON_ID, visible=lambda: ADDON_ID == COMMON_ADDON_ID or os.path.exists(os.path.join(ADDON_PATH, MERGE_SETTING_FILE)), category=Categories.PVR_LIVE_TV)
 
     # SYSTEM
-    DONOR_ID = Donor('donor_id', override=False, confirm_clear=True, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda _:set_trailer_context(),
         after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+
+    # ROOT
+    DONOR_ID = Donor('donor_id', override=False, confirm_clear=True, owner=COMMON_ADDON_ID, category=Categories.ROOT)
 
     # HIDDEN
     DONOR_ID_CHK = Text('donor_id_chk', visible=False, override=False, owner=COMMON_ADDON_ID)
