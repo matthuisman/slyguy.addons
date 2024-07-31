@@ -4,26 +4,29 @@ from xml.sax.saxutils import escape
 from xml.dom.minidom import parseString
 
 import arrow
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.drm import is_wv_secure
-from slyguy.log import log
 from slyguy.constants import MIDDLEWARE_PLUGIN, NO_RESUME_TAG, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG
 
 from .language import _
 from .api import API
 from .config import Config
 from .mvpd import MVPD
+from .settings import settings
+
 
 api = API()
 config = Config()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     config.init()
     api.new_session(config)
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -437,7 +440,7 @@ def show(show_id, config=None, **kwargs):
                         continue
 
                     folder.add_item(
-                        label = _(_.SEASON, season=row['seasonNum']),
+                        label = _(_.SEASON, number=row['seasonNum']),
                         info = {
                             'plot': plot,
                             'mediatype': 'season',

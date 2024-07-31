@@ -2,16 +2,19 @@ import uuid
 from time import time
 from xml.dom.minidom import parseString
 
-from slyguy import userdata, mem_cache, settings
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import hash_6, get_system_arch
 from slyguy.log import log
 
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self, config):
@@ -447,10 +450,7 @@ class API(object):
     def dma(self):
         self._refresh_token()
 
-        ip = settings.get('region_ip')
-        if not ip or ip == '0.0.0.0':
-            ip = self._ip()
-
+        ip = settings.get('region_ip') or self._ip()
         params = {
             'ipaddress': ip,
             'dtp': 8, #controls quality
