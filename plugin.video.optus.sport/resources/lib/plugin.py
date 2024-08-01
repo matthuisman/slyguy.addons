@@ -6,19 +6,23 @@ import arrow
 from kodi_six import xbmc
 from bs4 import BeautifulSoup
 
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START, MIDDLEWARE_PLUGIN
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -36,8 +40,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 def _home(folder):
     for row in api.navigation():
@@ -150,7 +154,7 @@ def login(**kwargs):
     gui.refresh()
 
 def _email_password():
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 

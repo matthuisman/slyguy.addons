@@ -8,8 +8,10 @@ from slyguy.exceptions import Error
 from .constants import HEADERS, API_URL, AWS_URL, AWS_CLIENT_ID, UUID_NAMESPACE
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
