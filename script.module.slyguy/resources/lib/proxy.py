@@ -47,6 +47,7 @@ CODECS = [
 CODECS = [[re.compile(x[0], re.IGNORECASE), x[1]] for x in CODECS]
 
 ATTRIBUTELISTPATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+DEFAULT_KID_PATTERN = re.compile(':default_KID="([0-9a-fA-F]{32})"')
 
 DEFAULT_SESSION_NAME = 'playback'
 PROXY_GLOBAL = {
@@ -475,6 +476,18 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## SUPPORT EC-3 CHANNEL COUNT https://github.com/xbmc/inputstream.adaptive/pull/618
         data = data.replace('urn:mpeg:mpegB:cicp:ChannelConfiguration', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
         data = data.replace('dvb:', '') #showmax mpd has dvb: namespace without declaration
+
+        def fix_default_kids(input_text):
+            def format_kid(match):
+                kid = match.group(1)
+                formatted_kid = f"{kid[:8]}-{kid[8:12]}-{kid[12:16]}-{kid[16:20]}-{kid[20:]}"
+                log.info('Dash Fix: Replaced default_KID {} -> {}'.format(kid, formatted_kid))
+                return ':default_KID="{}"'.format(formatted_kid)
+            replaced_text = re.sub(DEFAULT_KID_PATTERN, format_kid, input_text)
+            return replaced_text
+
+        # replace any kids without - (Hulu) with the correct format (fixes https://github.com/xbmc/inputstream.adaptive/issues/1530)
+        data = fix_default_kids(data)
 
         try:
             root = parseString(data.encode('utf8'))
