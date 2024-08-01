@@ -1,7 +1,6 @@
 import time
 
-from slyguy import util, userdata, mem_cache, log
-from slyguy.util import jwt_data
+from slyguy import util, userdata, log
 from slyguy.session import Session
 
 from .constants import *
@@ -61,6 +60,7 @@ class API(object):
         userdata.set('access_token', data['accessToken'])
         userdata.set('token_expires', int(time.time()) + data['expiresIn'] - 30)
         self._set_authentication(data['accessToken'])
+        mem_cache.empty()
 
     def featured(self):
         self._refresh_token()
@@ -121,7 +121,6 @@ class API(object):
             raise Exception(data['errors'][0]['message'])
         return data
 
-    @mem_cache.cached(60*2)
     def channels(self, region):
         self._refresh_token()
         params = {
@@ -146,5 +145,4 @@ class API(object):
         userdata.delete('access_token')
         userdata.delete('refresh_token')
         userdata.delete('token_expires')
-        mem_cache.empty()
         self.new_session()
