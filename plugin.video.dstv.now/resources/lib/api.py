@@ -7,7 +7,7 @@ from contextlib import contextmanager
 import websocket
 from six.moves.urllib_parse import urlparse, parse_qs
 
-from slyguy import userdata, settings
+from slyguy import userdata
 from slyguy.session import Session
 from slyguy.log import log
 from slyguy.exceptions import Error
@@ -15,6 +15,7 @@ from slyguy.util import jwt_data, get_system_arch, add_url_args
 
 from .language import _
 from .constants import *
+from .settings import settings
 
 class APIError(Error):
     pass
