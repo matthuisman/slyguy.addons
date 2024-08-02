@@ -344,6 +344,14 @@ class Item(object):
             if 'original_language' in self.proxy_data:
                 li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
 
+            if KODI_VERSION > 19:
+                li.setProperty('{}.stream_selection_type'.format(self.inputstream.addon_id), 'manual-osd')
+                li.setProperty('{}.chooser_resolution_max'.format(self.inputstream.addon_id), '4K')
+                li.setProperty('{}.chooser_resolution_secure_max'.format(self.inputstream.addon_id), '4K')
+                if self.inputstream.manifest_type == 'hls':
+                    # dash sets its own delay in proxy
+                    li.setProperty('inputstream.adaptive.live_delay', '24')
+
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
                 license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers

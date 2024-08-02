@@ -260,10 +260,10 @@ class CommonSettings(BaseSettings):
     USE_IA_HLS_LIVE = Bool('use_ia_hls_live', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_VOD = Bool('use_ia_hls_vod', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     PROXY_ENABLED = Bool('proxy_enabled', default=True, before_save=lambda val: val or dialog.yes_no(_.CONFIRM_DISABLE_PROXY), owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
-    WV_LEVEL = Enum('wv_level', before_save=lambda _: settings.WV_LEVEL.value != WV_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_WV_LEVEL), after_save=set_drm_level,
+    WV_LEVEL = Enum('wv_level', before_save=lambda val: settings.WV_LEVEL.value != WV_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_WV_LEVEL), after_save=set_drm_level,
                     options=[[_.AUTO, WV_AUTO], [_.WV_LEVEL_L1, WV_L1], [_.WV_LEVEL_L3, WV_L3]],
                     loop=True, default=WV_AUTO, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
-    HDCP_LEVEL = Enum('hdcp_level', before_save=lambda _: settings.HDCP_LEVEL.value != HDCP_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_HDCP_LEVEL), after_save=set_drm_level,
+    HDCP_LEVEL = Enum('hdcp_level', before_save=lambda val: settings.HDCP_LEVEL.value != HDCP_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_HDCP_LEVEL), after_save=set_drm_level,
                       options=[[_.AUTO, HDCP_AUTO], [_.HDCP_OFF, HDCP_NONE], [_.HDCP_1, HDCP_1], [_.HDCP_2_2, HDCP_2_2], [_.HDCP_3_0, HDCP_3_0]], 
                       loop=True, default=HDCP_AUTO, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
 
@@ -294,7 +294,7 @@ class CommonSettings(BaseSettings):
 
     # SYSTEM
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
-    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda _:set_trailer_context(),
+    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda val:set_trailer_context(),
         after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
