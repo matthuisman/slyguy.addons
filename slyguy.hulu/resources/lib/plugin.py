@@ -92,8 +92,8 @@ def hub(slug, view=1, page=1, **kwargs):
 
     return folder, 'pagination' in data and data['pagination'].get('next')
 
-def _process_rows(rows, slug=None):
-    my_stuff = settings.getBool('my_stuff', False)
+def _process_rows(rows):
+    my_stuff = not settings.getBool('hide_my_stuff', False)
     sync = settings.getBool('sync_playback', False)
     hide_locked = settings.getBool('hide_locked', True)
     hide_upcoming = settings.getBool('hide_upcoming', True)
@@ -219,7 +219,7 @@ def _process_rows(rows, slug=None):
             continue
 
         if my_stuff_context:
-            item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
+            item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_my_stuff, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_my_stuff, eab_id=row['personalization']['eab'], title=row['name']))),]
 
         if item.playable:
             item.info['playcount'] = 1 if sync and state.get('is_completed') else None
@@ -309,7 +309,7 @@ def _parse_view(row, my_stuff, sync, state):
             )))
 
     if my_stuff:
-        item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_bookmark, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_bookmark, eab_id=row['personalization']['eab'], title=row['name']))),]
+        item.context = [(_.REMOVE_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(remove_my_stuff, eab_id=row['personalization']['eab']))),] if state.get('is_bookmarked') else [(_.ADD_MY_STUFF, 'RunPlugin({})'.format(plugin.url_for(add_my_stuff, eab_id=row['personalization']['eab'], title=row['name']))),]
 
     if item.playable:
         item.info['playcount'] = 1 if sync and state.get('is_completed') else None
@@ -345,12 +345,12 @@ def series(id, **kwargs):
     return folder
 
 @plugin.route()
-def remove_bookmark(eab_id, **kwargs):
+def remove_my_stuff(eab_id, **kwargs):
     api.remove_bookmark(eab_id)
     gui.refresh()
 
 @plugin.route()
-def add_bookmark(eab_id, title, **kwargs):
+def add_my_stuff(eab_id, title, **kwargs):
     if api.add_bookmark(eab_id):
         gui.notification(_.ADDED_MY_STUFF, heading=title)
     gui.refresh()
