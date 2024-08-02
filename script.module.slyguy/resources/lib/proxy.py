@@ -593,7 +593,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         for supplem in stream.getElementsByTagName('AudioChannelConfiguration'):
                             if 'audio_channel_configuration' in supplem.getAttribute('schemeIdUri'):
                                 try:
-                                    channels = supplem.getAttribute('value').replace('F801','6').replace('FE01','8')
+                                    channels = int(supplem.getAttribute('value').replace('F801','6').replace('FE01','8'))
                                 except:
                                     channels = 0
 
@@ -601,7 +601,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                             if supplem.getAttribute('value') == 'JOC':
                                 is_atmos = True
                             if 'EC3_ExtensionComplexityIndex' in (supplem.getAttribute('schemeIdUri') or ''):
-                                atmos_channels = supplem.getAttribute('value')
+                                channels = atmos_channels = int(supplem.getAttribute('value'))
 
                         if (not atmos_enabled and is_atmos) or (not ac3_enabled and codecs == 'ac-3') or (not ec3_enabled and codecs == 'ec-3') or (max_channels and channels > max_channels):
                             continue
@@ -624,7 +624,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                                 elem = root.createElement('AudioChannelConfiguration')
                                 elem.setAttribute('schemeIdUri', 'urn:mpeg:dash:23003:3:audio_channel_configuration:2011')
-                                elem.setAttribute('value', atmos_channels)
+                                elem.setAttribute('value', str(atmos_channels))
                                 stream.appendChild(elem)
 
                             audio_sets.append([bandwidth, new_set, adap_parent])
