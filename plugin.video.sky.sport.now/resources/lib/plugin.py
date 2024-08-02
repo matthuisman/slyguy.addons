@@ -274,19 +274,6 @@ def mpd_request(_data, _path, live=False, **kwargs):
                     period.parentNode.removeChild(period)
                 mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
 
-        # Fixes issues of being too close to head and getting 404 error
-        seconds_diff = 0
-        utc = mpd.getElementsByTagName("UTCTiming")
-        if utc:
-            utc_time = arrow.get(utc[0].getAttribute('value'))
-            seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
-
-        avail = mpd.getAttribute('availabilityStartTime')
-        if avail:
-            seconds_diff += 30
-            avail_start = arrow.get(avail).shift(seconds=seconds_diff)
-            mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
-
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
 
