@@ -60,7 +60,6 @@ class API(object):
         userdata.set('access_token', data['accessToken'])
         userdata.set('token_expires', int(time.time()) + data['expiresIn'] - 30)
         self._set_authentication(data['accessToken'])
-        mem_cache.empty()
 
     def featured(self):
         self._refresh_token()
