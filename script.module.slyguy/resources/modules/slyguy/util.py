@@ -680,6 +680,12 @@ def fix_language(language=None):
     if language.lower() in ('nb','nn'):
         return 'no'
 
+    if language.lower() == 'ekk':
+        return 'et'
+
+    if language.lower() == 'lvs':
+        return 'lv'
+
     if len(split[0]) == 2 and KODI_VERSION < 20:
         return split[0].lower()
 
