@@ -262,6 +262,7 @@ class Bool(Setting):
 
 class Text(Setting):
     DEFAULT = ""
+
     def __init__(self, *args, **kwargs):
         self._input_type = kwargs.pop('input_type', xbmcgui.INPUT_ALPHANUM)
         super(Text, self).__init__(*args, **kwargs)
@@ -270,6 +271,25 @@ class Text(Setting):
         value = dialog.input(self._label, default=self.value, type=self._input_type)
         if value:
             self.value = value
+
+    def from_text(self, value):
+        return value
+
+
+class Browse(Text):
+    DIRECTORY = 'directory'
+
+    def __init__(self, *args, **kwargs):
+        self._type = kwargs.pop('type')
+        self._source = kwargs.pop('source', 'files')
+        self._allow_create = kwargs.pop('allow_create', True)
+        super(Browse, self).__init__(*args, **kwargs)
+
+    def select(self):
+        if self._type == Browse.DIRECTORY:
+            value = xbmcgui.Dialog().browse(3 if self._allow_create else 0, self._label, shares=self._source, defaultt=self.value)
+            if value:
+                self.value = value
 
     def from_text(self, value):
         return value
@@ -369,7 +389,7 @@ def migrate(settings):
         try:
             tree = ET.parse(settings_path)
             for elem in tree.findall('setting'):
-                if 'id' in elem.attrib and elem.attrib.get('default', 'false') != 'true':
+                if 'id' in elem.attrib:
                     value = elem.text or elem.attrib.get('value')
                     if value:
                         old_settings[elem.attrib['id']] = value
@@ -392,7 +412,7 @@ def migrate(settings):
                 setting = check
 
         if not setting:
-            log.info("Ignoring migrate of '{}' as no new setting found".format(key))
+            log.info("Migrate: Ignoring '{}' as no new setting found".format(key))
             continue
 
         try:
@@ -402,12 +422,12 @@ def migrate(settings):
 
             if value != setting._default:
                 setting._set_value(value)
-                log.info("Migrated '{}' -> '{}' -> '{}'".format(key, setting.id, value))
+                log.info("Migrate: '{}' -> '{}' -> '{}'".format(key, setting.id, value))
                 count += 1
             else:
-                log.info("Ignoring migrate of '{}' as is default value '{}'".format(setting.id, value))
+                log.info("Migrate: Ignoring '{}' as is default value '{}'".format(setting.id, value))
         except Exception as e:
-            log.error("Error migrating '{}' -> '{}' ({})".format(key, setting.id, e))
+            log.error("Migrate: Error '{}' -> '{}' ({})".format(key, setting.id, e))
 
     BaseSettings.MIGRATED.value = True
     log.info("{}/{} old settings have been migrated the new SlyGuy settings system!".format(count, len(old_settings)))
