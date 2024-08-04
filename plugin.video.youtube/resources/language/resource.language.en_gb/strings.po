@@ -23,7 +23,7 @@ msgid "Fallback to Native Android App"
 msgstr ""
 
 msgctxt "#30003"
-msgid "Native Android App ID (Empty=Default)"
+msgid "Native Android App ID"
 msgstr ""
 
 msgctxt "#30004"
@@ -48,32 +48,4 @@ msgstr ""
 msgctxt "#30008"
 msgid "Could not find a valid video ID in the below url\n"
 "{url}"
-msgstr ""
-
-
-## COMMON SETTINGS ##
-
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""

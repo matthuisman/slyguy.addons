@@ -4,13 +4,14 @@ from collections import defaultdict
 from kodi_six import xbmc
 from six.moves.urllib_parse import unquote
 
-from slyguy import plugin, settings, inputstream
+from slyguy import plugin, inputstream
 from slyguy.log import log
 from slyguy.util import get_system_arch
 from slyguy.constants import ADDON_PROFILE
 
 
 from .language import _
+from .settings import settings
 
 
 @plugin.route('/')
@@ -50,7 +51,7 @@ def play(video_id, **kwargs):
         'no_warnings': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios',] #['ios', 'android', 'web']
+                'player_client': ['ios', 'android', 'web']
             }
         },
     }
