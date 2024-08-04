@@ -1,17 +1,21 @@
 import arrow
 
-from slyguy import plugin, gui, userdata, signals, settings
+from slyguy import plugin, gui, userdata, signals
 from slyguy.constants import ROUTE_LIVE_TAG
 
 from .api import API
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -30,9 +34,10 @@ def home(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), bookmark=False)
     return folder
 
+
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -44,6 +49,7 @@ def login(**kwargs):
 
     api.login(username=username, password=password)
     gui.refresh()
+
 
 @plugin.route()
 @plugin.login_required()
