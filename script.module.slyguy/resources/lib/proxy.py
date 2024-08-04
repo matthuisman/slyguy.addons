@@ -542,9 +542,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             existing = pthms_to_seconds(mpd.getAttribute('minimumUpdatePeriod')) or 4
             mpd.setAttribute('minimumUpdatePeriod', "PT{}S".format(min(existing, 4)))
 
-            # set minimum 24s live delay
-            existing = pthms_to_seconds(mpd.getAttribute('suggestedPresentationDelay')) or 0
-            mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(max(existing, 24)))
+            if KODI_VERSION > 20:
+                # set minimum 24s live delay
+                existing = pthms_to_seconds(mpd.getAttribute('suggestedPresentationDelay')) or 0
+                mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(max(existing, 24)))
 
             # set minimum 16s buffer time
             existing = pthms_to_seconds(mpd.getAttribute('minBufferTime')) or 0
