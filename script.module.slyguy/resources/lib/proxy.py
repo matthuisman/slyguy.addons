@@ -480,7 +480,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         def fix_default_kids(input_text):
             def format_kid(match):
                 kid = match.group(1)
-                formatted_kid = f"{kid[:8]}-{kid[8:12]}-{kid[12:16]}-{kid[16:20]}-{kid[20:]}"
+                formatted_kid = "{}-{}-{}-{}-{}".format(kid[:8], kid[8:12], kid[12:16], kid[16:20], kid[20:])
                 log.info('Dash Fix: Replaced default_KID {} -> {}'.format(kid, formatted_kid))
                 return ':default_KID="{}"'.format(formatted_kid)
             replaced_text = re.sub(DEFAULT_KID_PATTERN, format_kid, input_text)

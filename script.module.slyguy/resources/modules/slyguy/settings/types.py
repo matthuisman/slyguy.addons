@@ -298,11 +298,11 @@ class Browse(Text):
 class Action(Setting):
     _count = 0
 
-    def __init__(self, action, **kwargs):
+    def __init__(self, action, *args, **kwargs):
         self._action = action
-        kwargs['id'] = 'action_{}'.format(Action._count)
+        id = 'action_{}'.format(Action._count)
         Action._count += 1
-        super(Action, self).__init__(**kwargs)
+        super(Action, self).__init__(id, *args, **kwargs)
 
     @property
     def label(self):
