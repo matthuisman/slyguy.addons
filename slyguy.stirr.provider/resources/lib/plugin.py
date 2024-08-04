@@ -1,11 +1,12 @@
 import codecs
 
 import arrow
-from slyguy import plugin, inputstream, mem_cache, settings, gui, userdata
+from slyguy import plugin, inputstream, mem_cache, gui, userdata
 from slyguy.session import Session
 
 from .language import _
-from .constants import *
+from .settings import settings, DATA_URL, EPG_URL, ALL, MY_CHANNELS
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -19,8 +20,8 @@ def home(**kwargs):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def add_favourite(id, **kwargs):
@@ -36,6 +37,7 @@ def add_favourite(id, **kwargs):
     userdata.set('favourites', favourites)
     gui.notification(_.MY_CHANNEL_ADDED, heading=channel['name'], icon=channel['logo'])
 
+
 @plugin.route()
 def del_favourite(id, **kwargs):
     favourites = userdata.get('favourites') or []
@@ -45,9 +47,11 @@ def del_favourite(id, **kwargs):
     userdata.set('favourites', favourites)
     gui.refresh()
 
+
 @mem_cache.cached(60*15)
 def _data():
     return Session().gz_json(DATA_URL)
+
 
 def _app_data():
     data = _data()
