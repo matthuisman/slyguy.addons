@@ -5,20 +5,24 @@ from xml.sax.saxutils import escape
 from kodi_six import xbmc
 
 import arrow
-from slyguy import plugin, gui, settings, userdata, signals, inputstream, mem_cache
+from slyguy import plugin, gui, userdata, signals, inputstream, mem_cache
 from slyguy.constants import LIVE_HEAD
 from slyguy.exceptions import PluginError
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -38,12 +42,13 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @mem_cache.cached(60*5)
 def _channels():
     return api.channels()
+
 
 def _providers(channels):
     hide_public = settings.getBool('hide_public', False)
@@ -196,7 +201,7 @@ def _device_code():
                 return True
 
 def _email_password(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
