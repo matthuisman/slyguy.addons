@@ -11,7 +11,7 @@ import peewee
 from six.moves.urllib_parse import parse_qsl
 from kodi_six import xbmc, xbmcgui, xbmcaddon
 
-from slyguy import database, gui, settings, plugin, inputstream
+from slyguy import database, gui, plugin, inputstream
 from slyguy.exceptions import Error
 from slyguy.util import hash_6, get_addon, kodi_rpc, run_plugin
 from slyguy.constants import QUALITY_DISABLED, MERGE_SETTING_FILE
@@ -19,14 +19,18 @@ from slyguy.log import log
 
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 ATTRIBUTELISTPATTERN = re.compile(r'''([\w\-]+)=([^,"' ]+|"[^"]*"|'[^']*')''')
+
 
 def strip_quotes(string):
     quotes = ('"', "'")
     if string.startswith(quotes) and string.endswith(quotes):
         string = string[1:-1]
     return string
+
 
 def parse_attribs(line):
     attribs = {}

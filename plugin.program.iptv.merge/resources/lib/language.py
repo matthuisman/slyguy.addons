@@ -1,12 +1,12 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
-    SETTING_FETCH_EVERY_X  = 30000
-    SETTING_AUTO_RELOAD    = 30001
-    SETTING_FILES_DIR      = 30002
-    SETTING_AUTO_MERGE     = 30003
-    SETTING_RELOAD         = 30004
-    SETTING_PAGESIZE       = 30005
+    OUTPUT_DIR             = 30001
+    MERGE_EVERY_X          = 30002
+    X_HOURS                = 30003
+    RESTART_PVR            = 30004
+    PAGE_SIZE              = 30005
     SETUP_IPTV_SIMPLE      = 30006
     SETUP_IPTV_COMPLETE    = 30007
     SETTING_UP_IPTV        = 30008
@@ -71,7 +71,7 @@ class Language(BaseLanguage):
     ADDON_SETTINGS         = 30067
     PENDING_MERGE          = 30068
     DISABLED_MERGE         = 30069
-    START_CHNO_SETTING     = 30070
+    START_CH_NO            = 30070
     MANAGE_RADIO           = 30071
     RADIO_GROUP            = 30072
     BOOT_MERGE             = 30073
@@ -101,5 +101,6 @@ class Language(BaseLanguage):
     HIDE_GROUPS            = 30097
     MERGE_AT_HOUR          = 30098
     MERGE_HOUR             = 30099
+
 
 _ = Language()

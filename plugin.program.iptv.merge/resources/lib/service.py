@@ -2,12 +2,13 @@ from kodi_six import xbmc, xbmcvfs, xbmcaddon
 from six.moves.urllib.parse import unquote_plus
 from looseversion import LooseVersion
 
-from slyguy import router, settings, gui
+from slyguy import router, gui
 from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc
 from slyguy.log import log
 
 from .constants import *
 from .merger import check_merge_required
+from .settings import settings
 
 
 def start():

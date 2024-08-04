@@ -425,29 +425,3 @@ msgstr "Połącz o godzinie"
 msgctxt "#30099"
 msgid "Hour of day (24h)"
 msgstr "Godzina (24h)"
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr "Pytaj"
-
-msgctxt "#32043"
-msgid "Best"
-msgstr "Najlepsza"
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr "Najniższa"
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr "Pomiń"
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr "Niestandardowa"
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr "Wyłączone"

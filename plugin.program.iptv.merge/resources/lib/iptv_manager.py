@@ -10,6 +10,7 @@ from six.moves.urllib.parse import parse_qsl, urlparse, urlencode, urlunparse
 from slyguy.log import log
 from slyguy.constants import CHUNK_SIZE, KODI_VERSION
 
+
 def process_path(path, file_path):
     if not path.lower().startswith('plugin://'):
         raise Exception('Not implemented')
@@ -30,6 +31,7 @@ def process_path(path, file_path):
         _write_playlist(file_path, channels)
     else:
         raise Exception('Unsupported data')
+
 
 def _get_data(plugin_url):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,6 +68,7 @@ def _get_data(plugin_url):
 
     return json.loads(data)
 
+
 def _fix_channels(data):
     channels = []
 
@@ -90,9 +93,11 @@ def _fix_channels(data):
 
     return channels
 
+
 def _write_raw(file_path, data):
     with codecs.open(file_path, 'w', encoding='utf8') as f:
         f.write(data)
+
 
 def _write_epg(file_path, data):
     with codecs.open(file_path, 'w', encoding='utf8') as f:
@@ -160,6 +165,7 @@ def _write_epg(file_path, data):
                     log.exception(e)
 
         f.write(u'</tv>')
+
 
 def _write_playlist(file_path, channels):
     with codecs.open(file_path, 'w', encoding='utf8') as f:

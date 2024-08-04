@@ -8,7 +8,7 @@ import arrow
 from kodi_six import xbmc, xbmcvfs
 from six.moves.urllib.parse import unquote_plus
 
-from slyguy import settings, database, gui, userdata
+from slyguy import database, gui, userdata
 from slyguy.log import log
 from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, run_plugin, safe_copy, unique
 from slyguy.session import Session, gdrivedl
@@ -18,6 +18,7 @@ from slyguy.exceptions import Error
 from .constants import *
 from .models import Source, Playlist, EPG, Channel, merge_info, parse_attribs, strip_quotes
 from .language import _
+from .settings import settings
 from . import iptv_manager
 
 class AddonError(Error):
