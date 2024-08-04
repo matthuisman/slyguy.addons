@@ -454,9 +454,8 @@ class BaseSettings(object):
                 self.SETTINGS[setting.id] = setting
 
         DBStorage.SETTINGS = self.SETTINGS
-        if addon_id == ADDON_ID:
-            settings = [x for x in self.SETTINGS.values() if x.owner == addon_id]
-            migrate(settings)
+        settings = [x for x in self.SETTINGS.values() if x.owner == ADDON_ID]
+        migrate(settings)
 
     def get_settings(self):
         return [self.SETTINGS[x] for x in self.SETTINGS]
