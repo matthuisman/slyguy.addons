@@ -380,7 +380,7 @@ def migrate(settings):
 
     settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
     if BaseSettings.MIGRATED.value:
-        if remove_file(settings_path):
+        if os.path.exists(settings_path) and remove_file(settings_path):
             log.info("Removed old settings.xml: '{}'".format(settings_path))
         return
 
