@@ -7,7 +7,7 @@ from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
-from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, PLAY_FROM_LIVE, LIVE_HEAD, ROUTE_LIVE_TAG
+from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, PLAY_FROM_LIVE, LIVE_HEAD, ROUTE_LIVE_TAG, KODI_VERSION
 
 from .api import API
 from .language import _
@@ -273,6 +273,31 @@ def mpd_request(_data, _path, live=False, **kwargs):
                 for period in periods_to_remove:
                     period.parentNode.removeChild(period)
                 mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
+
+
+    seconds_diff = 0
+    utc = mpd.getElementsByTagName("UTCTiming")
+    publish_time = arrow.get(mpd.getAttribute('publishTime'))
+    if utc:
+        utc_time = arrow.get(utc[0].getAttribute('value'))
+        seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
+    else:
+        for elem in mpd.getElementsByTagName("SupplementalProperty"):
+            if elem.getAttribute('schemeIdUri') == 'urn:scte:dash:utc-time':
+                utc_time = arrow.get(elem.getAttribute('value'))
+                seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
+                break
+
+    if seconds_diff > 0:
+        seconds_diff += 24
+        # Kodi 21+
+        if KODI_VERSION > 20:
+            mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(seconds_diff))
+        else:
+            avail = mpd.getAttribute('availabilityStartTime')
+            if avail:
+                avail_start = arrow.get(avail).shift(seconds=seconds_diff)
+                mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
