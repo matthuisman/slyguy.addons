@@ -505,47 +505,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         mpd_attribs = list(mpd.attributes.keys())
 
         if mpd.getAttribute('type') == 'dynamic':
-            # Fix UTC timings
-            try:
-                seconds_diff = 0
-                utc = mpd.getElementsByTagName("UTCTiming")
-                publish_time = arrow.get(mpd.getAttribute('publishTime'))
-                if utc:
-                    utc_time = arrow.get(utc[0].getAttribute('value'))
-                    seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
-                else:
-                    for elem in mpd.getElementsByTagName("SupplementalProperty"):
-                        if elem.getAttribute('schemeIdUri') == 'urn:scte:dash:utc-time':
-                            utc_time = arrow.get(elem.getAttribute('value'))
-                            seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
-                            break
-
-                if seconds_diff > 0:
-                    seconds_diff += 10
-                    # Kodi 21+
-                    if KODI_VERSION > 20:
-                        mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(seconds_diff))
-                    else:
-                        avail = mpd.getAttribute('availabilityStartTime')
-                        if avail:
-                            avail_start = arrow.get(avail).shift(seconds=seconds_diff)
-                            mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
-            except:
-                pass
-
-            # Remove publishTime PR: https://github.com/xbmc/inputstream.adaptive/pull/564
-            if 'publishTime' in mpd_attribs:
-                mpd.removeAttribute('publishTime')
-                log.debug('Dash Fix: publishTime removed')
-
             # set maximum 4s update period
             existing = pthms_to_seconds(mpd.getAttribute('minimumUpdatePeriod')) or 4
             mpd.setAttribute('minimumUpdatePeriod', "PT{}S".format(min(existing, 4)))
 
-            if KODI_VERSION > 20:
-                # set minimum 24s live delay
-                existing = pthms_to_seconds(mpd.getAttribute('suggestedPresentationDelay')) or 0
-                mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(max(existing, 24)))
+            # set minimum 24s live delay
+            min_delay = 24
+            existing = pthms_to_seconds(mpd.getAttribute('suggestedPresentationDelay')) or 0
+            if existing < min_delay:
+                value = 'PT{}S'.format(min_delay)
+                log.debug('Dash Fix: Setting suggestedPresentationDelay to "{}"'.format(value))
+                mpd.setAttribute('suggestedPresentationDelay', value)
 
             # set minimum 16s buffer time
             existing = pthms_to_seconds(mpd.getAttribute('minBufferTime')) or 0
