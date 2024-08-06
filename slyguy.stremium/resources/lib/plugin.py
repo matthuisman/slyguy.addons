@@ -1,12 +1,13 @@
 import codecs
 import re
 from xml.sax.saxutils import escape
+from xml.dom.minidom import parseString
 
 from kodi_six import xbmc
 
 import arrow
 from slyguy import plugin, gui, userdata, signals, inputstream, mem_cache
-from slyguy.constants import LIVE_HEAD
+from slyguy.constants import LIVE_HEAD, MIDDLEWARE_PLUGIN, KODI_VERSION
 from slyguy.exceptions import PluginError
 
 from .api import API
@@ -214,6 +215,40 @@ def _email_password(**kwargs):
     api.login(username, password)
     return True
 
+
+@plugin.route()
+@plugin.plugin_request()
+def mpd_request(_data, _path, **kwargs):
+    root = parseString(_data)
+    mpd = root.getElementsByTagName("MPD")[0]
+
+    seconds_diff = 0
+    utc = mpd.getElementsByTagName("UTCTiming")
+    if utc:
+        utc_time = arrow.get(utc[0].getAttribute('value'))
+        seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
+    else:
+        for elem in mpd.getElementsByTagName("SupplementalProperty"):
+            if elem.getAttribute('schemeIdUri') == 'urn:scte:dash:utc-time':
+                utc_time = arrow.get(elem.getAttribute('value'))
+                seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
+                break
+
+    if seconds_diff > 0:
+        seconds_diff += 24
+        # Kodi 21+
+        if KODI_VERSION > 20:
+            mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(seconds_diff))
+        else:
+            avail = mpd.getAttribute('availabilityStartTime')
+            if avail:
+                avail_start = arrow.get(avail).shift(seconds=seconds_diff)
+                mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
+
+    with open(_path, 'wb') as f:
+        f.write(root.toprettyxml(encoding='utf-8'))
+
+
 @plugin.route()
 @plugin.login_required()
 def play(id, **kwargs):
@@ -221,28 +256,31 @@ def play(id, **kwargs):
 
     headers = {}
     headers.update(HEADERS)
-
-    drm_info = data.get('drmInfo') or {}
     cookies = data.get('cookie') or {}
 
-    if drm_info:
-        if drm_info['drmScheme'].lower() == 'widevine':
-            ia = inputstream.Widevine(
-                license_key = drm_info['drmLicenseUrl'],
-            )
-            headers.update(drm_info.get('drmKeyRequestProperties') or {})
-        else:
-            raise PluginError('Unsupported Stream!')
-    else:
-        ia = inputstream.HLS(live=True)
-
-    return plugin.Item(
+    item = plugin.Item(
         path = data['url'],
-        inputstream = ia,
         headers = headers,
         cookies = cookies,
         resume_from = LIVE_HEAD, ## Need to seek to live over multi-periods
     )
+
+    drm_info = data.get('drmInfo') or {}
+    if drm_info:
+        if drm_info['drmScheme'].lower() == 'widevine':
+            item.inputstream = inputstream.Widevine(
+                license_key = drm_info['drmLicenseUrl'],
+            )
+            item.headers.update(drm_info.get('drmKeyRequestProperties') or {})
+            item.proxy_data = {
+                'middleware': {data['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request),}},
+            }
+        else:
+            raise PluginError('Unsupported Stream!')
+    else:
+        item.inputstream = inputstream.HLS(live=True)
+
+    return item
 
 @plugin.route()
 def logout(**kwargs):
