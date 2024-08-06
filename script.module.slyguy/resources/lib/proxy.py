@@ -901,8 +901,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             base_url_parents.append(elem.parentNode)
         ################
 
-        # wipe out manifest so not passed again
-        self._session['manifest'] = None
+        if KODI_VERSION < 21:
+            # wipe out manifest so not passed again
+            self._session['manifest'] = None
+
+        ## Convert Location
         for elem in root.getElementsByTagName('Location'):
             url = elem.firstChild.nodeValue
             if '://' not in url:
