@@ -1,16 +1,15 @@
-from kodi_six import xbmc
-
-from slyguy import userdata, settings
+from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.log import log
 from slyguy import mem_cache
 
 from .constants import HEADERS, API_URL, CACHE_TIME
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):

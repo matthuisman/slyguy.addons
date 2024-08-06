@@ -1,17 +1,21 @@
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.constants import NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.exceptions import PluginError
 
 from .api import API
 from .language import _
 from .constants import PREVIEW_LENGTH
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -35,14 +39,14 @@ def index(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 def _image(row, key):
     if key in row and not row[key].lower().strip().endswith('missing.png'):
         return row[key]
-
     return None
+
 
 def _process_rows(rows, in_watchlist=False):
     items = []
