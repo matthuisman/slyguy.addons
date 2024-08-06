@@ -1,9 +1,10 @@
+from copy import deepcopy
 from slyguy import settings
 from slyguy.constants import USERDATA_KEY
 
 
 def _get_data():
-    return settings.getDict(USERDATA_KEY, {})
+    return deepcopy(settings.getDict(USERDATA_KEY, {}))
 
 def get(key, default=None):
     return _get_data().get(key, default)
