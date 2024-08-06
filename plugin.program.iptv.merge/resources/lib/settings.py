@@ -6,7 +6,7 @@ from .language import _
 
 
 class Settings(CommonSettings):
-    OUTPUT_DIR = Browse('output_dir', _.OUTPUT_DIR, type=Browse.DIRECTORY, default=ADDON.getAddonInfo('profile'))
+    OUTPUT_DIR = Browse('output_dir', _.OUTPUT_DIR, type=Browse.DIRECTORY, default=ADDON.getAddonInfo('profile'), use_default=False)
     MERGE_EVERY_X = Bool('auto_merge', _.MERGE_EVERY_X, default=True, disabled_value=None, enable=lambda: not Settings.MERGE_AT_HOUR.value)
     X_HOURS = Number('reload_time_hours', _.X_HOURS, default=12, lower_limit=1, upper_limit=48, visible=lambda: Settings.MERGE_EVERY_X.value)
 
