@@ -260,20 +260,18 @@ def logout(**kwargs):
 
 @plugin.route()
 @plugin.plugin_request()
-def mpd_request(_data, _path, live=False, **kwargs):
+def mpd_request(_data, _path, **kwargs):
     root = parseString(_data)
     mpd = root.getElementsByTagName("MPD")[0]
 
     if not inputstream.require_version('21.0.0'):
         # IA doesnt support multi-period with different baseurls in rep (https://github.com/xbmc/inputstream.adaptive/issues/1500)
         # For now, lets remove all periods except the latest
-        if live:
-            periods_to_remove = [x for x in root.getElementsByTagName('Period')][:-1]
-            if periods_to_remove:
-                for period in periods_to_remove:
-                    period.parentNode.removeChild(period)
-                mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
-
+        periods_to_remove = [x for x in root.getElementsByTagName('Period')][:-1]
+        if periods_to_remove:
+            for period in periods_to_remove:
+                period.parentNode.removeChild(period)
+            mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
 
     seconds_diff = 0
     utc = mpd.getElementsByTagName("UTCTiming")
@@ -322,7 +320,7 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
         ),
         headers = headers,
         proxy_data = {
-            'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request, live=True),}},
+            'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request),}},
         }
     )
 
@@ -372,9 +370,6 @@ def play_vod(vod_id, **kwargs):
             license_key = data['dash'][0]['drm']['url']
         ),
         headers = headers,
-        proxy_data = {
-            'middleware': {data['dash'][0]['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}},
-        }
     )
 
     return item
