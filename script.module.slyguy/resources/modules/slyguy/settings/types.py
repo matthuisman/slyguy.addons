@@ -281,13 +281,14 @@ class Browse(Text):
 
     def __init__(self, *args, **kwargs):
         self._type = kwargs.pop('type')
-        self._source = kwargs.pop('source', 'files')
+        self._source = kwargs.pop('source', '')
         self._allow_create = kwargs.pop('allow_create', True)
+        self._use_default = kwargs.pop('use_default', True)
         super(Browse, self).__init__(*args, **kwargs)
 
     def select(self):
         if self._type == Browse.DIRECTORY:
-            value = xbmcgui.Dialog().browse(3 if self._allow_create else 0, self._label, shares=self._source, defaultt=self.value)
+            value = xbmcgui.Dialog().browse(3 if self._allow_create else 0, self._label, shares=self._source, defaultt=self.value if self._use_default else None)
             if value:
                 self.value = value
 
