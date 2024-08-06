@@ -228,5 +228,3 @@ msgstr ""
 msgctxt "#30053"
 msgid "Simulation"
 msgstr ""
-
-## COMMON SETTINGS ##

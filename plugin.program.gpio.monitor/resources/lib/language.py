@@ -1,5 +1,6 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
     ADD_BTN                 = 30000
     RELOAD_SERVICE          = 30001
@@ -55,5 +56,6 @@ class Language(BaseLanguage):
     TEST_RELEASE            = 30051
     TEST_HOLD               = 30052
     SIMULATION              = 30053
+
 
 _ = Language()

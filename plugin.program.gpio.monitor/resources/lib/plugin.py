@@ -1,13 +1,13 @@
 from kodi_six import xbmc
 
-from slyguy import plugin, gui, settings, database, signals, userdata
-from slyguy.constants import ADDON_ID
+from slyguy import plugin, gui, database, signals, userdata
 from slyguy.util import set_kodi_string, get_kodi_string
 
 from . import gpio
 from .language import _
 from .models import Button
 from .constants import FUNCTION_DELIMETER, AUTO_RELOAD_SETTING
+from .settings import settings
 
 @plugin.route('')
 def home(**kwargs):
