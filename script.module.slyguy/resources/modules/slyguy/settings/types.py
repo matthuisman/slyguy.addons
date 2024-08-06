@@ -299,7 +299,7 @@ class Action(Setting):
     _count = 0
 
     def __init__(self, action, *args, **kwargs):
-        self._action = action
+        self._action = action.replace('$ID', ADDON_ID)
         id = 'action_{}'.format(Action._count)
         Action._count += 1
         super(Action, self).__init__(id, *args, **kwargs)

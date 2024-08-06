@@ -288,7 +288,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return
 
             parse = urlparse(self.path.lower())
-
             if self._session.get('type') == 'm3u8' and (url == manifest or parse.path.endswith('.m3u') or parse.path.endswith('.m3u8') or response.headers.get('content-type') == 'application/x-mpegURL'):
                 self._parse_m3u8(response)
 
@@ -1363,7 +1362,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         for header in response.headers:
             if header.lower() not in REMOVE_OUT_HEADERS:
                 headers[header.lower()] = response.headers[header]
-
         response.headers = headers
 
         if 'location' in response.headers:
@@ -1380,7 +1378,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             ## we handle cookies in the requests session
             response.headers.pop('set-cookie')
 
-        self._middleware(url, response)
+        if response.ok and not self._session['redirecting']:
+            self._middleware(url, response)
 
         return response
 
