@@ -6,16 +6,19 @@ import json
 
 import arrow
 from six.moves.urllib.parse import urlencode
-from slyguy import userdata, mem_cache, gui, settings
+from slyguy import userdata, mem_cache, gui
 from slyguy.util import jwt_data, hash_6
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from .constants import *
 from .language import _
+from .settings import settings, Login
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -65,17 +68,17 @@ class API(object):
         if not self.logged_in or (not force and time.time() < userdata.get('token_expires')):
             return
 
-        login_type = settings.getEnum('login_type', choices=LOGIN_TYPE, default=LOGIN_MULTI_IP)
+        login_type = settings.LOGIN_TYPE.value
 
-        if login_type == LOGIN_MULTI_IP:
+        if login_type == Login.MULTI_IP:
             # Single device, changing IP address (same as app)
             data = self._session.post('proxy/loginDevice', headers=self._auth_headers).json()
 
-        elif login_type == LOGIN_MULTI_DEVICE:
+        elif login_type == Login.MULTI_DEVICE:
             # Multiple device, static IP address
             data = self._session.post('proxy/casAvailableDevice', headers=self._auth_headers).json()
 
-        elif login_type == LOGIN_PASSWORD and userdata.get('login_data'):
+        elif login_type == Login.PASSWORD and userdata.get('login_data'):
             # Supports multiple devices and multiple IP address as long (as others also using password)
             data = userdata.get('login_data')
             data = self._session.post(data.pop('url'), data=data).json()
@@ -98,9 +101,9 @@ class API(object):
                 self.logout()
                 gui.refresh()
 
-                if login_type == LOGIN_MULTI_IP:
+                if login_type == Login.MULTI_IP:
                     error = _.LOGIN_MULTI_IP_ERROR
-                elif login_type == LOGIN_MULTI_DEVICE:
+                elif login_type == Login.MULTI_DEVICE:
                     error = _.LOGIN_MULTI_DEVICE_ERROR
 
             raise APIError(error)
@@ -254,7 +257,7 @@ class API(object):
         self._set_auth(data['result']['newAuthToken'])
         mem_cache.delete('channels')
 
-        if settings.getEnum('login_type', choices=LOGIN_TYPE, default=LOGIN_MULTI_IP) == LOGIN_PASSWORD:
+        if settings.LOGIN_TYPE.value == Login.PASSWORD:
             login_data['url'] = login_url
             userdata.set('login_data', login_data)
             userdata.set('device_data', selected)

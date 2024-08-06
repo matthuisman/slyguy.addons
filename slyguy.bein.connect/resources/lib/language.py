@@ -1,9 +1,8 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
     ASK_USERNAME             = 30001
-    ASK_PASSWORD             = 30002
-    LIVE_CHANNELS            = 30003
     LOGIN_ERROR              = 30004
     DEVICE_LABEL             = 30005
     SELECT_DEVICE            = 30006
@@ -26,5 +25,6 @@ class Language(BaseLanguage):
     DEFAULT_LANGUAGE         = 30023
     LOGIN_CONNECT            = 30024
     LOGIN_SATELLITE          = 30025
+
 
 _ = Language()
