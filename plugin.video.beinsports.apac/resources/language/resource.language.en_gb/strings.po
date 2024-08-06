@@ -1,14 +1,6 @@
 msgid ""
 msgstr ""
 
-msgctxt "#30001"
-msgid "Email Address"
-msgstr ""
-
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
-
 msgctxt "#30004"
 msgid "Email / Password"
 msgstr ""
@@ -26,36 +18,6 @@ msgctxt "#30007"
 msgid "Unable to find video asset"
 msgstr ""
 
-msgctxt "#30008"
-msgid "Live TV"
-msgstr ""
-
 msgctxt "#30009"
 msgid "Catch Up"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""

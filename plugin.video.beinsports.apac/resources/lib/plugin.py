@@ -5,18 +5,21 @@ from xml.sax.saxutils import escape
 
 import arrow
 from kodi_six import xbmc
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream
 
 from .api import API
 from .language import _
 from .constants import WV_LICENSE_URL, HEADERS
+from .settings import settings
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -25,7 +28,7 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live_channels))
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
         folder.add_item(label=_(_.CATCH_UP, _bold=True), path=plugin.url_for(catch_up))
         # folder.add_item(label=_(_.MATCH_HIGHLIGHTS, _bold=True), path=plugin.url_for(catch_up, catalog_id='Match_Highlights', title=_.MATCH_HIGHLIGHTS))
         # folder.add_item(label=_(_.INTERVIEWS, _bold=True),       path=plugin.url_for(catch_up, catalog_id='Interviews', title=_.INTERVIEWS))
@@ -37,8 +40,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -53,8 +56,9 @@ def login(**kwargs):
 
     gui.refresh()
 
+
 def _email_password():
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -90,8 +94,8 @@ def _get_logo(url):
     return re.sub('_[0-9]+X[0-9]+.', '.', url)
 
 @plugin.route()
-def live_channels(**kwargs):
-    folder = plugin.Folder(_.LIVE_CHANNELS)
+def live_tv(**kwargs):
+    folder = plugin.Folder(_.LIVE_TV)
 
     for row in api.live_channels():
         folder.add_item(
