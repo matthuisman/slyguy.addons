@@ -357,18 +357,14 @@ def md5sum(filepath):
 
 def process_brightcove(data):
     if type(data) != dict:
+        log.error(data)
         try:
-            if data[0]['error_code'].upper() == 'CLIENT_GEO' or data[0].get('client_geo','').lower() == 'anonymizing_proxy':
-                raise Error(_.GEO_ERROR)
-            else:
-                msg = data[0].get('message', data[0]['error_code'])
-        except KeyError:
+            msg = data[0]
+        except IndexError:
             msg = _.NO_ERROR_MSG
-
         raise Error(_(_.NO_BRIGHTCOVE_SRC, error=msg))
 
     sources = []
-
     for source in data.get('sources', []):
         if not source.get('src'):
             continue
