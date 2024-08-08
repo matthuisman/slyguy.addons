@@ -1,8 +1,7 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
-    ASK_USERNAME         = 30001
-    ASK_PASSWORD         = 30002
     LOGIN_ERROR          = 30003
     WATCHLIST            = 30004
     FAVOURITES           = 30005
@@ -19,5 +18,6 @@ class Language(BaseLanguage):
     SAVE_PASSWORD        = 30016
     FAVOURITE_ADDED      = 30017
     WATCHLIST_ADDED      = 30018
-    
+
+
 _ = Language()

@@ -1,25 +1,27 @@
 from kodi_six import xbmcplugin
 
-from slyguy import plugin, gui, userdata, signals, settings
-from slyguy.log import log
-from slyguy.exceptions import PluginError
+from slyguy import plugin, gui, userdata, signals
 
 from .api import API
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
 
+
 @plugin.route('')
 def index(**kwargs):
     folder = plugin.Folder()
 
     if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True),  path=plugin.url_for(login), bookmark=False)
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
         folder.add_item(label=_.ALL_SHOWS, path=plugin.url_for(apps, key='series_by_label', title=_.ALL_SHOWS))
         folder.add_item(label=_.POPULAR, path=plugin.url_for(apps, key='popular_series', title=_.POPULAR))
@@ -33,15 +35,15 @@ def index(**kwargs):
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_.BOOKMARKS, path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
-        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), bookmark=False)
+        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
-    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), bookmark=False)
-
+    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -53,6 +55,7 @@ def login(**kwargs):
 
     api.login(username=username, password=password)
     gui.refresh()
+
 
 @plugin.route()
 def apps(key, title, **kwargs):
