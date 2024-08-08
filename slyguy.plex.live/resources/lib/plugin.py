@@ -7,6 +7,8 @@ from slyguy.exceptions import PluginError
 
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -20,8 +22,8 @@ def home(**kwargs):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def add_favourite(id, **kwargs):
@@ -37,6 +39,7 @@ def add_favourite(id, **kwargs):
     userdata.set('favourites', favourites)
     gui.notification(_.MY_CHANNEL_ADDED, heading=channel['name'], icon=channel['logo'])
 
+
 @plugin.route()
 def del_favourite(id, **kwargs):
     favourites = userdata.get('favourites') or []
@@ -46,9 +49,11 @@ def del_favourite(id, **kwargs):
     userdata.set('favourites', favourites)
     gui.refresh()
 
+
 @mem_cache.cached(60*15)
 def _data():
     return Session().gz_json(DATA_URL)
+
 
 def _app_data():
     data = _data()
@@ -67,6 +72,7 @@ def _app_data():
     data['regions'][ALL] = all_channels
     data['regions'][MY_CHANNELS] = my_channels
     return data
+
 
 def _app_data():
     data = _data()
@@ -91,6 +97,7 @@ def _app_data():
     data['regions'][MY_CHANNELS] = my_channels
 
     return data
+
 
 def _process_channels(channels, query=None, region=ALL):
     items = []
@@ -137,6 +144,7 @@ def _process_channels(channels, query=None, region=ALL):
 
     return items
 
+
 @plugin.route()
 def live_tv(code=None, **kwargs):
     data = _app_data()
@@ -170,11 +178,13 @@ def live_tv(code=None, **kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
     data = _app_data()
     return _process_channels(data['regions'][ALL]['channels'], query=query), False
+
 
 @plugin.route()
 def play(id, **kwargs):
@@ -196,6 +206,7 @@ def play(id, **kwargs):
         headers = data['headers'],
         path = channel['url'],
     )
+
 
 @plugin.route()
 @plugin.merge()
@@ -227,6 +238,7 @@ def playlist(output, **kwargs):
                 f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}" group-title="{region}",{name}\n{url}'.format(
                     id=id, name=channel['name'], logo=channel['logo'], region=region['name'], url=plugin.url_for(play, id=id, _is_live=True),
                 ))
+
 
 @plugin.route()
 def configure_merge(**kwargs):
