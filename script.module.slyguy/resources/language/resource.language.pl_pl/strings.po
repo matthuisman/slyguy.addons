@@ -1150,3 +1150,19 @@ msgstr "Serwer DNS"
 msgctxt "#32218"
 msgid "Help"
 msgstr "Pomoc"
+
+msgctxt "#32219"
+msgid "PVR & Live TV"
+msgstr "PVR & TV na żywo"
+
+msgctxt "#32220"
+msgid "IPTV Merge integration is not available for this add-on"
+msgstr "Integracja IPTV Merge nie jest dostępna dla tego dodatku"
+
+msgctxt "#32221"
+msgid "Trailer Context Menu Item"
+msgstr "Zwiastun jako element menu kontekstowego"
+
+msgctxt "#32222"
+msgid "Not Set"
+msgstr "Nie ustawione"
