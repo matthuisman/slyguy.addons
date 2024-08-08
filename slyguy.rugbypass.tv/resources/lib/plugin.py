@@ -4,19 +4,23 @@ from xml.dom.minidom import parseString
 import arrow
 from kodi_six import xbmc
 
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
-from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, LIVE_HEAD, ROUTE_LIVE_TAG
+from slyguy import plugin, gui, userdata, signals, inputstream
+from slyguy.constants import MIDDLEWARE_PLUGIN, LIVE_HEAD, ROUTE_LIVE_TAG
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -37,8 +41,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -52,6 +56,7 @@ def login(**kwargs):
         return
 
     gui.refresh()
+
 
 def _device_code():
     start = time.time()
