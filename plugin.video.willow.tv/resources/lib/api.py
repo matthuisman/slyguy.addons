@@ -8,8 +8,10 @@ from slyguy.mem_cache import cached
 from .constants import *
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
