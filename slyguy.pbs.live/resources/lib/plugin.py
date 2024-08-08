@@ -1,12 +1,14 @@
 import codecs
 
 import arrow
-from slyguy import plugin, gui, userdata, inputstream, settings
+from slyguy import plugin, gui, userdata, inputstream
 from slyguy.session import Session
 from slyguy.mem_cache import cached
 
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -20,12 +22,13 @@ def home(**kwargs):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @cached(60*15)
 def _app_data():
     return Session().gz_json(DATA_URL)
+
 
 def _process_stations(stations, state=None, query=None):
     query = query.lower().strip() if query else None
