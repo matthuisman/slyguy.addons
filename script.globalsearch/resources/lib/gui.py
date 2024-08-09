@@ -4,12 +4,12 @@ from difflib import SequenceMatcher
 
 from kodi_six import xbmc, xbmcgui
 
-from slyguy import settings
 from slyguy.log import log
 from slyguy.constants import ADDON, ADDON_VERSION
 from slyguy.mem_cache import cached
 
 from .defs import *
+from .settings import settings
 
 
 LANGUAGE = ADDON.getLocalizedString
@@ -770,7 +770,7 @@ class MyPlayer(xbmc.Player):
             self.seekTime(float(self.resume))
 
 def search():
-    searches = settings.getJSON('searches', [])
+    searches = settings.get('searches', [])
 
     history_length = settings.getInt('history_length', 10)
     searches = searches[:history_length]
@@ -799,5 +799,5 @@ def search():
         searches.remove(searchstring)
 
     searches.insert(0, searchstring)
-    settings.setJSON('searches', searches)
+    settings.set('searches', searches)
     return searchstring
