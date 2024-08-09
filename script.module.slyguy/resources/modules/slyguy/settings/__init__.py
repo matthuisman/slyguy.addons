@@ -11,7 +11,7 @@ from slyguy.util import get_kodi_string, set_kodi_string
 from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action
 
 
-_ = BaseLanguage(COMMON_ADDON)
+_ = BaseLanguage()
 
 WV_AUTO = -1
 WV_L1 = 1

@@ -113,6 +113,15 @@ def dispatch(url=None):
                 url += '?' + sys.argv[1]
             except IndexError:
                 pass
+            sys.argv = [sys.argv[0], -1, '']
+        elif sys.argv[0].lower().endswith('.py'):
+            url = ROUTE_SCRIPT
+            try:
+                #Kodi 19+ only
+                url += '?' + sys.argv[1]
+            except IndexError:
+                pass
+            sys.argv = [sys.argv[0], -1, '']
         else:
             url = sys.argv[0] + sys.argv[2]
 

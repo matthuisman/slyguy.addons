@@ -1,7 +1,7 @@
 from kodi_six import xbmc
 
 from slyguy.log import log
-from slyguy.constants import ADDON, COMMON_ADDON
+from slyguy.constants import ADDON, COMMON_ADDON, ADDON_ID
 
 
 def format_string(string, *args, **kwargs):
@@ -38,9 +38,7 @@ def format_string(string, *args, **kwargs):
 
 
 def addon_string(id, addon=ADDON):
-    if id >= 32000:
-        string = COMMON_ADDON.getLocalizedString(id)
-    elif id >= 30000:
+    if id >= 30000:
         string = addon.getLocalizedString(id)
     else:
         string = xbmc.getLocalizedString(id)
@@ -312,9 +310,22 @@ class BaseLanguage(object):
     TRAILER_CONTEXT_MENU        = 32221
     NOT_SET                     = 32222
 
-    def __init__(self, addon=ADDON):
-        self._addon = addon
-    
+    def __init__(self):
+        self._addon_map = {}    
+        for cls in self.__class__.mro():
+            if cls is object:
+                continue
+
+            if cls != BaseLanguage:
+                addon = ADDON
+            else:
+                addon = COMMON_ADDON
+
+            for name in cls.__dict__:
+                val = cls.__dict__[name]
+                if isinstance(val, int) and val not in self._addon_map:
+                    self._addon_map[val] = addon
+
     def __getattr__(self, name):
        # raise Exception("{} missing".format(name))
         return str(name)
@@ -324,13 +335,13 @@ class BaseLanguage(object):
         if not isinstance(attr, int):
             return attr
 
-        return addon_string(attr, self._addon)
+        return addon_string(attr, self._addon_map.get(attr, ADDON))
 
-    def __call__(self, string, *args, **kwargs):
-        if isinstance(string, int):
-            string = addon_string(string, self._addon)
+    def __call__(self, attr, *args, **kwargs):
+        if isinstance(attr, int):
+            attr = addon_string(attr, self._addon_map.get(attr, ADDON))
 
-        return format_string(string, *args, **kwargs)
+        return format_string(attr, *args, **kwargs)
 
 
 _ = BaseLanguage()

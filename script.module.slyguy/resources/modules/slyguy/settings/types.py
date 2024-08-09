@@ -244,6 +244,10 @@ class Dict(Setting):
     DEFAULT = {}
 
 
+class List(Setting):
+    DEFAULT = []
+
+
 class Bool(Setting):
     DEFAULT = False
 
@@ -443,7 +447,7 @@ class BaseSettings(object):
 
     def __init__(self, addon_id=ADDON_ID):
         # force default labels from common language only
-        self.language = BaseLanguage(COMMON_ADDON)
+        self.language = BaseLanguage()
         self.CLASSES[self.__class__] = addon_id
         self._load_settings(addon_id)
 

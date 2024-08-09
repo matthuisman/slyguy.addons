@@ -85,6 +85,7 @@ ROUTE_AUTOFOLDER_TAG   = '_autofolder'
 ROUTE_MIGRATE_DONE     = '_migrated'
 ROUTE_BOOKMARKS        = '_bookmarks'
 ROUTE_CONTEXT          = '_context'
+ROUTE_SCRIPT           = '_script'
 #################
 
 #### INPUTSTREAM ADAPTIVE #####
