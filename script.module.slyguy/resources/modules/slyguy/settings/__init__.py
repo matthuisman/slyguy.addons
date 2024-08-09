@@ -3,15 +3,13 @@ import re
 from time import time
 
 from slyguy import dialog
-from slyguy.language import BaseLanguage
+from slyguy.language import _
 from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import get_kodi_string, set_kodi_string
 
 from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action
 
-
-_ = BaseLanguage()
 
 WV_AUTO = -1
 WV_L1 = 1

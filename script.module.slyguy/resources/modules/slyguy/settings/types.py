@@ -6,7 +6,7 @@ from kodi_six import xbmc, xbmcgui
 
 from slyguy import dialog, log, signals
 from slyguy.util import remove_file
-from slyguy.language import _, BaseLanguage
+from slyguy.language import _
 from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, NEW_SETTINGS, ADDON_PROFILE, ADDON_NAME, COMMON_ADDON
 
 from slyguy.settings.db_storage import DBStorage
@@ -446,8 +446,6 @@ class BaseSettings(object):
     CLASSES = {}
 
     def __init__(self, addon_id=ADDON_ID):
-        # force default labels from common language only
-        self.language = BaseLanguage()
         self.CLASSES[self.__class__] = addon_id
         self._load_settings(addon_id)
 
@@ -473,7 +471,7 @@ class BaseSettings(object):
 
                 if setting._label is None:
                     # try get matching language
-                    setting._label = getattr(self.language, name, name.upper())
+                    setting._label = getattr(_, name, name.upper())
 
                 attr_used[name] = cls
                 self.SETTINGS[setting.id] = setting
@@ -507,7 +505,7 @@ class BaseSettings(object):
 
         owner = self.CLASSES[self.__class__]
         setting = Dict(key, owner=owner, default=default, override=False, inherit=False, visible=False)
-        setting._label = getattr(self.language, key, key.upper())
+        setting._label = getattr(_, key, key.upper())
         self.SETTINGS[key] = setting
         # setting will be deleted on next load
         log.warning("Setting '{}' not found. Created on-the-fly.".format(key))

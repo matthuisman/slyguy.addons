@@ -1,7 +1,7 @@
 from kodi_six import xbmc
 
 from slyguy.log import log
-from slyguy.constants import ADDON, COMMON_ADDON, ADDON_ID
+from slyguy.constants import ADDON, COMMON_ADDON
 
 
 def format_string(string, *args, **kwargs):
