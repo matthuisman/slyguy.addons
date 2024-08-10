@@ -1,11 +1,18 @@
 import arrow
 from kodi_six import xbmc
 
-from slyguy import gui, settings
+from slyguy import gui, plugin
 from slyguy.log import log
 
 from .constants import POLL_TIME
 from .language import _
+from .settings import settings
+
+
+@plugin.route('')
+def index(**kwargs):
+    plugin.redirect(plugin.url_for(plugin.ROUTE_SETTINGS))
+
 
 def callback():
     function = settings.get('function')
@@ -15,6 +22,7 @@ def callback():
 
     log.debug('Running function: {}'.format(function))
     xbmc.executebuiltin(function)
+
 
 def service():
     monitor = xbmc.Monitor()
