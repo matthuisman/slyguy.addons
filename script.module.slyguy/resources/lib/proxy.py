@@ -438,7 +438,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                             continue
 
             log.debug('CHOOSE QUALITY')
-            index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=5000)
+            index = gui.select(_.SELECT_QUALITY, labels, preselect=default, autoclose=5000)
             if index < 0:
                 self._session['selected_quality'] = QUALITY_EXIT
                 raise Exit('Cancelled quality select')
