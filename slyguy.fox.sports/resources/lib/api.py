@@ -1,17 +1,19 @@
 import uuid
 from time import time
 
-from slyguy import userdata, mem_cache, settings
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.util import jwt_data
-from slyguy.log import log
+
 
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -109,11 +111,7 @@ class API(object):
         self._check_token()
         config = self._config()
 
-        if settings.getBool('enable_4k', True):
-            max_res = 'UHD/HDR' if settings.getBool('enable_hdr', False) else 'UHD/SDR'
-        else:
-            max_res = '720p'
-
+        max_res = 'UHD/HDR' if settings.HDR.value else 'UHD/SDR'
         payload = {
             'deviceHeight': 2160,
             'deviceWidth': 3840,
