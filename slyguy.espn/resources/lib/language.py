@@ -1,5 +1,6 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
     LIVE               = 30000
     PROVIDER_LOGIN_STEPS = 30001
@@ -25,5 +26,6 @@ class Language(BaseLanguage):
     ESPN_LOGIN_STEPS   = 30021
     LIVE_EVENT         = 30022
     REPLAY_EVENT       = 30023
+
 
 _ = Language()

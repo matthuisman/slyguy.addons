@@ -1,5 +1,5 @@
 import arrow
-from slyguy import plugin, gui, signals, inputstream, settings, userdata
+from slyguy import plugin, gui, signals, inputstream, userdata
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
@@ -8,13 +8,17 @@ from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, RO
 from .language import _
 from .api import API
 from .constants import PROVIDER_LOGIN_URL, ESPN_LOGIN_URL
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -32,16 +36,18 @@ def index(**kwargs):
         folder.add_item(label=_.ACCOUNT, path=plugin.url_for(account), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def live(**kwargs):
     return _events(_.LIVE, ['also live', 'live'])
 
+
 @plugin.route()
 def upcoming(**kwargs):
     return _events(_.UPCOMING, ['upcoming',])
+
 
 def _events(label, needles):
     folder = plugin.Folder(label)
@@ -160,6 +166,7 @@ def _process_events(rows):
 
     return items
 
+
 @plugin.route()
 def hide_channel(id, **kwargs):
     hidden = userdata.get('hidden', [])
@@ -168,10 +175,6 @@ def hide_channel(id, **kwargs):
     userdata.set('hidden', hidden)
     gui.refresh()
 
-@plugin.route()
-def clear_hidden(**kwargs):
-    userdata.delete('hidden')
-    gui.notification(_.RESET_HIDDEN_OK)
 
 @plugin.route()
 def account(**kwargs):
