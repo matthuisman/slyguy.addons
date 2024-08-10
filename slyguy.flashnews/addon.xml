@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.flashnews" name="Flash" provider-name="SlyGuy" version="0.1.4">
+<addon id="slyguy.flashnews" name="Flash (DEPRECATED)" provider-name="SlyGuy" version="0.1.5">
   <requires>
     <import addon="script.module.streamotion"/>
   </requires>
@@ -7,14 +7,12 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <description lang="en">Flash is a first-of-its-kind news streaming service that lets you stream 25+ global &amp; local news channels in 1 place.
-
-Subscription required.</description>
+    <description lang="en">This addon no longer works and has been deprecated. Open a github issue if you would like it to return</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>Fix playback</news>
+    <news>This addon no longer works and has been deprecated. Open a github issue if you would like it to return</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
