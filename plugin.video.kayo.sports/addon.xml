@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.kayo.sports" name="Kayo Sports" provider-name="SlyGuy" version="0.15.3">
+<addon id="plugin.video.kayo.sports" name="Kayo Sports (DEPRECATED)" provider-name="SlyGuy" version="0.15.4">
   <requires>
     <import addon="script.module.streamotion"/>
   </requires>
@@ -7,14 +7,12 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <description lang="en">Watch your favourite sports live &amp; on demand with Kayo Sports.
-
-Subscription required.</description>
+    <description lang="en">This addon no longer works and has been deprecated. Open a github issue if you would like it to return</description>
     <reuselanguageinvoker>true</reuselanguageinvoker>
     <license></license>
     <language></language>
     <website></website>
-    <news>@Mobi0007 is an asshole!</news>
+    <news>This addon no longer works and has been deprecated. Open a github issue if you would like it to return</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
