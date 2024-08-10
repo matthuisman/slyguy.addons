@@ -304,7 +304,7 @@ class Action(Setting):
     _count = 0
 
     def __init__(self, action, *args, **kwargs):
-        self._action = action.replace('$ID', ADDON_ID)
+        self._action = action
         id = 'action_{}'.format(Action._count)
         Action._count += 1
         super(Action, self).__init__(id, *args, **kwargs)
@@ -321,6 +321,7 @@ class Action(Setting):
         if callable(value):
             value = value()
         if isinstance(value, str):
+            value = value.replace('$ID', ADDON_ID)
             xbmc.executebuiltin(value)
 
 
