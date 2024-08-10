@@ -1,16 +1,16 @@
-import arrow
 import uuid
 
 from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
-from slyguy.log import log
 
 from .constants import *
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
