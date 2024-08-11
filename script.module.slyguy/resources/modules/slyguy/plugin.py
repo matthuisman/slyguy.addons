@@ -370,11 +370,6 @@ def _migrate_done(old_addon_id, **kwargs):
 
 @route(ROUTE_SETTINGS)
 def _settings(category=0, **kwargs):
-    if not NEW_SETTINGS:
-        _close()
-        settings.open()
-        return gui.refresh()
-
     category = Category.get(int(category))
     folder = Folder(category.label, content='files')
 
@@ -672,7 +667,7 @@ class Item(gui.Item):
             self.art['thumb'] = self.art.get('thumb') or default_thumb
             self.art['fanart'] = self.art.get('fanart') or default_fanart
 
-        if self.path and self.playable and (not NEW_SETTINGS or is_donor()):
+        if self.path and self.playable and is_donor():
             url = router.add_url_args(self.path, **{QUALITY_TAG: QUALITY_ASK})
             self.context.append((_.SELECT_QUALITY, 'PlayMedia({},noresume)'.format(url)))
 
@@ -682,17 +677,10 @@ class Item(gui.Item):
         self.playable = True
 
         quality = QUALITY_SKIP
-        if not NEW_SETTINGS or is_donor():
+        if is_donor():
             quality = kwargs.get(QUALITY_TAG, self.quality)
             if quality is None:
-                if NEW_SETTINGS:
-                    quality = settings.QUALITY_MODE.value
-                else:
-                    self.proxy_data['max_bandwidth'] = 0
-                    quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-                    if quality == QUALITY_CUSTOM:
-                        quality = QUALITY_BEST
-                        self.proxy_data['max_bandwidth'] = settings.getInt('max_bandwidth', 0)
+                quality = settings.QUALITY_MODE.value
             else:
                 quality = int(quality)
         self.proxy_data['quality'] = quality

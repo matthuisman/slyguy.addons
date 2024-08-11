@@ -427,7 +427,7 @@ class Item(object):
                     'subtitles': [],
                     'path_subs': {},
                     'addon_id': ADDON_ID,
-                    'quality': QUALITY_DISABLED,
+                    'quality': QUALITY_SKIP,
                     'middleware': {},
                     'type': None,
                     'skip_next_channel': settings.common_settings.getBool('skip_next_channel', False),

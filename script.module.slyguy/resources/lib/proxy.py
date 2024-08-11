@@ -56,6 +56,12 @@ PROXY_GLOBAL = {
     'error_count': 0,
 }
 
+
+class Redirect(Exception):
+    def __init__(self, url):
+        self.url = url
+
+
 def middleware_regex(response, pattern, **kwargs):
     data = response.stream.content.decode('utf8')
     match = re.search(pattern, data)
@@ -293,6 +299,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             elif self._session.get('type') == 'mpd' and url == manifest:
                 self._parse_dash(response)
+        except Redirect as e:
+            log.info('Redirecting to: {}'.format(e.url))
+            response.status_code = 302
+            response.headers['location'] = e.url
+            response.stream.content = b''
         except Exception as e:
             log.exception(e)
 
@@ -386,12 +397,16 @@ class RequestHandler(BaseHTTPRequestHandler):
             if self._session['selected_quality'] == QUALITY_EXIT:
                 raise Exit('Cancelled quality select')
 
-            if self._session['selected_quality'] in (QUALITY_DISABLED, QUALITY_SKIP):
+            if self._session['selected_quality'] == QUALITY_SKIP:
                 return None
             else:
                 return qualities[self._session['selected_quality']]
 
         quality = int(self._session.get('quality', QUALITY_ASK))
+
+        # custom quality is always required
+        if self._session.get('custom_quality') and quality == QUALITY_SKIP:
+            quality = QUALITY_ASK
 
         quality_compare = cmp_to_key(compare)
         streams = sorted(qualities, key=quality_compare, reverse=True)
@@ -401,7 +416,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         not_res_ok = [x for x in streams if not x['res_ok'] and x not in not_compatible]
 
         if not streams:
-            quality = QUALITY_DISABLED
+            quality = QUALITY_SKIP
         elif len(streams) < 2:
             quality = QUALITY_BEST
 
@@ -420,7 +435,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             for x in not_compatible:
                 options.append([x, _stream_label(x)])
 
-            options.append([QUALITY_SKIP, _.QUALITY_SKIP])
+            if not self._session.get('custom_quality'):
+                options.append([QUALITY_SKIP, _.QUALITY_SKIP])
 
             values = [x[0] for x in options]
             labels = [x[1] for x in options]
@@ -452,7 +468,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             PROXY_GLOBAL['last_qualities'].insert(0, [self._session['slug'], quality])
             PROXY_GLOBAL['last_qualities'] = PROXY_GLOBAL['last_qualities'][:MAX_QUALITY_HISTORY]
 
-        if quality in (QUALITY_DISABLED, QUALITY_SKIP):
+        if quality == QUALITY_SKIP:
             pass
         elif quality == QUALITY_BEST:
             quality = streams[0]
@@ -1157,6 +1173,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         # select quality
         selected = self._quality_select(streams)
         if selected:
+            if self._session.get('custom_quality'):
+                raise Redirect(selected['full_url'])
+
             adjust = 0
             for stream in all_streams:
                 if stream['full_url'] != selected['full_url']:
@@ -1452,6 +1471,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 class Response(object):
     def __init__(self):
+        self.url = ''
         self.headers = {}
         self.status_code = 200
         self.content = b''

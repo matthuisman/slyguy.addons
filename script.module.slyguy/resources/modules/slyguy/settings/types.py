@@ -7,7 +7,7 @@ from kodi_six import xbmc, xbmcgui
 from slyguy import dialog, log, signals
 from slyguy.util import remove_file
 from slyguy.language import _
-from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, NEW_SETTINGS, ADDON_PROFILE, ADDON_NAME, COMMON_ADDON
+from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, ADDON_PROFILE, ADDON_NAME, COMMON_ADDON
 
 from slyguy.settings.db_storage import DBStorage
 
@@ -381,9 +381,6 @@ class Enum(Setting):
 
 
 def migrate(settings):
-    if not NEW_SETTINGS:
-        return
-
     settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
     if BaseSettings.MIGRATED.value:
         if os.path.exists(settings_path) and remove_file(settings_path):
