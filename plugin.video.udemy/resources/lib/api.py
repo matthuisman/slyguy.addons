@@ -2,15 +2,18 @@ import hashlib
 import hmac
 import datetime
 
-from slyguy import userdata, settings
+from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from .constants import HEADERS, API_URL, DEFAULT_HOST, PAGE_SIZE
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):

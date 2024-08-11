@@ -1,18 +1,22 @@
-from slyguy import plugin, gui, settings, userdata, inputstream, signals
-from slyguy.log import log
-from slyguy.constants import QUALITY_TAG, QUALITY_CUSTOM, QUALITY_ASK, QUALITY_BEST, QUALITY_LOWEST, QUALITY_TYPES
+from kodi_six import xbmc
+
+from slyguy import plugin, gui, userdata, inputstream, signals
 from slyguy.util import get_system_arch, strip_html_tags
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -30,8 +34,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -48,6 +52,7 @@ def login(**kwargs):
     api.login(username=username, password=password)
     gui.refresh()
 
+
 @plugin.route()
 def logout(**kwargs):
     if not gui.yes_no(_.LOGOUT_YES_NO):
@@ -56,21 +61,23 @@ def logout(**kwargs):
     api.logout()
     gui.refresh()
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
     data = api.my_courses(page=page, query=query)
     return _process_courses(data['results']), data['next']
 
+
 @plugin.route()
 @plugin.pagination()
 def my_courses(page=1, **kwargs):
-    page = int(page)
     folder = plugin.Folder(_.MY_COURSES)
     data = api.my_courses(page=page)
     items = _process_courses(data['results'])
     folder.add_items(items)
     return folder, data['next']
+
 
 def _process_courses(rows):
     items = []
@@ -94,10 +101,10 @@ def _process_courses(rows):
 
     return items
 
+
 @plugin.route()
 @plugin.pagination()
 def chapters(course_id, title, page=1, **kwargs):
-    page = int(page)
     folder = plugin.Folder(title)
 
     rows, next_page = api.chapters(course_id, page=page)
@@ -111,10 +118,10 @@ def chapters(course_id, title, page=1, **kwargs):
 
     return folder, next_page
 
+
 @plugin.route()
 @plugin.pagination()
 def lectures(course_id, chapter_id, title, page=1, **kwargs):
-    page = int(page)
     folder = plugin.Folder(title)
 
     rows, next_page = api.lectures(course_id, chapter_id, page=page)
@@ -135,37 +142,6 @@ def lectures(course_id, chapter_id, title, page=1, **kwargs):
 
     return folder, next_page
 
-def select_quality(qualities):
-    options = []
-
-    options.append([QUALITY_BEST, _.QUALITY_BEST])
-    options.extend(qualities)
-    options.append([QUALITY_LOWEST, _.QUALITY_LOWEST])
-
-    values = [x[0] for x in options]
-    labels = [x[1] for x in options]
-
-    current = userdata.get('last_quality')
-
-    default = -1
-    if current:
-        try:
-            default = values.index(current)
-        except:
-            default = values.index(qualities[-1][0])
-
-            for quality in qualities:
-                if quality[0] <= current:
-                    default = values.index(quality[0])
-                    break
-
-    index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=10000) #autoclose after 10seconds
-    if index < 0:
-        return None
-
-    userdata.set('last_quality', values[index])
-
-    return values[index]
 
 @plugin.route()
 @plugin.login_required()
@@ -191,12 +167,11 @@ def play(asset_id, **kwargs):
     streams = stream_urls.get('Video') or stream_urls.get('Audio') or []
 
     CODECS = {
-        'libx264': 'H.264',
-        'libx265': 'H.265',
+        'libx264': 'avc',
+        'libx265': 'hvc',
     }
 
     urls = []
-    qualities = []
     for item in streams:
         if item['type'] != 'application/x-mpegURL':
             try:
@@ -206,15 +181,14 @@ def play(asset_id, **kwargs):
 
             if data.get('migrated_from_non_labeled_conversions'):
                 bandwidth, resolution = BANDWIDTH_MAP.get(int(item['label']))
-                codecs, fps = '', ''
+                codecs, fps = 'avc', '30'
             else:
                 fps = _(_.QUALITY_FPS, fps=float(data['frame_rate']))
                 resolution = '{}x{}'.format(data['width'], data['height'])
                 bandwidth = data['video_bitrate_in_kbps'] * 1000 #(or total_bitrate_in_kbps)
                 codecs = CODECS.get(data.get('video_codec'), '')
 
-            urls.append([bandwidth, item['file']])
-            qualities.append([bandwidth, _(_.QUALITY_BITRATE, bandwidth=float(bandwidth)/1000000, resolution=resolution, fps=fps, codecs=codecs)])
+            urls.append([bandwidth, resolution, fps, codecs, item['file']])
 
     if not urls:
         for row in stream_data.get('media_sources') or []:
@@ -246,31 +220,13 @@ def play(asset_id, **kwargs):
     if not urls:
         raise plugin.Error(_.NO_STREAM_ERROR)
 
-    quality = kwargs.get(QUALITY_TAG)
-    if quality is None:
-        quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
-    else:
-        quality = int(quality)
+    str = '#EXTM3U\n#EXT-X-VERSION:3\n'
+    for row in urls:
+        print(row)
+        str += '\n#EXT-X-STREAM-INF:BANDWIDTH={},RESOLUTION={},FRAME-RATE={},CODECS={}\n{}'.format(row[0], row[1], row[2], row[3], row[4])
 
-    urls = sorted(urls, key=lambda s: s[0], reverse=True)
-    qualities = sorted(qualities, key=lambda s: s[0], reverse=True)
-
-    if quality == QUALITY_CUSTOM:
-        quality = int(settings.getFloat('max_bandwidth')*1000000)
-    elif quality == QUALITY_ASK:
-        quality = select_quality(qualities)
-        if quality is None:
-            return
-
-    if quality == QUALITY_BEST:
-        quality = qualities[0][0]
-    elif quality == QUALITY_LOWEST:
-        quality = qualities[-1][0]
-
-    play_item.path = urls[-1][1]
-    for item in urls:
-        if item[0] <= quality:
-            play_item.path = item[1]
-            break
-
+    play_item.path = 'special://temp/udemy.m3u8'
+    play_item.proxy_data['custom_quality'] = True
+    with open(xbmc.translatePath(play_item.path), 'w') as f:
+        f.write(str)
     return play_item
