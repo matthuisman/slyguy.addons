@@ -1,8 +1,14 @@
 from kodi_six import xbmc
 
-from slyguy import settings
-from slyguy.log import log
+from slyguy import plugin, log
 from slyguy.util import kodi_rpc
+
+from .settings import settings
+
+
+@plugin.route('')
+def index(**kwargs):
+    plugin.redirect(plugin.url_for(plugin.ROUTE_SETTINGS))
 
 
 def service():

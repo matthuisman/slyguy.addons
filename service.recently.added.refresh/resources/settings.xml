@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <category label="$ADDON[script.module.slyguy 32034]">
-        <setting label="30000" id="poll_time" type="slider" default="10" range="10,10,300" option="int"/>
-    </category>
-</settings>
