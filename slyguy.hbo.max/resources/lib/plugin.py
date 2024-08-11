@@ -2,7 +2,7 @@ import os
 from xml.dom.minidom import parseString
 
 from kodi_six import xbmc, xbmcplugin
-from slyguy import plugin, gui, userdata, signals, inputstream, settings, mem_cache
+from slyguy import plugin, gui, userdata, signals, inputstream, mem_cache
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG, NO_RESUME_TAG
 from slyguy.drm import is_wv_secure
@@ -12,13 +12,17 @@ from slyguy.log import log
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -53,8 +57,8 @@ def index(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 def _process_rows(rows, slug):
     items = []
