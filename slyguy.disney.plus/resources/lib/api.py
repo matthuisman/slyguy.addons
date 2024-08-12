@@ -48,8 +48,8 @@ class API(object):
         self._session.headers.update({'x-bamsdk-transaction-id': self._transaction_id()})
 
     def _set_token(self, force=False):
-        if self._cache.get('access_token') and self._cache.get('feature_flags'):
-            self._set_authentication(self._cache['access_token'])
+        if not force and userdata.get('expires', 0) > time():
+            self._set_authentication(userdata.get('access_token'))
             return
 
         payload = {
@@ -68,9 +68,10 @@ class API(object):
         self._set_auth(data['extensions']['sdk'])
 
     def _set_auth(self, sdk):
-        self._cache['feature_flags'] = sdk['featureFlags']
-        self._cache['access_token'] = sdk['token']['accessToken']
-        self._set_authentication(self._cache['access_token'])
+        self._set_authentication(sdk['token']['accessToken'])
+        userdata.set('feature_flags', sdk['featureFlags'])
+        userdata.set('expires', int(time() + sdk['token']['expiresIn'] - 15))
+        userdata.set('access_token', sdk['token']['accessToken'])
         userdata.set('refresh_token', sdk['token']['refreshToken'])
 
     def register_device(self):
@@ -229,6 +230,7 @@ class API(object):
         self._check_errors(data)
         return data
 
+    @mem_cache.cached(60*60, key='account')
     def account(self):
         self._set_token()
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
@@ -335,7 +337,7 @@ class API(object):
 
     def feature_flags(self):
         self._set_token()
-        return self._cache['feature_flags']
+        return userdata.get('feature_flags')
 
     def avatar_by_id(self, ids):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getAvatars']['href'], avatarIds=','.join(ids))
@@ -417,7 +419,7 @@ class API(object):
     def playback_data(self, playback_url, wv_secure=False):
         self._set_token()
 
-        headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
+        headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         payload = {
             "playback": {
@@ -470,11 +472,13 @@ class API(object):
         return playback_data
 
     def logout(self):
-        userdata.delete('refresh_token')
         mem_cache.delete('transaction_id')
         mem_cache.delete('config')
-        userdata.delete('access_token') #LEGACY
-        userdata.delete('expires') #LEGACY
+        mem_cache.delete('account')
+        userdata.delete('access_token')
+        userdata.delete('expires')
+        userdata.delete('refresh_token')
+        userdata.delete('feature_flags')
         self.new_session()
 
     ### EXPLORE ###
@@ -527,7 +531,7 @@ class API(object):
 
     def explore_playback(self, resource_id, wv_secure=False):
         self._set_token()
-        headers = {'accept': 'application/vnd.media-service+json', 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
+        headers = {'accept': 'application/vnd.media-service+json', 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         payload = {
             "playbackId": resource_id,
