@@ -306,7 +306,6 @@ class CommonSettings(BaseSettings):
     LAST_DONOR_CHECK = Number('last_donor_check', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_NEWS_CHECK = Number('last_news_check', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_NEWS_ID = Text('last_news_id', visible=False, override=False, owner=COMMON_ADDON_ID)
-    PERSIST_CACHE = Bool('persist_cache', default=True, visible=False, override=False, owner=COMMON_ADDON_ID)
     PROXY_PORT = Number('proxy_port', default=DEFAULT_PORT, visible=False, override=False, owner=COMMON_ADDON_ID)
     PROXY_PATH = Text('proxy_path', visible=False, override=False, owner=COMMON_ADDON_ID)
     UPDATES = Dict('updates', visible=False, override=False, owner=COMMON_ADDON_ID)

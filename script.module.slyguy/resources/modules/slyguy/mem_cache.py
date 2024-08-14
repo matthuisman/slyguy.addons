@@ -4,33 +4,34 @@ from copy import deepcopy
 
 from six.moves import cPickle
 
-from slyguy import signals, router, settings
+from slyguy import signals, router
 from slyguy.log import log
 from slyguy.util import hash_6, set_kodi_string, get_kodi_string
-from slyguy.constants import ADDON_ID, CACHE_EXPIRY, ROUTE_CLEAR_CACHE, ADDON_VERSION
+from slyguy.constants import ADDON_ID, CACHE_EXPIRY, ROUTE_CLEAR_CACHE, ADDON_VERSION, KODI_VERSION
 
 
 cache_key = 'cache.'+ADDON_ID+ADDON_VERSION
-
 class Cache(object):
-    data = {}
-
+    data = None
 cache = Cache()
 
-@signals.on(signals.BEFORE_DISPATCH)
-def load():
-    if not cache.data and settings.common_settings.getBool('persist_cache', True):
+
+def _get_cache():
+    if cache.data is None:
         cache.data = {}
 
-        try:
+        if KODI_VERSION < 18:
             data = get_kodi_string(cache_key)
-            cache.data = cPickle.loads(data.encode('latin1'))
-        except Exception as e:
-            log.debug('load cache failed')
-        else:
-            log.debug('Cache data loaded')
+            if data:
+                set_kodi_string(cache_key, "")
+                try:
+                    cache.data = cPickle.loads(data.encode('latin1'))
+                except Exception as e:
+                    log.debug('Memcache: load failed: {}'.format(e))
+                else:
+                    log.debug("Memcache: loaded from kodi string")
+    return cache.data
 
-        set_kodi_string(cache_key, "{}")
 
 def set(key, value, expires=CACHE_EXPIRY):
     if expires == 0:
@@ -40,35 +41,42 @@ def set(key, value, expires=CACHE_EXPIRY):
         expires = int(time() + expires)
 
     log('Cache Set: {}'.format(key))
-    cache.data[key] = [deepcopy(value), expires]
+    _get_cache()[key] = [deepcopy(value), expires]
+
 
 def get(key, default=None):
+    cache = _get_cache()
     try:
-        row = cache.data[key]
+        row = cache[key]
     except KeyError:
         return default
 
     if row[1] != None and row[1] < time():
-        cache.data.pop(key, None)
+        cache.pop(key, None)
         return default
     else:
         log('Cache Hit: {}'.format(key))
         return deepcopy(row[0])
 
+
 def delete(key):
-    if int(cache.data.pop(key, None) != None):
+    if int(_get_cache().pop(key, None) != None):
         log('Cache Delete: {}'.format(key))
         return True
     return False
 
+
 def empty():
-    deleted = len(cache.data)
-    cache.data.clear()
-    log('Mem Cache: Deleted {} Rows'.format(deleted))
+    cache = _get_cache()
+    deleted = len(cache)
+    cache.clear()
+    log('Memcache: Deleted {} Rows'.format(deleted))
+
 
 def key_for(f, *args, **kwargs):
     func_name = f.__name__ if callable(f) else f
     return _build_key(func_name, *args, **kwargs)
+
 
 def _build_key(func_name, *args, **kwargs):
     key = func_name.encode('utf8').decode('utf8')
@@ -97,6 +105,7 @@ def _build_key(func_name, *args, **kwargs):
 
     return hash_6(key)
 
+
 def cached(*args, **kwargs):
     def decorator(f, expires=CACHE_EXPIRY, key=None):
         @wraps(f)
@@ -121,25 +130,14 @@ def cached(*args, **kwargs):
 
     return lambda f: decorator(f, *args, **kwargs)
 
-@signals.on(signals.AFTER_DISPATCH)
+
+@signals.on(signals.ON_EXIT)
 def remove_expired():
-    _time = time()
-    delete  = []
+    if KODI_VERSION < 18:
+        log('Memcache: persisting via kodi string')
+        set_kodi_string(cache_key, cPickle.dumps(cache, protocol=0).decode('latin1'))
 
-    for key in cache.data.keys():
-        if cache.data[key][1] < _time:
-            delete.append(key)
-
-    for key in delete:
-        cache.data.pop(key, None)
-
-    if delete:
-        log('Mem Cache: Deleted {} Expired Rows'.format(len(delete)))
-
-    if settings.common_settings.getBool('persist_cache', True):
-        set_kodi_string(cache_key, cPickle.dumps(cache.data, protocol=0).decode('latin1'))
-        cache.data.clear()
 
 @router.route(ROUTE_CLEAR_CACHE)
 def clear_cache(key, **kwargs):
-    delete_count = delete(key)
+    delete(key)
