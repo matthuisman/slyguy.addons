@@ -81,6 +81,9 @@ class DBStorage():
         log.debug("Settings cache load time: {}".format(time.time() - start))
 
     def set(self, addon_id, key, value):
+        if self._cache[addon_id].get(key) == (addon_id, value):
+            return
+
         Settings.replace(addon_id=addon_id, key=key, value=value).execute()
         self._cache[addon_id][key] = (addon_id, value)
 

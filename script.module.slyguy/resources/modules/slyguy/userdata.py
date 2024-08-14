@@ -1,35 +1,38 @@
 from copy import deepcopy
-from slyguy import settings
-from slyguy.constants import USERDATA_KEY
+from slyguy import settings, signals
 
 
-#TODO: Redo to cache
-# then write just on persist
+data = None
+
+# lazy load data
 def _get_data():
-    return deepcopy(settings.getDict(USERDATA_KEY, {}))
+    global data
+    if data is None:
+        data = deepcopy(settings.USERDATA.value)
+    return data
+
 
 def get(key, default=None):
     return _get_data().get(key, default)
 
-def set(key, value):
-    data = _get_data()
-    data[key] = value
-    _set_data(data)
 
-def _set_data(data):
-    settings.setDict(USERDATA_KEY, data)
+def set(key, value):
+    _get_data()[key] = value
+
 
 def pop(key, default=None):
-    data = _get_data()
-    value = data.pop(key, default)
-    _set_data(data)
-    return value
+    return _get_data().pop(key, default)
+
 
 def delete(key):
-    data = _get_data()
-    if key in data:
+    if key in _get_data():
         del data[key]
-        _set_data(data)
-    
+
 def clear():
-    _set_data({})
+    data.clear()
+
+
+@signals.on(signals.ON_CLOSE)
+def save_data():
+    if data is not None:
+        settings.USERDATA.value = data
