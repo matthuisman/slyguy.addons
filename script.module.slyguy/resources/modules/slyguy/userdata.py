@@ -3,6 +3,8 @@ from slyguy import settings
 from slyguy.constants import USERDATA_KEY
 
 
+#TODO: Redo to cache
+# then write just on persist
 def _get_data():
     return deepcopy(settings.getDict(USERDATA_KEY, {}))
 

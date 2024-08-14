@@ -755,3 +755,7 @@ def get_headers_from_url(url):
         headers[key.lower()] = _headers[key]
 
     return headers
+
+
+def makedirs(path):
+    xbmcvfs.mkdirs(path)

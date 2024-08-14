@@ -7,7 +7,7 @@ from six.moves import cPickle
 
 from slyguy import signals
 from slyguy.log import log
-from slyguy.util import hash_6
+from slyguy.util import hash_6, makedirs
 from slyguy.constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
 
 
@@ -176,11 +176,7 @@ class Database(peewee.SqliteDatabase):
         if os.path.exists(self.database):
             return super(Database, self).connect(*args, **kwargs)
 
-        try:
-            os.makedirs(os.path.dirname(self.database))
-        except FileExistsError:
-            pass
-
+        makedirs(os.path.dirname(self.database))
         timeout = time.time() + 5
         result = False
         exception = ''
