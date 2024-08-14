@@ -48,7 +48,7 @@ class Config(object):
     @property
     def headers(self):
         return {
-            'user-agent': 'okhttp/4.11.0',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
         }
 
     def clear(self):
