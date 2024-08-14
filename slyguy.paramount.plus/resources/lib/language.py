@@ -8,7 +8,6 @@ class Language(BaseLanguage):
     OUT_OF_REGION        = 30009
     SHOWS                = 30011
     CLIPS                = 30015
-    MOVIES               = 30016
     A_Z                  = 30017
     POPULAR              = 30018
     FEATURED             = 30019

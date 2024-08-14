@@ -38,8 +38,6 @@ msgctxt "#30011"
 msgid "Shows"
 msgstr "Serien"
 
-
-
 msgctxt "#30014"
 msgid "Season {season}"
 msgstr "Staffel {season}"
@@ -47,10 +45,6 @@ msgstr "Staffel {season}"
 msgctxt "#30015"
 msgid "Clips"
 msgstr ""
-
-msgctxt "#30016"
-msgid "Movies"
-msgstr "Filme"
 
 msgctxt "#30017"
 msgid "A-Z"
@@ -64,27 +58,6 @@ msgctxt "#30019"
 msgid "Featured"
 msgstr "Ausgewählt"
 
-msgctxt "#30020"
-msgid "H.265"
-msgstr ""
-
-msgctxt "#30021"
-msgid "4K"
-msgstr ""
-
-msgctxt "#30022"
-msgid "Dolby Vision"
-msgstr ""
-
-
-msgctxt "#30024"
-msgid "Dolby Digital Plus (EC-3)"
-msgstr ""
-
-msgctxt "#30025"
-msgid "Dolby Digital (AC-3)"
-msgstr ""
-
 msgctxt "#30026"
 msgid "Partner Login"
 msgstr ""
@@ -92,10 +65,6 @@ msgstr ""
 msgctxt "#30027"
 msgid "Select Partner"
 msgstr "Partner auswählen"
-
-msgctxt "#30028"
-msgid "Dolby Atmos"
-msgstr ""
 
 msgctxt "#30029"
 msgid "Failed to refresh auth token\n"
@@ -108,41 +77,3 @@ msgstr "Verifizierungs-Token kann nicht erneuert werden"
 msgctxt "#30030"
 msgid "Sync with Paramount+"
 msgstr "Mit Paramount+ synchronisieren"
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr "Fragen"
-
-msgctxt "#32043"
-msgid "Best"
-msgstr "Beste"
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr "Niedrigste"
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr "Umgehung"
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr "Benutzerdefiniert"
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr "Deaktiviert"
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr "Fragen"
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr "Von Live"
-
-msgctxt "#32064"
-msgid "From Start"
-msgstr "Von Start"
