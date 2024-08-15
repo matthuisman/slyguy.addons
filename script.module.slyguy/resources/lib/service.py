@@ -51,7 +51,14 @@ def check_arch():
         gui.ok(_(_.ARCH_CHANGED, old=prev_arch, new=arch))
 
 
-def start():
+def run():
+    try:
+        _run()
+    except Exception as e:
+        log.exception(e)
+        gui.exception()
+
+def _run():
     log.info('Shared Service: Started')
     log.info('Python Version: {}'.format(sys.version))
 
@@ -91,15 +98,13 @@ def start():
                 break
     except KeyboardInterrupt:
         pass
-    except Exception as e:
-        log.exception(e)
+    finally:
+        try: proxy.stop()
+        except: pass
 
-    try: proxy.stop()
-    except: pass
+        try: del player
+        except: pass
 
-    try: del player
-    except: pass
-
-    try: db.close()
-    except: pass
-    log.info('Shared Service: Stopped')
+        try: db.close()
+        except: pass
+        log.info('Shared Service: Stopped')

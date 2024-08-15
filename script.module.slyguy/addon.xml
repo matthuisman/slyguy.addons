@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.2">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.4">
   <requires>
     <import addon="slyguy.dependencies" version="0.0.19"/>
     <import addon="repository.slyguy" version="0.0.9"/>

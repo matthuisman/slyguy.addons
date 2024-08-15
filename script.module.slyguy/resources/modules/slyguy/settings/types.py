@@ -467,8 +467,7 @@ class BaseSettings(object):
 
     def __init__(self, addon_id=ADDON_ID):
         self._load_settings()
-        migrate(self)
-        migrate_userdata(self)
+        self._migrated = False
 
     def _load_settings(self, attr_used={}):
         for cls in self.__class__.mro():
@@ -521,6 +520,11 @@ class BaseSettings(object):
         return value
 
     def get_setting(self, key, default=None):
+        if not self._migrated:
+            self._migrated = True
+            migrate(self)
+            migrate_userdata(self)
+
         for setting in self.SETTINGS.values():
             if setting.matches_id(key):
                 return setting

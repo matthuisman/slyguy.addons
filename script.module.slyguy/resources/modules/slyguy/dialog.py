@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from kodi_six import xbmcgui, xbmc
 
 from slyguy import _
+from slyguy.util import get_system_arch
 from slyguy.constants import *
 
 
@@ -14,7 +15,16 @@ def make_heading(heading=None):
 
 def exception(heading=None):
     if not heading:
-        heading = _(_.PLUGIN_EXCEPTION, addon=ADDON_NAME, version=ADDON_VERSION, common_version=COMMON_ADDON.getAddonInfo('version'))
+        system, arch = get_system_arch()
+        heading = '{addon_name} ({addon_version}/{common_version}) ({kodi_version} {system} {arch})'.format(
+            addon_name = ADDON_NAME,
+            addon_version = ADDON_VERSION,
+            common_version = COMMON_ADDON.getAddonInfo('version'),
+            kodi_version = xbmc.getInfoLabel('System.BuildVersion').split(' ')[0],
+            system = system,
+            arch = arch
+        )
+        heading = u'{} - {}'.format(heading, _.UNEXPECTED_ERROR)
 
     exc_type, exc_value, exc_traceback = sys.exc_info()
 

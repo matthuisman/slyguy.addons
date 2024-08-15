@@ -274,8 +274,8 @@ msgid "No Results"
 msgstr "Nincs találat"
 
 msgctxt "#32032"
-msgid "{addon} ({version}/{common_version}) - Unexpected Error"
-msgstr "{addon} ({version}/{common_version}) – váratlan hiba"
+msgid "Unexpected Error"
+msgstr "váratlan hiba"
 
 msgctxt "#32033"
 msgid "Failed to download required file: {filename}"
