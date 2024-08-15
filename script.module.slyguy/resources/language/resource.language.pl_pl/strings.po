@@ -47,8 +47,8 @@ msgid "{name} [Atmos]"
 msgstr "{name} [Atmos]"
 
 msgctxt "#30005"
-msgid "SlyProxy Enabled (Required for some addons and features)"
-msgstr "SlyProxy włączony (wymagany dla niektórych dodatków i funkcji)"
+msgid "Use SlyGuy Proxy"
+msgstr "Użyj SlyGuy Proxy"
 
 msgctxt "#30006"
 msgid "Persist Cache"
@@ -401,10 +401,6 @@ msgctxt "#32046"
 msgid "WebOS does not currently support Widevine playback on Kodi"
 msgstr "WebOS nie obsługuje obecnie odtwarzania Widevine na Kodi"
 
-msgctxt "#32047"
-msgid "Disable built-in DNS overrides"
-msgstr "Wyłącz wbudowane zastąpienia DNS"
-
 msgctxt "#32048"
 msgid "Bypass"
 msgstr "Pomiń"
@@ -472,8 +468,8 @@ msgid "Lowest"
 msgstr "Najniższa"
 
 msgctxt "#32061"
-msgid "Playback Quality"
-msgstr "Jakość odtwarzania"
+msgid "Select quality"
+msgstr "Wybierz jakość odtwarzania"
 
 msgctxt "#32062"
 msgid "Inputstream HLS required to watch streams from live.\n"
