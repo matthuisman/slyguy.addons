@@ -448,6 +448,9 @@ def migrate_userdata(settings):
 
     for key in legacy_userdata:
         value = legacy_userdata[key]
+        if not value:
+            continue
+
         new_key = USERDATA_KEY_FMT.format(key=key)
         log.info("Migrate Userdata: '{}' -> '{}'".format(key, new_key))
         settings.set(new_key, value=value)
