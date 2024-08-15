@@ -1,38 +1,18 @@
-from copy import deepcopy
-from slyguy import settings, signals
-
-
-data = None
-
-# lazy load data
-def _get_data():
-    global data
-    if data is None:
-        data = deepcopy(settings.USERDATA.value)
-    return data
+from slyguy import settings
+from slyguy.settings.types import USERDATA_KEY_FMT
 
 
 def get(key, default=None):
-    return _get_data().get(key, default)
+    return settings.get(USERDATA_KEY_FMT.format(key=key), default)
 
 
 def set(key, value):
-    _get_data()[key] = value
+    settings.set(USERDATA_KEY_FMT.format(key=key), value)
 
 
 def pop(key, default=None):
-    return _get_data().pop(key, default)
+    return settings.pop(USERDATA_KEY_FMT.format(key=key), default)
 
 
 def delete(key):
-    if key in _get_data():
-        del data[key]
-
-def clear():
-    data.clear()
-
-
-@signals.on(signals.ON_CLOSE)
-def save_data():
-    if data is not None:
-        settings.USERDATA.value = data
+    settings.delete(USERDATA_KEY_FMT.format(key=key))

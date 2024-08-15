@@ -348,7 +348,7 @@ class Item(object):
                 li.setProperty('{}.stream_selection_type'.format(self.inputstream.addon_id), 'manual-osd')
                 li.setProperty('{}.chooser_resolution_max'.format(self.inputstream.addon_id), '4K')
                 li.setProperty('{}.chooser_resolution_secure_max'.format(self.inputstream.addon_id), '4K')
-                if self.inputstream.manifest_type == 'hls':
+                if self.inputstream.manifest_type == 'hls' and KODI_VERSION > 20:
                     # dash sets its own delay in proxy
                     li.setProperty('inputstream.adaptive.live_delay', '24')
 

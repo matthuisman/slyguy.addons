@@ -104,7 +104,6 @@ class BaseLanguage(object):
     HTTP_TIMEOUT                = 32044
     HTTP_RETRIES                = 32045
     IA_WEBOS_ERROR              = 32046
-    DISABLE_DNS_OVERRIDES       = 32047
     QUALITY_SKIP                = 32048
     NO_AUTOPLAY_FOUND           = 32049
     CONFIRM_MIGRATE             = 32050
@@ -112,7 +111,7 @@ class BaseLanguage(object):
     NO_ERROR_MSG                = 32052
     MULTI_BASEURL_WARNING       = 32053
     QUALITY_CUSTOM              = 32054
-    QUALITY_ASK                 = 32055
+    QUALITY_ASK = ASK = PLAY_FROM_ASK = 32055
     QUALITY_PARSE_ERROR         = 32056
     QUALITY_BAD_M3U8            = 32057
     WV_INSTALLED                = 32058
@@ -122,7 +121,6 @@ class BaseLanguage(object):
     LIVE_PLAY_TYPE              = 32063
     PLAY_FROM_START             = 32064
     PLAY_FROM_LIVE              = 32065
-    PLAY_FROM_ASK               = 32066
     PLAY_FROM                   = 32067
     QUALITY_BITRATE             = 32068
     QUALITY_FPS                 = 32069

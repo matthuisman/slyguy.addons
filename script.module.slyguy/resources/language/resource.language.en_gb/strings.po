@@ -384,10 +384,6 @@ msgctxt "#32046"
 msgid "WebOS does not currently support Widevine playback on Kodi"
 msgstr ""
 
-msgctxt "#32047"
-msgid "Disable built-in DNS overrides"
-msgstr ""
-
 msgctxt "#32048"
 msgid "Bypass"
 msgstr ""
@@ -466,10 +462,6 @@ msgstr ""
 
 msgctxt "#32065"
 msgid "From Live"
-msgstr ""
-
-msgctxt "#32066"
-msgid "Ask"
 msgstr ""
 
 msgctxt "#32067"

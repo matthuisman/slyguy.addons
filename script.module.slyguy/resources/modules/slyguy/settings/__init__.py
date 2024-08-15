@@ -269,7 +269,6 @@ class CommonSettings(BaseSettings):
     VERIFY_SSL = Bool('verify_ssl', default=True, owner=COMMON_ADDON_ID, category=Categories.NETWORK)
     HTTP_TIMEOUT = Number('http_timeout', default=15, owner=COMMON_ADDON_ID, category=Categories.NETWORK)
     HTTP_RETRIES = Number('http_retries', default=1, owner=COMMON_ADDON_ID, category=Categories.NETWORK)
-    DISABLE_DNS_OVERRIDES = Bool('disable_dns_overrides', owner=COMMON_ADDON_ID, category=Categories.NETWORK)
     PROXY_SERVER = Text('proxy_server', owner=COMMON_ADDON_ID, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, default_label=_.DEFAULT, category=Categories.NETWORK)
     DNS_SERVER = Text('dns_server', owner=COMMON_ADDON_ID, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, default_label=_.DEFAULT, category=Categories.NETWORK)
     IP_MODE = Enum('ip_mode', options=[[_.PREFER_IPV4, IPMode.PREFER_IPV4], [_.PREFER_IPV6, IPMode.PREFER_IPV6], [_.ONLY_IPV4, IPMode.ONLY_IPV4], [_.ONLY_IPV6, IPMode.ONLY_IPV6]],

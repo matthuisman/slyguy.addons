@@ -12,6 +12,9 @@ from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, ADDON_PROFILE, ADDON_NAM
 from slyguy.settings.db_storage import DBStorage
 
 
+USERDATA_KEY_FMT = "userdata_{key}"
+
+
 class Category(object):
     _categories = {}
 
@@ -382,7 +385,7 @@ class Enum(Setting):
 
 def migrate(settings):
     settings_path = os.path.join(ADDON_PROFILE, 'settings.xml')
-    if BaseSettings.MIGRATED.value:
+    if settings.MIGRATED.value:
         if os.path.exists(settings_path) and remove_file(settings_path):
             log.info("Removed old settings.xml: '{}'".format(settings_path))
         return
@@ -405,12 +408,14 @@ def migrate(settings):
         'pagination_multiplier': 1,
     }
 
+    new_settings = [x for x in settings.SETTINGS.values() if x.owner == ADDON_ID]
+
     count = 0
     for key in old_settings:
         xml_val = old_settings[key]
 
         setting = None
-        for check in settings:
+        for check in new_settings:
             if check.matches_id(key):
                 setting = check
 
@@ -436,18 +441,33 @@ def migrate(settings):
     log.info("{}/{} old settings have been migrated the new SlyGuy settings system!".format(count, len(old_settings)))
 
 
+def migrate_userdata(settings):
+    legacy_userdata = settings.USERDATA.value
+    if not legacy_userdata:
+        return
+
+    for key in legacy_userdata:
+        value = legacy_userdata[key]
+        new_key = USERDATA_KEY_FMT.format(key=key)
+        log.info("Migrate Userdata: '{}' -> '{}'".format(key, new_key))
+        settings.set(new_key, value=value)
+
+    settings.USERDATA.clear()
+    log.info("Migrated Userdata")
+
+
 class BaseSettings(object):
     MIGRATED = Bool('migrated', visible=False, override=False, inherit=False)
-    USERDATA = Dict('userdata', visible=False, override=False, inherit=False)
-
+    USERDATA = Dict('userdata', visible=False, override=False, inherit=False) #LEGACY
+    BOOKMARKS_DATA = List('bookmarks_data', visible=False, override=False, inherit=False)
     SETTINGS = {}
-    CLASSES = {}
 
     def __init__(self, addon_id=ADDON_ID):
-        self.CLASSES[self.__class__] = addon_id
-        self._load_settings(addon_id)
+        self._load_settings()
+        migrate(self)
+        migrate_userdata(self)
 
-    def _load_settings(self, addon_id, attr_used={}):
+    def _load_settings(self, attr_used={}):
         for cls in self.__class__.mro():
             if cls is object:
                 continue
@@ -474,11 +494,6 @@ class BaseSettings(object):
                 attr_used[name] = cls
                 self.SETTINGS[setting.id] = setting
 
-        DBStorage.SETTINGS = self.SETTINGS
-        if addon_id == ADDON_ID:
-            settings = [x for x in self.SETTINGS.values() if x.owner == ADDON_ID]
-            migrate(settings)
-
     def get_settings(self):
         return [self.SETTINGS[x] for x in self.SETTINGS]
 
@@ -495,18 +510,21 @@ class BaseSettings(object):
 
     def remove(self, key):
         self.get_setting(key).clear()
+    delete = remove
+
+    def pop(self, key, default=None):
+        value = self.get(key, default)
+        self.remove(key)
+        return value
 
     def get_setting(self, key, default=None):
         for setting in self.SETTINGS.values():
             if setting.matches_id(key):
                 return setting
 
-        owner = self.CLASSES[self.__class__]
-        setting = Dict(key, owner=owner, default=default, override=False, inherit=False, visible=False)
-        setting._label = getattr(_, key, key.upper())
+        setting = Dict(key, owner=ADDON_ID, default=default, override=False, inherit=False, visible=False)
         self.SETTINGS[key] = setting
-        # setting will be deleted on next load
-        log.warning("Setting '{}' not found. Created on-the-fly.".format(key))
+        log.debug("Setting '{}' not found. Created on-the-fly.".format(key))
         return setting
 
     def reset(self):
