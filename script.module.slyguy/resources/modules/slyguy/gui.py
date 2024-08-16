@@ -450,29 +450,6 @@ class Item(object):
                     'max_channels': settings.common_settings.getInt('max_channels', 0),
                 }
 
-                #######################################
-                ## keep old setting values working until new settings system implemented
-                legacy_map = {
-                    'vp9': [],
-                    'av1': [],
-                    'h265': ['hevc','enable_h265',],
-                    'hdr10': ['enable_hdr',],
-                    'dolby_vision': [],
-                    'dolby_atmos': ['atmos_enabled',],
-                    'ac3': ['ac3_enabled',],
-                    'ec3': ['ec3_enabled',],
-                }
-
-                for key in legacy_map:
-                    #add ourself so addon can override common
-                    legacy_map[key].insert(0, key)
-                    for old_key in legacy_map[key]:
-                        val = settings.getBool(old_key, None)
-                        if val is not None:
-                            proxy_data[key] = val
-                            break
-                #########################################
-
                 if mimetype == 'application/vnd.apple.mpegurl':
                     proxy_data['type'] = 'm3u8'
                 elif mimetype == 'application/dash+xml':
