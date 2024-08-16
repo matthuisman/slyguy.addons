@@ -234,7 +234,7 @@ class CommonSettings(BaseSettings):
     H265 = Bool('h265', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
     VP9 = Bool('vp9', owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
     AV1 = Bool('av1', owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
-    HDR10 = Bool('hdr10', owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
+    HDR10 = Bool('hdr10', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
     DOLBY_VISION = Bool('dolby_vision', owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
     DOLBY_ATMOS = Bool('dolby_atmos', owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
     DTSX = Bool('dtsx', owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)
