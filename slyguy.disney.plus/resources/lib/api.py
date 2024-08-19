@@ -566,7 +566,7 @@ class API(object):
         if wv_secure and settings.getBool('hdr10', False):
             video_ranges.append('HDR10')
 
-        if settings.getBool('hevc', False):
+        if settings.getBool('h265', False):
             payload['playback']['attributes']['codecs'] = {'video': ['h264', 'h265']}
 
         if audio_types:
