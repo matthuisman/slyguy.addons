@@ -20,8 +20,8 @@ def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
 
-    if settings.common_settings.get('dns_server'):
-        rewrites.append(['r:{}'.format(settings.common_settings.get('dns_server')), '*'])
+    if settings.get('dns_server'):
+        rewrites.append(['r:{}'.format(settings.get('dns_server')), '*'])
 
     return rewrites
 

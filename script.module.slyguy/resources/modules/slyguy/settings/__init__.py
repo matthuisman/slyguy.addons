@@ -225,10 +225,10 @@ class CommonSettings(BaseSettings):
     QUALITY_MODE = Enum('quality_mode', legacy_ids=['default_quality'], label=_.QUALITY_SELECT_MODE, default=QUALITY_ASK, disabled_value=QUALITY_SKIP, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY,
         options=[[_.QUALITY_ASK, QUALITY_ASK], [_.QUALITY_BEST, QUALITY_BEST], [_.QUALITY_LOWEST, QUALITY_LOWEST], [_.QUALITY_SKIP, QUALITY_SKIP]],
         owner=COMMON_ADDON_ID, category=Categories.PLAYER_QUALITY)
-    MAX_BANDWIDTH = Number('max_bandwidth', default_label=_.NO_LIMIT, owner=COMMON_ADDON_ID, visible=lambda: CommonSettings.QUALITY_MODE.value != QUALITY_SKIP, category=Categories.PLAYER_QUALITY)
-    MAX_WIDTH = Number('max_width', default_label=_.NO_LIMIT, owner=COMMON_ADDON_ID, visible=lambda: CommonSettings.QUALITY_MODE.value != QUALITY_SKIP, category=Categories.PLAYER_QUALITY)
-    MAX_HEIGHT = Number('max_height', default_label=_.NO_LIMIT, owner=COMMON_ADDON_ID, visible=lambda: CommonSettings.QUALITY_MODE.value != QUALITY_SKIP, category=Categories.PLAYER_QUALITY)
-    IGNORE_DISPLAY_RESOLUTION = Bool('ignore_display_resolution', default=True, owner=COMMON_ADDON_ID, visible=lambda: CommonSettings.QUALITY_MODE.value != QUALITY_SKIP, category=Categories.PLAYER_QUALITY)
+    MAX_BANDWIDTH = Number('max_bandwidth', default_label=_.NO_LIMIT, owner=COMMON_ADDON_ID, category=Categories.PLAYER_QUALITY)
+    MAX_WIDTH = Number('max_width', default_label=_.NO_LIMIT, owner=COMMON_ADDON_ID, category=Categories.PLAYER_QUALITY)
+    MAX_HEIGHT = Number('max_height', default_label=_.NO_LIMIT, owner=COMMON_ADDON_ID, category=Categories.PLAYER_QUALITY)
+    IGNORE_DISPLAY_RESOLUTION = Bool('ignore_display_resolution', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_QUALITY)
 
     # PLAYER / CODECS
     H265 = Bool('h265', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_CODECS)

@@ -397,19 +397,19 @@ class RawSession(requests.Session):
 
 class Session(RawSession):
     def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, return_json=False, **kwargs):
-        super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
-            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ip_mode=settings.common_settings.IP_MODE.value, **kwargs)
+        super(Session, self).__init__(verify=settings.getBool('verify_ssl', True) if verify is None else verify,
+            timeout=settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ip_mode=settings.IP_MODE.value, **kwargs)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key
         self._base_url = base_url
-        self._attempts = settings.common_settings.getInt('http_retries', 1) if attempts is None else attempts
+        self._attempts = settings.getInt('http_retries', 1) if attempts is None else attempts
         self._return_json = return_json
         self.before_request = None
         self.after_request = None
 
         self.set_dns_rewrites(get_dns_rewrites() if dns_rewrites is None else dns_rewrites)
-        self.set_proxy(settings.get('proxy_server') or settings.common_settings.get('proxy_server'))
+        self.set_proxy(settings.get('proxy_server') or settings.get('proxy_server'))
 
         self.headers.update(DEFAULT_HEADERS)
         self.headers.update(self._headers)

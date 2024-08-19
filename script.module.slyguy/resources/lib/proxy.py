@@ -163,7 +163,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     'addon_id': session_addonid,
                     'verify': settings.getBool('verify_ssl', True),
                     'timeout': settings.getInt('http_timeout', 30),
-                    'ip_mode': settings.common_settings.IP_MODE.value,
+                    'ip_mode': settings.IP_MODE.value,
                     'dns_rewrites': get_dns_rewrites(addon_id=session_addonid),
                     'proxy_server': settings.get('proxy_server'),
                 }
@@ -402,18 +402,18 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 return qualities[self._session['selected_quality']]
 
-        quality = int(self._session.get('quality', QUALITY_ASK))
-
-        # custom quality is always required
-        if self._session.get('custom_quality') and quality == QUALITY_SKIP:
-            quality = QUALITY_ASK
-
         quality_compare = cmp_to_key(compare)
         streams = sorted(qualities, key=quality_compare, reverse=True)
 
         ok_streams = [x for x in streams if x['compatible'] and x['res_ok']]
         not_compatible = [x for x in streams if not x['compatible']]
         not_res_ok = [x for x in streams if not x['res_ok'] and x not in not_compatible]
+
+        quality = int(self._session.get('quality', QUALITY_SKIP))
+
+        # custom quality is always required
+        if self._session.get('custom_quality') and quality == QUALITY_SKIP:
+            quality = QUALITY_ASK
 
         if not streams:
             quality = QUALITY_SKIP
@@ -521,9 +521,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if mpd.getAttribute('type') == 'dynamic':
             if KODI_VERSION > 20:
+                ## Below seems to cause buffering at chapter change (https://github.com/matthuisman/slyguy.addons/issues/836)
                 # set maximum 4s update period
-                existing = pthms_to_seconds(mpd.getAttribute('minimumUpdatePeriod')) or 4
-                mpd.setAttribute('minimumUpdatePeriod', "PT{}S".format(min(existing, 4)))
+                # existing = pthms_to_seconds(mpd.getAttribute('minimumUpdatePeriod')) or 4
+                # mpd.setAttribute('minimumUpdatePeriod', "PT{}S".format(min(existing, 4)))
 
                 # set minimum 24s live delay
                 min_delay = 24
@@ -711,9 +712,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                         stream_data['codec'] = codec_string
 
-                        # if not stream_data['compatible']:
-                        #     continue
-
                         all_streams[period_index].append(stream_data)
 
                     # add rep to end of adap set
@@ -747,6 +745,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             for period_index in all_streams:
                 for stream in sorted(all_streams[period_index], key=lambda x: (x == selected, x['compatible'] == selected['compatible'], x['codec'] == selected['codec'], x['bandwidth'] <= selected['bandwidth'], x['bandwidth']))[:-1]:
                     stream['elem'].parentNode.removeChild(stream['elem'])
+        elif any(x['compatible'] and x['res_ok'] for x in all_streams[0]):
+            # skip quality, remove non-ok streams
+            for period_index in all_streams:
+                for stream in all_streams[period_index]:
+                    if not stream['compatible'] or not stream['res_ok']:
+                        stream['elem'].parentNode.removeChild(stream['elem'])
 
         video_sets.sort(key=lambda  x: x[0], reverse=True)
         audio_sets.sort(key=lambda  x: x[0], reverse=True)
@@ -1153,10 +1157,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if not h265_enabled and codec_string == H265:
                     stream_data['compatible'] = False
 
-                # if not stream_data['compatible']:
-                #     stream_inf = None
-                #     continue
-
                 if stream_data['url'] not in urls and stream_inf not in metas:
                     streams.append(stream_data)
                     urls.append(stream_data['url'])
@@ -1177,6 +1177,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             adjust = 0
             for stream in all_streams:
                 if stream['full_url'] != selected['full_url']:
+                    video.pop(stream['index']-adjust)
+                    adjust += 1
+        elif any(x['compatible'] and x['res_ok'] for x in all_streams):
+            # skip quality, remove non-ok streams
+            adjust = 0
+            for stream in all_streams:
+                if not stream['compatible'] or not stream['res_ok']:
                     video.pop(stream['index']-adjust)
                     adjust += 1
 
@@ -1539,7 +1546,7 @@ class Proxy(object):
         if self.started:
             return
 
-        target_port = settings.common_settings.getInt('_proxy_port') or DEFAULT_PORT
+        target_port = settings.getInt('_proxy_port') or DEFAULT_PORT
         port = check_port(target_port)
         if not port:
             port = check_port()
@@ -1548,7 +1555,7 @@ class Proxy(object):
                 return
 
             log.warning('Port {} not available. Switched to port {}'.format(target_port, port))
-            settings.common_settings.setInt('_proxy_port', port)
+            settings.setInt('_proxy_port', port)
 
         self._server = ThreadedHTTPServer((HOST, port), RequestHandler)
         self._server.allow_reuse_address = True
@@ -1557,7 +1564,7 @@ class Proxy(object):
         self.started = True
 
         proxy_path = 'http://{}:{}/'.format(HOST, port)
-        settings.common_settings.set('_proxy_path', proxy_path)
+        settings.set('_proxy_path', proxy_path)
         log.info("Proxy Started: {}".format(proxy_path))
 
     def stop(self):
@@ -1576,5 +1583,5 @@ class Proxy(object):
             log.error('Failed to save proxy session')
             log.exception(e)
 
-        settings.common_settings.set('_proxy_path', '')
+        settings.set('_proxy_path', '')
         log.debug("Proxy: Stopped")

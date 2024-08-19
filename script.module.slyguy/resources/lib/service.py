@@ -17,33 +17,33 @@ from .constants import *
 
 def _check_news():
     _time = int(time())
-    if _time < settings.common_settings.getInt('_last_news_check', 0) + NEWS_CHECK_TIME:
+    if _time < settings.getInt('_last_news_check', 0) + NEWS_CHECK_TIME:
         return
 
-    settings.common_settings.setInt('_last_news_check', _time)
+    settings.setInt('_last_news_check', _time)
 
     with Session(timeout=15) as session:
         news = session.gz_json(NEWS_URL)
     if not news:
         return
 
-    if 'id' not in news or news['id'] == settings.common_settings.get('_last_news_id'):
+    if 'id' not in news or news['id'] == settings.get('_last_news_id'):
         return
-    settings.common_settings.set('_last_news_id', news['id'])
+    settings.set('_last_news_id', news['id'])
 
     if news['type'] == 'donate' and is_donor():
         return
-    settings.common_settings.setDict('_news', news)
+    settings.setDict('_news', news)
 
 
 def check_arch():
     arch = get_system_arch()[1]
     mac = int(uuid.getnode())
 
-    prev_mac = settings.common_settings.getInt('_mac')
-    prev_arch = settings.common_settings.get('_arch')
-    settings.common_settings.set('_arch', arch)
-    settings.common_settings.setInt('_mac', mac)
+    prev_mac = settings.getInt('_mac')
+    prev_arch = settings.get('_arch')
+    settings.set('_arch', arch)
+    settings.setInt('_mac', mac)
     if not prev_mac or not prev_arch:
         return
 
@@ -81,13 +81,13 @@ def _run():
     try:
         while not monitor.abortRequested():
             try:
-                settings.common_settings.reset()
+                settings.reset()
                 check_donor()
 
-                if is_donor() and settings.common_settings.getBool('fast_updates'):
+                if is_donor() and settings.getBool('fast_updates'):
                     check_updates()
 
-                if not is_donor() or settings.common_settings.getBool('show_news'):
+                if not is_donor() or settings.getBool('show_news'):
                     _check_news()
 
                 check_repo()

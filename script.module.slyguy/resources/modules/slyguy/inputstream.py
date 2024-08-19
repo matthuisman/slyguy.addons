@@ -219,7 +219,7 @@ def install_widevine(reinstall=False):
     wv_path = os.path.join(decryptpath, DST_FILES[system])
     installed = md5sum(wv_path)
     log.info('Widevine Current MD5: {}'.format(installed))
-    last_check = int(settings.common_settings.get('_wv_last_check', 0))
+    last_check = int(settings.get('_wv_last_check', 0))
 
     if not installed:
         if system == 'UWP':
@@ -277,7 +277,7 @@ def install_widevine(reinstall=False):
             has_compatible = True
 
     new_wv_hash = hash_6(json.dumps([x for x in wv_versions if not x.get('hidden')]))
-    if new_wv_hash != settings.common_settings.get('_wv_latest_hash') and (current and not current['compatible'] and has_compatible):
+    if new_wv_hash != settings.get('_wv_latest_hash') and (current and not current['compatible'] and has_compatible):
         reinstall = True
 
     if reinstall:
@@ -308,8 +308,8 @@ def install_widevine(reinstall=False):
         gui.ok(_(_.IA_WV_INSTALL_OK, version=selected['ver']))
         log.info('Widevine - Install ok: {}'.format(selected['ver']))
 
-    settings.common_settings.set('_wv_last_check', int(time.time()))
-    settings.common_settings.set('_wv_latest_hash', new_wv_hash)
+    settings.set('_wv_last_check', int(time.time()))
+    settings.set('_wv_latest_hash', new_wv_hash)
 
     return True
 

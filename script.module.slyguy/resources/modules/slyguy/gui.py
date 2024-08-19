@@ -42,8 +42,8 @@ def get_art_url(url, headers=None):
     _headers.update(headers or {})
     _headers.update(get_headers_from_url(url))
 
-    if settings.common_settings.getBool('proxy_enabled', True):
-        proxy_path = settings.common_settings.get('_proxy_path')
+    if settings.getBool('proxy_enabled', True):
+        proxy_path = settings.get('_proxy_path')
         if proxy_path:
             _headers.update({'session_type': 'art', 'session_addonid': ADDON_ID})
             if not url.lower().startswith(proxy_path.lower()):
@@ -134,7 +134,7 @@ class Item(object):
         self._is_folder = value
 
     def get_li(self, playing=False):
-        proxy_path = settings.common_settings.get('_proxy_path')
+        proxy_path = settings.get('_proxy_path')
 
         if KODI_VERSION < 18:
             li = xbmcgui.ListItem()
@@ -296,7 +296,7 @@ class Item(object):
         def get_url(url, plugin_proxy=False):
             _url = url.lower()
 
-            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or (plugin_proxy and _url.startswith('plugin://')) or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.common_settings.getBool('proxy_enabled', True):
+            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or (plugin_proxy and _url.startswith('plugin://')) or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.getBool('proxy_enabled', True):
                 url = u'{}{}'.format(proxy_path, url)
 
             return url
@@ -345,7 +345,6 @@ class Item(object):
                 li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
 
             if KODI_VERSION > 19:
-                li.setProperty('{}.stream_selection_type'.format(self.inputstream.addon_id), 'manual-osd')
                 li.setProperty('{}.chooser_resolution_max'.format(self.inputstream.addon_id), '4K')
                 li.setProperty('{}.chooser_resolution_secure_max'.format(self.inputstream.addon_id), '4K')
                 if self.inputstream.manifest_type == 'hls' and KODI_VERSION > 20:
@@ -430,24 +429,24 @@ class Item(object):
                     'quality': QUALITY_SKIP,
                     'middleware': {},
                     'type': None,
-                    'skip_next_channel': settings.common_settings.getBool('skip_next_channel', False),
-                    'h265': settings.common_settings.getBool('h265', False),
-                    'vp9': settings.common_settings.getBool('vp9', False),
-                    'av1': settings.common_settings.getBool('av1', False),
-                    'hdr10': settings.common_settings.getBool('hdr10', False),
-                    'dolby_vision': settings.common_settings.getBool('dolby_vision', False),
-                    'dolby_atmos': settings.common_settings.getBool('dolby_atmos', False),
-                    'ac3': settings.common_settings.getBool('ac3', False),
-                    'ec3': settings.common_settings.getBool('ec3', False),
-                    'verify': settings.common_settings.getBool('verify_ssl', True),
-                    'timeout': settings.common_settings.getInt('http_timeout', 30),
+                    'skip_next_channel': settings.getBool('skip_next_channel', False),
+                    'h265': settings.getBool('h265', False),
+                    'vp9': settings.getBool('vp9', False),
+                    'av1': settings.getBool('av1', False),
+                    'hdr10': settings.getBool('hdr10', False),
+                    'dolby_vision': settings.getBool('dolby_vision', False),
+                    'dolby_atmos': settings.getBool('dolby_atmos', False),
+                    'ac3': settings.getBool('ac3', False),
+                    'ec3': settings.getBool('ec3', False),
+                    'verify': settings.getBool('verify_ssl', True),
+                    'timeout': settings.getInt('http_timeout', 30),
                     'dns_rewrites': get_dns_rewrites(self.dns_rewrites),
-                    'proxy_server': settings.get('proxy_server') or settings.common_settings.get('proxy_server'),
-                    'ip_mode': settings.common_settings.IP_MODE.value,
-                    'max_bandwidth': settings.common_settings.getInt('max_bandwidth', 0),
-                    'max_width': settings.common_settings.getInt('max_width', 0),
-                    'max_height': settings.common_settings.getInt('max_width', 0),
-                    'max_channels': settings.common_settings.getInt('max_channels', 0),
+                    'proxy_server': settings.get('proxy_server') or settings.get('proxy_server'),
+                    'ip_mode': settings.IP_MODE.value,
+                    'max_bandwidth': settings.getInt('max_bandwidth', 0),
+                    'max_width': settings.getInt('max_width', 0),
+                    'max_height': settings.getInt('max_width', 0),
+                    'max_channels': settings.getInt('max_channels', 0),
                 }
 
                 if mimetype == 'application/vnd.apple.mpegurl':
@@ -455,7 +454,7 @@ class Item(object):
                 elif mimetype == 'application/dash+xml':
                     proxy_data['type'] = 'mpd'
 
-                if settings.common_settings.getBool('ignore_display_resolution', False) is False:
+                if settings.getBool('ignore_display_resolution', False) is False:
                     screen_width = int(xbmc.getInfoLabel('System.ScreenWidth') or 0)
                     screen_height = int(xbmc.getInfoLabel('System.ScreenHeight') or 0)
                     if screen_width:

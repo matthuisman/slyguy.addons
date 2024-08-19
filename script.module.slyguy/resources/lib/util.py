@@ -19,22 +19,22 @@ def get_slyguy_addons():
 
 def check_updates(force=False):
     _time = int(time())
-    if not force and _time < settings.common_settings.getInt('_last_updates_check', 0) + UPDATES_CHECK_TIME:
+    if not force and _time < settings.getInt('_last_updates_check', 0) + UPDATES_CHECK_TIME:
         return
 
-    settings.common_settings.setInt('_last_updates_check', _time)
+    settings.setInt('_last_updates_check', _time)
     with Session(timeout=15) as session:
         new_md5 = session.get(ADDONS_MD5).text.split(' ')[0]
 
-    if not force and new_md5 == settings.common_settings.get('addon_md5'):
+    if not force and new_md5 == settings.get('addon_md5'):
         return 0
-    settings.common_settings.set('_addon_md5', new_md5)
+    settings.set('_addon_md5', new_md5)
 
     pending_updates = {}
     slyguy_addons = get_slyguy_addons()
     slyguy_installed = [x['addonid'] for x in kodi_rpc('Addons.GetAddons', {'installed': True, 'enabled': True})['addons'] if x['addonid'] in slyguy_addons]
 
-    update_times = settings.common_settings.getDict('_updates', {})
+    update_times = settings.getDict('_updates', {})
     new_update_times = {}
     for addon_id in slyguy_installed:
         addon = get_addon(addon_id, install=False)
@@ -59,7 +59,7 @@ def check_updates(force=False):
             if addon_id in update_times and update_times[addon_id][0] == cur_version:
                 new_update_times[addon_id][1] = update_times[addon_id][1]
 
-    settings.common_settings.setDict('_updates', new_update_times)
+    settings.setDict('_updates', new_update_times)
     if not force and not pending_updates:
         return 0
 
@@ -69,7 +69,7 @@ def check_updates(force=False):
 
 def check_repo():
     addon = get_addon(REPO_ADDON_ID, install=True, required=True)
-    update_time = settings.common_settings.getDict('_updates', {}).get(REPO_ADDON_ID)
+    update_time = settings.getDict('_updates', {}).get(REPO_ADDON_ID)
     if not update_time or addon.getAddonInfo('version') != update_time[0] or time() < update_time[1] + UPDATE_TIME_LIMIT:
         return
 

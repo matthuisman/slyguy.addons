@@ -241,7 +241,7 @@ def resolve():
         return
 
     if '_play=1' in sys.argv[2]:
-        path = settings.common_settings.get('_proxy_path')+STOP_URL
+        path = settings.get('_proxy_path')+STOP_URL
         xbmcplugin.setResolvedUrl(handle, True, Item(path=path).get_li())
     else:
         xbmcplugin.endOfDirectory(handle, succeeded=False, updateListing=False, cacheToDisc=False)
@@ -409,20 +409,20 @@ def _settings(category=0, **kwargs):
 
 @route()
 def setting_help(id, **kwargs):
-    setting = settings.common_settings.get_setting(id)
+    setting = settings.get_setting(id)
     gui.ok(setting.description, setting._label)
 
 
 @route()
 def setting_select(id, **kwargs):
-    setting = settings.common_settings.get_setting(id)
+    setting = settings.get_setting(id)
     if setting.on_select():
         gui.refresh()
 
 
 @route()
 def setting_clear(id, **kwargs):
-    setting = settings.common_settings.get_setting(id)
+    setting = settings.get_setting(id)
     if setting.on_clear():
         gui.refresh()
 
@@ -748,9 +748,9 @@ class Folder(object):
                     is_folder = False,
                 ))
 
-        video_view_menus = settings.common_settings.getBool('video_view_menus', False)
-        video_view_media = settings.common_settings.getBool('video_view_media', False)
-        menu_view_shows_seasons = settings.common_settings.getBool('menu_view_shows_seasons', False)
+        video_view_menus = settings.getBool('video_view_menus', False)
+        video_view_media = settings.getBool('video_view_media', False)
+        menu_view_shows_seasons = settings.getBool('menu_view_shows_seasons', False)
 
         handle = _handle()
         count = 0.0
@@ -884,7 +884,7 @@ class Folder(object):
 
 
 def require_update():
-    updates = settings.common_settings.getDict('_updates')
+    updates = settings.getDict('_updates')
     if not updates:
         return
 
@@ -903,7 +903,7 @@ def require_update():
 
 
 def process_news():
-    news = settings.common_settings.getDict('_news')
+    news = settings.getDict('_news')
     if not news:
         return
 
@@ -911,7 +911,7 @@ def process_news():
         if news.get('show_in') and ADDON_ID.lower() not in [x.lower() for x in news['show_in'].split(',')]:
             return
 
-        settings.common_settings.setDict('_news', {})
+        settings.setDict('_news', {})
 
         if news.get('country'):
             valid = False
