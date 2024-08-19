@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.4.2">
+<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.4.3">
   <requires>
     <import addon="script.module.slyguy" version="0.84.39"/>
   </requires>

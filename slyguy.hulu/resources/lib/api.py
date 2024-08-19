@@ -360,8 +360,7 @@ class API(object):
 
         vid_types = [{'type':'H264','width':3840,'height':2160,'framerate':60,'level':'4.2','profile':'HIGH'}]
         if settings.getBool('h265'):
-            width, height = (3840, 2160) if settings.getBool('4k') else (1920, 1080)
-            vid_types.append({'type':'H265','width':width,'height':height,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
+            vid_types.append({'type':'H265','width':3840,'height':2160,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
 
         aud_types = [{'type':'AAC'}]
         if settings.getBool('ec3'):
@@ -412,8 +411,8 @@ class API(object):
             # 'cp_session_id': device_id,
         }
 
-        if (settings.getBool('enable_hdr', True) or settings.getBool('dolby_vision', False)) and req_hdcp_level(HDCP_2_2): # also need WV L1?
-            payload['playback']['video']['dynamic_range'] = 'DOLBY_VISION' if not settings.getBool('enable_hdr', True) else 'HDR'
+        if (settings.getBool('hdr10', True) or settings.getBool('dolby_vision', False)) and req_hdcp_level(HDCP_2_2): # also need WV L1?
+            payload['playback']['video']['dynamic_range'] = 'DOLBY_VISION' if not settings.getBool('hdr10', True) else 'HDR'
             payload['playback']['drm']['multi_key'] = True
 
         payload.update(self._lat_long())
