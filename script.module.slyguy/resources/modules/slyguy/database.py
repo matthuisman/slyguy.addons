@@ -3,7 +3,6 @@ import json
 
 import time
 import peewee
-from playhouse import db_url
 from six.moves import cPickle
 
 from slyguy import signals
@@ -147,7 +146,7 @@ def get_db(db_path=DB_PATH):
     return DBS.get(db_path)
 
 
-class Database(object):
+class Database(peewee.SqliteDatabase):
     def __init__(self, database, *args, **kwargs):
         self._tables = kwargs.pop('tables', [])
         for table in self._tables:
@@ -166,8 +165,7 @@ class Database(object):
             return
 
         log.debug("Closing db: {}".format(self.database))
-        if isinstance(self, peewee.SqliteDatabase):
-            self.execute_sql('VACUUM')
+        self.execute_sql('VACUUM')
         super(Database, self).close(*args, **kwargs)
 
     def connect(self, *args, **kwargs):
@@ -198,21 +196,6 @@ class Database(object):
         return result
 
 
-class SQLite(Database, peewee.SqliteDatabase):
-    pass
-
-class MySQL(Database, peewee.MySQLDatabase):
-    pass
-
-
-db_url.schemes['mysql'] = MySQL
 def init(tables=None, db_path=DB_PATH):
-    if db_path.lower().startswith('sqlite://'):
-        db_path = db_path[9:]
-
-    if db_path.lower().startswith('mysql://'):
-        db = DBS[db_path] = db_url.connect(db_path, autoconnect=True, tables=tables)
-    else:
-        db = DBS[db_path] = SQLite(db_path, pragmas=DB_PRAGMAS, timeout=10, autoconnect=True, tables=tables)
-
+    db = DBS[db_path] = Database(db_path, pragmas=DB_PRAGMAS, timeout=10, autoconnect=True, tables=tables)
     return db
