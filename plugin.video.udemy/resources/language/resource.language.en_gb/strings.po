@@ -15,7 +15,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30000"
-msgid "My Courses"
+msgid "Purchased"
 msgstr ""
 
 msgctxt "#30001"
@@ -48,4 +48,16 @@ msgstr ""
 
 msgctxt "#30007"
 msgid "Business Host"
+msgstr ""
+
+msgctxt "#30008"
+msgid "My Lists"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Edit Lists"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Updating Lists"
 msgstr ""

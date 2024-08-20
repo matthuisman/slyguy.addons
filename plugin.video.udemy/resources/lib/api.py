@@ -6,7 +6,7 @@ from slyguy import userdata
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
-from .constants import HEADERS, API_URL, DEFAULT_HOST, PAGE_SIZE
+from .constants import HEADERS, API_URL, DEFAULT_HOST, PAGE_SIZE, MAX_PAGE_SIZE
 from .language import _
 from .settings import settings
 
@@ -35,23 +35,49 @@ class API(object):
         self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
         self.logged_in = True
 
-    def my_courses(self, page=1, query=None):
+    def search(self, query, page=1):
+        params = {
+            'p': page,
+            'subs_filter_type': 'subs_only', #purchasable_only
+            'skip_price': True,
+            'q': query,
+        }
+        return self._session.get('search-courses/', params=params, headers={'referer':'https://www.udemy.com/courses/search/'}).json()
+
+    def purchased(self, page=1):
         params = {
             'page': page,
             'page_size': PAGE_SIZE,
-            'ordering': 'title',
             'fields[course]': 'id,title,image_480x270,image_750x422,headline,num_published_lectures,content_info,completion_ratio',
         }
+        return self._session.get('users/me/subscribed-courses/', params=params).json()
 
-        if query:
-            params['search'] = query
+    def collections(self):
+        return self._session.get('users/me/subscribed-courses-collections/').json()
 
-        return self._session.get('users/me/subscribed-courses', params=params).json()
+    def add_collection_course(self, list_id, course_id):
+        payload = {
+            'course': course_id,
+        }
+        return self._session.post('users/me/subscribed-courses-collections/{}/courses/'.format(list_id), json=payload).ok
+
+    def del_collection_course(self, list_id, course_id):
+        return self._session.delete('users/me/subscribed-courses-collections/{}/courses/{}/'.format(list_id, course_id)).ok
+
+    def collection(self, list_id, page=1):
+        params = {
+            'page': page,
+            'page_size': PAGE_SIZE,
+            'fields[user_has_subscribed_courses_collection]': '@all',
+            'course_limit': 0,
+            'fields[course]': 'id,title,image_480x270,image_750x422,headline,num_published_lectures,content_info,completion_ratio',
+        }
+        return self._session.get('users/me/subscribed-courses-collections/{}/courses/'.format(list_id), params=params).json()
 
     def chapters(self, course_id, page=1):
         params = {
             'page': page,
-            'page_size': PAGE_SIZE,
+            'page_size': MAX_PAGE_SIZE,
             'fields[course]': 'image_480x270',
             'fields[chapter]': 'description,object_index,title,course',
             'fields[lecture]': 'id',
@@ -69,7 +95,7 @@ class API(object):
     def lectures(self, course_id, chapter_id, page=1):
         params = {
             'page': page,
-            'page_size': PAGE_SIZE,
+            'page_size': MAX_PAGE_SIZE,
             'fields[course]': 'image_480x270,title',
             'fields[chapter]': 'id',
             'fields[lecture]': 'title,object_index,description,is_published,course,id,asset',
@@ -96,7 +122,7 @@ class API(object):
 
     def get_stream_data(self, asset_id):
         params = {
-            'fields[asset]': '@all',
+            'fields[asset]': 'asset_type,length,media_license_token,course_is_drmed,media_sources,captions,thumbnail_sprite,slides,slide_urls,download_urls,external_url',
         }
 
         data = self._session.get('assets/{}'.format(asset_id), params=params).json()

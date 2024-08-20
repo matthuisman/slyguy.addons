@@ -25,7 +25,8 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.MY_COURSES, _bold=True), path=plugin.url_for(my_courses))
+        folder.add_item(label=_(_.PURCHASED, _bold=True), path=plugin.url_for(purchased))
+        folder.add_item(label=_(_.MY_LISTS, _bold=True), path=plugin.url_for(my_lists))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -65,15 +66,42 @@ def logout(**kwargs):
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    data = api.my_courses(page=page, query=query)
-    return _process_courses(data['results']), data['next']
+    data = api.search(page=page, query=query)
+    items = _process_courses(data['courses'])
+    return items, True
 
 
 @plugin.route()
 @plugin.pagination()
-def my_courses(page=1, **kwargs):
-    folder = plugin.Folder(_.MY_COURSES)
-    data = api.my_courses(page=page)
+def my_lists(page=1, **kwargs):
+    folder = plugin.Folder(_.MY_LISTS)
+    data = api.collections()
+    for row in data['results']:
+        folder.add_item(
+            label = '{} [{}]'.format(row['title'], row['num_courses']),
+            info = {
+                'plot': row['description'],
+            },
+            path = plugin.url_for(list, list_id=row['id'], label=row['title']),
+        )
+    return folder, data['next']
+
+
+@plugin.route()
+@plugin.pagination()
+def list(list_id, label, page=1, **kwargs):
+    folder = plugin.Folder(label)
+    data = api.collection(list_id, page=page)
+    items = _process_courses(data['results'])
+    folder.add_items(items)
+    return folder, data['next']
+
+
+@plugin.route()
+@plugin.pagination()
+def purchased(page=1, **kwargs):
+    folder = plugin.Folder(_.PURCHASED)
+    data = api.purchased(page=page)
     items = _process_courses(data['results'])
     folder.add_items(items)
     return folder, data['next']
@@ -85,7 +113,7 @@ def _process_courses(rows):
         plot = _(_.COURSE_INFO,
             title = row['headline'],
             num_lectures = row['num_published_lectures'],
-            percent_complete = row['completion_ratio'],
+            percent_complete = row.get('completion_ratio', 0),
             length = row['content_info'],
         )
 
@@ -95,11 +123,62 @@ def _process_courses(rows):
             art = {'thumb': row['image_480x270']},
             info = {'plot': plot},
             is_folder = True,
+            context = (
+                (_.EDIT_LISTS, 'RunPlugin({})'.format(plugin.url_for(edit_lists, course_id=row['id']))),
+            ),
         )
 
         items.append(item)
 
     return items
+
+
+@plugin.route()
+def edit_lists(course_id, **kwargs):
+    course_id = int(course_id)
+    data = api.collections()
+
+    values = []
+    options = []
+    current = []
+    for index, row in enumerate(data['results']):
+        values.append(row['id'])
+        options.append(row['title'])
+        if course_id in [course['id'] for course in row['courses']]:
+            current.append(index)
+
+    selected = gui.select(_.EDIT_LISTS, options=options, preselect=current, multi=True)
+    if selected is None:
+        return
+
+    to_add = []
+    for index in selected:
+        if index not in current:
+            to_add.append(values[index])
+
+    to_remove = []
+    for index in current:
+        if index not in selected:
+            to_remove.append(values[index])
+            api.del_collection_course(values[index], course_id)
+
+    if not to_add and not to_remove:
+        return
+
+    total = len(to_add) + len(to_remove)
+    count = 0
+    with gui.progress(_.UPDATING_LISTS, background=True) as progress:
+        # add new
+        for list_id in to_add:
+            count += 1
+            progress.update(int((count/total)*100))
+            api.add_collection_course(list_id, course_id)
+
+        # remove old
+        for list_id in to_remove:
+            count += 1
+            progress.update(int((count/total)*100))
+            api.del_collection_course(to_remove, course_id)
 
 
 @plugin.route()
@@ -171,7 +250,8 @@ def play(asset_id, **kwargs):
         'libx265': 'hvc',
     }
 
-    urls = []
+    mp4s = []
+    adaptives = []
     for item in streams:
         if item['type'] != 'application/x-mpegURL':
             try:
@@ -188,45 +268,46 @@ def play(asset_id, **kwargs):
                 bandwidth = data['video_bitrate_in_kbps'] * 1000 #(or total_bitrate_in_kbps)
                 codecs = CODECS.get(data.get('video_codec'), '')
 
-            urls.append([bandwidth, resolution, fps, codecs, item['file']])
+            mp4s.append([bandwidth, resolution, fps, codecs, item['file']])
 
-    if not urls:
-        for row in stream_data.get('media_sources') or []:
-            if row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
-                urls.append([row['src'], inputstream.HLS(live=False)])
+    for row in stream_data.get('media_sources') or []:
+        if row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
+            adaptives.append([row['src'], inputstream.HLS(live=False)])
 
-            if row['type'] == 'application/dash+xml':
-                play_item.path = row['src']
+        elif row['type'] == 'video/mp4':
+            bandwidth, resolution = BANDWIDTH_MAP.get(int(row['label']))
+            mp4s.append([bandwidth, resolution, '30', 'avc', row['src']])
 
-                if is_drm:
-                    token = stream_data['media_license_token']
-                    ia = inputstream.Widevine(license_key=WV_URL.format(token=token))
-                else:
-                    ia = inputstream.MPD()
+        if row['type'] == 'application/dash+xml':
+            play_item.path = row['src']
 
-                urls.append([row['src'], ia])
+            if is_drm:
+                token = stream_data['media_license_token']
+                ia = inputstream.Widevine(license_key=WV_URL.format(token=token))
+            else:
+                ia = inputstream.MPD()
 
-        if urls:
-            urls = sorted(urls, key=lambda x: isinstance(x[1], inputstream.Widevine))
-            play_item.path = urls[0][0]
-            play_item.inputstream = urls[0][1]
-            if isinstance(play_item.inputstream, inputstream.Widevine):
-                system, arch = get_system_arch()
-                if system == 'Windows' or (system == 'Linux' and arch == 'armv7'):
-                    gui.ok(_.VMP_WARNING)
+            adaptives.append([row['src'], ia])
 
-            return play_item
+    if mp4s:
+        play_item.path = 'special://temp/udemy.m3u8'
+        play_item.proxy_data['custom_quality'] = True
+        with open(xbmc.translatePath(play_item.path), 'w') as f:
+            f.write('#EXTM3U\n#EXT-X-VERSION:3\n')
+            for row in mp4s:
+                f.write('\n#EXT-X-STREAM-INF:BANDWIDTH={},RESOLUTION={},FRAME-RATE={},CODECS={}\n{}'.format(row[0], row[1], row[2], row[3], row[4]))
 
-    if not urls:
+    elif adaptives:
+        adaptives = sorted(adaptives, key=lambda x: isinstance(x[1], inputstream.Widevine))
+        play_item.path = adaptives[0][0]
+        play_item.inputstream = adaptives[0][1]
+        if isinstance(play_item.inputstream, inputstream.Widevine):
+            system, arch = get_system_arch()
+            if system == 'Windows' or (system == 'Linux' and arch == 'armv7'):
+                if not gui.ok(_.VMP_WARNING):
+                    return
+
+    else:
         raise plugin.Error(_.NO_STREAM_ERROR)
 
-    str = '#EXTM3U\n#EXT-X-VERSION:3\n'
-    for row in urls:
-        print(row)
-        str += '\n#EXT-X-STREAM-INF:BANDWIDTH={},RESOLUTION={},FRAME-RATE={},CODECS={}\n{}'.format(row[0], row[1], row[2], row[3], row[4])
-
-    play_item.path = 'special://temp/udemy.m3u8'
-    play_item.proxy_data['custom_quality'] = True
-    with open(xbmc.translatePath(play_item.path), 'w') as f:
-        f.write(str)
     return play_item
