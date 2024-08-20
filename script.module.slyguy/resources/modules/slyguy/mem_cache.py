@@ -25,11 +25,12 @@ def _get_cache():
             if data:
                 set_kodi_string(cache_key, "")
                 try:
-                    cache.data = cPickle.loads(data.encode('latin1'))
+                    cache.data = cPickle.loads(data.encode('latin1')) or {}
                 except Exception as e:
                     log.debug('Memcache: load failed: {}'.format(e))
                 else:
                     log.debug("Memcache: loaded from kodi string")
+
     return cache.data
 
 
@@ -135,7 +136,7 @@ def cached(*args, **kwargs):
 def remove_expired():
     if KODI_VERSION < 18:
         log('Memcache: persisting via kodi string')
-        set_kodi_string(cache_key, cPickle.dumps(cache, protocol=0).decode('latin1'))
+        set_kodi_string(cache_key, cPickle.dumps(cache.data or {}, protocol=0).decode('latin1'))
 
 
 @router.route(ROUTE_CLEAR_CACHE)
