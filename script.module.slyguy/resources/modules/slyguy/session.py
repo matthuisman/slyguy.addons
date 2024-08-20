@@ -127,10 +127,19 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         return manager
 
     def connection_from_pool_key(self, func, pool_key, request_context):
-        if self.session_data['ssl_ciphers'] or self.session_data['ssl_options']:
-            context_key = (self.session_data['ssl_ciphers'], self.session_data['ssl_options'])
-            request_context['ssl_context'] = self._context_cache[context_key] = self._context_cache.get(context_key, requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=self.session_data['ssl_ciphers'], options=self.session_data['ssl_options']))
-            pool_key = pool_key._replace(key_ssl_context=context_key)
+        # Creat our SSL context
+        context_key = (self.session_data['ssl_ciphers'], self.session_data['ssl_options'])
+        context = self._context_cache.get(context_key)
+        if not context:
+            context = requests.packages.urllib3.util.ssl_.create_urllib3_context(
+                ciphers=self.session_data['ssl_ciphers'],
+                options=self.session_data['ssl_options'],
+            )
+            #loads in any windows certstore certs (eg business proxy)
+            context.load_default_certs()
+
+        request_context['ssl_context'] = self._context_cache[context_key] = context
+        pool_key = pool_key._replace(key_ssl_context=context_key)
 
         if self.session_data['interface_ip']:
             request_context['source_address'] = (self.session_data['interface_ip'], 0)

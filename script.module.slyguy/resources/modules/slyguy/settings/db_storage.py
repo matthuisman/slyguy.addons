@@ -7,7 +7,6 @@ import peewee
 from kodi_six import xbmc
 
 from slyguy import database, log, _
-from slyguy.util import load_json
 from slyguy.constants import COMMON_ADDON_ID, COMMON_ADDON, ADDON_ID
 
 
@@ -22,11 +21,7 @@ class Settings(database.Model):
 
 
 profile_path = xbmc.translatePath(COMMON_ADDON.getAddonInfo('profile'))
-try:
-    json_settings = load_json(os.path.join(profile_path, 'settings.json'))
-    db_path = json_settings['db_path']
-except:
-    db_path = os.path.join(profile_path, 'settings.db')
+db_path = os.path.join(profile_path, 'settings.db')
 db = database.init([Settings], db_path)
 
 
