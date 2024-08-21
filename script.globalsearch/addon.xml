@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.1.1">
+<addon id="script.globalsearch" name="Global Search+" provider-name="SlyGuy" version="99.1.2">
   <requires>
-    <import addon="script.module.slyguy" version="0.84.60"/>
+    <import addon="script.module.slyguy" version="0.85.12"/>
     <import addon="repository.slyguy.globalsearch"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
@@ -21,6 +21,6 @@ Drop-in replacement as uses the same addon id and much higher version number to 
           <icon>icon.png</icon>
           <fanart>fanart.jpg</fanart>
       </assets>
-      <news>New Settings!</news>
+      <news>Add Clear History setting</news>
   </extension>
 </addon>

@@ -1,10 +1,17 @@
+from slyguy import gui
 from slyguy.settings import CommonSettings
-from slyguy.settings.types import Bool, Number, List
+from slyguy.settings.types import Bool, Number, List, Action
 
 from .language import _
 
 
+def clear_history():
+    settings.HISTORY.clear()
+    gui.notification(_.HISTORY_CLEARED)
+
+
 class Settings(CommonSettings):
+    CLEAR_HISTORY = Action(clear_history, _.CLEAR_HISTORY, confirm_action=True)
     HISTORY_LENGTH = Number('history_length', _.HISTORY_LENGTH, default=20, lower_limit=0, upper_limit=100)
     SMART_SEARCH = Bool('smart_search', _.SMART_SEARCH, default=True)
     SEARCH_TITLE = Bool('search_title', _.SEARCH_TITLE, default=True)

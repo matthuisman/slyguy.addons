@@ -7,6 +7,8 @@ class Language(BaseLanguage):
     SEARCH_TITLE        = 30002
     SEARCH_ORIG_TITLE   = 30003
     SEARCH_TAGS         = 30004
+    CLEAR_HISTORY       = 30005
+    HISTORY_CLEARED     = 30006
 
     SEARCH_MOVIES       = 32001
     SEARCH_TV_SHOWS     = 32002

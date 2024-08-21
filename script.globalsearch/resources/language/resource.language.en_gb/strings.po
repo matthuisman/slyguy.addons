@@ -44,6 +44,15 @@ msgctxt "#30004"
 msgid "Search in Tags"
 msgstr ""
 
+msgctxt "#30005"
+msgid "Clear History"
+msgstr ""
+
+msgctxt "#30006"
+msgid "History cleared"
+msgstr ""
+
+
 msgctxt "#32000"
 msgid "General"
 msgstr ""
