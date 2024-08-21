@@ -308,6 +308,7 @@ class Action(Setting):
 
     def __init__(self, action, *args, **kwargs):
         self._action = action
+        self._confirm_action = kwargs.pop('confirm_action', False)
         id = 'action_{}'.format(Action._count)
         Action._count += 1
         super(Action, self).__init__(id, *args, **kwargs)
@@ -320,6 +321,9 @@ class Action(Setting):
         return value
 
     def select(self):
+        if self._confirm_action and not dialog.yes_no(_.ARE_YOU_SURE, self._label):
+            return
+
         value = self._action
         if callable(value):
             value = value()
