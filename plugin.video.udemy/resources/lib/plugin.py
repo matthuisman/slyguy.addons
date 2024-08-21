@@ -1,3 +1,5 @@
+import re
+from collections import defaultdict
 from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, inputstream, signals
@@ -10,6 +12,11 @@ from .settings import settings
 
 
 api = API()
+
+
+def udemy_strip_html_tags(text):
+    text = strip_html_tags(text)
+    return re.sub(r'^\s+', '', text, flags=re.MULTILINE)
 
 
 @signals.on(signals.BEFORE_DISPATCH)
@@ -107,32 +114,6 @@ def purchased(page=1, **kwargs):
     return folder, data['next']
 
 
-def _process_courses(rows):
-    items = []
-    for row in rows:
-        plot = _(_.COURSE_INFO,
-            title = row['headline'],
-            num_lectures = row['num_published_lectures'],
-            percent_complete = row.get('completion_ratio', 0),
-            length = row['content_info'],
-        )
-
-        item = plugin.Item(
-            label = row['title'],
-            path = plugin.url_for(chapters, course_id=row['id'], title=row['title']),
-            art = {'thumb': row['image_480x270']},
-            info = {'plot': plot},
-            is_folder = True,
-            context = (
-                (_.EDIT_LISTS, 'RunPlugin({})'.format(plugin.url_for(edit_lists, course_id=row['id']))),
-            ),
-        )
-
-        items.append(item)
-
-    return items
-
-
 @plugin.route()
 def edit_lists(course_id, **kwargs):
     course_id = int(course_id)
@@ -181,37 +162,83 @@ def edit_lists(course_id, **kwargs):
             api.del_collection_course(to_remove, course_id)
 
 
+def _process_courses(rows):
+    items = []
+    for row in rows:
+        item = plugin.Item(
+            label = row['title'],
+            path = plugin.url_for(chapters, course_id=row['id'], title=row['title']),
+            art = {'thumb': row['image_480x270']},
+            info = {'plot': _(_.COURSE_INFO, headline=row['headline'])},
+            is_folder = True,
+            context = (
+                (_.EDIT_LISTS, 'RunPlugin({})'.format(plugin.url_for(edit_lists, course_id=row['id']))),
+            ),
+        )
+
+        items.append(item)
+
+    return items
+
+
 @plugin.route()
 @plugin.pagination()
 def chapters(course_id, title, page=1, **kwargs):
     folder = plugin.Folder(title)
 
+    image = None
+    total_lectures = 0
     rows, next_page = api.chapters(course_id, page=page)
     for row in sorted(rows, key=lambda r: r['object_index']):
+        image = row['course']['image_480x270']
+
+        plot = _(_.CHAPTER_INFO,
+            description = udemy_strip_html_tags(row['description']),
+            num_lectures = len(row['lectures']),
+        )
+        total_lectures += len(row['lectures'])
+
         folder.add_item(
             label = _(_.SECTION_LABEL, section_number=row['object_index'], section_title=row['title']),
-            path = plugin.url_for(lectures, course_id=course_id, chapter_id=row['id'], title=title),
-            art = {'thumb': row['course']['image_480x270']},
-            info = {'plot': strip_html_tags(row['description'])},
+            path = plugin.url_for(lectures, course_id=course_id, title=title, chapter_id=row['id']),
+            art = {'thumb': image},
+            info = {'plot': plot},
         )
+
+    folder.add_item(
+        label = _(_.ALL, _bold=True),
+        path = plugin.url_for(lectures, course_id=course_id, title=title),
+        art = {'thumb': image},
+        info = {'plot':_(_.CHAPTER_INFO, description='', num_lectures=total_lectures)},
+        specialsort = 'top',
+        _position = 0,
+    )
 
     return folder, next_page
 
 
 @plugin.route()
 @plugin.pagination()
-def lectures(course_id, chapter_id, title, page=1, **kwargs):
+def lectures(course_id, title, chapter_id=None, page=1, **kwargs):
     folder = plugin.Folder(title)
 
-    rows, next_page = api.lectures(course_id, chapter_id, page=page)
+    ep_nums = defaultdict(int)
+    rows, next_page = api.lectures(course_id, page=page)
     for row in rows:
+        if chapter_id and int(chapter_id) != int(row['chapter']['id']):
+            continue
+
+        ep_nums[row['chapter']['object_index']] += 1
+        plot = u'[B]{}[/B]\n\n{}'.format(row['chapter']['title'], udemy_strip_html_tags(row['description']))
         folder.add_item(
             label = row['title'],
             path = plugin.url_for(play, asset_id=row['asset']['id']),
             art = {'thumb': row['course']['image_480x270']},
             info = {
                 'title': row['title'],
-                'plot': strip_html_tags(row['description']),
+                'plot': plot,
+                'season': row['chapter']['object_index'],
+                'episode': ep_nums[row['chapter']['object_index']],
                 'duration': row['asset']['length'],
                 'mediatype': 'episode',
                 'tvshowtitle': row['course']['title'],

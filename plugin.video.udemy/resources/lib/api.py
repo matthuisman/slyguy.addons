@@ -44,14 +44,6 @@ class API(object):
         }
         return self._session.get('search-courses/', params=params, headers={'referer':'https://www.udemy.com/courses/search/'}).json()
 
-    def purchased(self, page=1):
-        params = {
-            'page': page,
-            'page_size': PAGE_SIZE,
-            'fields[course]': 'id,title,image_480x270,image_750x422,headline,num_published_lectures,content_info,completion_ratio',
-        }
-        return self._session.get('users/me/subscribed-courses/', params=params).json()
-
     def collections(self):
         return self._session.get('users/me/subscribed-courses-collections/').json()
 
@@ -70,17 +62,25 @@ class API(object):
             'page_size': PAGE_SIZE,
             'fields[user_has_subscribed_courses_collection]': '@all',
             'course_limit': 0,
-            'fields[course]': 'id,title,image_480x270,image_750x422,headline,num_published_lectures,content_info,completion_ratio',
+            'fields[course]': 'id,title,image_480x270,image_750x422,headline',
         }
         return self._session.get('users/me/subscribed-courses-collections/{}/courses/'.format(list_id), params=params).json()
+
+    def purchased(self, page=1):
+        params = {
+            'page': page,
+            'page_size': PAGE_SIZE,
+            'fields[course]': 'id,title,image_480x270,image_750x422,headline',
+        }
+        return self._session.get('users/me/subscribed-courses/', params=params).json()
 
     def chapters(self, course_id, page=1):
         params = {
             'page': page,
             'page_size': MAX_PAGE_SIZE,
             'fields[course]': 'image_480x270',
-            'fields[chapter]': 'description,object_index,title,course',
-            'fields[lecture]': 'id',
+            'fields[chapter]': 'description,object_index,title,course,lecture',
+            'fields[lecture]': 'id,asset,is_published',
             'fields[practice]': 'id',
             'fields[quiz]': 'id',
         }
@@ -89,34 +89,47 @@ class API(object):
         data = r.json()
         if not r.ok:
             raise APIError(data.get('detail'))
-        rows = [r for r in data['results'] if r['_class'] == 'chapter']
-        return rows, data['next']
 
-    def lectures(self, course_id, chapter_id, page=1):
+        chapters = []
+        chapter = None
+        for row in data['results']:
+            if row['_class'] == 'chapter':
+                chapter = row
+                chapter['lectures'] = []
+
+            elif chapter and row['_class'] == 'lecture' and row['is_published'] and row['asset']['asset_type'] in ('Video', 'Audio'):
+                chapter['lectures'].append(row)
+                if chapter not in chapters:
+                    chapters.append(chapter)
+
+        return chapters, data['next']
+
+    def lectures(self, course_id, page=1):
         params = {
             'page': page,
             'page_size': MAX_PAGE_SIZE,
             'fields[course]': 'image_480x270,title',
-            'fields[chapter]': 'id',
+            'fields[chapter]': 'id,title,object_index',
             'fields[lecture]': 'title,object_index,description,is_published,course,id,asset',
             'fields[asset]': 'asset_type,length,status',
             'fields[practice]': 'id',
             'fields[quiz]': 'id',
         }
 
-        data = self._session.get('courses/{}/subscriber-curriculum-items/'.format(course_id), params=params).json()
+        r = self._session.get('courses/{}/subscriber-curriculum-items/'.format(course_id), params=params)
+        data = r.json()
+        if not r.ok:
+            raise APIError(data.get('detail'))
 
         lectures = []
-        found = False
+        chapter = None
         for row in data['results']:
-            if not found and row['_class'] == 'chapter' and row['id'] == int(chapter_id):
-                found = True
+            if row['_class'] == 'chapter':
+                chapter = row
 
-            elif found and row['_class'] == 'lecture' and row['is_published'] and row['asset']['asset_type'] in ('Video', 'Audio'):
+            elif chapter and row['_class'] == 'lecture' and row['is_published'] and row['asset']['asset_type'] in ('Video', 'Audio'):
+                row['chapter'] = chapter
                 lectures.append(row)
-
-            elif found and row['_class'] == 'chapter':
-                break
 
         return lectures, data['next']
 

@@ -13,6 +13,7 @@ class Language(BaseLanguage):
     MY_LISTS         = 30008
     EDIT_LISTS       = 30009
     UPDATING_LISTS   = 30010
+    CHAPTER_INFO     = 30011
 
 
 _ = Language()
