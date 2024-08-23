@@ -41,8 +41,8 @@ CODECS = [
     ['av0?1', 'AV1'],
     ['hdr', HDR],
     ['dvh', DOLBY_VISION],
-    ['vp0?9\.0?2', 'VP9 HDR'],
-    ['av0?1.*09\.16\.09\.0', 'AV1 HDR'],
+    [r'vp0?9\.0?2', 'VP9 HDR'],
+    [r'av0?1.*09\.16\.09\.0', 'AV1 HDR'],
 ]
 CODECS = [[re.compile(x[0], re.IGNORECASE), x[1]] for x in CODECS]
 

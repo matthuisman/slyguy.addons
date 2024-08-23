@@ -253,7 +253,7 @@ class RawSession(requests.Session):
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
             pattern = entries.pop()
-            pattern = re.escape(pattern).replace('\*', '.*')
+            pattern = re.escape(pattern).replace(r'\*', '.*')
             pattern = re.compile(pattern, flags=re.IGNORECASE)
 
             new_entries = []
