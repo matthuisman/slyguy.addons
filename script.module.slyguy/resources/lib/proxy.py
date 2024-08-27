@@ -517,27 +517,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         mpd = root.getElementsByTagName("MPD")[0]
         mpd_attribs = list(mpd.attributes.keys())
-
-        if mpd.getAttribute('type') == 'dynamic':
-            if KODI_VERSION > 20:
-                ## Below seems to cause buffering at chapter change (https://github.com/matthuisman/slyguy.addons/issues/836)
-                # set maximum 4s update period
-                # existing = pthms_to_seconds(mpd.getAttribute('minimumUpdatePeriod')) or 4
-                # mpd.setAttribute('minimumUpdatePeriod', "PT{}S".format(min(existing, 4)))
-
-                # set minimum 24s live delay
-                min_delay = 24
-                existing = pthms_to_seconds(mpd.getAttribute('suggestedPresentationDelay')) or 0
-                if existing < min_delay:
-                    value = 'PT{}S'.format(min_delay)
-                    log.debug('Dash Fix: Setting suggestedPresentationDelay to "{}"'.format(value))
-                    mpd.setAttribute('suggestedPresentationDelay', value)
-
-            # ## Fix mpd overalseconds bug issue: https://github.com/xbmc/inputstream.adaptive/issues/731 / https://github.com/xbmc/inputstream.adaptive/pull/881
-            if KODI_VERSION < 21 and 'timeShiftBufferDepth' not in mpd_attribs and 'mediaPresentationDuration' not in mpd_attribs:
-                buffer_seconds = (arrow.now() - arrow.get(mpd.getAttribute('availabilityStartTime'))).total_seconds()
-                mpd.setAttribute('mediaPresentationDuration', 'PT{}S'.format(buffer_seconds))
-                log.debug('Dash Fix: {}S mediaPresentationDuration added'.format(buffer_seconds))
+        # ## Fix mpd overalseconds bug issue: https://github.com/xbmc/inputstream.adaptive/issues/731 / https://github.com/xbmc/inputstream.adaptive/pull/881
+        if KODI_VERSION < 21 and mpd.getAttribute('type') == 'dynamic' and 'timeShiftBufferDepth' not in mpd_attribs and 'mediaPresentationDuration' not in mpd_attribs:
+            buffer_seconds = (arrow.now() - arrow.get(mpd.getAttribute('availabilityStartTime'))).total_seconds()
+            mpd.setAttribute('mediaPresentationDuration', 'PT{}S'.format(buffer_seconds))
+            log.debug('Dash Fix: {}S mediaPresentationDuration added'.format(buffer_seconds))
 
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
@@ -915,11 +899,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             base_url_parents.append(elem.parentNode)
         ################
 
-        if KODI_VERSION < 21:
-            # wipe out manifest so not passed again
-            # Kodi 21 and up need to set mpd attribs again
-            self._session['manifest'] = None
-
+        # wipe out manifest so not passed again
+        self._session['manifest'] = None
         ## Convert Location
         for elem in root.getElementsByTagName('Location'):
             url = elem.firstChild.nodeValue

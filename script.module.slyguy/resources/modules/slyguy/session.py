@@ -115,7 +115,6 @@ class DNSResolver(dns.resolver.Resolver):
 class SessionAdapter(requests.adapters.HTTPAdapter):
     def __init__(self):
         self.session_data = {}
-        self._context_cache = {}
         super(SessionAdapter, self).__init__()
 
     def init_poolmanager(self, *args, **kwargs):
@@ -129,18 +128,14 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
     def connection_from_pool_key(self, func, pool_key, request_context):
         # Creat our SSL context
-        context_key = (self.session_data['ssl_ciphers'], self.session_data['ssl_options'])
-        context = self._context_cache.get(context_key)
-        if not context:
-            context = requests.packages.urllib3.util.ssl_.create_urllib3_context(
-                ciphers=self.session_data['ssl_ciphers'],
-                options=self.session_data['ssl_options'],
-            )
-            #loads in any windows certstore certs (eg business proxy)
-            context.load_default_certs()
-
-        request_context['ssl_context'] = self._context_cache[context_key] = context
-        pool_key = pool_key._replace(key_ssl_context=context_key)
+        request_context['ssl_context'] = requests.packages.urllib3.util.ssl_.create_urllib3_context(
+            ciphers=self.session_data['ssl_ciphers'],
+            options=self.session_data['ssl_options'],
+        )
+        #loads in any windows certstore certs (eg business proxy)
+        request_context['ssl_context'].load_default_certs()
+        # ensure unique pool (socket) for ssl cipher / options
+        pool_key = pool_key._replace(key_ssl_context=(self.session_data['ssl_ciphers'], self.session_data['ssl_options']))
 
         if self.session_data['interface_ip']:
             request_context['source_address'] = (self.session_data['interface_ip'], 0)

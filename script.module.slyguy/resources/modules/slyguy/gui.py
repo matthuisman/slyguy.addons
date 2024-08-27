@@ -347,9 +347,7 @@ class Item(object):
             if KODI_VERSION > 19:
                 li.setProperty('{}.chooser_resolution_max'.format(self.inputstream.addon_id), '4K')
                 li.setProperty('{}.chooser_resolution_secure_max'.format(self.inputstream.addon_id), '4K')
-                if self.inputstream.manifest_type == 'hls' and KODI_VERSION > 20:
-                    # dash sets its own delay in proxy
-                    li.setProperty('inputstream.adaptive.live_delay', '24')
+                li.setProperty('inputstream.adaptive.live_delay', '24')
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
