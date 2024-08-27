@@ -2,6 +2,7 @@ import json
 import socket
 import shutil
 import re
+import time
 import os
 import functools
 import random
@@ -200,9 +201,11 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
                 for address_family in families:
                     if not address_family:
                         continue
+
+                    start = time.time()
                     ips = resolver.resolve(host, family=address_family, interface_ip=self.session_data['interface_ip'])
                     if ips:
-                        log.debug('DNS Resolve: {} -> {} -> {}'.format(host, ', '.join(resolver.nameservers), ', '.join(ips)))
+                        log.debug('DNS Resolve: {} -> {} -> {} ({:.5f}s)'.format(host, ', '.join(resolver.nameservers), ', '.join(ips), time.time()-start))
                         return ips
 
             raise socket.gaierror('Unable to resolve host: {} using ip mode: {}'.format(host, self.session_data['ip_mode']))

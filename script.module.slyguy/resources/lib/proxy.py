@@ -540,7 +540,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 mpd.setAttribute('mediaPresentationDuration', 'PT{}S'.format(buffer_seconds))
                 log.debug('Dash Fix: {}S mediaPresentationDuration added'.format(buffer_seconds))
 
-
         ## SORT ADAPTION SETS BY BITRATE ##
         video_sets = []
         audio_sets = []
@@ -1352,34 +1351,29 @@ class RequestHandler(BaseHTTPRequestHandler):
                 ip_mode = self._session.get('ip_mode'),
                 auto_close = False,
             )
+            self._session['session'].created = int(time.time())
             self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
             self._session['session'].set_proxy(self._session.get('proxy_server'))
             self._session['session'].set_cert(self._session.get('cert'))
             self._session['session'].cookies.update(self._session.pop('cookies', {}))
         else:
+            # force fresh connection / socket
+            self._session['session'].close()
+            # clear old headers
             self._session['session'].headers.clear()
             #self._session['session'].cookies.clear() #lets handle cookies in session
 
         ## Fix any double // in url
         url = fix_url(url)
 
-        retries = 3
-        # some reason we get connection errors every so often when using a session. something to do with the socket
-        for i in range(retries):
-            log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
-            try:
-                response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
-            except ConnectionError as e:
-                if 'Connection aborted' not in str(e) or i == retries-1:
-                    log.exception(e)
-                    raise
-            except Exception as e:
-                log.exception(e)
-                raise
-            else:
-                log.debug('RESPONSE IN: {} ({})'.format(url, response.status_code))
-                break
+        log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
+        try:
+            response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
+        except Exception as e:
+            log.exception(e)
+            raise
 
+        log.debug('RESPONSE IN: {} ({})'.format(url, response.status_code))
         response.stream = ResponseStream(response)
 
         headers = {}
