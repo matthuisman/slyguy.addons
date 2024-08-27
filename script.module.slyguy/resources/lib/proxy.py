@@ -10,7 +10,6 @@ from xml.dom.minidom import parseString
 from functools import cmp_to_key
 
 import arrow
-from requests import ConnectionError
 from six.moves.BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
@@ -1351,7 +1350,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 ip_mode = self._session.get('ip_mode'),
                 auto_close = False,
             )
-            self._session['session'].created = int(time.time())
             self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
             self._session['session'].set_proxy(self._session.get('proxy_server'))
             self._session['session'].set_cert(self._session.get('cert'))
