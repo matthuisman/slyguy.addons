@@ -1507,9 +1507,8 @@ def save_session():
     if not session:
         return
 
-    cookie_jar = session.pop('cookie_jar', None)
-    if cookie_jar:
-        session['cookies'] = cookie_jar.get_dict()
+    if 'cookie_jar' in session:
+        session['cookies'] = session.pop('cookie_jar').get_dict()
 
     set_kodi_string('_slyguy_proxy_data', json.dumps(session))
     log.debug('Session saved')
