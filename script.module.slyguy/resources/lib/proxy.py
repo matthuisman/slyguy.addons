@@ -15,6 +15,7 @@ from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
 from kodi_six import xbmc
 from pycaption import detect_format, WebVTTWriter
+from requests.cookies import RequestsCookieJar
 
 from slyguy import gui, settings, log, _
 from slyguy.constants import *
@@ -170,18 +171,23 @@ class RequestHandler(BaseHTTPRequestHandler):
         else:
             session_type = DEFAULT_SESSION_NAME
             self._session = PROXY_GLOBAL['sessions'].get(session_type) or {}
-            try:
-                proxy_data = json.loads(get_kodi_string('_slyguy_proxy_data'))
-                set_kodi_string('_slyguy_proxy_data', '')
 
-                if self._session.get('session_id') != proxy_data['session_id']:
+            proxy_data = get_kodi_string('_slyguy_proxy_data')
+            if proxy_data:
+                set_kodi_string('_slyguy_proxy_data', '')
+                proxy_data = json.loads(proxy_data)
+
+                if self._session.get('session_id', 0) != proxy_data.get('session_id', 1):
                     self._session = {}
 
                 if not self._session:
                     log.debug('Session created from proxy data')
                     self._session.update(proxy_data)
-            except:
-                pass
+
+                    self._session['cookie_jar'] = RequestsCookieJar()
+                    # re-load any previous saved cookies
+                    self._session['cookie_jar'].update(self._session.pop('cookies', {}))
+
         PROXY_GLOBAL['sessions'][session_type] = self._session
 
         # must remove content-length header as the length can change once we read it / resend it
@@ -899,8 +905,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             base_url_parents.append(elem.parentNode)
         ################
 
-        # wipe out manifest so not passed again
-        self._session['manifest'] = None
+        if KODI_VERSION < 21:
+            # wipe out manifest so not passed again
+            # Kodi 21 and up need to set mpd attribs again otherwise IA gets confused
+            # with missing reps
+            self._session['manifest'] = None
+
         ## Convert Location
         for elem in root.getElementsByTagName('Location'):
             url = elem.firstChild.nodeValue
@@ -1324,30 +1334,24 @@ class RequestHandler(BaseHTTPRequestHandler):
             with open(xbmc.translatePath('special://temp/request.data'), 'wb') as f:
                 f.write(self._post_data)
 
-        if not self._session.get('session'):
-            self._session['session'] = RawSession(
-                verify = self._session.get('verify'),
-                timeout = self._session.get('timeout'),
-                ip_mode = self._session.get('ip_mode'),
-                auto_close = False,
-            )
-            self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
-            self._session['session'].set_proxy(self._session.get('proxy_server'))
-            self._session['session'].set_cert(self._session.get('cert'))
-            self._session['session'].cookies.update(self._session.pop('cookies', {}))
-        else:
-            # force fresh connection / socket
-            self._session['session'].close()
-            # clear old headers
-            self._session['session'].headers.clear()
-            #self._session['session'].cookies.clear() #lets handle cookies in session
-
         ## Fix any double // in url
         url = fix_url(url)
 
+        session = RawSession(
+            verify = self._session.get('verify'),
+            timeout = self._session.get('timeout'),
+            ip_mode = self._session.get('ip_mode'),
+        )
+        session.set_dns_rewrites(self._session.get('dns_rewrites', []))
+        session.set_proxy(self._session.get('proxy_server'))
+        session.set_cert(self._session.get('cert'))
+        if 'cookie_jar' in self._session:
+            session.cookies = self._session['cookie_jar']
+
         log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
         try:
-            response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
+            with session as s:
+                response = s.request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
         except Exception as e:
             log.exception(e)
             raise
@@ -1372,7 +1376,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if 'set-cookie' in response.headers:
             log.debug('set-cookie: {}'.format(response.headers['set-cookie']))
-            ## we handle cookies in the requests session
+            ## we handle cookies in the cookiejar
             response.headers.pop('set-cookie')
 
         if response.ok and not self._session['redirecting']:
@@ -1496,21 +1500,24 @@ class ResponseStream(object):
 
                 yield chunk
 
+
 def save_session():
     # persist session across service restarts
     session = PROXY_GLOBAL['sessions'].get(DEFAULT_SESSION_NAME)
     if not session:
         return
 
-    requests_session = session.pop('session', None)
-    if requests_session:
-        session['cookies'] = requests_session.cookies.get_dict()
+    cookie_jar = session.pop('cookie_jar', None)
+    if cookie_jar:
+        session['cookies'] = cookie_jar.get_dict()
 
     set_kodi_string('_slyguy_proxy_data', json.dumps(session))
     log.debug('Session saved')
 
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
+
 
 class Proxy(object):
     started = False

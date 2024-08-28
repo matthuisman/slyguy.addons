@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import time
@@ -345,9 +346,8 @@ class Item(object):
                 li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
 
             if KODI_VERSION > 19:
-                li.setProperty('{}.chooser_resolution_max'.format(self.inputstream.addon_id), '4K')
-                li.setProperty('{}.chooser_resolution_secure_max'.format(self.inputstream.addon_id), '4K')
-                li.setProperty('inputstream.adaptive.live_delay', '24')
+                # improve live playback with a longer delay from head
+                li.setProperty('{}.live_delay'.format(self.inputstream.addon_id), '24')
 
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
