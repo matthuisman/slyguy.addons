@@ -9,8 +9,10 @@ from slyguy.exceptions import Error
 from .settings import HEADERS, BASE_URL, PAGE_SIZE
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -74,7 +76,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
@@ -87,6 +89,7 @@ class API(object):
     def podcasts(self, slug, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
+        # uses page (for now)
         params = {
             'page': page,
             'page_size': page_size,
@@ -98,6 +101,7 @@ class API(object):
     def search_videos(self, query, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
+        # uses page (for now)
         params = {
             'page': page,
             'page_size': page_size,
@@ -136,7 +140,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
@@ -149,7 +153,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
@@ -159,7 +163,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
@@ -169,6 +173,7 @@ class API(object):
     def creator(self, slug, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
+        # uses page (for now)
         params = {
             'page': page,
             'page_size': page_size,
@@ -181,7 +186,7 @@ class API(object):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
