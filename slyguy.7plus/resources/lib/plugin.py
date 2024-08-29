@@ -5,12 +5,13 @@ from xml.sax.saxutils import escape
 import arrow
 from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
-from slyguy import plugin, settings, signals, mem_cache
+from slyguy import plugin, signals, mem_cache
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG
 
 from .api import API
 from .language import _
+from .settings import settings
 from .constants import *
 
 api = API()
@@ -24,10 +25,9 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
-    folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, slug='ctv-home'))
-
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(content, slug='ctv-home'))
     _nav(folder)
-
     folder.add_item(label=_(_.NEWS, _bold=True), path=plugin.url_for(content, slug='news'))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(content, slug='all-categories'))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
@@ -51,13 +51,16 @@ def _get_url(url):
 
 @mem_cache.cached(60*5)
 def _nav(folder):
+    skips = ['live-tv']
+
     replaces = {
         'shows': plugin.url_for(shows),
-        'live-tv': plugin.url_for(live_tv),
     }
 
     for row in api.nav():
         slug = row['contentLink'].lstrip('/')
+        if slug in skips:
+            continue
         path = replaces.get(slug, plugin.url_for(content, slug=slug))
         folder.add_item(
             label = _(row['title'], _bold=True),
@@ -78,6 +81,10 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
 
     count = len(rows)
     for row in rows:
+        if not row:
+            # probably api version needs bumping
+            continue
+
         item = None
         if row['type'] in ('mediaShelf', 'channelShelf') and row['cName'] not in ('My Watchlist', 'Continue Watching'):
             if expand_media:
@@ -107,7 +114,7 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
                     ['([0-9]+)s$', lambda match: int(match.group(1))],
                 ]
 
-                strings = [row['cardData']['subtitle']]
+                strings = [row['cardData'].get('duration','')]
                 if 'infoPanelData' in row:
                     strings.insert(0, row['infoPanelData']['subtitle'])
 
@@ -167,13 +174,17 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
             )
 
         if row['type'] in ('SeriesCard', 'contentLinkedImage'):
+            art = {'thumb': _image(row['image']['url'])}
+            if 'seriesBackgroundImage' in row:
+                art['fanart'] = _image(row['seriesBackgroundImage']['url'], width=1000)
+
             item = plugin.Item(
                 label = row.get('title') or row['image']['altTag'] or row.get('cName'),
                 info = {
-                    'plot': row.get('lozengeText'),
+                    'plot': row.get('description'),
                     'mediatype': 'tvshow',
                 },
-                art = {'thumb': _image(row['image']['url'])},
+                art = art,
             )
 
             if '/live/' in row['contentLink']['url'] or LIVE_TV_SLUG in row['contentLink']['url']:
@@ -182,7 +193,7 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
                 if 'channelLogo' in row:
                     item.art['fanart'] = _image(row['channelLogo']['url'], width=1000)
             else:
-                item.path = plugin.url_for(content, slug=_get_url(row['contentLink']['url']))
+                item.path = plugin.url_for(content, slug=_get_url(row['contentLink']['url']), thumb=row['image']['url'])
 
         if row['type'] == 'ChannelItem':
             plot = u''
@@ -236,11 +247,11 @@ def live_tv(**kwargs):
     return folder
 
 @plugin.route()
-def content(slug, label=None, expand_media=0, **kwargs):
+def content(slug, label=None, thumb=None, expand_media=0, **kwargs):
     data = api.content(slug)
 
     if data['pageMetaData']['pageEventName'] == 'vodPage':
-        return show(slug, data)
+        return show(slug, data, thumb)
 
     folder = plugin.Folder(label or data['title'])
     items = _process_rows(data['items'], slug, int(expand_media))
@@ -248,11 +259,11 @@ def content(slug, label=None, expand_media=0, **kwargs):
 
     return folder
 
-def show(slug, data):
+def show(slug, data, thumb=None):
     show_name = data['pageMetaData']['pageTitle']
     plot = data['pageMetaData']['description']
-    thumb = _image(data['items'][0]['thumbnail']['url'])
-    fanart = _image(data['items'][0]['primaryBackgroundImage']['url'], width=1000)
+    thumb = _image(thumb or data['pageMetaData']['objectGraphImage']['url'])
+    fanart = _image(data['items'][0]['backgroundImage']['url'], width=1000)
 
     folder = plugin.Folder(data['title'], fanart=fanart)
 

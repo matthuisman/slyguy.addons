@@ -5,8 +5,10 @@ from slyguy.exceptions import Error
 from .constants import *
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -43,7 +45,7 @@ class API(object):
 
         return data.json()['videos'][0]
 
-    def races(self, year=2023):
+    def races(self, year):
         params = {
             'q': '+tags:Superview +tags:{} -tags:delete -tags:test'.format(year),
             'limit': 100,

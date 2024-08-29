@@ -21,12 +21,12 @@ from .exceptions import (
 # The following pattern captures [start], [end] and [cue settings] if existent
 from .geometry import HorizontalAlignmentEnum
 
-TIMING_LINE_PATTERN = re.compile('^(\S+)\s+-->\s+(\S+)(?:\s+(.*?))?\s*$')
-TIMESTAMP_PATTERN = re.compile('^(\d+):(\d{2})(:\d{2})?\.(\d{3})')
+TIMING_LINE_PATTERN = re.compile(r'^(\S+)\s+-->\s+(\S+)(?:\s+(.*?))?\s*$')
+TIMESTAMP_PATTERN = re.compile(r'^(\d+):(\d{2})(:\d{2})?\.(\d{3})')
 VOICE_SPAN_PATTERN = re.compile('<v(\\.\\w+)* ([^>]*)>')
 OTHER_SPAN_PATTERN = (
     re.compile(
-        '</?([cibuv]|ruby|rt|lang|(\d+):(\d{2})(:\d{2})?\.(\d{3})).*?>'
+        r'</?([cibuv]|ruby|rt|lang|(\d+):(\d{2})(:\d{2})?\.(\d{3})).*?>'
     )
 )  # These WebVTT tags are stripped off the cues on conversion
 

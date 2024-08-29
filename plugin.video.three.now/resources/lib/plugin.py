@@ -1,31 +1,32 @@
-import re
 import string
 
 import arrow
 
-from slyguy import plugin, gui, settings, userdata, inputstream
+from slyguy import plugin, inputstream
 
 from .api import API
-from .constants import EPISODE_EXPIRY
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.GENRE, _bold=True), path=plugin.url_for(genres))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE, _bold=True), path=plugin.url_for(live))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def shows(sort=None, **kwargs):
@@ -93,8 +94,8 @@ def genre(genre, title, **kwargs):
 def _parse_shows(rows):
     items = []
     for row in rows:
-        thumb = row.get('images',{}).get('showTile','').replace('[width]', '301').replace('[height]', '227')
-        fanart = row.get('images',{}).get('dashboardHero','').replace('[width]', '1600').replace('[height]', '520')
+        thumb = row.get('images',{}).get('landscapeTile','').replace('[width]', '407').replace('[height]', '223')
+        fanart = row.get('images',{}).get('spotlight','').replace('[width]', '1600').replace('[height]', '900')
 
         item = plugin.Item(
             label = row['name'],
@@ -112,64 +113,19 @@ def _parse_shows(rows):
 
     return items
 
-def _parse_episodes(rows):
-    items = []
-    for row in rows:
-        videoid = row['externalMediaId']
-        thumb = row.get('images', {}).get('videoTile','').split('?')[0]
-
-        info = {
-            'title': row['name'],
-            'genre': row.get('genre'),
-            'plot': row.get('synopsis'),
-            'duration': int(row.get('duration')),
-            'dateadded': row.get('airedDate'),
-            'mediatype': 'episode',
-            'tvshowtitle': row.get('showTitle'),
-            'episode': int(row.get('episode')) if row.get('episode') else None,
-            'season': int(row.get('season')) if row.get('season') else None,
-        }
-
-        if info['episode'] or not info['season']:
-            search = u'{} {} {}'.format(row['name'], row.get('synopsis', ''), row.get('cust_params', ''))
-            patterns = ['Season ([0-9]+) Ep ([0-9]+)', 'S([0-9]+) Ep([0-9]+)', 'season([0-9]+)ep([0-9]+)']
-            for pattern in patterns:
-                result = re.search(pattern, search)
-                if result:
-                    season, episode = result.groups(0)
-                    if not info['episode']:
-                        info['episode'] = int(episode)
-                    if not info['season']:
-                        info['season'] = int(season)
-                    break
-
-        if 'movie' in row.get('genres', []) or (len(rows) == 1 and not info['episode'] and row['name'] == row.get('tvshowtitle')):
-            info['mediatype'] = 'movie'
-
-        item = plugin.Item(
-            label = row['name'],
-            art = {'thumb': thumb},
-            path = plugin.url_for(play, id=videoid),
-            info = info,
-            playable = True,
-        )
-
-        items.append(item)
-
-    return items
 
 @plugin.route()
 def show(id, season=None, **kwargs):
     data = api.show(id)
-    thumb = data.get('images',{}).get('showTile','').replace('[width]', '301').replace('[height]', '227')
-    fanart = data.get('images',{}).get('dashboardHero','').replace('[width]', '1600').replace('[height]', '520')
+    thumb = data.get('images',{}).get('landscapeTile','').replace('[width]', '407').replace('[height]', '223')
+    fanart = data.get('images',{}).get('spotlight','').replace('[width]', '1600').replace('[height]', '900')
     folder = plugin.Folder(data['name'], thumb=thumb, fanart=fanart)
 
     if 'seasons' in data:
         if season is None and len(data['seasons']) == 1 and settings.getBool('flatten_single_season'):
-            folder.add_items(_parse_episodes(data['seasons'][0]['episodes']))
+            folder.add_items(_parse_episodes(data['seasons'][0], data))
         else:
-            for row in sorted(data['seasons'], key=lambda x: x['order']):
+            for row in sorted(data['seasons'], key=lambda x: int(x.get('seasonNumber', x['order']))):
                 if season is None and settings.getBool('flatten_single_season'):
                     folder.add_item(
                         label = row['name'],
@@ -181,12 +137,48 @@ def show(id, season=None, **kwargs):
                         path = plugin.url_for(show, id=id, season=row['seasonId']),
                     )
                 elif season == row['seasonId']:
-                    folder.add_items(_parse_episodes(row['episodes']))
+                    folder.add_items(_parse_episodes(row, data))
 
     elif 'episodes' in data:
-        folder.add_items(_parse_episodes(data['episodes']))
+        folder.add_items(_parse_episodes(data, data))
 
     return folder
+
+
+def _parse_episodes(season, show):
+    items = []
+    for row in season['episodes']:
+        videoid = row['externalMediaId']
+        thumb = row.get('images', {}).get('videoTile','').split('?')[0]
+        fanart = show.get('images',{}).get('spotlight','').replace('[width]', '1600').replace('[height]', '900')
+
+        info = {
+            'title': row['name'],
+            'genre': row.get('genre'),
+            'plot': row.get('synopsis'),
+            'duration': int(row.get('duration')),
+            'dateadded': row.get('airedDate'),
+            'mediatype': 'episode',
+            'tvshowtitle': row.get('showTitle'),
+            'episode': int(row.get('episode')) if row.get('episode') else None,
+            'season': int(row.get('season')) if row.get('season') else season.get('seasonNumber'),
+        }
+
+        if 'movie' in row.get('genres', []) or (len(season['episodes']) == 1 and not info['episode'] and row['name'] == row.get('tvshowtitle')):
+            info['mediatype'] = 'movie'
+            thumb = show.get('images',{}).get('landscapeTile','').replace('[width]', '407').replace('[height]', '223')
+
+        item = plugin.Item(
+            label = row['name'],
+            art = {'thumb': thumb, 'fanart': fanart},
+            path = plugin.url_for(play, id=videoid),
+            info = info,
+            playable = True,
+        )
+
+        items.append(item)
+
+    return items
 
 @plugin.route()
 def play(id, **kwargs):
@@ -195,13 +187,10 @@ def play(id, **kwargs):
 @plugin.route()
 def play_channel(channel, **kwargs):
     for row in api.live():
-        if row['title'] == channel:
-
-            if 'lsai' in row['videoRenditions']['videoCloud']:
-                url = row['videoRenditions']['videoCloud']['lsai']['url'].replace('/session/', '/master/')
-            else:
-                url = row['videoRenditions']['videoCloud']['hlsUrl']
-
+        if row['channelId'] == channel:
+            url = row['videoRenditions'].get('hlsUrl')
+            if not url:
+                url = api.lsai(row)
             return plugin.Item(
                 inputstream = inputstream.HLS(live=True),
                 path = url,
@@ -236,7 +225,7 @@ def live(**kwargs):
             label = row['displayName'],
             art = {'thumb': row.get('logo','').split('?')[0]},
             info = {'plot': plot},
-            path = plugin.url_for(play_channel, channel=row['title'], _is_live=True),
+            path = plugin.url_for(play_channel, channel=row['channelId'], _is_live=True),
             playable = True,
         )
 

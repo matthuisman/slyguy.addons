@@ -15,7 +15,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30000"
-msgid "My Courses"
+msgid "Purchased"
 msgstr ""
 
 msgctxt "#30001"
@@ -24,8 +24,7 @@ msgid "Failed to login.\n"
 msgstr ""
 
 msgctxt "#30002"
-msgid "{title}\n\n"
-"{num_lectures} Lectures ({length})"
+msgid "{headline}"
 msgstr ""
 
 msgctxt "#30003"
@@ -50,28 +49,19 @@ msgctxt "#30007"
 msgid "Business Host"
 msgstr ""
 
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
+msgctxt "#30008"
+msgid "My Lists"
 msgstr ""
 
-msgctxt "#32043"
-msgid "Best"
+msgctxt "#30009"
+msgid "Edit Lists"
 msgstr ""
 
-msgctxt "#32060"
-msgid "Lowest"
+msgctxt "#30010"
+msgid "Updating Lists"
 msgstr ""
 
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
+msgctxt "#30011"
+msgid "{description}\n\n"
+"{num_lectures} Lectures"
 msgstr ""

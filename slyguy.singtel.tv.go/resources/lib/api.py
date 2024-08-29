@@ -3,15 +3,16 @@ import arrow
 
 from slyguy import userdata, mem_cache
 from slyguy.session import Session
-from slyguy.log import log
 from slyguy.exceptions import Error
 from slyguy.util import hash_6
 
 from .constants import *
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):

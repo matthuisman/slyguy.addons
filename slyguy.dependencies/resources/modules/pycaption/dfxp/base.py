@@ -175,7 +175,7 @@ class DFXPReader(BaseReader):
         # convert text
         if isinstance(tag, NavigableString):
             # strips indentation whitespace only
-            pattern = re.compile("^(?:[\n\r]+\s*)?(.+)")
+            pattern = re.compile(r"^(?:[\n\r]+\s*)?(.+)")
             result = pattern.search(tag)
             if result:
                 # Escaping/unescaping xml entities is the responsibility of the

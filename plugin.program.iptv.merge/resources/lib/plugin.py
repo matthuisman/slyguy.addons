@@ -1,11 +1,11 @@
 import os
 import re
-from distutils.version import LooseVersion
 
 from kodi_six import xbmc, xbmcvfs
+from looseversion import LooseVersion
 
-from slyguy import plugin, settings, gui, userdata
-from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin, safe_copy
+from slyguy import plugin, gui, userdata
+from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin
 from slyguy.constants import ADDON_PROFILE, ADDON_ID, ADDON_NAME
 from slyguy.exceptions import PluginError
 from slyguy.monitor import monitor
@@ -15,6 +15,8 @@ from .language import _
 from .models import Playlist, EPG, Channel, Override, merge_info
 from .constants import *
 from .merger import Merger, check_merge_required
+from .settings import settings
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -61,12 +63,13 @@ def home(**kwargs):
         folder.add_item(label=_.BOOKMARKS, path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False)
-
     return folder
+
 
 @plugin.route()
 def http_info(**kwargs):
     gui.text("Playlist URL\n[B]{}[/B]\n\nEPG URL\n[B]{}[/B]".format(userdata.get('_playlist_url'), userdata.get('_epg_url')))
+
 
 @plugin.route()
 def shift_playlist(playlist_id, shift, **kwargs):
@@ -526,24 +529,12 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
     addon_path = xbmc.translatePath(addon.getAddonInfo('profile'))
     is_multi_instance = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('20.8.0')
-    is_http_compatible = LooseVersion(addon.getAddonInfo('version')) >= LooseVersion('21.7.0')
     instance_filepath = os.path.join(addon_path, 'instance-settings-1.xml')
 
-    # disable http method for now due to some issues. eg. [Errno 32] Broken pipe (https://forum.kodi.tv/showthread.php?tid=340691&pid=3180908#pid3180908)
-    is_http_compatible = False
-
-    if is_http_compatible:
-        proxy_path = settings.common_settings.get('_proxy_path')
-        playlist_path = proxy_path + plugin.url_for(http_playlist)
-        epg_path = proxy_path + plugin.url_for(http_epg)
-        userdata.set('http_method', True)
-        path_type = '1'
-    else:
-        output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
-        playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-        epg_path = os.path.join(output_dir, EPG_FILE_NAME)
-        userdata.set('http_method', False)
-        path_type = '0'
+    output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
+    playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
+    epg_path = os.path.join(output_dir, EPG_FILE_NAME)
+    path_type = '0'
 
     if is_multi_instance:
         try:
@@ -659,6 +650,10 @@ def _setup(check_only=False, reinstall=True, run_merge=True):
 
 @plugin.route()
 def merge(**kwargs):
+    # no service running (kodi.proxy?), run_merge directly
+    if not get_kodi_string('_iptv_merge_service_running'):
+        return plugin.redirect(plugin.url_for(run_merge, forced=1))
+
     if get_kodi_string('_iptv_merge_force_run'):
         raise PluginError(_.MERGE_IN_PROGRESS)
     else:

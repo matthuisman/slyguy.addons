@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.stan.au" name="Stan" provider-name="SlyGuy" version="0.4.5">
+<addon id="plugin.video.stan.au" name="Stan" provider-name="SlyGuy" version="0.5.1">
   <requires>
-    <import addon="script.module.slyguy" version="0.63.1"/>
+    <import addon="script.module.slyguy" version="0.84.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
     <provides>video</provides>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Add pagination</news>
+    <news>New settings!</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

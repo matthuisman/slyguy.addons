@@ -3,6 +3,7 @@ from slyguy.language import _
 
 from .constants import VIDEO_TESTS
 
+
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
@@ -14,9 +15,9 @@ def home(**kwargs):
             playable = True,
         )
 
-    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS))
-
+    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), bookmark=False)
     return folder
+
 
 @plugin.route()
 def play_video(index, **kwargs):

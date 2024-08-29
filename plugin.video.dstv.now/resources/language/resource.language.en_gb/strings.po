@@ -9,10 +9,6 @@ msgctxt "#30001"
 msgid "Device Link"
 msgstr ""
 
-msgctxt "#30002"
-msgid "Live TV"
-msgstr ""
-
 msgctxt "#30003"
 msgid "{channel_number} - {channel_name}"
 msgstr ""
@@ -30,10 +26,6 @@ msgctxt "#30006"
 msgid "{url} returned error: {code}\n"
 "Make sure your entitled to this content and your IP address is allowed (not geo-blocked)\n"
 "Also try logging out and logging back in"
-msgstr ""
-
-msgctxt "#30007"
-msgid "Movies"
 msgstr ""
 
 msgctxt "#30008"
@@ -77,30 +69,4 @@ msgstr ""
 msgctxt "#30016"
 msgid "Error obtaining Widevine license\n"
 "Server Message: {error}"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""

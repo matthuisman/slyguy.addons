@@ -15,35 +15,37 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30001"
-msgid "Play using Youtube Android App"
+msgid "Play using Native Android App"
 msgstr ""
 
 msgctxt "#30002"
-msgid "Fallback to Youtube Android App"
+msgid "Fallback to Native Android App"
 msgstr ""
 
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
+msgctxt "#30003"
+msgid "Native Android App ID"
 msgstr ""
 
-msgctxt "#32043"
-msgid "Best"
+msgctxt "#30004"
+msgid "This addon uses yt_dlp which does not support Python 2\n"
+"You need to update to Kodi 19 or higher to use this addon"
 msgstr ""
 
-msgctxt "#32060"
-msgid "Lowest"
+msgctxt "#30005"
+msgid "This addon uses yt_dlp which does not support Python 2\n"
+"You can enable playback via Android native app instead in the addon settings"
 msgstr ""
 
-msgctxt "#32048"
-msgid "Bypass"
+msgctxt "#30006"
+msgid "No content found for ID: {id}\n"
+"Error: {error}"
 msgstr ""
 
-msgctxt "#32054"
-msgid "Custom"
+msgctxt "#30007"
+msgid "This addon does not support searching"
 msgstr ""
 
-msgctxt "#32073"
-msgid "Disabled"
+msgctxt "#30008"
+msgid "Could not find a valid video ID in the below url\n"
+"{url}"
 msgstr ""

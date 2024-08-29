@@ -2,32 +2,84 @@ import string
 import codecs
 
 import arrow
-from kodi_six import xbmcplugin
-from slyguy import plugin, gui, settings, userdata, inputstream
+from six.moves.urllib.parse import urlencode, parse_qsl
+from kodi_six import xbmc, xbmcplugin
+from slyguy import plugin, inputstream, gui, signals
 from slyguy.constants import *
 
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings
 
 api = API()
+
+
+@signals.on(signals.BEFORE_DISPATCH)
+def before_dispatch():
+    api.new_session()
+    plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
-    folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
-    folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
-    folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
-    folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+    if not api.logged_in:
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+    else:
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+        folder.add_item(label=_(_.LIVE_EVENTS, _bold=True), path=plugin.url_for(live_events))
+        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
+        folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
+        folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
+        folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
-    if settings.getBool('bookmarks', True):
-        folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+        if settings.getBool('bookmarks', True):
+            folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
+
+        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
+
+@plugin.route()
+def login(**kwargs):
+    options = [
+        [_.DEVICE_CODE, _device_code],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    gui.refresh()
+
+
+def _device_code():
+    monitor = xbmc.Monitor()
+    data = api.device_code()
+
+    with gui.progress(_(_.DEVICE_LINK_STEPS, code=data['auth_code'], url=ACTIVATE_URL), heading=_.DEVICE_CODE) as progress:
+        for i in range(data['expires_in']):
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
+
+            progress.update(int((i / float(data['expires_in'])) * 100))
+
+            if i % data['interval'] == 0 and api.device_login(data['auth_code'], data['device_code']):
+                return True
+
+
+@plugin.route()
+def logout(**kwargs):
+    if not gui.yes_no(_.LOGOUT_YES_NO):
+        return
+
+    api.logout()
+    gui.refresh()
+
 
 @plugin.route()
 def featured(rail=None, **kwargs):
@@ -224,8 +276,11 @@ def search(query, page, **kwargs):
     return items, False
 
 def _channels():
-    region = settings.getEnum('region', REGIONS, default=NSW)
-    return api.channels(region)
+    region = settings.REGION.value
+    data = api.channels(region)
+    data['channels'].extend([row for row in data['events'] if row['type'] == 'live-event' and row['nextEvent']['name']])
+    data['events'] = [row for row in data['events'] if row not in data['channels']]
+    return data
 
 @plugin.route()
 def live_events(**kwargs):
@@ -234,22 +289,28 @@ def live_events(**kwargs):
 
     folder = plugin.Folder(_.LIVE_EVENTS)
 
-    for row in data['events']:
+    for row in sorted(data.get('events', []), key=lambda row:arrow.get(row['startDate'])):
         start = arrow.get(row['startDate']).to('local')
         end = arrow.get(row['endDate']).to('local')
 
-        plot = row['subtitle']
-        if now > start and now < end:
-            label = row['displayName']
+        if start.floor('day') == now.floor('day'):
+            start_s = start.format('h:mma')
+        elif start < now.shift(days=6):
+            start_s = start.format('ddd h:mma')
         else:
-            label = u'{} [B][{}][/B]'.format(row['displayName'], start.humanize())
-            plot += '\n\n[B]{}[/B]'.format(start.format('h:mma DD/MM/YYYY'))
+            start_s = start.format('ddd Do MMMM h:mma')
+
+        plot = u'{}\n[B]{} - {}[/B]\n\n{}'.format(row['subtitle'], start_s, end.format('h:mma'), row.get('description')).strip()
+        if start > now:
+            label = u'{} [B][{}][/B]'.format(row['displayName'], start_s)
+        else:
+            label = row['displayName']
 
         folder.add_item(
             label = label,
             info = {'plot': plot},
             art = {'thumb': row['image']['sizes']['w768'], 'fanart': row['image']['sizes']['w1920']},
-            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=row['type'] == 'live-event'),
+            path = plugin.url_for(play_event, reference=row['referenceId'], _is_live=row['type'] == 'live-event'),
             playable = True,
         )
 
@@ -275,47 +336,81 @@ def live_tv(**kwargs):
                 else:
                     plot += u'[{} - {}]\n{}'.format(start.to('local').format('h:mma'), stop.to('local').format('h:mma'), listing['name'])
 
+        if row.get('type') == 'live-event':
+            path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=True)
+        else:
+            path = plugin.url_for(play_channel, reference=row['referenceId'], _is_live=True)
+
         folder.add_item(
             label = row['name'],
             info = {'plot': plot},
             art = {'thumb': row['image']['sizes']['w768']},
-            path = plugin.url_for(play_channel, reference=row['referenceId'], _is_live=True),
+            path = path,
             playable = True,
-        )
-
-    if data.get('events'):
-        folder.add_item(
-            label = _(_.LIVE_EVENTS, _bold=True),
-            info = {'plot': _(_.EVENT_COUNT, count=len(data['events']), _bold=True)},
-            path = plugin.url_for(live_events),
-            specialsort = 'bottom',
         )
 
     return folder
 
+
 @plugin.route()
+@plugin.login_required()
 def play(reference, **kwargs):
-    item = api.get_brightcove_src(reference)
+    return _play(reference, is_live=ROUTE_LIVE_TAG in kwargs)
+
+
+@plugin.route()
+@plugin.login_required()
+def play_event(reference, **kwargs):
+    event = None
+    data = _channels()
+    for row in data.get('events', []):
+        if row['referenceId'] == reference:
+            event = row
+            break
+
+    if not event:
+        raise Exception('could not find event')
+
+    item = api.get_brightcove_src(event['referenceId'])
+    try:
+        item.path += '?{}'.format(event['ssai']['postfixParams'])
+    except KeyError:
+        pass
+
     item.headers = HEADERS
     if ROUTE_LIVE_TAG in kwargs and item.inputstream:
         item.inputstream.live = True
 
     return item
 
-@plugin.route()
-def play_channel(reference, **kwargs):
-    data = _channels()
 
+@plugin.route()
+@plugin.login_required()
+def play_channel(reference, **kwargs):
     url = None
+    data = _channels()
     for row in data['channels']:
         if row['referenceId'] == reference:
-            url = row['stream']['url'].split('?')[0]
+            url = row['stream']['url']
             break
 
+    # fix encoded query
+    if '?' in url:
+        url = url.split('?')[0] + '?' + urlencode(parse_qsl(url.split('?')[1]))
+
     return plugin.Item(
+        headers = HEADERS,
         path = url,
-       # inputstream = inputstream.HLS(live=True),
+        inputstream = inputstream.HLS(live=True),
     )
+
+
+def _play(reference, is_live=False):
+    item = api.get_brightcove_src(reference)
+    item.headers = HEADERS
+    if is_live and item.inputstream:
+        item.inputstream.live = True
+    return item
 
 def _parse_show(row):
     if not row['episodeCount']:
@@ -356,7 +451,7 @@ def _parse_episode(row):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = _channels()
-    region = settings.getEnum('region', REGIONS, default=NSW)
+    region = settings.REGION.value
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))

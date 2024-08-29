@@ -1,43 +1,46 @@
-import os
 import string
 
 import arrow
 from kodi_six import xbmcplugin
-from slyguy import plugin, gui, settings, userdata, inputstream, signals
-from slyguy.constants import *
+from slyguy import plugin, inputstream, signals, log
 from slyguy.util import pthms_to_seconds
 from slyguy.session import Session
 from slyguy.router import add_url_args
-from slyguy.log import log
+from slyguy.constants import *
 
 from .api import API
 from .constants import HEADERS, EPG_URL
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
 
+
 @plugin.route('')
 def home(**kwargs):
     folder = plugin.Folder()
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
     folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(page, title=_.FEATURED))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.SPORT, _bold=True), path=plugin.url_for(page, slug='sport', title=_.SPORT))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
+
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
-    if not api.logged_in:
-        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
-    else:
-        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
+    # if not api.logged_in:
+    #     folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+    # else:
+    #     folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
@@ -83,7 +86,7 @@ def _process_video(data, showname, categories=None):
                 label = label.replace(replace, replaces[replace]())
         data['labels'][key] = label
 
-    label = '{}'.format(data['labels']['primary'])
+    label = u'{}'.format(data['labels']['primary'])
     if 'Movies' in categories:
         categories.remove('Movies')
         _type = 'movie'
@@ -91,7 +94,7 @@ def _process_video(data, showname, categories=None):
         _type = 'episode'
 
     if data['labels'].get('secondary'):
-        plot = '[B]{}[/B]\n\n{}'.format(data['labels']['secondary'], data['synopsis'])
+        plot = u'[B]{}[/B]\n\n{}'.format(data['labels']['secondary'], data['synopsis'])
     else:
         plot = data['synopsis']
 
@@ -106,6 +109,7 @@ def _process_video(data, showname, categories=None):
     path = None
     meta = data['publisherMetadata']
     if 'brightcoveVideoId' in meta:
+       # path = plugin.url_for(play, brightcoveId=data['videoId'])
         path = plugin.url_for(play, brightcoveId=meta['brightcoveVideoId'])
     elif 'liveStreamUrl' in meta:
         path = plugin.url_for(play, livestream=meta['liveStreamUrl'], _is_live=meta['state'] != 'dvr')
@@ -125,28 +129,28 @@ def _process_video(data, showname, categories=None):
         path = path,
     )
 
-@plugin.route()
-def login(**kwargs):
-    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
-    if not username:
-        return
+# @plugin.route()
+# def login(**kwargs):
+#     username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+#     if not username:
+#         return
 
-    userdata.set('username', username)
+#     userdata.set('username', username)
 
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
+#     password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+#     if not password:
+#         return
 
-    api.login(username=username, password=password)
-    gui.refresh()
+#     api.login(username=username, password=password)
+#     gui.refresh()
 
-@plugin.route()
-def logout(**kwargs):
-    if not gui.yes_no(_.LOGOUT_YES_NO):
-        return
+# @plugin.route()
+# def logout(**kwargs):
+#     if not gui.yes_no(_.LOGOUT_YES_NO):
+#         return
 
-    api.logout()
-    gui.refresh()
+#     api.logout()
+#     gui.refresh()
 
 @plugin.route()
 def page(title, slug='', **kwargs):
@@ -503,9 +507,6 @@ def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, p
                     plugin.exception(_.LIVE_HLS_REQUIRED)
 
     elif mediakindhref:
-        if not api.logged_in:
-            plugin.exception(_.PLUGIN_LOGIN_REQUIRED)
-
         data = api.play(mediakindhref)
         if 'message' in data:
             plugin.exception(data['message'])

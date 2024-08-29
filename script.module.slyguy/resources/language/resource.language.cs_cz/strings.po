@@ -274,8 +274,8 @@ msgid "No Results"
 msgstr "Žádné výsledky"
 
 msgctxt "#32032"
-msgid "{addon} ({version}/{common_version}) - Unexpected Error"
-msgstr "{addon} ({version}/{common_version}) - Neočekávaná chyba"
+msgid "Unexpected Error"
+msgstr "Neočekávaná chyba"
 
 msgctxt "#32033"
 msgid "Failed to download required file: {filename}"

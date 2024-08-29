@@ -14,18 +14,12 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#30000"
-msgid "Home"
-msgstr ""
-
 msgctxt "#30001"
 msgid "Latitude,Longitude"
 msgstr ""
 
-
-
-msgctxt "#30004"
-msgid "Live"
+msgctxt "#30002"
+msgid "Hide Clips"
 msgstr ""
 
 msgctxt "#30008"
@@ -34,14 +28,6 @@ msgstr ""
 
 msgctxt "#30009"
 msgid "Categories"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Shows"
-msgstr ""
-
-msgctxt "#30011"
-msgid "ALL"
 msgstr ""
 
 msgctxt "#30012"
@@ -70,42 +56,4 @@ msgstr ""
 
 msgctxt "#30019"
 msgid "Season {number}"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr ""
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr ""
-
-msgctxt "#32064"
-msgid "From Start"
 msgstr ""

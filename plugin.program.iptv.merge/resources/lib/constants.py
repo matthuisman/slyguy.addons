@@ -3,7 +3,6 @@ EPG_FILE_NAME = 'epg.xml'
 IPTV_SIMPLE_ID = 'pvr.iptvsimple'
 METHOD_PLAYLIST = 'playlist'
 METHOD_EPG = 'epg'
-MERGE_SETTING_FILE = '.iptv_merge'
 
 TYPE_IPTV_MERGE = 1
 TYPE_IPTV_MANAGER = 2

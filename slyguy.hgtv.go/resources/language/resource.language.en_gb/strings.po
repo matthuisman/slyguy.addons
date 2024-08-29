@@ -14,38 +14,8 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#30000"
-msgid "Live TV"
-msgstr ""
-
 msgctxt "#30001"
 msgid "Your auth token has became invalid\n"
 "This is often caused by out of region IP address\n"
 "You will need to logout and login again"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""

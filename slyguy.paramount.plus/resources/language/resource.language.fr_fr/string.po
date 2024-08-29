@@ -38,7 +38,6 @@ msgctxt "#30011"
 msgid "Shows"
 msgstr "Emissions"
 
-
 msgctxt "#30014"
 msgid "Season {season}"
 msgstr "Saison {season}"
@@ -46,10 +45,6 @@ msgstr "Saison {season}"
 msgctxt "#30015"
 msgid "Clips"
 msgstr "Clips"
-
-msgctxt "#30016"
-msgid "Movies"
-msgstr "Films"
 
 msgctxt "#30017"
 msgid "A-Z"
@@ -62,19 +57,6 @@ msgstr "Populaire"
 msgctxt "#30019"
 msgid "Featured"
 msgstr "À la une"
-
-msgctxt "#30020"
-msgid "H.265"
-msgstr "H.265"
-
-msgctxt "#30021"
-msgid "4K"
-msgstr "4k"
-
-msgctxt "#30022"
-msgid "Dolby Vision"
-msgstr "Dolby Vision"
-
 
 msgctxt "#30024"
 msgid "Dolby Digital Plus (EC-3)"
@@ -92,10 +74,6 @@ msgctxt "#30027"
 msgid "Select Partner"
 msgstr "Sélectionner le partenaire"
 
-msgctxt "#30028"
-msgid "Dolby Atmos"
-msgstr "Dolby Atmos"
-
 msgctxt "#30029"
 msgid "Failed to refresh auth token\n"
 "Check your subscription is still valid\n"
@@ -107,41 +85,3 @@ msgstr "Échec de l'actualisation du jeton d'authentification\n"
 msgctxt "#30030"
 msgid "Sync with Paramount+"
 msgstr "Synchroniser avec Paramount+"
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr "Demander"
-
-msgctxt "#32043"
-msgid "Best"
-msgstr "Meilleure"
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr "La plus basse"
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr "Contourner"
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr "Personnaliser"
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr "Désactiver"
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr "Demander"
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr "Depuis le direct"
-
-msgctxt "#32064"
-msgid "From Start"
-msgstr "Depuis le début"

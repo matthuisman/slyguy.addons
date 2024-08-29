@@ -1,12 +1,9 @@
 import codecs
-import threading
 import time
-from xml.sax.saxutils import escape
 
 import arrow
-from six.moves import queue
 
-from slyguy import plugin, gui, userdata, inputstream, signals, settings
+from slyguy import plugin, gui, userdata, inputstream, signals
 from slyguy.log import log
 from slyguy.monitor import monitor
 from slyguy.session import Session
@@ -15,13 +12,17 @@ from slyguy.util import get_system_arch
 from .api import API
 from .language import _
 from .constants import ZA_EPG_URL, LICENSE_COOLDOWN
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -44,8 +45,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def live_tv(**kwargs):

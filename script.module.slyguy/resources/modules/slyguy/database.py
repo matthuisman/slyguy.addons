@@ -1,20 +1,15 @@
 import os
 import json
-import codecs
 
+import time
 import peewee
 from six.moves import cPickle
 
-from . import userdata, signals
-from .log import log
-from .util import hash_6
-from .constants import DB_PATH, DB_PRAGMAS, DB_MAX_INSERTS, DB_TABLENAME, ADDON_DEV
+from slyguy import signals
+from slyguy.log import log
+from slyguy.util import hash_6, makedirs
+from slyguy.constants import DB_PATH, DB_PRAGMAS, DB_TABLENAME, ADDON_DEV
 
-path = os.path.dirname(DB_PATH)
-if not os.path.exists(path):
-    os.makedirs(path)
-
-db = peewee.SqliteDatabase(DB_PATH, pragmas=DB_PRAGMAS, timeout=10)
 
 if ADDON_DEV and not int(os.environ.get('QUIET', 0)):
     import logging
@@ -22,9 +17,11 @@ if ADDON_DEV and not int(os.environ.get('QUIET', 0)):
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.DEBUG)
 
+
 class HashField(peewee.TextField):
     def db_value(self, value):
         return hash_6(value)
+
 
 class PickleField(peewee.BlobField):
     def python_value(self, value):
@@ -39,8 +36,6 @@ class PickleField(peewee.BlobField):
             return self._constructor(pickled)
 
 class JSONField(peewee.TextField):
-    field_type = 'JSON'
-
     def db_value(self, value):
         if value is not None:
             return json.dumps(value, ensure_ascii=False)
@@ -49,15 +44,8 @@ class JSONField(peewee.TextField):
         if value is not None:
             return json.loads(value)
 
+
 class Model(peewee.Model):
-    checksum = ''
-
-    @classmethod
-    def get_checksum(cls):
-        ctx = db.get_sql_context()
-        query = cls._schema._create_table()
-        return hash_6([cls.checksum, ctx.sql(query).query(), cls._meta.indexes])
-
     @classmethod
     def delete_where(cls, *args, **kwargs):
         return super(Model, cls).delete().where(*args, **kwargs).execute()
@@ -121,44 +109,93 @@ class Model(peewee.Model):
     def __repr__(self):
         return self.__str__
 
-    class Meta:
-        database = db
 
 class KeyStore(Model):
-    key     = peewee.TextField(unique=True)
-    value   = peewee.TextField()
+    key = peewee.TextField(unique=True)
+    value = peewee.TextField()
 
     class Meta:
         table_name = DB_TABLENAME
 
-tables = [KeyStore]
-def check_tables():
-    with db.atomic():
-        for table in tables:
-            key      = table.table_name()
-            checksum = table.get_checksum()
 
-            if KeyStore.exists_or_false(KeyStore.key == key, KeyStore.value == checksum):
-                continue
+def connect(db=None):
+    db = db or get_db()
+    if db:
+        db.connect()
 
-            db.drop_tables([table])
-            db.create_tables([table])
 
-            KeyStore.set(key=key, value=checksum)
+def close(db=None):
+    db = db or get_db()
+    if db:
+        db.close()
 
-@signals.on(signals.AFTER_RESET)
-def delete():
-    close()
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
 
-@signals.on(signals.ON_CLOSE)
-def close():
-    try:  db.execute_sql('VACUUM')
-    except: log.debug('Failed to vacuum db')
-    db.close()
+def delete(db=None):
+    db = db or get_db()
+    if not db:
+        return
 
-@signals.on(signals.BEFORE_DISPATCH)
-def connect():
-    db.connect(reuse_if_open=True)
-    check_tables()
+    close(db)
+    if os.path.exists(db.database):
+        log.info("Deleting db: {}".format(db.database))
+        os.remove(db.database)
+
+
+DBS = {}
+def get_db(db_path=DB_PATH):
+    return DBS.get(db_path)
+
+
+class Database(peewee.SqliteDatabase):
+    def __init__(self, database, *args, **kwargs):
+        self._tables = kwargs.pop('tables', [])
+        for table in self._tables:
+            table._meta.database = self
+        signals.add(signals.ON_EXIT, lambda db=self: close(db))
+        signals.add(signals.AFTER_RESET, lambda db=self: delete(db))
+        super(Database, self).__init__(database, *args, **kwargs)
+
+    def register_function(self, fn, name=None, num_params=-1):
+        # override this as it breaks db closing on older kodi / linux
+        # https://github.com/matthuisman/slyguy.addons/issues/804
+        pass
+
+    def close(self, *args, **kwargs):
+        if self.is_closed():
+            return
+
+        log.debug("Closing db: {}".format(self.database))
+        self.execute_sql('VACUUM')
+        super(Database, self).close(*args, **kwargs)
+
+    def connect(self, *args, **kwargs):
+        if not self.is_closed():
+            return
+
+        log.debug("Connecting to db: {}".format(self.database))
+        if os.path.exists(self.database):
+            return super(Database, self).connect(*args, **kwargs)
+
+        makedirs(os.path.dirname(self.database))
+        timeout = time.time() + 5
+        result = False
+        exception = ''
+        while time.time() < timeout:
+            try:
+                result = super(Database, self).connect(*args, **kwargs)
+                if self._tables:
+                    self.create_tables(self._tables, fail_silently=True)
+            except Exception as e:
+                exception = str(e)
+                pass
+            else:
+                break
+            time.sleep(0.1)
+        else:
+            raise TimeoutError("Failed to create db: '{}' within 5s due to: '{}'".format(self.database, exception))
+        return result
+
+
+def init(tables=None, db_path=DB_PATH):
+    db = DBS[db_path] = Database(db_path, pragmas=DB_PRAGMAS, timeout=10, autoconnect=True, tables=tables)
+    return db

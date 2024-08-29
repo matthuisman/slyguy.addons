@@ -1,21 +1,19 @@
 import sys
-import json
 import uuid
 from time import time
 
-from slyguy import settings, signals, gui
+from slyguy import gui, settings, log, check_donor, is_donor, set_drm_level, _
 from slyguy.session import Session
-from slyguy.log import log
 from slyguy.monitor import monitor
-from slyguy.drm import set_drm_level
-from slyguy.donor import is_donor
 from slyguy.util import get_system_arch
+from slyguy.settings import set_trailer_context
+from slyguy.settings.db_storage import db
 
 from .proxy import Proxy
 from .player import Player
 from .util import check_updates, check_repo
 from .constants import *
-from .language import _
+
 
 def _check_news():
     _time = int(time())
@@ -31,65 +29,61 @@ def _check_news():
 
     if 'id' not in news or news['id'] == settings.get('_last_news_id'):
         return
-
     settings.set('_last_news_id', news['id'])
 
     if news['type'] == 'donate' and is_donor():
         return
+    settings.setDict('_news', news)
 
-    settings.set('_news', json.dumps(news))
 
-def _check_arch():
+def check_arch():
     arch = get_system_arch()[1]
-    mac = str(uuid.getnode())
+    mac = int(uuid.getnode())
 
-    prev_mac = settings.get('_mac')
+    prev_mac = settings.getInt('_mac')
     prev_arch = settings.get('_arch')
     settings.set('_arch', arch)
-    settings.set('_mac', mac)
+    settings.setInt('_mac', mac)
     if not prev_mac or not prev_arch:
         return
 
     if prev_mac == mac and prev_arch != arch:
         gui.ok(_(_.ARCH_CHANGED, old=prev_arch, new=arch))
 
-@signals.on(signals.ON_SETTINGS_CHANGE)
-def settings_changed():
-    log.debug('Shared Service: Settings Changed')
 
-def start():
-    log.debug('Shared Service: Started')
+def run():
+    try:
+        _run()
+    except Exception as e:
+        log.exception(e)
+        gui.exception()
+
+def _run():
+    log.info('Shared Service: Started')
     log.info('Python Version: {}'.format(sys.version))
 
-    proxy = Proxy()
     player = Player()
+    proxy = Proxy()
+    proxy.start()
 
-    try:
-        proxy.start()
-    except Exception as e:
-        log.error('Failed to start proxy server')
-        log.exception(e)
+    check_donor(force=True)
+    if is_donor():
+        log.info("Welcome SlyGuy Supporter!")
+    else:
+        log.info("Visit donate.slyguy.uk to become a supporter and unlock perks!")
 
-    is_donor(force=True)
-
-    try:
-        set_drm_level()
-    except Exception as e:
-        log.error('Failed to set DRM level')
-        log.exception(e)
-
-    try:
-        _check_arch()
-    except Exception as e:
-        log.error('Failed to check arch')
-        log.exception(e)
+    set_drm_level()
+    check_arch()
+    set_trailer_context()
 
     ## Inital wait on boot
     monitor.waitForAbort(10)
-
     try:
         while not monitor.abortRequested():
             try:
+                settings.reset()
+                check_donor()
+
                 if is_donor() and settings.getBool('fast_updates'):
                     check_updates()
 
@@ -104,10 +98,13 @@ def start():
                 break
     except KeyboardInterrupt:
         pass
-    except Exception as e:
-        log.exception(e)
+    finally:
+        try: proxy.stop()
+        except: pass
 
-    try: proxy.stop()
-    except: pass
+        try: del player
+        except: pass
 
-    log.debug('Shared Service: Stopped')
+        try: db.close()
+        except: pass
+        log.info('Shared Service: Stopped')

@@ -1,12 +1,70 @@
 import re
 
-from kodi_six import xbmc
+from kodi_six import xbmc, xbmcaddon
+from six.moves.urllib_parse import urlparse
 
-from slyguy import plugin, gui
+from slyguy import plugin, gui, _
+from slyguy.settings.types import STORAGE
 from slyguy.util import get_kodi_setting, get_addon
+from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS, ADDON_NAME
 
 from .util import check_updates, get_slyguy_addons
-from .language import _
+
+
+@plugin.route('')
+def home(**kwargs):
+    folder = plugin.Folder(_.SETTINGS)
+
+    folder.add_item(
+        label = ADDON_NAME,
+        path = plugin.url_for(ROUTE_SETTINGS),
+        bookmark = False,
+    )
+
+    for addon_id in STORAGE.get_addon_ids():
+        try:
+            addon = xbmcaddon.Addon(addon_id)
+        except:
+            continue
+
+        folder.add_item(
+            label = addon.getAddonInfo('name'),
+            art = {'thumb': addon.getAddonInfo('icon')},
+            path = plugin.url_for(ROUTE_SETTINGS, _addon_id=addon_id),
+            bookmark = False,
+        )
+
+    return folder
+
+@plugin.route(ROUTE_CONTEXT)
+def context(listitem, **kwargs):
+    vid_tag = listitem.getVideoInfoTag()
+    trailer_path = vid_tag.getTrailer()
+
+    parsed = urlparse(trailer_path)
+    if parsed.scheme.lower() == 'plugin':
+        addon_id = parsed.netloc
+        get_addon(addon_id, required=True)
+
+    li = plugin.Item(path=trailer_path)
+    li.label = u"{} ({})".format(listitem.getLabel(), _.TRAILER)
+    li.info = {
+        'plot': vid_tag.getPlot(),
+        'tagline': vid_tag.getTagLine(),
+        'year': vid_tag.getYear(),
+        'mediatype': vid_tag.getMediaType(),
+    }
+
+    try:
+        # v20+
+        li.info['genre'] = vid_tag.getGenres()
+    except AttributeError:
+        li.info['genre'] = vid_tag.getGenre()
+
+    for key in ['thumb','poster','banner','fanart','clearart','clearlogo','landscape','icon']:
+        li.art[key] = listitem.getArt(key)
+
+    return li
 
 
 @plugin.route()

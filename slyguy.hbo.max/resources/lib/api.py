@@ -4,7 +4,7 @@ from six.moves.urllib_parse import quote
 
 from kodi_six import xbmc
 
-from slyguy import userdata, settings, mem_cache, gui
+from slyguy import userdata, mem_cache, gui
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.log import log
@@ -12,12 +12,16 @@ from slyguy.util import get_system_arch, lang_allowed
 
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
 
+
 class NotPairedError(APIError):
     pass
+
 
 class API(object):
     def new_session(self):

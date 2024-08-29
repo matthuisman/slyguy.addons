@@ -358,28 +358,3 @@ msgstr "Requisição HTTP força união"
 msgctxt "#30081"
 msgid "Remove EPG entries without matching playlist tvg-id"
 msgstr ""
-
-# # COMMON SETTINGS ##
-msgctxt "#32055"
-msgid "Ask"
-msgstr "Perguntar"
-
-msgctxt "#32043"
-msgid "Best"
-msgstr "Melhor"
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr "Inferior"
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr "Bypass"
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr "Custom"
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr "Desabilitado"

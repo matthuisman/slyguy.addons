@@ -1,29 +1,12 @@
 msgid ""
 msgstr ""
 
-msgctxt "#30000"
-msgid "Email Address"
-msgstr ""
-
-msgctxt "#30001"
-msgid "Password"
-msgstr ""
-
-
-msgctxt "#30005"
-msgid "Live TV"
-msgstr ""
-
 msgctxt "#30006"
 msgid "Select providers for Merge"
 msgstr ""
 
 msgctxt "#30007"
 msgid "No providers selected for Merge"
-msgstr ""
-
-msgctxt "#30008"
-msgid "All"
 msgstr ""
 
 msgctxt "#30009"
@@ -64,42 +47,4 @@ msgstr ""
 
 msgctxt "#30018"
 msgid "Use Stremium Favorites for My Channels (requires premium)"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr ""
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr ""
-
-msgctxt "#32064"
-msgid "From Start"
 msgstr ""

@@ -1,5 +1,3 @@
-from .language import _
-
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Linux; Android 11; SHIELD Android TV Build/PPR1.180610.011) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36',
     'Origin': 'https://sport.optus.com.au',

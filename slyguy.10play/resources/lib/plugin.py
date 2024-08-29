@@ -3,10 +3,11 @@ import string
 import codecs
 import re
 
-from slyguy import plugin, settings, signals, inputstream, userdata, gui
+from slyguy import plugin, signals, inputstream
 
 from .api import API
 from .language import _
+from .settings import settings
 from .constants import *
 
 api = API()
@@ -20,11 +21,11 @@ def before_dispatch():
 def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
 
+    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
     folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(featured))
     folder.add_item(label=_(_.SHOWS, _bold=True), path=plugin.url_for(shows))
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(categories))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
-    folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -255,7 +256,6 @@ def live_tv(**kwargs):
 
     for row in api.live_channels():
         plot = u''
-        count = 0
 
         epg = []
         if row.get('liveShow'):
@@ -309,9 +309,6 @@ def playlist(output, **kwargs):
         f.write(u'#EXTM3U')
 
         for row in api.live_channels():
-            if 'TenSport' in row['channel']['id']:
-                continue
-
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-name="{name}" tvg-logo="{logo}",{name}\n{url}'.format(
                 id=row['channel']['id'], name=row['channel']['name'], logo=row['channel']['logoUrl'] + '?image-profile=logo',
                     url=plugin.url_for(play_channel, id=row['channel']['id'], _is_live=True)))

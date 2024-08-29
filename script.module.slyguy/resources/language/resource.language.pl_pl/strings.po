@@ -47,8 +47,8 @@ msgid "{name} [Atmos]"
 msgstr "{name} [Atmos]"
 
 msgctxt "#30005"
-msgid "SlyProxy Enabled (Required for some addons and features)"
-msgstr "SlyProxy włączony (wymagany dla niektórych dodatków i funkcji)"
+msgid "Use SlyGuy Proxy"
+msgstr "Użyj SlyGuy Proxy"
 
 msgctxt "#30006"
 msgid "Persist Cache"
@@ -177,6 +177,18 @@ msgstr "OSTRZEŻENIE: Wykryto zmianę architektury systemu ({old} -> {new})\n"
 msgctxt "#30037"
 msgid "Video view for menus"
 msgstr "Widok wideo dla menu"
+
+msgctxt "#30038"
+msgid "VP9"
+msgstr "VP9"
+
+msgctxt "#30039"
+msgid "AV1"
+msgstr "AV1"
+
+msgctxt "#30040"
+msgid "Fast Updates"
+msgstr "Szybkie aktualizacje"
 
 ## COMMON ##
 
@@ -327,8 +339,8 @@ msgid "No Results"
 msgstr "Brak wyników"
 
 msgctxt "#32032"
-msgid "{addon} ({version}/{common_version}) - Unexpected Error"
-msgstr "{addon} ({version}/{common_version}) - Niespodziewany błąd"
+msgid "Unexpected Error"
+msgstr "Niespodziewany błąd"
 
 msgctxt "#32033"
 msgid "Failed to download required file: {filename}"
@@ -384,6 +396,10 @@ msgstr "Limit czasu HTTP (sekundy)"
 msgctxt "#32045"
 msgid "HTTP Retries"
 msgstr "Ponowienie HTTP"
+
+msgctxt "#32046"
+msgid "WebOS does not currently support Widevine playback on Kodi"
+msgstr "WebOS nie obsługuje obecnie odtwarzania Widevine na Kodi"
 
 msgctxt "#32048"
 msgid "Bypass"
@@ -452,8 +468,8 @@ msgid "Lowest"
 msgstr "Najniższa"
 
 msgctxt "#32061"
-msgid "Playback Quality"
-msgstr "Jakość odtwarzania"
+msgid "Select quality"
+msgstr "Wybierz jakość odtwarzania"
 
 msgctxt "#32062"
 msgid "Inputstream HLS required to watch streams from live.\n"
@@ -708,8 +724,8 @@ msgid "Attempting to install Inputstream Adaptive from apt..."
 msgstr "Próba zainstalowania Inputstream Adaptive z apt..."
 
 msgctxt "#32120"
-msgid "(Tv Show Folders setting moved to SlyGuy Common Settings)"
-msgstr "(Ustawienia folderów seriali zostało przeniesione do ustawień wspólnych SlyGuy)"
+msgid "No method found for this context menu item"
+msgstr "Nie znaleziono metody dla tego elementu menu kontekstowego"
 
 msgctxt "#32121"
 msgid "Default Subtitle"
@@ -746,10 +762,6 @@ msgstr "Usuń wyszukiwanie"
 msgctxt "#32128"
 msgid "SlyGuy News"
 msgstr "Informacje o SlyGuy"
-
-msgctxt "#32129"
-msgid "(Video view setting moved to SlyGuy Common Settings)"
-msgstr "(Ustawienia widoku wideo zostały przeniesione do ustawień wspólnych SlyGuy)"
 
 msgctxt "#32130"
 msgid "Play from live"
@@ -790,16 +802,18 @@ msgstr "Twój system operacyjny nie obsługuje jeszcze tej wersji Widevine\n"
 "Wybierz Tak, aby zainstalować mimo to"
 
 msgctxt "#32138"
-msgid "Donations"
-msgstr "Dotacje"
+msgid "Supporters"
+msgstr "Wspierający"
 
 msgctxt "#32139"
 msgid "Look & Feel"
 msgstr "Wygląd i działanie"
 
 msgctxt "#32140"
-msgid "Donate at [B]https://donate.slyguy.uk[/B]"
-msgstr "Wpłać na [B]https://donate.slyguy.uk[/B]"
+msgid "Donate at [B]https://donate.slyguy.uk[/B]\n"
+"to unlock the below supporter only settings"
+msgstr "Przekaż darowiznę na stronie [B]https://donate.slyguy.uk[/B]\n"
+"odblokowanie poniższych ustawień, tylko dla wspierających"
 
 msgctxt "#32141"
 msgid "Season {number}"
@@ -838,3 +852,313 @@ msgstr "Ta wersja Widevine ma zgłoszone poniżej problemy ze stabilnością\n"
 msgctxt "#32147"
 msgid "Proxy Server"
 msgstr "Serwer Proxy"
+
+msgctxt "#32148"
+msgid "Trailer not found"
+msgstr "Trailer nie znaleziony"
+
+msgctxt "#32149"
+msgid "Failed to connect to host: {host}\n"
+"Check your internet connection"
+msgstr "Nie udało się połączyć z hostem: {host}\n"
+"Sprawdź swoje połączenie z internetem"
+
+msgctxt "#32150"
+msgid "Failed to connect to host: {host}\n"
+"Check your proxy and internet connections"
+msgstr "Nie udało się połączyć z hostem: {host}\n"
+"Sprawdź swoje połączenie proxy i internetowe"
+
+msgctxt "#32151"
+msgid "The below SlyGuy addons are outdated and must be updated or no support will be given\n"
+"{updates_required}"
+msgstr "Poniższe dodatki SlyGuy są nieaktualne i muszą zostać zaktualizowane, w przeciwnym razie nie będzie zapewniona pomoc.\n"
+"{updates_required}"
+
+msgctxt "#32153"
+msgid "Codecs"
+msgstr "Kodeki"
+
+msgctxt "#32156"
+msgid "This is a supporter only setting\n"
+"Visit [B]donate.slyguy.uk[/B] to become a supporter!"
+msgstr "To ustawienie jest dostępne tylko dla wspierających\n"
+"Odwiedź [B]donate.slyguy.uk[/B] i zostań darczyńcą!"
+
+msgctxt "#32157"
+msgid "Reset to default"
+msgstr "Przywróć ustawienia domyślne"
+
+msgctxt "#32158"
+msgid "Not a supporter"
+msgstr "Nie wspierane"
+
+msgctxt "#32159"
+msgid "IPv4/IPv6 Preference"
+msgstr "Preferencje IPv4/IPv6"
+
+msgctxt "#32161"
+msgid "Visit [B]donate.slyguy.uk[/B] to become a supporter and then enter your Supporter ID here"
+msgstr "Odwiedź [B]donate.slyguy.uk[/B], aby zostać darczyńcą, a następnie wprowadź tutaj swój identyfikator darczyńcy"
+
+msgctxt "#32162"
+msgid "Warning: Disabling the SlyGuy proxy will stop a lot of features and even break some SlyGuy addons completely. "
+"It should only be disabled temporally while debugging specific issues\n"
+"Are you sure you want to disable?"
+msgstr "Ostrzeżenie: Wyłączenie serwera proxy SlyGuy zatrzyma wiele funkcji, a nawet całkowicie uszkodzi niektóre dodatki SlyGuy."
+"Należy je tymczasowo wyłączyć tylko podczas debugowania określonych problemów\n"
+"Czy na pewno chcesz wyłączyć?"
+
+msgctxt "#32163"
+msgid "Warning: Changing the systems Widevine DRM level will likely cause playback issues. "
+"Its useful for forcing a lower level (L3) or testing what features are available at a higher level (L1).\n"
+"Are you sure you want to change?"
+msgstr "Ostrzeżenie: Zmiana poziomu DRM Widevine w systemie prawdopodobnie spowoduje problemy z odtwarzaniem."
+"Przydatne do wymuszenia niższego poziomu (L3) lub testowania, jakie funkcje są dostępne na wyższym poziomie (L1).\n"
+"Czy na pewno chcesz zmienić?"
+
+msgctxt "#32164"
+msgid "Warning: Changing the systems HDCP level will likely cause playback issues. "
+"Its useful for forcing a lower level or testing what features are available at a higher level.\n"
+"Are you sure you want to change?"
+msgstr "Ostrzeżenie: Zmiana poziomu HDCP systemu najprawdopodobniej spowoduje problemy z odtwarzaniem."
+"Przydatne do wymuszenia niższego poziomu lub testowania, jakie funkcje są dostępne na wyższym poziomie.\n"
+"Czy na pewno chcesz zmienić?"
+
+msgctxt "#32165"
+msgid "Quality Select Mode"
+msgstr "Tryb wyboru jakości"
+
+msgctxt "#32166"
+msgid "Welcome SlyGuy Supporter!"
+msgstr "Witaj, darczyńco SlyGuy!"
+
+msgctxt "#32167"
+msgid "Supporter ID not found"
+msgstr "Nie znaleziono identyfikatora darczyńcy"
+
+msgctxt "#32168"
+msgid "[Common]"
+msgstr "[Wspólne]"
+
+msgctxt "#32169"
+msgid "Prefer IPv4"
+msgstr "Preferuj IPv4"
+
+msgctxt "#32170"
+msgid "Prefer IPv6"
+msgstr "Preferuj IPv6"
+
+msgctxt "#32171"
+msgid "IPv4 Only"
+msgstr "Tylko IPv4"
+
+msgctxt "#32172"
+msgid "IPv6 Only"
+msgstr "Tylko IPv6"
+
+msgctxt "#32173"
+msgid "Are you sure you want to reset {count} settings to default?"
+msgstr "Czy na pewno chcesz przywrócić ustawienia domyślne {count}?"
+
+msgctxt "#32174"
+msgid "Media Default"
+msgstr "Domyślne media"
+
+msgctxt "#32175"
+msgid "Live TV"
+msgstr "Telewizja na żywo"
+
+msgctxt "#32176"
+msgid "Show Mini EPG"
+msgstr "Pokaż mini EPG"
+
+msgctxt "#32177"
+msgid "Show Channel Numbers"
+msgstr "Pokaź numery kanałów"
+
+msgctxt "#32178"
+msgid "Show Channels"
+msgstr "Pokaż kanały"
+
+msgctxt "#32179"
+msgid "Over the Air Only"
+msgstr "Tylko Over the Air"
+
+msgctxt "#32180"
+msgid "FAST Only"
+msgstr "Tylko FAST"
+
+msgctxt "#32181"
+msgid "{name} [PIN]"
+msgstr "{name} [PIN]"
+
+msgctxt "#32182"
+msgid "{name} [KIDS]"
+msgstr "{name} [DZIECI]"
+
+msgctxt "#32183"
+msgid "Enter Your Profile PIN"
+msgstr "Wprowadź PIN swojego profilu"
+
+msgctxt "#32184"
+msgid "API request failed\n"
+"Server Error: {msg}"
+msgstr "Żądanie API nie powiodło się\n"
+"Błąd serwera: {msg}"
+
+msgctxt "#32185"
+msgid "Your auth token has became invalid\n"
+"This is often caused by out of region IP address\n"
+"You will need to logout and login again"
+msgstr "Twój token autoryzacji stał się nieprawidłowy\n"
+"Jest to często spowodowane adresem IP spoza regionu\n"
+"Będziesz musiał się wylogować i zalogować ponownie"
+
+msgctxt "#32186"
+msgid "Failed to check device login. Please try again"
+msgstr "Nie udało się sprawdzić logowania urządzenia. Spróbuj ponownie"
+
+msgctxt "#32187"
+msgid "TV Provider Login"
+msgstr "Logowanie przez dostawcę TV"
+
+msgctxt "#32188"
+msgid "Home"
+msgstr "Strona główna"
+
+msgctxt "#32189"
+msgid "Series"
+msgstr "Seriale"
+
+msgctxt "#32190"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#32191"
+msgid "Go to Series"
+msgstr "Idź do seriali"
+
+msgctxt "#32192"
+msgid "Enable Chapters [Known Issues]"
+msgstr "Włącz rozdziały [znane problemy]"
+
+msgctxt "#32193"
+msgid "DTS-X (IMAX Enhanced)"
+msgstr "DTS-X (ulepszony IMAX)"
+
+msgctxt "#32194"
+msgid "Player"
+msgstr "Odtwarzacz"
+
+msgctxt "#32195"
+msgid "Network"
+msgstr "Sieć"
+
+msgctxt "#32196"
+msgid "Interface"
+msgstr "Interfejs"
+
+msgctxt "#32197"
+msgid "System"
+msgstr "System"
+
+msgctxt "#32198"
+msgid "Advanced"
+msgstr "Zaawansowane"
+
+msgctxt "#32199"
+msgid "General"
+msgstr "Główne"
+
+msgctxt "#32200"
+msgid "All"
+msgstr "Wszystko"
+
+msgctxt "#32201"
+msgid "Quality"
+msgstr "Jakość"
+
+msgctxt "#32202"
+msgid "Language"
+msgstr "Język"
+
+msgctxt "#32203"
+msgid "Default"
+msgstr "Domyślne"
+
+msgctxt "#32204"
+msgid "Yes"
+msgstr "Tak"
+
+msgctxt "#32205"
+msgid "No"
+msgstr "Nie"
+
+msgctxt "#32206"
+msgid "Disabled"
+msgstr "Wyłączone"
+
+msgctxt "#32207"
+msgid "No limit"
+msgstr "Bez limitu"
+
+msgctxt "#32208"
+msgid "Resume from {0:s}"
+msgstr "Wznów od {0:s}"
+
+msgctxt "#32209"
+msgid "Play from beginning"
+msgstr "Odtwórz od początku"
+
+msgctxt "#32210"
+msgid "Playback failed"
+msgstr "Odtwarzanie nie powiodło się""
+
+msgctxt "#32211"
+msgid "Auto"
+msgstr "Automatycznie"
+
+msgctxt "#32212"
+msgid "Trailer"
+msgstr "Zwiastun"
+
+msgctxt "#32213"
+msgid "Play next"
+msgstr "Odtwórz następny"
+
+msgctxt "#32214"
+msgid "Queue item"
+msgstr "W kolejce"
+
+msgctxt "#32215"
+msgid "Reset above settings to default"
+msgstr "Przywróć powyższe ustawienia do domyślnych"
+
+msgctxt "#32216"
+msgid "Are you sure?"
+msgstr "Jesteś pewny?"
+
+msgctxt "#32217"
+msgid "DNS Server"
+msgstr "Serwer DNS"
+
+msgctxt "#32218"
+msgid "Help"
+msgstr "Pomoc"
+
+msgctxt "#32219"
+msgid "PVR & Live TV"
+msgstr "PVR & TV na żywo"
+
+msgctxt "#32220"
+msgid "IPTV Merge integration is not available for this add-on"
+msgstr "Integracja IPTV Merge nie jest dostępna dla tego dodatku"
+
+msgctxt "#32221"
+msgid "Trailer Context Menu Item"
+msgstr "Zwiastun jako element menu kontekstowego"
+
+msgctxt "#32222"
+msgid "Not Set"
+msgstr "Nie ustawione"

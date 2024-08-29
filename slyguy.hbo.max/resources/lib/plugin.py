@@ -2,21 +2,27 @@ import os
 from xml.dom.minidom import parseString
 
 from kodi_six import xbmc, xbmcplugin
-from slyguy import plugin, gui, userdata, signals, inputstream, settings, mem_cache
+from slyguy import plugin, gui, userdata, signals, inputstream, mem_cache
 from slyguy.session import Session
 from slyguy.constants import ADDON_PROFILE, MIDDLEWARE_PLUGIN, ROUTE_RESUME_TAG, NO_RESUME_TAG
 from slyguy.drm import is_wv_secure
+from slyguy.util import replace_kids
+from slyguy.log import log
 
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -51,8 +57,8 @@ def index(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 def _process_rows(rows, slug):
     items = []
@@ -586,6 +592,22 @@ def mpd_request(_data, _path, **kwargs):
             else:
                 adap_set.parentNode.removeChild(adap_set)
                 continue
+
+    ## Fix of cenc pssh to only contain kids still present
+    kids = []
+    for elem in root.getElementsByTagName('ContentProtection'):
+        kids.append(elem.getAttribute('cenc:default_KID'))
+
+    if kids:
+        for elem in root.getElementsByTagName('ContentProtection'):
+            if elem.getAttribute('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+                for elem2 in elem.getElementsByTagName('cenc:pssh'):
+                    current_cenc = elem2.firstChild.nodeValue
+                    new_cenc = replace_kids(current_cenc, kids, version0=True)
+                    if current_cenc != new_cenc:
+                        elem2.firstChild.nodeValue = new_cenc
+                        log.info('Dash Fix: cenc:pssh {} -> {}'.format(current_cenc, new_cenc))
+    ################################################
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))

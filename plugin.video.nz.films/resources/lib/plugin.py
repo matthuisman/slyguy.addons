@@ -1,15 +1,17 @@
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.log import log
+from slyguy import plugin, gui, userdata, signals
 
 from .api import API
 from .language import _
+from .settings import settings
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -26,12 +28,12 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 
@@ -43,6 +45,7 @@ def login(**kwargs):
 
     api.login(username=username, password=password)
     gui.refresh()
+
 
 @plugin.route()
 @plugin.login_required()
@@ -65,13 +68,14 @@ def my_library(**kwargs):
             pass
 
         folder.add_items([item])
-
     return folder
+
 
 @plugin.route()
 @plugin.login_required()
 def play(film_id, **kwargs):
     return api.get_stream(film_id)
+
 
 @plugin.route()
 def logout(**kwargs):

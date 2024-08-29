@@ -1,14 +1,16 @@
 import codecs
 
-from slyguy import plugin, settings
+from slyguy import plugin
 from slyguy.session import Session
 from slyguy.mem_cache import cached
 from slyguy.constants import QUALITY_DISABLED
 
-from .constants import DATA_URL, REGIONS
+from .settings import settings, DATA_URL, Region
 from .language import _
 
+
 session = Session()
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -18,17 +20,18 @@ def home(**kwargs):
     folder = plugin.Folder(cacheToDisc=False)
     folder.add_item(label=_(_.STATIONS, _bold=True), path=plugin.url_for(stations))
     folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
-    folder.add_item(label=_.SETTINGS,  path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
+    folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
+
 
 @plugin.route()
 def stations(**kwargs):
     return _stations()
 
+
 def _stations():
-    region = get_region()
-    folder = plugin.Folder(_(_.REGIONS[region]))
+    region = settings.REGION.value
+    folder = plugin.Folder(settings.REGION.value_label)
 
     channels = get_channels(region)
     for slug in sorted(channels, key=lambda k: channels[k]['name']):
@@ -44,10 +47,10 @@ def _stations():
 
     return folder
 
+
 @plugin.route()
 def play(slug, **kwargs):
-    region  = get_region()
-    channel = get_channels(region)[slug]
+    channel = get_channels(Region.ALL)[slug]
 
     item = plugin.Item(
         label = channel['name'],
@@ -57,20 +60,18 @@ def play(slug, **kwargs):
         art = {'thumb': channel.get('logo'), 'fanart': channel.get('fanart')},
         quality = QUALITY_DISABLED,
     )
-
     return item
+
 
 @cached(60*5)
 def get_channels(region):
     return session.gz_json(DATA_URL.format(region=region))
 
-def get_region():
-    return REGIONS[settings.getInt('region_index')]
 
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    region   = get_region()
+    region = settings.REGION.value
     channels = get_channels(region)
 
     with codecs.open(output, 'w', encoding='utf8') as f:

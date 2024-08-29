@@ -1,17 +1,21 @@
 import codecs
 
-from slyguy import plugin, gui, signals, inputstream, settings
+from slyguy import plugin, gui, signals, inputstream
 
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -28,8 +32,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def live_tv(**kwargs):
@@ -42,8 +46,8 @@ def live_tv(**kwargs):
             path = plugin.url_for(play, channel_id=row['id'], call_letter=row['shortName'], _is_live=True),
             playable = True
         )
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -57,6 +61,7 @@ def login(**kwargs):
 
     api.login(singtel_tv_no, identification_no)
     gui.refresh()
+
 
 @plugin.route()
 def logout(**kwargs):

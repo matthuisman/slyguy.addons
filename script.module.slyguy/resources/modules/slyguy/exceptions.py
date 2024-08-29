@@ -1,5 +1,6 @@
-from .language import _
-from .constants import ADDON_NAME
+from slyguy import _
+from slyguy.constants import ADDON_NAME
+
 
 class Exit(Exception):
     pass

@@ -6,12 +6,12 @@ from slyguy.util import get_url_headers
 
 REGION_US = 'US'
 REGION_INTL = 'INTL'
-LINK_PLATFORM_URL = 'http://link.theplatform.com/s/dJ5BDC/media/guid/2198311517/{video_id}'
 
 CONFIG = {
     REGION_US: {
         'base_url': 'https://www.paramountplus.com',
         'at_token': 'ABC+2JjrOUYWbaaqKmzwPdppq0RDB2WdufcFmIsSnJDmDEQpVgyAjQpqpEDksKZNMKQ=',
+        'link_platform_url': 'http://link.theplatform.com/s/dJ5BDC/media/guid/2198311517/{video_id}',
         'device_link': True,
     },
     REGION_INTL: {
@@ -48,8 +48,7 @@ class Config(object):
     @property
     def headers(self):
         return {
-            # if start getting 406 not acceptable, probably need to bump the below
-            'user-agent': 'okhttp/4.12.0',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
         }
 
     def clear(self):
@@ -109,7 +108,8 @@ class Config(object):
         return self._config['mvpd']
 
     def get_link_platform_url(self, video_id):
-        return LINK_PLATFORM_URL.format(video_id=video_id)
+        url = CONFIG[self.region].get('link_platform_url')
+        return url.format(video_id=video_id) if url else None
 
     def has_device_link(self):
         return CONFIG[self.region]['device_link']

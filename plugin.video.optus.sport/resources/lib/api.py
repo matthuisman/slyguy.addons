@@ -8,8 +8,10 @@ from slyguy.exceptions import Error
 from .constants import HEADERS, API_URL, AWS_URL, AWS_CLIENT_ID, UUID_NAMESPACE
 from .language import _
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -131,7 +133,7 @@ class API(object):
     def play(self, asset, from_start=False, use_cmaf=False):
         self._check_token()
 
-        device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), userdata.get('user_id')))
+        device_id = str(uuid.uuid3(uuid.UUID(UUID_NAMESPACE), str(userdata.get('user_id'))))
 
         params = {
             'type': 'dash',

@@ -1,22 +1,26 @@
 import uuid
 from time import time
 
-from slyguy import userdata, settings, mem_cache
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
 from . import queries
 from .constants import *
 from .language import _
+from .settings import settings
+
 
 class APIError(Error):
     pass
+
 
 ERROR_MAP = {
     'not-entitled': _.NOT_ENTITLED,
     'idp.error.identity.bad-credentials': _.BAD_CREDENTIALS,
     'account.profile.pin.invalid': _.BAD_PIN,
 }
+
 
 class API(object):
     def new_session(self):
@@ -44,8 +48,8 @@ class API(object):
         self._session.headers.update({'x-bamsdk-transaction-id': self._transaction_id()})
 
     def _set_token(self, force=False):
-        if self._cache.get('access_token') and self._cache.get('feature_flags'):
-            self._set_authentication(self._cache['access_token'])
+        if not force and userdata.get('expires', 0) > time():
+            self._set_authentication(userdata.get('access_token'))
             return
 
         payload = {
@@ -64,9 +68,10 @@ class API(object):
         self._set_auth(data['extensions']['sdk'])
 
     def _set_auth(self, sdk):
-        self._cache['feature_flags'] = sdk['featureFlags']
-        self._cache['access_token'] = sdk['token']['accessToken']
-        self._set_authentication(self._cache['access_token'])
+        self._set_authentication(sdk['token']['accessToken'])
+        userdata.set('feature_flags', sdk['featureFlags'])
+        userdata.set('expires', int(time() + sdk['token']['expiresIn'] - 15))
+        userdata.set('access_token', sdk['token']['accessToken'])
         userdata.set('refresh_token', sdk['token']['refreshToken'])
 
     def register_device(self):
@@ -225,6 +230,7 @@ class API(object):
         self._check_errors(data)
         return data
 
+    @mem_cache.cached(60*60, key='account')
     def account(self):
         self._set_token()
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
@@ -288,7 +294,7 @@ class API(object):
         region = session['portabilityLocation']['countryCode'] if session['portabilityLocation'] else session['location']['countryCode']
         maturity = session['preferredMaturityRating']['impliedMaturityRating'] if session['preferredMaturityRating'] else 1850
         kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
-        app_language = settings.get('app_language').strip() or (profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US')
+        app_language = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
 
         _args = {
             'apiVersion': '{apiVersion}',
@@ -331,7 +337,7 @@ class API(object):
 
     def feature_flags(self):
         self._set_token()
-        return self._cache['feature_flags']
+        return userdata.get('feature_flags')
 
     def avatar_by_id(self, ids):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getAvatars']['href'], avatarIds=','.join(ids))
@@ -343,7 +349,7 @@ class API(object):
 
     def up_next(self, content_id):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getUpNext']['href'], contentId=content_id)
-        return self._json_call(endpoint)['data']['UpNext']
+        return self._json_call(endpoint)['data']['UpNext'] or {}
 
     def continue_watching(self):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCWSet']['href'], setId=CONTINUE_WATCHING_SET_ID)
@@ -413,7 +419,7 @@ class API(object):
     def playback_data(self, playback_url, wv_secure=False):
         self._set_token()
 
-        headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
+        headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         payload = {
             "playback": {
@@ -424,8 +430,8 @@ class API(object):
                     "protocol": "HTTPS",
                     #"ads": "",
                     "frameRates": [60],
-                    "assetInsertionStrategy": "SGAI" if self._cache['basic_tier'] else "NONE",
-                    "playbackInitializationContext": "online"
+                    "assetInsertionStrategy": "SGAI",
+                    "playbackInitializationContext": "ONLINE"
                 },
             }
         }
@@ -435,7 +441,11 @@ class API(object):
 
         # atmos not yet supported on version=6 (basic tier). Add in-case support is added
         if settings.getBool('dolby_atmos', False):
-            audio_types.append('atmos')
+            audio_types.append('ATMOS')
+
+        # DTSX works on both tiers
+        if settings.getBool('dtsx', False):
+            audio_types.append('DTS_X')
 
         if wv_secure and settings.getBool('dolby_vision', False):
             video_ranges.append('DOLBY_VISION')
@@ -443,7 +453,7 @@ class API(object):
         if wv_secure and settings.getBool('hdr10', False):
             video_ranges.append('HDR10')
 
-        if settings.getBool('hevc', False):
+        if settings.getBool('h265', False):
             payload['playback']['attributes']['codecs'] = {'video': ['h264', 'h265']}
 
         if audio_types:
@@ -459,15 +469,16 @@ class API(object):
         endpoint = playback_url.format(scenario=scenario)
         playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
         self._check_errors(playback_data)
-
         return playback_data
 
     def logout(self):
-        userdata.delete('refresh_token')
         mem_cache.delete('transaction_id')
         mem_cache.delete('config')
-        userdata.delete('access_token') #LEGACY
-        userdata.delete('expires') #LEGACY
+        mem_cache.delete('account')
+        userdata.delete('access_token')
+        userdata.delete('expires')
+        userdata.delete('refresh_token')
+        userdata.delete('feature_flags')
         self.new_session()
 
     ### EXPLORE ###
@@ -488,9 +499,13 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
-    def explore_season(self, season_id):
+    def explore_season(self, season_id, page=1):
+        params = {
+            'limit': 999,
+            'offset': 30*(page-1),
+        }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
-        return self._json_call(endpoint)['data']['season']
+        return self._json_call(endpoint, params=params)['data']['season']
 
     def explore_search(self, query):
         params = {
@@ -499,13 +514,24 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['search']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['page']
 
+    def explore_upnext(self, content_id):
+        params = {
+            'contentId': content_id,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUpNext']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['upNext']
+
+    def explore_deeplink(self, family_id):
+        params = {
+            'refId': family_id,
+            'refIdType': 'encodedFamilyId',
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['deeplink']['actions'][0]['pageId'].replace('entity-','')
+
     def explore_playback(self, resource_id, wv_secure=False):
         self._set_token()
-
-        scenario = 'ctr-high' if wv_secure else 'ctr-regular'
-        endpoint = self._endpoint(self.get_config()['services']['media']['client']['endpoints']['mediaPayload']['href'].format(scenario=scenario))
-
-        headers = {'accept': 'application/vnd.media-service+json', 'authorization': self._cache.get('access_token'), 'x-dss-feature-filtering': 'true'}
+        headers = {'accept': 'application/vnd.media-service+json', 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
         payload = {
             "playbackId": resource_id,
@@ -515,10 +541,10 @@ class API(object):
                         'supportsMultiCodecMaster': False, #if true outputs all codecs and resoultion in single playlist
                     },
                     "protocol": "HTTPS",
-                    #"ads": "",
+                   # "ads": "",
                     "frameRates": [60],
-                    "assetInsertionStrategy": "SGAI" if self._cache['basic_tier'] else "NONE",
-                    "playbackInitializationContext": "online"
+                    "assetInsertionStrategy": "SGAI",
+                    "playbackInitializationContext": "ONLINE"
                 },
             }
         }
@@ -526,9 +552,13 @@ class API(object):
         video_ranges = []
         audio_types = []
 
-        # atmos not yet supported on version=6 (basic tier). Add in-case support is added
+        # atmos not yet supported on basic tier. Add in-case support is added
         if settings.getBool('dolby_atmos', False):
-            audio_types.append('atmos')
+            audio_types.append('ATMOS')
+
+        # DTSX works on both tiers
+        if settings.getBool('dtsx', False):
+            audio_types.append('DTS_X')
 
         if wv_secure and settings.getBool('dolby_vision', False):
             video_ranges.append('DOLBY_VISION')
@@ -536,7 +566,7 @@ class API(object):
         if wv_secure and settings.getBool('hdr10', False):
             video_ranges.append('HDR10')
 
-        if settings.getBool('hevc', False):
+        if settings.getBool('h265', False):
             payload['playback']['attributes']['codecs'] = {'video': ['h264', 'h265']}
 
         if audio_types:
@@ -548,6 +578,8 @@ class API(object):
         if not wv_secure:
             payload['playback']['attributes']['resolution'] = {'max': ['1280x720']}
 
+        scenario = 'ctr-high' if wv_secure else 'ctr-regular'
+        endpoint = self._endpoint(self.get_config()['services']['media']['client']['endpoints']['mediaPayload']['href'].format(scenario=scenario))
         playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
         self._check_errors(playback_data)
         return playback_data

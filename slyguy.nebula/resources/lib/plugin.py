@@ -1,10 +1,10 @@
 import arrow
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.constants import ROUTE_LIVE_TAG
 
 from .api import API
 from .language import _
-from .constants import *
+from .settings import settings
 
 api = API()
 
@@ -72,8 +72,6 @@ def featured(index=None, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def videos(category=None, title=None, page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-
     if category is None:
         folder = plugin.Folder(_.VIDEOS)
 
@@ -92,7 +90,7 @@ def videos(category=None, title=None, page=1, **kwargs):
         return folder, False
 
     folder = plugin.Folder(title)
-    data = api.videos(category=category, page=page, page_size=page_size)
+    data = api.videos(category=category, page=page)
     items = _parse_videos(data['results'])
     folder.add_items(items)
     return folder, data['next']
@@ -100,8 +98,6 @@ def videos(category=None, title=None, page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def podcast_creators(category=None, title=None, page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-
     if category is None:
         folder = plugin.Folder(_.PODCASTS)
 
@@ -120,7 +116,7 @@ def podcast_creators(category=None, title=None, page=1, **kwargs):
         return folder, False
 
     folder = plugin.Folder(title)
-    data = api.podcast_creators(category=category, page=page, page_size=page_size)
+    data = api.podcast_creators(category=category, page=page)
     items = _parse_podcast_creators(data['results'])
     folder.add_items(items)
     return folder, data['next']
@@ -128,8 +124,6 @@ def podcast_creators(category=None, title=None, page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def creators(category=None, title=None, page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-
     if category is None:
         folder = plugin.Folder(_.CREATORS)
 
@@ -148,7 +142,7 @@ def creators(category=None, title=None, page=1, **kwargs):
         return folder, False
 
     folder = plugin.Folder(title)
-    data = api.creators(category=category, page=page, page_size=page_size)
+    data = api.creators(category=category, page=page)
     items = _parse_creators(data['results'])
     folder.add_items(items)
     return folder, data['next']
@@ -252,8 +246,7 @@ def _parse_podcasts(rows):
 @plugin.route()
 @plugin.pagination()
 def my_videos(page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-    data = api.my_videos(page=page, page_size=page_size)
+    data = api.my_videos(page=page)
 
     folder = plugin.Folder(_.MY_VIDEOS)
     items = _parse_videos(data['results'], following=True)
@@ -263,8 +256,7 @@ def my_videos(page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def my_creators(page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-    data = api.my_creators(page=page, page_size=page_size)
+    data = api.my_creators(page=page)
 
     folder = plugin.Folder(_.MY_CREATORS)
     items = _parse_creators(data['results'], following=True)
@@ -274,8 +266,7 @@ def my_creators(page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def podcasts(slug, page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-    data = api.podcasts(slug, page=page, page_size=page_size)
+    data = api.podcasts(slug, page=page)
 
     folder = plugin.Folder(data['details']['title'])
     items = _parse_podcasts(data['episodes']['results'])
@@ -285,8 +276,7 @@ def podcasts(slug, page=1, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def creator_videos(slug, page=1, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-    data = api.creator(slug, page=page, page_size=page_size)
+    data = api.creator(slug, page=page)
 
     folder = plugin.Folder(data['details']['title'], fanart=data['details']['assets']['avatar']['512']['original'])
     items = _parse_videos(data['episodes']['results'], creator_page=True)
@@ -307,8 +297,6 @@ def unfollow_creator(slug, title, icon, **kwargs):
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    page_size = settings.getInt('page_size', 50)
-
     items = []
     if page == 1:
         data = api.search_creators(query=query)
@@ -317,14 +305,14 @@ def search(query, page, **kwargs):
         data = api.search_podcasts(query=query)
         items.extend(_parse_podcast_creators(data['results']))
 
-    data = api.search_videos(query=query, page=page, page_size=page_size)
+    data = api.search_videos(query=query, page=page)
     items.extend(_parse_videos(data['results']))
 
     return items, data['next']
 
 @plugin.route()
 def login(**kwargs):
-    username = gui.input(_.ASK_USERNAME, default=userdata.get('username', '')).strip()
+    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
         return
 

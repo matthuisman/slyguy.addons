@@ -273,8 +273,8 @@ msgid "No Results"
 msgstr "Inga resultat"
 
 msgctxt "#32032"
-msgid "{addon} ({version}/{common_version}) - Unexpected Error"
-msgstr "{addon} ({version}/{common_version}) - Oväntat fel"
+msgid "Unexpected Error"
+msgstr "Oväntat fel"
 
 msgctxt "#32033"
 msgid "Failed to download required file: {filename}"

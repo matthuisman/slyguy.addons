@@ -1,12 +1,13 @@
 import codecs
 
 import arrow
-from slyguy import plugin, settings, inputstream
+from slyguy import plugin, inputstream
 from slyguy.mem_cache import cached
 from slyguy.session import Session
 
-from .constants import *
 from .language import _
+from .settings import settings, Region, ChannelMode, DATA_URL, EPG_URL
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -18,15 +19,13 @@ def home(**kwargs):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def live_tv(**kwargs):
-    region = get_region()
-    channels = get_channels(region)
-
-    folder = plugin.Folder(_(_.REGIONS[region]))
+    region = settings.REGION.value
+    folder = plugin.Folder(settings.REGION.value_label)
     show_chnos = settings.getBool('show_chnos', False)
 
     if settings.getBool('show_epg', True):
@@ -62,15 +61,16 @@ def live_tv(**kwargs):
         )
 
         if channel.get('chno') and show_chnos:
-            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
+            item.label = u'{} | {}'.format(channel['chno'], item.label)
 
         folder.add_items(item)
 
     return folder
 
+
 @plugin.route()
 def play(region, slug, **kwargs):
-    channel = get_channels(region, slug)
+    channel = get_channels(Region.ALL, slug)
 
     item = plugin.Item(
         label = channel['name'],
@@ -90,27 +90,26 @@ def play(region, slug, **kwargs):
 
     return item
 
+
 def get_channels(region, slug=None):
     @cached(60*5)
-    def get_data():
+    def get_data(region):
         url = DATA_URL.format(region=region)
         return Session().gz_json(url)
 
-    channels = get_data()
+    channels = get_data(region)
     if slug:
         return channels[slug]
 
     show_chnos = settings.getBool('show_chnos', False)
-    channel_mode = settings.getEnum('channel_mode', CHANNEL_MODES, default=ALL)
-
     channel_list = []
     for slug in sorted(channels, key=lambda k: (channels[k].get('chno') is None, channels[k].get('network', 'zzzzzzz') if not show_chnos else None, float(channels[k].get('chno', 'inf')), channels[k].get('name', 'zzzzzzz'))):
         channel = channels[slug]
         channel['slug'] = slug
 
-        if channel_mode == FREEVIEW_ONLY and not channel.get('chno'):
+        if settings.CHANNEL_MODE.value == ChannelMode.OTA_ONLY and not channel.get('chno'):
             continue
-        elif channel_mode == FAST_ONLY and channel.get('chno'):
+        elif settings.CHANNEL_MODE.value == ChannelMode.FAST_ONLY and channel.get('chno'):
             continue
 
         if channel.get('epg_id') and not channel.get('programs'):
@@ -120,13 +119,11 @@ def get_channels(region, slug=None):
 
     return channel_list
 
-def get_region():
-    return REGIONS[settings.getInt('region_index')]
 
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    region = get_region()
+    region = settings.REGION.value
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL.format(region=region)))
 

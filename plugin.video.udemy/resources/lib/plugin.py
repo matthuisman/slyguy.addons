@@ -1,18 +1,29 @@
-from slyguy import plugin, gui, settings, userdata, inputstream, signals
-from slyguy.log import log
-from slyguy.constants import QUALITY_TAG, QUALITY_CUSTOM, QUALITY_ASK, QUALITY_BEST, QUALITY_LOWEST, QUALITY_TYPES
+import re
+from collections import defaultdict
+from kodi_six import xbmc
+
+from slyguy import plugin, gui, userdata, inputstream, signals
 from slyguy.util import get_system_arch, strip_html_tags
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
+
+def udemy_strip_html_tags(text):
+    text = strip_html_tags(text)
+    return re.sub(r'^\s+', '', text, flags=re.MULTILINE)
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -21,7 +32,8 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.MY_COURSES, _bold=True), path=plugin.url_for(my_courses))
+        folder.add_item(label=_(_.PURCHASED, _bold=True), path=plugin.url_for(purchased))
+        folder.add_item(label=_(_.MY_LISTS, _bold=True), path=plugin.url_for(my_lists))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -30,8 +42,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -48,6 +60,7 @@ def login(**kwargs):
     api.login(username=username, password=password)
     gui.refresh()
 
+
 @plugin.route()
 def logout(**kwargs):
     if not gui.yes_no(_.LOGOUT_YES_NO):
@@ -56,76 +69,176 @@ def logout(**kwargs):
     api.logout()
     gui.refresh()
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    data = api.my_courses(page=page, query=query)
-    return _process_courses(data['results']), data['next']
+    data = api.search(page=page, query=query)
+    items = _process_courses(data['courses'])
+    return items, True
+
 
 @plugin.route()
 @plugin.pagination()
-def my_courses(page=1, **kwargs):
-    page = int(page)
-    folder = plugin.Folder(_.MY_COURSES)
-    data = api.my_courses(page=page)
+def my_lists(page=1, **kwargs):
+    folder = plugin.Folder(_.MY_LISTS)
+    data = api.collections()
+    for row in data['results']:
+        folder.add_item(
+            label = '{} [{}]'.format(row['title'], row['num_courses']),
+            info = {
+                'plot': row['description'],
+            },
+            path = plugin.url_for(list, list_id=row['id'], label=row['title']),
+        )
+    return folder, data['next']
+
+
+@plugin.route()
+@plugin.pagination()
+def list(list_id, label, page=1, **kwargs):
+    folder = plugin.Folder(label)
+    data = api.collection(list_id, page=page)
     items = _process_courses(data['results'])
     folder.add_items(items)
     return folder, data['next']
 
+
+@plugin.route()
+@plugin.pagination()
+def purchased(page=1, **kwargs):
+    folder = plugin.Folder(_.PURCHASED)
+    data = api.purchased(page=page)
+    items = _process_courses(data['results'])
+    folder.add_items(items)
+    return folder, data['next']
+
+
+@plugin.route()
+def edit_lists(course_id, **kwargs):
+    course_id = int(course_id)
+    data = api.collections()
+
+    values = []
+    options = []
+    current = []
+    for index, row in enumerate(data['results']):
+        values.append(row['id'])
+        options.append(row['title'])
+        if course_id in [course['id'] for course in row['courses']]:
+            current.append(index)
+
+    selected = gui.select(_.EDIT_LISTS, options=options, preselect=current, multi=True)
+    if selected is None:
+        return
+
+    to_add = []
+    for index in selected:
+        if index not in current:
+            to_add.append(values[index])
+
+    to_remove = []
+    for index in current:
+        if index not in selected:
+            to_remove.append(values[index])
+            api.del_collection_course(values[index], course_id)
+
+    if not to_add and not to_remove:
+        return
+
+    total = len(to_add) + len(to_remove)
+    count = 0
+    with gui.progress(_.UPDATING_LISTS, background=True) as progress:
+        # add new
+        for list_id in to_add:
+            count += 1
+            progress.update(int((count/total)*100))
+            api.add_collection_course(list_id, course_id)
+
+        # remove old
+        for list_id in to_remove:
+            count += 1
+            progress.update(int((count/total)*100))
+            api.del_collection_course(to_remove, course_id)
+
+
 def _process_courses(rows):
     items = []
     for row in rows:
-        plot = _(_.COURSE_INFO,
-            title = row['headline'],
-            num_lectures = row['num_published_lectures'],
-            percent_complete = row['completion_ratio'],
-            length = row['content_info'],
-        )
-
         item = plugin.Item(
             label = row['title'],
             path = plugin.url_for(chapters, course_id=row['id'], title=row['title']),
             art = {'thumb': row['image_480x270']},
-            info = {'plot': plot},
+            info = {'plot': _(_.COURSE_INFO, headline=row['headline'])},
             is_folder = True,
+            context = (
+                (_.EDIT_LISTS, 'RunPlugin({})'.format(plugin.url_for(edit_lists, course_id=row['id']))),
+            ),
         )
 
         items.append(item)
 
     return items
 
+
 @plugin.route()
 @plugin.pagination()
 def chapters(course_id, title, page=1, **kwargs):
-    page = int(page)
     folder = plugin.Folder(title)
 
+    image = None
+    total_lectures = 0
     rows, next_page = api.chapters(course_id, page=page)
     for row in sorted(rows, key=lambda r: r['object_index']):
+        image = row['course']['image_480x270']
+
+        plot = _(_.CHAPTER_INFO,
+            description = udemy_strip_html_tags(row['description']),
+            num_lectures = len(row['lectures']),
+        )
+        total_lectures += len(row['lectures'])
+
         folder.add_item(
             label = _(_.SECTION_LABEL, section_number=row['object_index'], section_title=row['title']),
-            path = plugin.url_for(lectures, course_id=course_id, chapter_id=row['id'], title=title),
-            art = {'thumb': row['course']['image_480x270']},
-            info = {'plot': strip_html_tags(row['description'])},
+            path = plugin.url_for(lectures, course_id=course_id, title=title, chapter_id=row['id']),
+            art = {'thumb': image},
+            info = {'plot': plot},
         )
+
+    folder.add_item(
+        label = _(_.ALL, _bold=True),
+        path = plugin.url_for(lectures, course_id=course_id, title=title),
+        art = {'thumb': image},
+        info = {'plot':_(_.CHAPTER_INFO, description='', num_lectures=total_lectures)},
+        specialsort = 'top',
+        _position = 0,
+    )
 
     return folder, next_page
 
+
 @plugin.route()
 @plugin.pagination()
-def lectures(course_id, chapter_id, title, page=1, **kwargs):
-    page = int(page)
+def lectures(course_id, title, chapter_id=None, page=1, **kwargs):
     folder = plugin.Folder(title)
 
-    rows, next_page = api.lectures(course_id, chapter_id, page=page)
+    ep_nums = defaultdict(int)
+    rows, next_page = api.lectures(course_id, page=page)
     for row in rows:
+        if chapter_id and int(chapter_id) != int(row['chapter']['id']):
+            continue
+
+        ep_nums[row['chapter']['object_index']] += 1
+        plot = u'[B]{}[/B]\n\n{}'.format(row['chapter']['title'], udemy_strip_html_tags(row['description']))
         folder.add_item(
             label = row['title'],
             path = plugin.url_for(play, asset_id=row['asset']['id']),
             art = {'thumb': row['course']['image_480x270']},
             info = {
                 'title': row['title'],
-                'plot': strip_html_tags(row['description']),
+                'plot': plot,
+                'season': row['chapter']['object_index'],
+                'episode': ep_nums[row['chapter']['object_index']],
                 'duration': row['asset']['length'],
                 'mediatype': 'episode',
                 'tvshowtitle': row['course']['title'],
@@ -135,37 +248,6 @@ def lectures(course_id, chapter_id, title, page=1, **kwargs):
 
     return folder, next_page
 
-def select_quality(qualities):
-    options = []
-
-    options.append([QUALITY_BEST, _.QUALITY_BEST])
-    options.extend(qualities)
-    options.append([QUALITY_LOWEST, _.QUALITY_LOWEST])
-
-    values = [x[0] for x in options]
-    labels = [x[1] for x in options]
-
-    current = userdata.get('last_quality')
-
-    default = -1
-    if current:
-        try:
-            default = values.index(current)
-        except:
-            default = values.index(qualities[-1][0])
-
-            for quality in qualities:
-                if quality[0] <= current:
-                    default = values.index(quality[0])
-                    break
-
-    index = gui.select(_.PLAYBACK_QUALITY, labels, preselect=default, autoclose=10000) #autoclose after 10seconds
-    if index < 0:
-        return None
-
-    userdata.set('last_quality', values[index])
-
-    return values[index]
 
 @plugin.route()
 @plugin.login_required()
@@ -191,12 +273,12 @@ def play(asset_id, **kwargs):
     streams = stream_urls.get('Video') or stream_urls.get('Audio') or []
 
     CODECS = {
-        'libx264': 'H.264',
-        'libx265': 'H.265',
+        'libx264': 'avc',
+        'libx265': 'hvc',
     }
 
-    urls = []
-    qualities = []
+    mp4s = []
+    adaptives = []
     for item in streams:
         if item['type'] != 'application/x-mpegURL':
             try:
@@ -206,71 +288,53 @@ def play(asset_id, **kwargs):
 
             if data.get('migrated_from_non_labeled_conversions'):
                 bandwidth, resolution = BANDWIDTH_MAP.get(int(item['label']))
-                codecs, fps = '', ''
+                codecs, fps = 'avc', '30'
             else:
                 fps = _(_.QUALITY_FPS, fps=float(data['frame_rate']))
                 resolution = '{}x{}'.format(data['width'], data['height'])
                 bandwidth = data['video_bitrate_in_kbps'] * 1000 #(or total_bitrate_in_kbps)
                 codecs = CODECS.get(data.get('video_codec'), '')
 
-            urls.append([bandwidth, item['file']])
-            qualities.append([bandwidth, _(_.QUALITY_BITRATE, bandwidth=float(bandwidth)/1000000, resolution=resolution, fps=fps, codecs=codecs)])
+            mp4s.append([bandwidth, resolution, fps, codecs, item['file']])
 
-    if not urls:
-        for row in stream_data.get('media_sources') or []:
-            if row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
-                urls.append([row['src'], inputstream.HLS(live=False)])
+    for row in stream_data.get('media_sources') or []:
+        if row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
+            adaptives.append([row['src'], inputstream.HLS(live=False)])
 
-            if row['type'] == 'application/dash+xml':
-                play_item.path = row['src']
+        elif row['type'] == 'video/mp4':
+            bandwidth, resolution = BANDWIDTH_MAP.get(int(row['label']))
+            mp4s.append([bandwidth, resolution, '30', 'avc', row['src']])
 
-                if is_drm:
-                    token = stream_data['media_license_token']
-                    ia = inputstream.Widevine(license_key=WV_URL.format(token=token))
-                else:
-                    ia = inputstream.MPD()
+        if row['type'] == 'application/dash+xml':
+            play_item.path = row['src']
 
-                urls.append([row['src'], ia])
+            if is_drm:
+                token = stream_data['media_license_token']
+                ia = inputstream.Widevine(license_key=WV_URL.format(token=token))
+            else:
+                ia = inputstream.MPD()
 
-        if urls:
-            urls = sorted(urls, key=lambda x: isinstance(x[1], inputstream.Widevine))
-            play_item.path = urls[0][0]
-            play_item.inputstream = urls[0][1]
-            if isinstance(play_item.inputstream, inputstream.Widevine):
-                system, arch = get_system_arch()
-                if system == 'Windows' or (system == 'Linux' and arch == 'armv7'):
-                    gui.ok(_.VMP_WARNING)
+            adaptives.append([row['src'], ia])
 
-            return play_item
+    if mp4s:
+        play_item.path = 'special://temp/udemy.m3u8'
+        play_item.proxy_data['custom_quality'] = True
+        with open(xbmc.translatePath(play_item.path), 'w') as f:
+            f.write('#EXTM3U\n#EXT-X-VERSION:3\n')
+            for row in mp4s:
+                f.write('\n#EXT-X-STREAM-INF:BANDWIDTH={},RESOLUTION={},FRAME-RATE={},CODECS={}\n{}'.format(row[0], row[1], row[2], row[3], row[4]))
 
-    if not urls:
-        raise plugin.Error(_.NO_STREAM_ERROR)
+    elif adaptives:
+        adaptives = sorted(adaptives, key=lambda x: isinstance(x[1], inputstream.Widevine))
+        play_item.path = adaptives[0][0]
+        play_item.inputstream = adaptives[0][1]
+        if isinstance(play_item.inputstream, inputstream.Widevine):
+            system, arch = get_system_arch()
+            if system == 'Windows' or (system == 'Linux' and arch == 'armv7'):
+                if not gui.ok(_.VMP_WARNING):
+                    return
 
-    quality = kwargs.get(QUALITY_TAG)
-    if quality is None:
-        quality = settings.getEnum('default_quality', QUALITY_TYPES, default=QUALITY_ASK)
     else:
-        quality = int(quality)
-
-    urls = sorted(urls, key=lambda s: s[0], reverse=True)
-    qualities = sorted(qualities, key=lambda s: s[0], reverse=True)
-
-    if quality == QUALITY_CUSTOM:
-        quality = int(settings.getFloat('max_bandwidth')*1000000)
-    elif quality == QUALITY_ASK:
-        quality = select_quality(qualities)
-        if quality is None:
-            return
-
-    if quality == QUALITY_BEST:
-        quality = qualities[0][0]
-    elif quality == QUALITY_LOWEST:
-        quality = qualities[-1][0]
-
-    play_item.path = urls[-1][1]
-    for item in urls:
-        if item[0] <= quality:
-            play_item.path = item[1]
-            break
+        raise plugin.Error(_.NO_STREAM_ERROR)
 
     return play_item

@@ -2,15 +2,17 @@ import codecs
 from xml.sax.saxutils import escape
 
 import arrow
-from slyguy import plugin, gui, settings, userdata, signals, inputstream
-from slyguy.exceptions import PluginError
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.constants import MIDDLEWARE_REGEX, KODI_VERSION
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
@@ -24,7 +26,7 @@ def home(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live))
 
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -32,8 +34,8 @@ def home(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -69,7 +71,7 @@ def _live_channels():
 
 @plugin.route()
 def live(**kwargs):
-    folder = plugin.Folder(_.LIVE_CHANNELS)
+    folder = plugin.Folder(_.LIVE_TV)
 
     start = arrow.utcnow().shift(hours=2)
     end = arrow.utcnow()

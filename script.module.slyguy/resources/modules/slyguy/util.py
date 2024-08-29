@@ -15,12 +15,12 @@ import socket
 import binascii
 from contextlib import closing
 
+import requests
 from kodi_six import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 from six.moves import queue, range
 from six.moves.urllib.parse import urlparse, urlunparse, quote, parse_qsl
 from requests.models import PreparedRequest
 from six import PY2
-import requests
 
 if sys.version_info >= (3, 8):
     import html
@@ -28,10 +28,10 @@ else:
     from six.moves.html_parser import HTMLParser
     html = HTMLParser()
 
-from .language import _
-from .log import log
-from .exceptions import Error
-from .constants import *
+from slyguy import log, _
+from slyguy.exceptions import Error
+from slyguy.constants import *
+
 
 def run_plugin(path, wait=False):
     if wait:
@@ -67,7 +67,7 @@ def kodi_db(name):
     for file in os.listdir(db_dir):
         db_path = os.path.join(db_dir, file)
 
-        result = re.match('{}([0-9]+)\.db'.format(name.lower()), file.lower())
+        result = re.match(r'{}([0-9]+)\.db'.format(name.lower()), file.lower())
         if result:
             options.append([db_path, int(result.group(1))])
 
@@ -357,18 +357,14 @@ def md5sum(filepath):
 
 def process_brightcove(data):
     if type(data) != dict:
+        log.error(data)
         try:
-            if data[0]['error_code'].upper() == 'CLIENT_GEO' or data[0].get('client_geo','').lower() == 'anonymizing_proxy':
-                raise Error(_.GEO_ERROR)
-            else:
-                msg = data[0].get('message', data[0]['error_code'])
-        except KeyError:
+            msg = data[0]
+        except IndexError:
             msg = _.NO_ERROR_MSG
-
         raise Error(_(_.NO_BRIGHTCOVE_SRC, error=msg))
 
     sources = []
-
     for source in data.get('sources', []):
         if not source.get('src'):
             continue
@@ -419,6 +415,8 @@ def process_brightcove(data):
 def get_system_arch():
     if xbmc.getCondVisibility('System.Platform.Android'):
         system = 'Android'
+    elif xbmc.getCondVisibility('System.Platform.WebOS') or os.path.exists('/var/run/nyx/os_info.json'):
+        system = 'WebOS'
     elif xbmc.getCondVisibility('System.Platform.UWP') or '4n2hpmxwrvr6p' in xbmc.translatePath('special://xbmc/'):
         system = 'UWP'
     elif xbmc.getCondVisibility('System.Platform.Windows'):
@@ -624,7 +622,7 @@ def strip_html_tags(text):
     if not text:
         return ''
 
-    text = re.sub('\([^\)]*\)', '', text)
+    text = re.sub(r'\([^\)]*\)', '', text)
     text = re.sub('<[^>]*>', '', text)
     text = html.unescape(text)
     return text
@@ -657,16 +655,35 @@ def fix_language(language=None):
     if not language:
         return None
 
-    language = language.lower().strip()
+    language = language.strip()
     split = language.split('-')
-
     if len(split) > 1 and split[1].lower() == split[0].lower():
-        return split[0]
+        return split[0].lower()
 
-    # Kodi only supports 2 letter codes before the -
-    # https://github.com/xbmc/xbmc/blob/master/xbmc/utils/LangCodeExpander.cpp
-    if len(split[0]) == 2:
-        return split[0]
+    # any non es-ES, treat as Spanish Argentina
+    if len(split) > 1 and split[0].lower() == 'es':
+        return 'es-AR'
+
+    if language.lower() == 'pt-br':
+        return 'pb'
+
+    if language.lower() == 'cmn-tw':
+        return 'zh-TW'
+
+    if split[0].lower() == 'en':
+        return 'en'
+
+    if language.lower() in ('nb','nn'):
+        return 'no'
+
+    if language.lower() == 'ekk':
+        return 'et'
+
+    if language.lower() == 'lvs':
+        return 'lv'
+
+    if len(split[0]) == 2 and KODI_VERSION < 20:
+        return split[0].lower()
 
     return language
 
@@ -704,9 +721,11 @@ def get_kodi_proxy():
 
     return proxy_address
 
+
 def unique(sequence):
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
+
 
 def get_url_headers(headers=None, cookies=None):
     string = ''
@@ -720,6 +739,7 @@ def get_url_headers(headers=None, cookies=None):
             string += u'{0}%3D{1}; '.format(key, quote(u'{}'.format(cookies[key]).encode('utf8')))
 
     return string.strip().strip('&')
+
 
 def get_headers_from_url(url):
     split = url.split('|')
@@ -735,3 +755,7 @@ def get_headers_from_url(url):
         headers[key.lower()] = _headers[key]
 
     return headers
+
+
+def makedirs(path):
+    xbmcvfs.mkdirs(path)

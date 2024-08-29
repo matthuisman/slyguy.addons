@@ -1,12 +1,12 @@
 import codecs
 
 import arrow
-from slyguy import plugin, inputstream, settings
+from slyguy import plugin, inputstream
 from slyguy.session import Session
 from slyguy.mem_cache import cached
+from slyguy.language import _
+from .settings import settings, ChannelMode, DATA_URL, EPG_URL
 
-from .language import _
-from .constants import *
 
 @plugin.route('')
 def home(**kwargs):
@@ -14,19 +14,19 @@ def home(**kwargs):
 
     folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live_tv))
 
-    if settings.getBool('bookmarks', True):
+    if settings.BOOKMARKS.value:
         folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
-    show_chnos = settings.getBool('show_chnos', True)
+    show_chnos = settings.SHOW_CHNOS.value
 
-    if settings.getBool('show_epg', True):
+    if settings.SHOW_EPG.value:
         now = arrow.now()
         epg_count = 5
     else:
@@ -59,11 +59,12 @@ def live_tv(**kwargs):
         )
 
         if channel.get('chno') and show_chnos:
-            item.label = _(_.LIVE_CHNO, chno=channel['chno'], label=item.label)
+            item.label = u'{} | {}'.format(channel['chno'], item.label)
 
         folder.add_items(item)
 
     return folder
+
 
 @plugin.route()
 def play(slug, **kwargs):
@@ -87,6 +88,7 @@ def play(slug, **kwargs):
 
     return item
 
+
 def get_channels(slug=None):
     @cached(60*5)
     def get_data():
@@ -96,16 +98,14 @@ def get_channels(slug=None):
     if slug:
         return channels[slug]
 
-    channel_mode = settings.getEnum('channel_mode', CHANNEL_MODES, default=ALL)
-
     channel_list = []
     for slug in sorted(channels, key=lambda k: (float(channels[k].get('chno', 'inf')), channels[k]['name'])):
         channel = channels[slug]
         channel['slug'] = slug
 
-        if channel_mode == FREEVIEW_ONLY and not channel.get('chno'):
+        if settings.CHANNEL_MODE.value == ChannelMode.OTA_ONLY and not channel.get('chno'):
             continue
-        elif channel_mode == FAST_ONLY and channel.get('chno'):
+        elif settings.CHANNEL_MODE.value == ChannelMode.FAST_ONLY and channel.get('chno'):
             continue
 
         if channel.get('epg_id') and not channel.get('programs'):
@@ -114,6 +114,7 @@ def get_channels(slug=None):
         channel_list.append(channel)
 
     return channel_list
+
 
 @plugin.route()
 @plugin.merge()

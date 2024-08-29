@@ -6,11 +6,13 @@ from slyguy.util import jwt_data
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
-from .constants import *
+from .settings import HEADERS, BASE_URL, PAGE_SIZE
 from .language import _
+
 
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):
@@ -70,11 +72,11 @@ class API(object):
         return self._session.get('/podcast/categories/').json()['results']
 
     @mem_cache.cached(expires=60*5)
-    def podcast_creators(self, category='', page=1, page_size=100):
+    def podcast_creators(self, category='', page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
@@ -84,9 +86,10 @@ class API(object):
         return self._session.get('/podcast/channels/', params=params).json()
 
     @mem_cache.cached(expires=60*5)
-    def podcasts(self, slug, page=1, page_size=100):
+    def podcasts(self, slug, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
+        # uses page (for now)
         params = {
             'page': page,
             'page_size': page_size,
@@ -95,9 +98,10 @@ class API(object):
         return self._session.get('/podcast/channels/{slug}/'.format(slug=slug), params=params).json()
 
     @mem_cache.cached(expires=60*5)
-    def search_videos(self, query, page=1, page_size=100):
+    def search_videos(self, query, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
+        # uses page (for now)
         params = {
             'page': page,
             'page_size': page_size,
@@ -132,11 +136,11 @@ class API(object):
         return self._session.get('/featured/').json()
 
     @mem_cache.cached(expires=60*5)
-    def videos(self, category='', page=1, page_size=100):
+    def videos(self, category='', page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
@@ -145,30 +149,31 @@ class API(object):
 
         return self._session.get('/video/', params=params).json()
 
-    def my_videos(self, page=1, page_size=100):
+    def my_videos(self, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
         return self._session.get('/library/video/', params=params).json()
 
-    def my_creators(self, page=1, page_size=100):
+    def my_creators(self, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 
         return self._session.get('/library/video/channels/', params=params).json()
 
     @mem_cache.cached(expires=60*5)
-    def creator(self, slug, page=1, page_size=100):
+    def creator(self, slug, page=1, page_size=PAGE_SIZE):
         self._refresh_token()
 
+        # uses page (for now)
         params = {
             'page': page,
             'page_size': page_size,
@@ -177,11 +182,11 @@ class API(object):
         return self._session.get('/video/channels/{slug}/'.format(slug=slug), params=params).json()
 
     @mem_cache.cached(expires=60*5)
-    def creators(self, category='', page=1, page_size=100, random=False):
+    def creators(self, category='', page=1, page_size=PAGE_SIZE, random=False):
         self._refresh_token()
 
         params = {
-            'page': page,
+            'offset': page_size*(page-1),
             'page_size': page_size,
         }
 

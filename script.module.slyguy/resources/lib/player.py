@@ -5,17 +5,11 @@ from kodi_six import xbmc
 from threading import Thread
 
 from slyguy.util import get_kodi_string, set_kodi_string
-from slyguy.log import log
 from slyguy.router import add_url_args
 from slyguy.monitor import monitor
 
-class Player(xbmc.Player):
-    # def __init__(self, *args, **kwargs):
-    #     self._thread = None
-    #     self._up_next = None
-    #     self._callback = None
-    #     super(Player, self).__init__(*args, **kwargs)
 
+class Player(xbmc.Player):
     def playback(self):
         play_time = 0
         last_play_time = int(self.getTime())
@@ -89,10 +83,6 @@ class Player(xbmc.Player):
             self._playlist.remove(play_data['next']['next_file'])
             self._playlist.add(play_data['next']['next_file'], index=self._playlist.getposition()+1)
 
-        #legacy
-        if play_data['next']['time']:
-            play_skips.append({'from': play_data['next']['time'], 'to': 0})
-
         for skip in play_skips:
             if not skip.get('to'):
                 skip['to'] = int(self.getTotalTime())+1
@@ -108,36 +98,9 @@ class Player(xbmc.Player):
 
             self._play_skips.append(skip)
 
-        ## Workaround for suspect IA bug: https://github.com/xbmc/inputstream.adaptive/issues/821
-        # if int(self.getTime()) < 0:
-        #     self.seekTime(0)
-
         if play_data['callback']['callback']:
             self._callback = play_data['callback']
 
         if self._callback or self._play_skips:
             self._thread = Thread(target=self.playback)
             self._thread.start()
-
-    # def onPlayBackEnded(self):
-    #     vid_playlist   = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    #     music_playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
-    #     position       = vid_playlist.getposition()+1
-
-    #     if (vid_playlist.size() <= 1 or vid_playlist.size() == position) and (music_playlist.size() <= 1 or music_playlist.size() == position):
-    #         self.onPlayBackStopped()
-
-    # def onPlayBackStopped(self):
-    #     pass
-
-    # def onPlayBackStarted(self):
-    #     pass
-
-    # def onPlayBackPaused(self):
-    #     print("AV PAUSED")
-
-    # def onPlayBackResumed(self):
-    #     print("AV RESUME")
-
-    # def onPlayBackError(self):
-    #     self.onPlayBackStopped()

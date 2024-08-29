@@ -5,28 +5,12 @@ msgctxt "#30000"
 msgid "Shows"
 msgstr ""
 
-msgctxt "#30001"
-msgid "ALL"
-msgstr ""
-
 msgctxt "#30002"
 msgid "Categories"
 msgstr ""
 
-msgctxt "#30003"
-msgid "Live TV"
-msgstr ""
-
 msgctxt "#30004"
 msgid "All Episodes"
-msgstr ""
-
-msgctxt "#30005"
-msgid "Watch from Start"
-msgstr ""
-
-msgctxt "#30006"
-msgid "Next Page"
 msgstr ""
 
 msgctxt "#30007"
@@ -68,42 +52,3 @@ msgstr ""
 msgctxt "#30016"
 msgid " (D MMM, h:mm A)"
 msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr ""
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr ""
-
-msgctxt "#32064"
-msgid "From Start"
-msgstr ""
-

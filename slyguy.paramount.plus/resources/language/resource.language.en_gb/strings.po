@@ -14,10 +14,6 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#30002"
-msgid "Live"
-msgstr ""
-
 msgctxt "#30003"
 msgid "Local Channel IP Address"
 msgstr ""
@@ -38,18 +34,8 @@ msgctxt "#30011"
 msgid "Shows"
 msgstr ""
 
-
-
-msgctxt "#30014"
-msgid "Season {season}"
-msgstr ""
-
 msgctxt "#30015"
 msgid "Clips"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Movies"
 msgstr ""
 
 msgctxt "#30017"
@@ -64,37 +50,12 @@ msgctxt "#30019"
 msgid "Featured"
 msgstr ""
 
-msgctxt "#30020"
-msgid "H.265"
-msgstr ""
-
-msgctxt "#30021"
-msgid "4K"
-msgstr ""
-
-msgctxt "#30022"
-msgid "Dolby Vision"
-msgstr ""
-
-
-msgctxt "#30024"
-msgid "Dolby Digital Plus (EC-3)"
-msgstr ""
-
-msgctxt "#30025"
-msgid "Dolby Digital (AC-3)"
-msgstr ""
-
 msgctxt "#30026"
 msgid "Partner Login"
 msgstr ""
 
 msgctxt "#30027"
 msgid "Select Partner"
-msgstr ""
-
-msgctxt "#30028"
-msgid "Dolby Atmos"
 msgstr ""
 
 msgctxt "#30029"
@@ -105,42 +66,4 @@ msgstr ""
 
 msgctxt "#30030"
 msgid "Sync with Paramount+"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
-msgstr ""
-
-msgctxt "#32066"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32065"
-msgid "From Live"
-msgstr ""
-
-msgctxt "#32064"
-msgid "From Start"
 msgstr ""

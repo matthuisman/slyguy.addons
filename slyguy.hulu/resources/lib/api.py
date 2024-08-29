@@ -3,23 +3,26 @@ import uuid
 from time import time
 
 import arrow
-from slyguy import userdata, settings, mem_cache
+from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import get_system_arch, chunked
 from slyguy.log import log
 from slyguy.drm import req_hdcp_level, HDCP_2_2, is_wv_secure
 
-from .constants import *
 from .language import _
+from .settings import settings, API_URL, HEADERS, DEEJAY_DEVICE_ID, DEEJAY_KEY_VERSION
+
 
 class APIError(Error):
     pass
+
 
 ERROR_MAP = {
     1003: _.GEO_ERROR,
     'HOME-002': _.EXPIRED_TOKEN,
 }
+
 
 class API(object):
     def new_session(self):
@@ -103,10 +106,10 @@ class API(object):
         return data['items']
 
     def series(self, id, **kwargs):
-        return self.hub('series/{}'.format(id), limit=999, **kwargs)
+        return self.hub('series/{}'.format(id), limit=1999, **kwargs)
 
     def episodes(self, id, season, **kwargs):
-        return self.hub('series/{}/season/{}'.format(id, season), limit=999, **kwargs)
+        return self.hub('series/{}/season/{}'.format(id, season), limit=1999, **kwargs)
 
     def hub(self, slug, limit=100, page=1, view=False):
         self._refresh_token()
@@ -149,20 +152,20 @@ class API(object):
 
         self._refresh_token()
 
-        params = {
-            'schema': 1,
-            'eab_ids': ",".join(eab_ids),
-            'bowie_context': 'all',
-            #'device_info': 'android:4.32.0:compass-mvp:site-map',
-        }
-        params.update(self._lat_long())
-
-        data = self._session.get('https://discover.hulu.com/content/v5/me/state', params=params).json()
-        self._check_errors(data)
-
         states = {}
-        for row in data['items']:
-            states[row['eab_id']] = row
+        for chunk in chunked(eab_ids, 100):
+            params = {
+                'schema': 1,
+                'eab_ids': ",".join(chunk),
+                'bowie_context': 'all',
+                #'device_info': 'android:4.32.0:compass-mvp:site-map',
+            }
+            params.update(self._lat_long())
+
+            data = self._session.get('https://discover.hulu.com/content/v5/me/state', params=params).json()
+            self._check_errors(data)
+            for row in data['items']:
+                states[row['eab_id']] = row
 
         return states
 
@@ -357,8 +360,7 @@ class API(object):
 
         vid_types = [{'type':'H264','width':3840,'height':2160,'framerate':60,'level':'4.2','profile':'HIGH'}]
         if settings.getBool('h265'):
-            width, height = (3840, 2160) if settings.getBool('4k') else (1920, 1080)
-            vid_types.append({'type':'H265','width':width,'height':height,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
+            vid_types.append({'type':'H265','width':3840,'height':2160,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
 
         aud_types = [{'type':'AAC'}]
         if settings.getBool('ec3'):
@@ -409,8 +411,8 @@ class API(object):
             # 'cp_session_id': device_id,
         }
 
-        if (settings.getBool('enable_hdr', True) or settings.getBool('dolby_vision', False)) and req_hdcp_level(HDCP_2_2): # also need WV L1?
-            payload['playback']['video']['dynamic_range'] = 'DOLBY_VISION' if not settings.getBool('enable_hdr', True) else 'HDR'
+        if (settings.getBool('hdr10', True) or settings.getBool('dolby_vision', False)) and req_hdcp_level(HDCP_2_2): # also need WV L1?
+            payload['playback']['video']['dynamic_range'] = 'DOLBY_VISION' if not settings.getBool('hdr10', True) else 'HDR'
             payload['playback']['drm']['multi_key'] = True
 
         payload.update(self._lat_long())

@@ -29,7 +29,6 @@ def is_connection_dropped(conn):  # Platform-specific
     except NoWayToWaitForSocketError:  # Platform-specific: AppEngine
         return False
 
-
 # This function is copied from socket.py in the Python 2.7 standard
 # library test suite. Added to its signature is only `socket_options`.
 # One additional modification is that we avoid binding to IPv6 servers
@@ -39,6 +38,7 @@ def create_connection(
     timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
     source_address=None,
     socket_options=None,
+    getaddrinfo=socket.getaddrinfo,
 ):
     """Connect to *address* and return the socket object.
 
@@ -69,7 +69,7 @@ def create_connection(
             LocationParseError(u"'%s', label empty or too long" % host), None
         )
 
-    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+    for res in getaddrinfo(host, port, family, socket.SOCK_STREAM):
         af, socktype, proto, canonname, sa = res
         sock = None
         try:

@@ -1648,270 +1648,68 @@ mutation PlaybackAuth($drmLevel: DrmLevel!, $os: Os!, $osVersion: String!, $cont
 """
 
 SEARCH = """
-query search($input: SearchInput) {
-  search(input: $input) {
-    ...SearchScreenFields
-    __typename
-  }
-}
-
-fragment SearchScreenFields on Screen {
-  id
-  title
-  templateId
-  components {
-    ... on Carousel {
-      ...CarouselComponentFields
+query pagedSearch($pagedSearchInput: PagedSearchInput) {
+  pagedSearch(input: $pagedSearchInput) {
+    facets {
+      type {
+        movies
+        series
+        rentals
+        __typename
+      }
       __typename
     }
-    __typename
-  }
-  theme
-  searchMeta {
-    totalItems
-    __typename
-  }
-  __typename
-}
-
-fragment CarouselComponentFields on Carousel {
-  __typename
-  header
-  contentType
-  subType
-  tiles {
-    ...TileFields
-    __typename
-  }
-}
-
-fragment TileFields on Tile {
-  image
-  header
-  subHeader
-  badge
-  contentItem {
-    ...ContentItemLightFields
-    ... on Screen {
-      path
-      __typename
-    }
-    __typename
-  }
-  sortValues {
-    key
-    value
-    __typename
-  }
-  playbackInfo {
-    status
-    numberMinutesRemaining
-    numberMinutesWatched
-    position
-    __typename
-  }
-  rentalInfo {
-    secondsLeftToStartWatching
-    secondsLeftToWatch
-    __typename
-  }
-  __typename
-}
-
-fragment ContentItemLightFields on ContentItem {
-  id
-  ... on Title {
-    id
-    path
-    title
-    summary
-    isRental
-    year
-    rating {
-      id
-      rating
-      __typename
-    }
-    genres
-    duration
-    images {
-      uri
-      __typename
-    }
-    keyart {
+    hasMore
+    cursor
+    tiles {
+      image {
         uri
-    }
-    createdAt
-    products {
-      id
-      originalPrice
-      currentPrice
-      name
-      currency
-      __typename
-    }
-    isComingSoon
-    videoExtras {
-      ...VideoExtraFields
-      __typename
-    }
-    tile {
-      image
+        class
+        __typename
+      }
       header
       subHeader
       badge
-      contentItem {
-        id
+      item {
         __typename
-      }
-      sortValues {
-        key
-        value
-        __typename
-      }
-      playbackInfo {
-        status
-        numberMinutesRemaining
-        numberMinutesWatched
-        position
-        __typename
-      }
-      rentalInfo {
-        secondsLeftToStartWatching
-        secondsLeftToWatch
-        __typename
-      }
-      __typename
-    }
-    __typename
-  }
-  ... on Series {
-    title
-    genres
-    isRental
-    path
-    keyart {
-        uri
-    }
-    isComingSoon
-    description
-    products {
-      id
-      originalPrice
-      currentPrice
-      name
-      currency
-      __typename
-    }
-    seasons {
-      id
-      episodes {
-        id
-        title
-        seasonNumber
-        episodeNumber
-        __typename
-      }
-      __typename
-    }
-    images {
-      uri
-      __typename
-    }
-    createdAt
-    isComingSoon
-    videoExtras {
-      ...VideoExtraFields
-      __typename
-    }
-    tile {
-      image
-      header
-      subHeader
-      badge
-      contentItem {
-        id
-        __typename
-      }
-      sortValues {
-        key
-        value
-        __typename
-      }
-      playbackInfo {
-        status
-        numberMinutesRemaining
-        numberMinutesWatched
-        position
-        __typename
-      }
-      rentalInfo {
-        secondsLeftToStartWatching
-        secondsLeftToWatch
-        __typename
-      }
-      __typename
-    }
-    __typename
-  }
-  ... on Episode {
-    episodeNumber
-    seasonNumber
-    series {
-      id
-      title
-      path
-      seasons {
-        episodes {
+        ... on Series {
           id
+          path
+          isRental
+          isComingSoon
+          description
+          keyart {
+            uri
+          }
+          summary
+          genres
+          title
           __typename
         }
-        __typename
+        ... on Title {
+          id
+          path
+          isRental
+          isComingSoon
+          description
+          summary
+          keyart {
+            uri
+          }
+          title
+          rating {
+            rating
+            __typename
+          }
+          year
+          genres
+          duration
+          __typename
+        }
       }
       __typename
     }
     __typename
   }
-  ... on VideoExtra {
-    contentItems {
-      id
-      __typename
-    }
-    __typename
-  }
-  __typename
-}
-
-fragment VideoExtraFields on VideoExtra {
-  id
-  description
-  images {
-    id
-    uri
-    height
-    width
-    __typename
-  }
-  tile {
-    image
-    __typename
-  }
-  start
-  end
-  title
-  videoEncodings {
-    ...VideoEncodingFields
-    __typename
-  }
-  __typename
-}
-
-fragment VideoEncodingFields on VideoEncoding {
-  id
-  format
-  referenceId
-  size
-  offlineEnabled
-  __typename
 }
 """

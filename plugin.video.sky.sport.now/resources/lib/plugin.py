@@ -5,13 +5,14 @@ from xml.dom.minidom import parseString
 import arrow
 from kodi_six import xbmc
 
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
-from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, PLAY_FROM_LIVE, LIVE_HEAD, ROUTE_LIVE_TAG
+from slyguy.constants import MIDDLEWARE_PLUGIN, PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, PLAY_FROM_LIVE, LIVE_HEAD, ROUTE_LIVE_TAG, KODI_VERSION
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
 
 api = API()
 
@@ -31,7 +32,7 @@ def home(**kwargs):
 
         folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, content_id='home', label=_.HOME))
         folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(content, content_id='browse', label=_.SPORTS))
-        folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
+     #   folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -258,24 +259,43 @@ def logout(**kwargs):
     gui.refresh()
 
 @plugin.route()
-@plugin.plugin_middleware()
+@plugin.plugin_request()
 def mpd_request(_data, _path, **kwargs):
     root = parseString(_data)
-
     mpd = root.getElementsByTagName("MPD")[0]
-    # Fixes issues of being too close to head and getting 404 error
+
+    if not inputstream.require_version('21.0.0'):
+        # IA doesnt support multi-period with different baseurls in rep (https://github.com/xbmc/inputstream.adaptive/issues/1500)
+        # For now, lets remove all periods except the latest
+        periods_to_remove = [x for x in root.getElementsByTagName('Period')][:-1]
+        if periods_to_remove:
+            for period in periods_to_remove:
+                period.parentNode.removeChild(period)
+            mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
 
     seconds_diff = 0
     utc = mpd.getElementsByTagName("UTCTiming")
+    publish_time = arrow.get(mpd.getAttribute('publishTime'))
     if utc:
         utc_time = arrow.get(utc[0].getAttribute('value'))
-        seconds_diff = max((arrow.now() - utc_time).total_seconds(), 0)
+        seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
+    else:
+        for elem in mpd.getElementsByTagName("SupplementalProperty"):
+            if elem.getAttribute('schemeIdUri') == 'urn:scte:dash:utc-time':
+                utc_time = arrow.get(elem.getAttribute('value'))
+                seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
+                break
 
-    avail = mpd.getAttribute('availabilityStartTime')
-    if avail:
-        seconds_diff += 30
-        avail_start = arrow.get(avail).shift(seconds=seconds_diff)
-        mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
+    if seconds_diff > 0:
+        seconds_diff += 24
+        # Kodi 21+
+        if KODI_VERSION > 20:
+            mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(seconds_diff))
+        else:
+            avail = mpd.getAttribute('availabilityStartTime')
+            if avail:
+                avail_start = arrow.get(avail).shift(seconds=seconds_diff)
+                mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
 
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
@@ -295,40 +315,41 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
     item = plugin.Item(
         path = data['dash']['url'],
         inputstream = inputstream.Widevine(
-            license_key = data['dash']['drm']['url']
+            license_key = data['dash']['drm']['url'],
+            properties = {'manifest_config': '{"timeshift_bufferlimit":86400}'},
         ),
         headers = headers,
         proxy_data = {
-            'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}},
+            'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request),}},
         }
     )
 
-    if start is None:
-        start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
-    else:
-        start = int(start)
-        play_type = PLAY_FROM_START
+    # if start is None:
+    #     start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
+    # else:
+    #     start = int(start)
+    #     play_type = PLAY_FROM_START
 
-    offset = arrow.now().timestamp - start
-    if is_live and offset > 0:
-        offset = (24*3600 + 20) - offset
+    # offset = arrow.now().timestamp - start
+    # if is_live and offset > 0:
+    #     offset = (24*3600 + 20) - offset
 
-        if play_type is None:
-            play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+    #     if play_type is None:
+    #         play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
 
-        if play_type == PLAY_FROM_ASK:
-            result = plugin.live_or_start()
-            if result == -1:
-                return
-            elif result == 1:
-                item.resume_from = max(1, offset)
+    #     if play_type == PLAY_FROM_ASK:
+    #         result = plugin.live_or_start()
+    #         if result == -1:
+    #             return
+    #         elif result == 1:
+    #             item.resume_from = max(1, offset)
 
-        elif play_type == PLAY_FROM_START:
-            item.resume_from = max(1, offset)
+    #     elif play_type == PLAY_FROM_START:
+    #         item.resume_from = max(1, offset)
 
-    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
-        ## Need below to seek to live over multi-periods
-        item.resume_from = LIVE_HEAD
+    # if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
+    #     ## Need below to seek to live over multi-periods
+    #     item.resume_from = LIVE_HEAD
 
     return item
 
@@ -336,9 +357,6 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
 @plugin.login_required()
 def play_vod(vod_id, **kwargs):
     data, vod = api.play_vod(vod_id)
-    
-    print(data)
-    print(vod)
 
     headers = HEADERS
     headers.update({
@@ -352,9 +370,6 @@ def play_vod(vod_id, **kwargs):
             license_key = data['dash'][0]['drm']['url']
         ),
         headers = headers,
-        proxy_data = {
-            'middleware': {data['dash'][0]['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request)}},
-        }
     )
 
     return item

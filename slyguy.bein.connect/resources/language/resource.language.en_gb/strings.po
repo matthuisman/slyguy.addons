@@ -5,14 +5,6 @@ msgctxt "#30001"
 msgid "Username"
 msgstr ""
 
-msgctxt "#30002"
-msgid "Password"
-msgstr ""
-
-msgctxt "#30003"
-msgid "Watch Live"
-msgstr ""
-
 msgctxt "#30004"
 msgid "Failed to login\n"
 "Check your username and password is correct\n"
@@ -103,30 +95,4 @@ msgstr ""
 
 msgctxt "#30025"
 msgid "beIN Satellite Subscriber"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""

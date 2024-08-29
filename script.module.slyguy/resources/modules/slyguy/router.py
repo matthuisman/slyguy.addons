@@ -1,11 +1,11 @@
 import sys
 from six.moves.urllib_parse import parse_qsl, urlparse, urlencode
 
-from . import signals
-from .constants import *
-from .log import log
-from .language import _
-from .exceptions import RouterError, Exit
+from slyguy import signals, _
+from slyguy.constants import *
+from slyguy.log import log
+from slyguy.exceptions import RouterError, Exit
+
 
 _routes = {}
 
@@ -102,14 +102,35 @@ def redirect(url):
     function(**params)
     raise Exit()
 
+
 # router.dispatch('?_=_settings')
 def dispatch(url=None):
     if url is None:
-        url = sys.argv[0] + sys.argv[2]
+        if hasattr(sys, 'listitem'):
+            url = ROUTE_CONTEXT
+            try:
+                #Kodi 19+ only
+                url += '?' + sys.argv[1]
+            except IndexError:
+                pass
+            sys.argv = [sys.argv[0], -1, '']
+        elif sys.argv[0].lower().endswith('.py'):
+            url = ROUTE_SCRIPT
+            try:
+                #Kodi 19+ only
+                url += '?' + sys.argv[1]
+            except IndexError:
+                pass
+            sys.argv = [sys.argv[0], -1, '']
+        else:
+            url = sys.argv[0] + sys.argv[2]
 
     with signals.throwable():
         signals.emit(signals.BEFORE_DISPATCH)
         function, params = parse_url(url)
+
+        if hasattr(sys, 'listitem'):
+            params['listitem'] = sys.listitem
 
         try:
             function(**params)
@@ -123,3 +144,9 @@ def dispatch(url=None):
                 raise
 
     signals.emit(signals.AFTER_DISPATCH)
+
+
+signals.emit(signals.ON_ENTRY)
+if KODI_VERSION >= 19:
+    import atexit
+    atexit.register(lambda: signals.emit(signals.ON_EXIT))

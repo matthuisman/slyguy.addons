@@ -163,13 +163,20 @@ class API(object):
         if 'statusCode' in data and data['statusCode'] != 200:
             error = data.get('message') or data.get('statusText')
             raise APIError(error)
+        # code = data.get('statusCode') or data.get('status')
+        # if code and code != 200:
+        #     error = data.get('message') or data.get('statusText') or data.get('messages', [''])[0]
+        #     raise APIError(error)
 
-    def channels(self):
+    def channels(self, page=1):
         self._refresh_token()
-        params = {'rpp': 15}
+        params = {'rpp': 25, 'p': page}
         data = self._session.get('/v2/event/live', params=params).json()
         self._check_errors(data)
-        return data['events']
+        events = data['events']
+        if data['totalPages'] > page:
+            events.extend(self.channels(page+1))
+        return events
 
     def epg(self, channel_ids, start, stop):
         self._refresh_token()

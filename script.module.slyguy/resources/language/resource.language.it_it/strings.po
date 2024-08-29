@@ -156,8 +156,8 @@ msgid "No Results"
 msgstr "Nessun risultato"
 
 msgctxt "#32032"
-msgid "{addon} ({version}/{common_version}) - Unexpected Error"
-msgstr "{addon} ({version}/{common_version}) - Errore inaspettato"
+msgid "Unexpected Error"
+msgstr "Errore inaspettato"
 
 msgctxt "#32033"
 msgid "Failed to download required file: {filename}"

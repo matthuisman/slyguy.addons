@@ -1,6 +1,6 @@
 import arrow
 
-from slyguy import plugin, gui, userdata, signals, inputstream, settings
+from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
@@ -8,13 +8,17 @@ from slyguy.drm import is_wv_secure
 from .api import API
 from .constants import *
 from .language import _
+from .settings import settings, Ratio
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -46,8 +50,8 @@ def index(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -328,7 +332,6 @@ def _parse_series(row):
 
     if not item.info['plot']:
         item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))))
-    item.context.append((_.TRAILER, 'RunPlugin({})'.format(item.info['trailer'])))
 
     return item
 
@@ -373,7 +376,6 @@ def _parse_video(row):
     else:
         if not item.info['plot']:
             item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
-        item.context.append((_.TRAILER, 'RunPlugin({})'.format(item.info['trailer'])))
         item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, family_id=row['family']['encodedFamilyId']))))
         item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
 
@@ -686,15 +688,15 @@ def _play(content_id=None, family_id=None, event_id=None, **kwargs):
             has_imax = True
 
     if has_imax:
-        deault_ratio = settings.getEnum('default_ratio', RATIO_TYPES, default=RATIO_IMAX)
+        deault_ratio = settings.DEFAULT_RATIO.value
 
-        if deault_ratio == RATIO_ASK:
+        if deault_ratio == Ratio.ASK:
             index = gui.context_menu([_.IMAX, _.WIDESCREEN])
             if index == -1:
                 return
             imax = True if index == 0 else False
         else:
-            imax = True if deault_ratio == RATIO_IMAX else False
+            imax = True if deault_ratio == Ratio.IMAX else False
 
         profile = api.profile()[0]
         if imax != profile['attributes']['playbackSettings']['preferImaxEnhancedVersion']:

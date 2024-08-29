@@ -1,19 +1,22 @@
 import arrow
 import codecs
 from kodi_six import xbmc
-from slyguy import plugin, gui, signals, inputstream, settings
-from slyguy.log import log
+from slyguy import plugin, gui, signals, inputstream
 
 from .api import API
 from .language import _
 from .constants import *
+from .settings import settings
+
 
 api = API()
+
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def index(**kwargs):
@@ -22,7 +25,7 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.LIVE_CHANNELS, _bold=True), path=plugin.url_for(live))
+        folder.add_item(label=_(_.LIVE_TV, _bold=True), path=plugin.url_for(live))
         
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
@@ -30,8 +33,8 @@ def index(**kwargs):
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
-
     return folder
+
 
 @plugin.route()
 def login(**kwargs):

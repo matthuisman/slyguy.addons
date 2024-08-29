@@ -2,47 +2,45 @@ import json
 import socket
 import shutil
 import re
-import ssl
+import time
 import os
+import functools
+import random
 from gzip import GzipFile
+from ssl import OPENSSL_VERSION
 
 import requests
 import urllib3
-import six
-from urllib3.util.connection import allowed_gai_family, _set_socket_options
-from urllib3.exceptions import LocationParseError, ConnectTimeoutError, NewConnectionError
-from urllib3.connection import HTTPSConnection, HTTPConnection
-from urllib3.connectionpool import HTTPSConnectionPool
-from socket import error as SocketError
-from socket import timeout as SocketTimeout
 from six import BytesIO
 from six.moves.urllib_parse import urlparse
 from kodi_six import xbmc
 import dns.resolver
 
-from . import userdata, settings, signals, mem_cache
-from .util import get_kodi_proxy
-from .smart_urls import get_dns_rewrites
-from .log import log
-from .language import _
-from .exceptions import SessionError, Error
-from .constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
+from slyguy import userdata, settings, signals, mem_cache, log, _
+from slyguy.util import get_kodi_proxy
+from slyguy.smart_urls import get_dns_rewrites
+from slyguy.exceptions import SessionError, Error
+from slyguy.constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
+from slyguy.settings import IPMode
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # KODI 17.6/18.9: OpenSSL 1.0.2j  26 Sep 2016
 # KODI 19.5: OpenSSL 1.1.1d  10 Sep 2019
 # KODI 20.0: OpenSSL 1.1.1q  5 Jul 2022
-log.debug(ssl.OPENSSL_VERSION)
+# KODI 21.0: OpenSSL 1.1.1q  5 Jul 2022
+log.debug(OPENSSL_VERSION)
 
 DEFAULT_HEADERS = {
     'User-Agent': DEFAULT_USERAGENT,
 }
 
 SSL_CIPHERS = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA:AES256-SHA'
-SSL_OPTIONS = ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_COMPRESSION
+SSL_CIPHERS = SSL_CIPHERS.split(':')
+random.shuffle(SSL_CIPHERS)
+SSL_CIPHERS = ':'.join(SSL_CIPHERS)
+SSL_OPTIONS = urllib3.util.ssl_.OP_NO_SSLv2 | urllib3.util.ssl_.OP_NO_SSLv3 | urllib3.util.ssl_.OP_NO_COMPRESSION | urllib3.util.ssl_.OP_NO_TICKET
 DNS_CACHE = dns.resolver.Cache()
-
 
 def json_override(func, error_msg):
     try:
@@ -59,150 +57,85 @@ def close_sessions():
 
 
 class DOHResolver(object):
-    def __init__(self, adapter, nameservers=None):
-        self._adapter = adapter
+    def __init__(self, nameservers=None):
         self.nameservers = nameservers or []
-        self._session = RawSession()
 
-    def query(self, host):
-        class DNSResultWrapper(object):
-            def __init__(self, answer):
-                self.answer = answer
-
-            def to_text(self):
-                return self.answer
-
+    def resolve(self, host, family, interface_ip=None):
+        ip_type = 'AAAA' if family == socket.AF_INET6 else 'A'
         for server in self.nameservers:
-            key = (server, host)
-            ips = mem_cache.get(key)
+            key = (server, host, ip_type)
+            ips = mem_cache.get(key, None)
 
-            if not ips:
+            if ips is None:
                 headers = {'accept': 'application/dns-json'}
+                params = {'name': host, 'type': ip_type}
 
-                server_host = urlparse(server).netloc.lower()
-                info = self._adapter.getaddrinfo(server_host, 443 if server.lower().startswith('https') else 80)
-                families = [x[0] for x in info]
-
-                params = {'name': host, 'dns': host}
-
-                # prefer IPV4
-                if socket.AF_INET in families or socket.AF_INET6 not in families:
-                    params['type'] = 'A'
-                else:
-                    params['type'] = 'AAAA'
-
-                log.debug("DOH Request: {} for {} type {}".format(server, host, params['type']))
-
+                log.debug("DOH Request: {} for {} type {}".format(server, host, ip_type))
                 try:
-                    data = self._session.get(server, params=params, headers=headers).json()
+                    session = RawSession(ip_mode=IPMode.ONLY_IPV6 if ip_type == 'AAAA' else IPMode.ONLY_IPV4, interface_ip=interface_ip)
+                    data = super(RawSession, session).request('get', server, params=params, headers=headers).json()
                 except Exception as e:
-                    log.debug(e)
+                    log.debug("DOH request failed: {}".format(e))
                     continue
 
-                suitable = [x for x in data['Answer'] if x['type'] in (1, 28)] #ipv4 or ipv6
+                ip_type = 28 if ip_type == 'AAAA' else 1
+                suitable = [x for x in data['Answer'] if x['type'] == ip_type]
                 ttl = min([x['TTL'] for x in suitable])
                 ips = [x['data'] for x in suitable]
                 mem_cache.set(key, ips, expires=ttl)
 
             if ips:
-                return [DNSResultWrapper(ip) for ip in ips]
+                return ips
 
-        raise SessionError('Unable to resolve host: {} with nameservers: {}'.format(host, self.nameservers))
+        return []
 
 
-class RequestsDoHHTTPConnection(HTTPConnection):
-    def __init__(self, *args, **kw):
-        self.adapter = kw.pop('adapter')
-        super(RequestsDoHHTTPConnection, self).__init__(*args, **kw)
+class SocketResolver(object):
+    def __init__(self):
+        self.nameservers = ['system dns']
 
-    def create_connection(self, address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None, socket_options=None):
-        host, port = address
-        if host.startswith("["):
-            host = host.strip("[]")
-        err = None
-
-        family = allowed_gai_family()
+    def resolve(self, host, family, interface_ip=None):
+        if interface_ip:
+            log.warning("DNS leak! DNS request sent using default interface and not specified '{}'. Specify a DNS server in smart urls to fix".format(interface_ip))
 
         try:
-            host.encode("idna")
-        except UnicodeError:
-            return six.raise_from(
-                LocationParseError(u"'%s', label empty or too long" % host), None
-            )
+            return [x[4][0] for x in socket.getaddrinfo(host, None, family)]
+        except:
+            return []
 
-        for res in self.adapter.getaddrinfo(host, port, family, socket.SOCK_STREAM):
-            af, socktype, proto, canonname, sa = res
-            sock = None
-            try:
-                sock = socket.socket(af, socktype, proto)
 
-                # If provided, set socket level options before connecting.
-                _set_socket_options(sock, socket_options)
-
-                if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
-                    sock.settimeout(timeout)
-                if source_address:
-                    sock.bind(source_address)
-                sock.connect(sa)
-                return sock
-
-            except socket.error as e:
-                err = e
-                if sock is not None:
-                    sock.close()
-                    sock = None
-
-        if err is not None:
-            raise err
-
-        raise socket.error("getaddrinfo returns an empty list")
-
-    # This code is copied from urllib3/connection.py version 1.26.8 (from requests v2.28.1)
-    def _new_conn(self):
-        extra_kw = {}
-        if self.source_address:
-            extra_kw["source_address"] = self.source_address
-
-        if self.socket_options:
-            extra_kw["socket_options"] = self.socket_options
-
+class DNSResolver(dns.resolver.Resolver):
+    def resolve(self, host, family, interface_ip=None):
         try:
-            conn = self.create_connection((self._dns_host, self.port), self.timeout, **extra_kw)
-        except SocketTimeout:
-            raise ConnectTimeoutError(
-                self,
-                "Connection to %s timed out. (connect timeout=%s)"
-                % (self.host, self.timeout),
-            )
-        except SocketError as e:
-            raise NewConnectionError(
-                self, "Failed to establish a new connection: %s" % e
-            )
-
-        return conn
-
-
-class RequestsDoHHTTPSConnection(RequestsDoHHTTPConnection, HTTPSConnection):
-    def connect(self, *args, **kwargs):
-        retval = super(RequestsDoHHTTPSConnection, self).connect(*args, **kwargs)
-        self.adapter.on_connect(self)
-        return retval
+            return [x.to_text() for x in self.query(host, rdtype='AAAA' if family == socket.AF_INET6 else 'A', source=interface_ip)]
+        except:
+            return []
 
 
 class SessionAdapter(requests.adapters.HTTPAdapter):
     def __init__(self):
         self.session_data = {}
-        self._context_cache = {}
         super(SessionAdapter, self).__init__()
 
-    def on_connect(self, https_connection):
-        log.debug('SSL Cipher: {} - {}'.format(https_connection.sock.server_hostname, https_connection.sock.cipher()))
+    def init_poolmanager(self, *args, **kwargs):
+        super(SessionAdapter, self).init_poolmanager(*args, **kwargs)
+        self.poolmanager.connection_from_pool_key = functools.partial(self.connection_from_pool_key, self.poolmanager.connection_from_pool_key)
 
-    def connection_from_pool_key(self, pool_key, request_context):
-        if self.session_data['ssl_ciphers'] or self.session_data['ssl_options']:
-            context_key = (self.session_data['ssl_ciphers'], self.session_data['ssl_options'])
-            request_context['ssl_context'] = self._context_cache[context_key] = self._context_cache.get(context_key, requests.packages.urllib3.util.ssl_.create_urllib3_context(ciphers=SSL_CIPHERS, options=SSL_OPTIONS))
-            pool_key = pool_key._replace(key_ssl_context=context_key)
+    def proxy_manager_for(self, *args, **kwargs):
+        manager = super(SessionAdapter, self).proxy_manager_for(*args, **kwargs)
+        manager.connection_from_pool_key = functools.partial(self.connection_from_pool_key, manager.connection_from_pool_key)
+        return manager
+
+    def connection_from_pool_key(self, func, pool_key, request_context):
+        # Creat our SSL context
+        request_context['ssl_context'] = requests.packages.urllib3.util.ssl_.create_urllib3_context(
+            ciphers=self.session_data['ssl_ciphers'],
+            options=self.session_data['ssl_options'],
+        )
+        #loads in any windows certstore certs (eg business proxy)
+        request_context['ssl_context'].load_default_certs()
+        # ensure unique pool (socket) for ssl cipher / options
+        pool_key = pool_key._replace(key_ssl_context=(self.session_data['ssl_ciphers'], self.session_data['ssl_options']))
 
         if self.session_data['interface_ip']:
             request_context['source_address'] = (self.session_data['interface_ip'], 0)
@@ -211,71 +144,87 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         # ensure we get a unique pool (socket) for same domain on different rewrite ips
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == request_context['host']:
             pool_key = pool_key._replace(key_server_hostname=self.session_data['rewrite'][1])
+
         # ensure we get a unique pool (socket) for same domain on different resolvers
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == request_context['host']:
             pool_key = pool_key._replace(key_server_hostname=self.session_data['resolver'][1].nameservers[0])
 
-        request_context['adapter'] = self
-        return self.poolmanager._connection_from_pool_key(pool_key, request_context)
+        pool = func(pool_key, request_context)
+        pool._new_conn = functools.partial(self._new_pool_conn, pool._new_conn)
+        return pool
 
-    def getaddrinfo(self, host, port, family=0, _type=0):
-        orig_host = host
+    def _new_pool_conn(self, func, *args, **kwargs):
+        conn = func(*args, **kwargs)
+        conn.connect = functools.partial(self.connect, conn.connect, conn)
+        conn.getaddrinfo = self.getaddrinfo
+        return conn
+
+    def connect(self, func, conn, *args, **kwargs):
+        retval = func(*args, **kwargs)
+        ip, port = conn.sock.getpeername()[:2]
+        if hasattr(conn.sock, 'server_hostname'):
+            log.debug('Opening secure connection on port {} to {} {}'.format(port, ip, conn.sock.cipher()))
+        else:
+            log.debug('Opening connection on port {} to {}'.format(port, ip))
+        return retval
+
+    def getaddrinfo(self, host, port, family=0, type=0):
+        ips = []
+        resolvers = []
 
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == host:
-            host = self.session_data['rewrite'][1]
-            log.debug("DNS Rewrite: {} -> {}".format(orig_host, host))
+            ip = self.session_data['rewrite'][1]
+            ips.append(ips)
+            log.debug("DNS Rewrite: {} -> {}".format(host, ip))
 
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == host:
-            try:
-                host = self.session_data['resolver'][1].query(host)[0].to_text()
-                log.debug('DNS Resolver: {} -> {} -> {}'.format(orig_host, self.session_data['resolver'][1].nameservers[0], host))
-            except Exception as e:
-                log.exception(e)
-                log.error('Failed to resolve. Falling back to dns lookup')
-                host = orig_host
+            resolvers.append(self.session_data['resolver'][1])
+        # fallback to socket resolver
+        resolvers.append(SocketResolver())
 
-        if ':' in host:
-            first, second = (family, None)
-        else:
-            first = socket.AF_INET
-            second = socket.AF_INET6 if family == socket.AF_UNSPEC else None
-
-        try:
-            addresses = socket.getaddrinfo(host, port, first, _type)
-        except socket.gaierror:
-            if second:
-                addresses = socket.getaddrinfo(host, port, second, _type)
+        def resolve(host):
+            if self.session_data['ip_mode'] == IPMode.ONLY_IPV4:
+                families = (socket.AF_INET,)
+            elif self.session_data['ip_mode'] == IPMode.ONLY_IPV6:
+                families = (socket.AF_INET6,)
+            elif self.session_data['ip_mode'] == IPMode.PREFER_IPV6:
+                families = (socket.AF_INET6, socket.AF_INET)
             else:
-                raise
+                families = (socket.AF_INET, socket.AF_INET6)
 
-        if addresses[0][4][0] != host:
-            log.debug('DNS Resolver: {} -> {}'.format(host, addresses[0][4][0]))
+            for resolver in resolvers:
+                for address_family in families:
+                    if not address_family:
+                        continue
 
+                    start = time.time()
+                    ips = resolver.resolve(host, family=address_family, interface_ip=self.session_data['interface_ip'])
+                    if ips:
+                        log.debug('DNS Resolve: {} -> {} -> {} ({:.5f}s)'.format(host, ', '.join(resolver.nameservers), ', '.join(ips), time.time()-start))
+                        return ips
+
+            raise socket.gaierror('Unable to resolve host: {} using ip mode: {}'.format(host, self.session_data['ip_mode']))
+
+        if not ips:
+            ips = resolve(host)
+
+        # convert ips into correct object
+        addresses = []
+        for ip in ips:
+            addresses.extend(socket.getaddrinfo(ip, port, family, type))
         return addresses
-
-    def init_poolmanager(self, *args, **kwargs):
-        super(SessionAdapter, self).init_poolmanager(*args, **kwargs)
-        self.poolmanager._connection_from_pool_key = self.poolmanager.connection_from_pool_key
-        self.poolmanager.connection_from_pool_key = self.connection_from_pool_key
-
-    def get_connection(self, url, proxies=None):
-        conn = super(SessionAdapter, self).get_connection(url, proxies)
-        if isinstance(conn, HTTPSConnectionPool):
-            conn.ConnectionCls = RequestsDoHHTTPSConnection
-        else:
-            # HTTP type
-            conn.ConnectionCls = RequestsDoHHTTPConnection
-        return conn
 
 
 class RawSession(requests.Session):
-    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None):
+    def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None, ip_mode=None, interface_ip=None):
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout
         self._rewrites = []
         self._session_cache = {}
         self._proxy = proxy
+        self._ip_mode = ip_mode
+        self._interface_ip = interface_ip
         self._cert = None
         self._ssl_ciphers = ssl_ciphers
         self._ssl_options = ssl_options
@@ -287,10 +236,22 @@ class RawSession(requests.Session):
         for prefix in ('http://', 'https://'):
             self.mount(prefix, self._adapter)
 
+        session_data = {
+            'ip_mode': self._ip_mode,
+            'interface_ip': self._interface_ip,
+            'ssl_ciphers': self._ssl_ciphers,
+            'ssl_options': self._ssl_options,
+            'proxy': None,
+            'rewrite': None,
+            'resolver': None,
+            'url': None,
+        }
+        self._adapter.session_data = session_data
+
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
             pattern = entries.pop()
-            pattern = re.escape(pattern).replace('\*', '.*')
+            pattern = re.escape(pattern).replace(r'\*', '.*')
             pattern = re.compile(pattern, flags=re.IGNORECASE)
 
             new_entries = []
@@ -339,7 +300,7 @@ class RawSession(requests.Session):
         self._proxy = proxy
 
     def _get_proxy(self):
-        if self._proxy and self._proxy.lower().strip() == 'kodi':
+        if not self._proxy or self._proxy.lower().strip() == 'kodi':
             self._proxy = get_kodi_proxy()
         return self._proxy
 
@@ -356,10 +317,11 @@ class RawSession(requests.Session):
         url = req.prepare().url
 
         session_data = {
+            'ip_mode': self._ip_mode,
+            'interface_ip': self._interface_ip,
             'ssl_ciphers': self._ssl_ciphers,
             'ssl_options': self._ssl_options,
             'proxy': None,
-            'interface_ip': None,
             'rewrite': None,
             'resolver': None,
             'url': url,
@@ -385,9 +347,9 @@ class RawSession(requests.Session):
                         session_data['rewrite'] = [urlparse(session_data['url']).netloc.lower(), entry[1]]
                     elif entry[0] == 'resolver' and entry[1]:
                         if entry[1].lower().startswith('http'):
-                            resolver = DOHResolver(self._adapter)
+                            resolver = DOHResolver()
                         else:
-                            resolver = dns.resolver.Resolver(configure=False)
+                            resolver = DNSResolver(configure=False)
                             resolver.cache = DNS_CACHE
 
                         resolver.nameservers = [entry[1],]
@@ -395,8 +357,6 @@ class RawSession(requests.Session):
                 break
 
             self._session_cache[url] = session_data
-
-        self._adapter.session_data = session_data
 
         if session_data['url'] != url:
             log.debug("URL Changed: {}".format(session_data['url']))
@@ -422,6 +382,8 @@ class RawSession(requests.Session):
             kwargs['verify'] = False
             kwargs['cert'] = self._get_cert()
 
+        self._adapter.session_data = session_data
+
         if 'verify' not in kwargs:
             kwargs['verify'] = self._verify
 
@@ -442,19 +404,19 @@ class RawSession(requests.Session):
 
 class Session(RawSession):
     def __init__(self, headers=None, cookies_key=None, base_url='{}', timeout=None, attempts=None, verify=None, dns_rewrites=None, auto_close=True, return_json=False, **kwargs):
-        super(Session, self).__init__(verify=settings.common_settings.getBool('verify_ssl', True) if verify is None else verify,
-            timeout=settings.common_settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, **kwargs)
+        super(Session, self).__init__(verify=settings.getBool('verify_ssl', True) if verify is None else verify,
+            timeout=settings.getInt('http_timeout', 30) if timeout is None else timeout, auto_close=auto_close, ip_mode=settings.IP_MODE.value, **kwargs)
 
         self._headers = headers or {}
         self._cookies_key = cookies_key
         self._base_url = base_url
-        self._attempts = settings.common_settings.getInt('http_retries', 1) if attempts is None else attempts
+        self._attempts = settings.getInt('http_retries', 1) if attempts is None else attempts
         self._return_json = return_json
         self.before_request = None
         self.after_request = None
 
         self.set_dns_rewrites(get_dns_rewrites() if dns_rewrites is None else dns_rewrites)
-        self.set_proxy(settings.get('proxy_server') or settings.common_settings.get('proxy_server'))
+        self.set_proxy(settings.get('proxy_server') or settings.get('proxy_server'))
 
         self.headers.update(DEFAULT_HEADERS)
         self.headers.update(self._headers)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.9now" name="9Now" provider-name="SlyGuy" version="0.1.8">
+<addon id="slyguy.9now" name="9Now" provider-name="SlyGuy" version="0.3.7">
   <requires>
-    <import addon="script.module.slyguy" version="0.63.1"/>
+    <import addon="script.module.slyguy" version="0.84.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
     <provides>video</provides>
@@ -12,7 +12,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>1080 live</news>
+    <news>Add login. Migrate to new settings</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

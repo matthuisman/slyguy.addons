@@ -10,8 +10,10 @@ from slyguy.util import jwt_data
 from .language import _
 from .constants import *
 
+
 class APIError(Error):
     pass
+
 
 class API(object):
     def new_session(self):

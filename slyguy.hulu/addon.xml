@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.3.0">
+<addon id="slyguy.hulu" name="Hulu" provider-name="SlyGuy" version="0.4.3">
   <requires>
-    <import addon="script.module.slyguy" version="0.63.1"/>
+    <import addon="script.module.slyguy" version="0.84.39"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
     <provides>video</provides>
@@ -14,7 +14,7 @@ Subscription required.</description>
     <license></license>
     <language></language>
     <website></website>
-    <news>Initial live support!</news>
+    <news>Fix add/remove my stuff context menu items</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

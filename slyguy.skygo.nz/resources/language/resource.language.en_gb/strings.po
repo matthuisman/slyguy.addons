@@ -1,14 +1,6 @@
 msgid ""
 msgstr ""
 
-msgctxt "#30000"
-msgid "Email"
-msgstr ""
-
-msgctxt "#30001"
-msgid "Password"
-msgstr ""
-
 msgctxt "#30002"
 msgid "Failed to fetch auth token\n"
 "Make sure your IP address is allowed (not geo-blocked)\n"
@@ -26,10 +18,6 @@ msgid "Failed to login.\n"
 "Server Message: {msg}"
 msgstr ""
 
-msgctxt "#30005"
-msgid "Live TV"
-msgstr ""
-
 msgctxt "#30006"
 msgid "Concurrent Streams Exceeded"
 msgstr ""
@@ -38,16 +26,8 @@ msgctxt "#30007"
 msgid "{subscription} Subscription Required"
 msgstr ""
 
-msgctxt "#30008"
-msgid "ALL"
-msgstr ""
-
 msgctxt "#30009"
 msgid "{label} [B][Coming Soon][/B]"
-msgstr ""
-
-msgctxt "#30010"
-msgid "Season {number}"
 msgstr ""
 
 msgctxt "#30011"
@@ -66,30 +46,4 @@ msgstr ""
 
 msgctxt "#30014"
 msgid "Show only subscribed live channels"
-msgstr ""
-
-## COMMON SETTINGS ##
-
-msgctxt "#32055"
-msgid "Ask"
-msgstr ""
-
-msgctxt "#32043"
-msgid "Best"
-msgstr ""
-
-msgctxt "#32060"
-msgid "Lowest"
-msgstr ""
-
-msgctxt "#32048"
-msgid "Bypass"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Custom"
-msgstr ""
-
-msgctxt "#32073"
-msgid "Disabled"
 msgstr ""

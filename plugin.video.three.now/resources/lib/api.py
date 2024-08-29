@@ -2,12 +2,18 @@ from difflib import SequenceMatcher
 
 from slyguy.session import Session
 from slyguy import util, mem_cache
+from six.moves.urllib_parse import urljoin
 
 from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, SEARCH_MATCH_RATIO
+
 
 class API(object):
     def __init__(self):
         self._session = Session(HEADERS, base_url=API_URL)
+
+    @mem_cache.cached(60*5)
+    def live(self):
+        return self._session.get('live-epg').json()['channels']
 
     @mem_cache.cached(60*10)
     def _shows(self):
@@ -18,14 +24,10 @@ class API(object):
 
     @mem_cache.cached(60*5)
     def show(self, id):
-        return self._session.get('shows/{}'.format(id)).json()['show']
+        return self._session.get('shows/{}'.format(id)).json()
 
     def channels(self):
         return self._shows()['channels']
-
-    @mem_cache.cached(60*5)
-    def live(self):
-        return self._session.get('live-epg').json()['channels']
 
     def genres(self):
         genres = self.channels()
@@ -36,10 +38,27 @@ class API(object):
         shows = []
 
         for show in self.shows():
-            if genre in show['genres'] or genre == show['channel']:
+            if genre in show['genres'] or genre == show['channelId']:
                 shows.append(show)
 
         return shows
+
+    def lsai(self, row):
+        url = row['videoRenditions']['lsai']['csab']
+        payload = {
+            "adsParams":{
+                "channelId":"x",
+                "watchFromStart":"",
+                "PPID":"x",
+                "cust_params":"x",
+                "sz":"620x288",
+                "iu_parts":"x",
+                "description_url":"x",
+                "url":"x",
+                "platform":"desktop"
+            }
+        }
+        return urljoin(url, self._session.post(url, json=payload).json()['manifestUrl'])
 
     def search(self, query):
         shows = []

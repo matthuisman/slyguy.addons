@@ -3,33 +3,34 @@ import os
 import requests
 from kodi_six import xbmc, xbmcaddon
 
-from .log import log
-from .mem_cache import cached
-from .constants import ADDON_ID, COMMON_ADDON_ID
+from slyguy import settings, is_donor, log
+from slyguy.log import log
+from slyguy.mem_cache import cached
+from slyguy.constants import ADDON_ID, COMMON_ADDON_ID
+
 
 def get_dns_rewrites(dns_rewrites=None, addon_id=ADDON_ID):
-    rewrites = _load_rewrites(addon_id)
-
-    if COMMON_ADDON_ID != addon_id:
-        rewrites.extend(_load_rewrites(COMMON_ADDON_ID))
+    if is_donor():
+        rewrites = _load_rewrites(addon_id)
+        if COMMON_ADDON_ID != addon_id:
+            rewrites.extend(_load_rewrites(COMMON_ADDON_ID))
+    else:
+        rewrites = []
 
     if dns_rewrites:
         rewrites.extend(dns_rewrites)
 
-    if rewrites:
-        log.debug('Rewrites Loaded: {}'.format(len(rewrites)))
-
-    # add some defaults that are often blocked by networkwide dns
-    rewrites.extend([
-        ['r:https://cloudflare-dns.com/dns-query', 'dai.google.com'],
-    ])
+    if settings.get('dns_server'):
+        rewrites.append(['r:{}'.format(settings.get('dns_server')), '*'])
 
     return rewrites
+
 
 @cached(expires=60*5)
 def _get_url(url):
     log.debug('Request DNS URL: {}'.format(url))
     return requests.get(url).text
+
 
 def _load_rewrites(addon_id):
     rewrites = []

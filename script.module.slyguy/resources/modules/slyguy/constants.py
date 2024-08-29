@@ -22,7 +22,14 @@ COMMON_ADDON = xbmcaddon.Addon(COMMON_ADDON_ID)
 try: KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split('.')[0])
 except: KODI_VERSION = 18
 
-REPO_DOMAIN = 'https://slyguy.uk'
+REPO_HOST = 'slyguy.uk'
+REPO_DOMAIN = 'https://' + REPO_HOST
+REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz', 'jmp2.uk']
+DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
+DONOR_CHECK_TIME = (60*60*1) #1 hour
+DONOR_TIMEOUT = 172800 #48 hours
+UPDATE_TIME_LIMIT = 86400 #24 hours
+REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]
 
 #### DATABASE #####
 DB_PATH         = os.path.join(ADDON_PROFILE, 'data.db')
@@ -32,7 +39,7 @@ DB_PRAGMAS      = {
     'cache_size': -1 * 10000,  #10MB
     'foreign_keys': 1,
     'ignore_check_constraints': 0,
-    'synchronous': 0
+    'synchronous': 1
 }
 DB_TABLENAME = '_db'
 ###################
@@ -50,6 +57,7 @@ CACHE_CLEAN_KEY      = '_cache_cleaned'
 #################
 
 IPTV_MERGE_ID        = 'plugin.program.iptv.merge'
+MERGE_SETTING_FILE   = '.iptv_merge'
 
 #### ROUTING ####
 ROUTE_TAG              = '_'
@@ -72,11 +80,9 @@ FORCE_RUN_FLAG         = '_force_run'
 ROUTE_AUTOPLAY_TAG     = '_autoplay'
 ROUTE_AUTOFOLDER_TAG   = '_autofolder'
 ROUTE_MIGRATE_DONE     = '_migrated'
-ROUTE_ADD_BOOKMARK     = '_add_bookmark'
-ROUTE_DEL_BOOKMARK     = '_del_bookmark'
 ROUTE_BOOKMARKS        = '_bookmarks'
-ROUTE_MOVE_BOOKMARK    = '_move_bookmark'
-ROUTE_RENAME_BOOKMARK  = '_name_bookmark'
+ROUTE_CONTEXT          = '_context'
+ROUTE_SCRIPT           = '_script'
 #################
 
 #### INPUTSTREAM ADAPTIVE #####
@@ -104,11 +110,9 @@ LOG_FORMAT = u'%(name)s - %(message)s'
 QUALITY_ASK = -1
 QUALITY_BEST = -2
 QUALITY_LOWEST = -3
-QUALITY_SKIP = -4
+QUALITY_DISABLED = QUALITY_SKIP = -4
 QUALITY_CUSTOM = -5
-QUALITY_DISABLED = -6
 QUALITY_EXIT = -7
-QUALITY_TYPES = [QUALITY_ASK, QUALITY_BEST, QUALITY_LOWEST, QUALITY_SKIP, QUALITY_CUSTOM, QUALITY_DISABLED]
 QUALITY_TAG = '_quality'
 
 ## PLAY FROM ##
@@ -120,8 +124,6 @@ PLAY_FROM_TYPES = [PLAY_FROM_ASK, PLAY_FROM_LIVE, PLAY_FROM_START]
 WIDEVINE_UUID = bytearray([237, 239, 139, 169, 121, 214, 74, 206, 163, 200, 39, 220, 213, 29, 33, 237])
 WIDEVINE_PSSH = bytearray([112, 115, 115, 104])
 
-#DEFAULT_USERAGENT = xbmc.getUserAgent()
-#DEFAULT_USERAGENT = 'Dalvik/2.1.0 (Linux; U; Android 9; SHIELD Android TV Build/PPR1.180610.011)'
 DEFAULT_USERAGENT = 'okhttp/4.9.3'
 DEFAULT_WORKERS = 5
 
@@ -148,10 +150,3 @@ MAX_QUALITY_HISTORY = 10
 MIDDLEWARE_CONVERT_SUB = 'convert_sub'
 MIDDLEWARE_REGEX = 'regex'
 MIDDLEWARE_PLUGIN = 'plugin'
-
-REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz']
-DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
-DONOR_CHECK_TIME = (60*60*6) #6 hours
-DONOR_TIMEOUT = 172800 #48 hours
-UPDATE_TIME_LIMIT = 86400 #24 hours
-REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]

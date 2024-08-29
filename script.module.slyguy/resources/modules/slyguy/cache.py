@@ -3,13 +3,11 @@ from functools import wraps
 
 import peewee
 
-from . import database, settings, signals, gui, router
-from .constants import CACHE_TABLENAME, CACHE_EXPIRY, CACHE_CHECKSUM, CACHE_CLEAN_INTERVAL, CACHE_CLEAN_KEY, ROUTE_CLEAR_CACHE
-from .util import hash_6
-from .log import log
-from .language import _
+from slyguy import database, settings, signals, gui, router, log, _
+from slyguy.constants import CACHE_TABLENAME, CACHE_EXPIRY, CACHE_CHECKSUM, ROUTE_CLEAR_CACHE
+from slyguy.util import hash_6
 
-funcs   = []
+funcs = []
 
 class Cache(database.Model):
     checksum = CACHE_CHECKSUM
@@ -114,4 +112,5 @@ def clear_cache(key, **kwargs):
     msg = _(_.PLUGIN_CACHE_REMOVED, delete_count=delete_count)
     gui.notification(msg)
 
-database.tables.append(Cache)
+
+database.init([Cache])
