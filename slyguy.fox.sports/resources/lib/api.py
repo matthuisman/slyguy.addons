@@ -111,7 +111,7 @@ class API(object):
         self._check_token()
         config = self._config()
 
-        max_res = 'UHD/HDR' if settings.HDR.value else 'UHD/SDR'
+        max_res = 'UHD/HDR' if settings.HDR10.value else 'UHD/SDR'
         payload = {
             'deviceHeight': 2160,
             'deviceWidth': 3840,
