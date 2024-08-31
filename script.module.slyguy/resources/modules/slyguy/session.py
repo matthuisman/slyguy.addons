@@ -250,12 +250,12 @@ class RawSession(requests.Session):
 
     def set_dns_rewrites(self, rewrites):
         for entries in rewrites:
-            pattern = entries.pop()
+            pattern = entries[-1]
             pattern = re.escape(pattern).replace(r'\*', '.*')
             pattern = re.compile(pattern, flags=re.IGNORECASE)
 
             new_entries = []
-            for entry in entries:
+            for entry in entries[:-1]:
                 _type = 'skip'
                 if entry.startswith('p:'):
                     _type = 'proxy'
