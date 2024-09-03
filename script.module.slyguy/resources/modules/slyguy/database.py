@@ -35,14 +35,13 @@ class PickleField(peewee.BlobField):
             pickled = cPickle.dumps(value)
             return self._constructor(pickled)
 
+
 class JSONField(peewee.TextField):
     def db_value(self, value):
-        if value is not None:
-            return json.dumps(value, ensure_ascii=False)
+        return json.dumps(value, ensure_ascii=False)
 
     def python_value(self, value):
-        if value is not None:
-            return json.loads(value)
+        return json.loads(value)
 
 
 class Model(peewee.Model):
