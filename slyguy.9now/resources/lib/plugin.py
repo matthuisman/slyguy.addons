@@ -107,6 +107,7 @@ def featured(rail=None, **kwargs):
 
     return folder
 
+
 @plugin.route()
 def show(show, **kwargs):
     data = api.show(show)
@@ -148,6 +149,7 @@ def show(show, **kwargs):
 
     return folder
 
+
 @plugin.route()
 def suggested(show, **kwargs):
     data = api.show(show)
@@ -162,6 +164,7 @@ def suggested(show, **kwargs):
                     folder.add_items(item)
 
     return folder
+
 
 @plugin.route()
 @plugin.pagination()
@@ -180,6 +183,7 @@ def episodes(show, season, page=1, **kwargs):
 
     return folder, data['episodes']['count'] > (data['episodes']['take'] + data['episodes']['skip'])
 
+
 @plugin.route()
 @plugin.pagination()
 def clips(show, season, page=1, **kwargs):
@@ -195,6 +199,7 @@ def clips(show, season, page=1, **kwargs):
         folder.add_items(item)
 
     return folder, data['clips']['count'] > (data['clips']['take'] + data['clips']['skip'])
+
 
 @plugin.route()
 def shows(sort=None, **kwargs):
@@ -239,6 +244,7 @@ def shows(sort=None, **kwargs):
 
     return folder
 
+
 @plugin.route()
 def categories(category=None, **kwargs):
     if category is None:
@@ -262,6 +268,7 @@ def categories(category=None, **kwargs):
 
     return folder
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
@@ -275,16 +282,17 @@ def search(query, page, **kwargs):
 
     return items, False
 
-def _channels():
-    region = settings.REGION.value
+
+def _channels(region):
     data = api.channels(region)
     data['channels'].extend([row for row in data['events'] if row['type'] == 'live-event' and row['nextEvent']['name']])
     data['events'] = [row for row in data['events'] if row not in data['channels']]
     return data
 
+
 @plugin.route()
 def live_events(**kwargs):
-    data = _channels()
+    data = _channels(settings.REGION.value)
     now = arrow.now()
 
     folder = plugin.Folder(_.LIVE_EVENTS)
@@ -318,7 +326,8 @@ def live_events(**kwargs):
 
 @plugin.route()
 def live_tv(**kwargs):
-    data = _channels()
+    region = settings.REGION.value
+    data = _channels(region)
     now = arrow.now()
 
     folder = plugin.Folder(_.LIVE_TV)
@@ -339,7 +348,7 @@ def live_tv(**kwargs):
         if row.get('type') == 'live-event':
             path = plugin.url_for(play, reference=row.get('brightcoveId', row['referenceId']), _is_live=True)
         else:
-            path = plugin.url_for(play_channel, reference=row['referenceId'], _is_live=True)
+            path = plugin.url_for(play_channel, reference=row['referenceId'], region=region, _is_live=True)
 
         folder.add_item(
             label = row['name'],
@@ -362,7 +371,7 @@ def play(reference, **kwargs):
 @plugin.login_required()
 def play_event(reference, **kwargs):
     event = None
-    data = _channels()
+    data = _channels(settings.REGION.value)
     for row in data.get('events', []):
         if row['referenceId'] == reference:
             event = row
@@ -386,13 +395,16 @@ def play_event(reference, **kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play_channel(reference, **kwargs):
+def play_channel(reference, region=None, **kwargs):
     url = None
-    data = _channels()
+    data = _channels(region or settings.REGION.value)
     for row in data['channels']:
         if row['referenceId'] == reference:
             url = row['stream']['url']
             break
+
+    if not url:
+        raise Exception('Could not find channel')
 
     # fix encoded query
     if '?' in url:
@@ -412,6 +424,7 @@ def _play(reference, is_live=False):
         item.inputstream.live = True
     return item
 
+
 def _parse_show(row):
     if not row['episodeCount']:
         plot = row['description']
@@ -427,6 +440,7 @@ def _parse_show(row):
     )
 
     return item
+
 
 def _parse_episode(row):
     season = row['partOfSeason']['name']
@@ -447,11 +461,12 @@ def _parse_episode(row):
         path = plugin.url_for(play, reference=row['video'].get('brightcoveId', row['video']['referenceId'])),
     )
 
+
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
-    data = _channels()
     region = settings.REGION.value
+    data = _channels(region)
 
     with codecs.open(output, 'w', encoding='utf8') as f:
         f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
