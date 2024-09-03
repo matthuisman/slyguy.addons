@@ -10,7 +10,7 @@ from slyguy import settings, _
 from slyguy.constants import *
 from slyguy.router import add_url_args
 from slyguy.smart_urls import get_dns_rewrites
-from slyguy.util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url
+from slyguy.util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url, get_addon
 from slyguy.session import Session
 from slyguy.dialog import * #backwards compatb
 
@@ -400,9 +400,13 @@ class Item(object):
         if self.path and playing:
             self.path = redirect_url(fix_url(self.path))
             final_path = get_url(self.path)
-            if is_http(final_path):
+
+            parse = urlparse(final_path.lower())
+            if parse.scheme == 'plugin':
+                get_addon(parse.netloc, required=True)
+
+            elif is_http(final_path):
                 if not mimetype:
-                    parse = urlparse(self.path.lower())
                     if parse.path.endswith('.m3u') or parse.path.endswith('.m3u8'):
                         mimetype = 'application/vnd.apple.mpegurl'
                     elif parse.path.endswith('.mpd'):
