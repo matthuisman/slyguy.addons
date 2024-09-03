@@ -1,6 +1,7 @@
 import os
 import json
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 from kodi_six import xbmc, xbmcgui
 
@@ -41,7 +42,7 @@ class Category(object):
 
     @property
     def settings(self):
-        return sorted([x for x in self.children if isinstance(x, Setting)], key=lambda s: s._owner == ADDON_ID, reverse=True)
+        return sorted([x for x in self.children if isinstance(x, Setting)], key=lambda s: (s._owner == ADDON_ID, -s._order), reverse=True)
 
     @property
     def categories(self):
@@ -70,10 +71,11 @@ USE_DEFAULT = object()
 STORAGE = DBStorage()
 class Setting(object):
     DEFAULT = None
+    ORDER = 0
 
     def __init__(self, id, label=None, owner=ADDON_ID, default=USE_DEFAULT, visible=True, enable=True, disabled_value=USE_DEFAULT, disabled_reason=None, 
                  override=True, before_save=lambda _: True, default_label=None, inherit=True, category=None, value_str='{value}',
-                 confirm_clear=False, after_clear=lambda: True, legacy_ids=None, after_save=lambda _: True, description=None, private_value=False):
+                 confirm_clear=False, after_clear=lambda: True, legacy_ids=None, after_save=lambda _: True, description=None, private_value=False, order=None):
         self._id = str(id)
         self._label = label
         self._owner = owner
@@ -94,6 +96,8 @@ class Setting(object):
         self._after_clear = after_clear
         self._legacy_ids = legacy_ids or []
         self._description = description
+        self._order = order if order is not None else Setting.ORDER
+        Setting.ORDER += 1
         if not category:
             category = Categories.ADDON if owner != COMMON_ADDON_ID else Categories.ROOT
         category.add(self)
@@ -130,7 +134,7 @@ class Setting(object):
     @property
     def value(self):
         value = self._get_value_owner()[1]
-        return self._default if value == DBStorage.NO_ENTRY else value
+        return deepcopy(self._default) if value == DBStorage.NO_ENTRY else value
 
     @value.setter
     def value(self, value):
@@ -168,7 +172,7 @@ class Setting(object):
     def label(self):
         owner, value = self._get_value_owner()
         if value == DBStorage.NO_ENTRY:
-            value = self._default
+            value = deepcopy(self._default)
 
         if value == self._default and self._default_label:
             value = self._default_label
@@ -235,8 +239,8 @@ class Setting(object):
             return
 
         prev_value = self._get_value_owner()
-        self.select()
-        if self._get_value_owner() != prev_value:
+        value = self.select()
+        if value or self._get_value_owner() != prev_value:
             return True
 
     def from_text(self, value):
@@ -321,7 +325,11 @@ class Action(Setting):
         return value
 
     def select(self):
-        if self._confirm_action and not dialog.yes_no(_.ARE_YOU_SURE, self._label):
+        message = _.ARE_YOU_SURE
+        if not type(self._confirm_action) == bool:
+            message = self._confirm_action
+
+        if self._confirm_action and not dialog.yes_no(message, self._label):
             return
 
         value = self._action
@@ -330,6 +338,8 @@ class Action(Setting):
         if isinstance(value, str):
             value = value.replace('$ID', ADDON_ID)
             xbmc.executebuiltin(value)
+        if value == True:
+            return True
 
 
 class Number(Setting):
@@ -463,10 +473,18 @@ def migrate_userdata(settings):
     log.info("Migrated Userdata")
 
 
+def reset_addon():
+    STORAGE.delete_all(ADDON_ID)
+    from slyguy import gui
+    gui.notification(_.PLUGIN_RESET_OK)
+    return True
+
+
 class BaseSettings(object):
     MIGRATED = Bool('migrated', visible=False, override=False, inherit=False)
     USERDATA = Dict('userdata', visible=False, override=False, inherit=False) #LEGACY
     BOOKMARKS_DATA = List('bookmarks_data', visible=False, override=False, inherit=False)
+    RESET_ADDON = Action(reset_addon, confirm_action=_.PLUGIN_RESET_YES_NO, order=float('inf'))
     SETTINGS = {}
 
     def __init__(self, addon_id=ADDON_ID):

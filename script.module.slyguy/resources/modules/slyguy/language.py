@@ -81,7 +81,7 @@ class BaseLanguage(object):
     IA_ERROR_INSTALLING         = 32016
     USE_CACHE                   = 32017
     INPUTSTREAM_SETTINGS        = 32018
-    CLEAR_DATA                  = 32019
+    RESET_ADDON                 = 32019
     PLUGIN_ERROR                = 32020
     IA_WV_INSTALL_OK            = 32022
     LOGIN                       = 32024
