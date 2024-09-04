@@ -44,15 +44,18 @@ def index(**kwargs):
     return folder
 
 
+@plugin.continue_on_error(_.NAV_FAILED)
 def get_nav(folder):
     skip = ['mylist', 'history', 'index']
     data = api.page('index')
     for row in data['mainNav']:
         if 'path' not in row['cta']:
             continue
+
         key = row['cta']['path'].lstrip('/')
         if key in skip:
             continue
+
         folder.add_item(
             label = _(row['title'], _bold=True),
             path=plugin.url_for(nav, key=key, title=row['title']),

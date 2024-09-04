@@ -1,6 +1,10 @@
 msgid ""
 msgstr ""
 
+msgctxt "#30000"
+msgid "Failed to fetch main menu navigation"
+msgstr ""
+
 msgctxt "#30003"
 msgid "Failed to login / refresh token.\n"
 "Message: {msg}"

@@ -1,6 +1,8 @@
 from slyguy.language import BaseLanguage
 
+
 class Language(BaseLanguage):
+    NAV_FAILED            = 30000
     LOGIN_ERROR           = 30003
     GEO_ERROR             = 30005
     FEATURED              = 30012
@@ -15,5 +17,6 @@ class Language(BaseLanguage):
     MY_LIST               = 30034
     CONTINUE_WATCHING     = 30035
     GOTO_SERIES           = 30036
+
 
 _ = Language()
