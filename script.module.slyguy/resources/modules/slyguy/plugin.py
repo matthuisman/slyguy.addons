@@ -51,6 +51,21 @@ def login_required():
         return decorated_function
     return lambda f: decorator(f)
 
+
+# @plugin.continue_on_error()
+def continue_on_error(error_msg=None):
+    def decorator(f, error_msg):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except Exception as e:
+                log.exception(e)
+                gui.ok(str(e), heading=error_msg)
+        return decorated_function
+    return lambda f: decorator(f, error_msg)
+
+
 # @plugin.route()
 def route(url=None):
     def decorator(f, url):
