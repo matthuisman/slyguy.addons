@@ -14,12 +14,14 @@ from .language import _
 from .settings import settings
 from .constants import *
 
+
 api = API()
 
 @signals.on(signals.BEFORE_DISPATCH)
 def before_dispatch():
     api.new_session()
     plugin.logged_in = api.logged_in
+
 
 @plugin.route('')
 def home(**kwargs):
@@ -39,6 +41,7 @@ def home(**kwargs):
 
     return folder
 
+
 def _get_url(url):
     url = url.rstrip('/').split('/')[-1]
 
@@ -48,6 +51,7 @@ def _get_url(url):
         return url
 
     return params['channel-id']
+
 
 @mem_cache.cached(60*5)
 def _nav(folder):
@@ -67,15 +71,18 @@ def _nav(folder):
             path = path,
         )
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
     return _process_rows(api.search(query)), False
 
+
 def _image(url, width=IMAGE_WIDTH):
     return IMAGE_URL.format(url=quote_plus(url.encode('utf8')), width=width)
 
-def _process_rows(rows, slug='', expand_media=False, season_num=0):
+
+def _process_rows(rows, slug='', expand_media=False, season_num=0, thumb=None):
     items = []
     now = arrow.now()
 
@@ -149,13 +156,18 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
             if not info['season'] and not info['episode'] and count == 1:
                 info['mediatype'] = 'movie'
                 info['year'] = season_num
+                art  = {'thumb': _image(thumb)}
             else:
                 info['mediatype'] = 'episode'
+                art  = {'thumb': _image(row['cardData']['image']['url'])}
+
+            if 'seriesLogo' in row['cardData']:
+                art['clearlogo'] = _image(row['cardData']['seriesLogo']['url'])
 
             item = plugin.Item(
                 label = title,
                 info = info,
-                art  = {'thumb': _image(row['cardData']['image']['url'])},
+                art = art,
                 playable = True,
             )
 
@@ -175,8 +187,7 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
 
         if row['type'] in ('SeriesCard', 'contentLinkedImage'):
             art = {'thumb': _image(row['image']['url'])}
-            if 'seriesBackgroundImage' in row:
-                art['fanart'] = _image(row['seriesBackgroundImage']['url'], width=1000)
+            art['fanart'] = _fanart(row)
 
             item = plugin.Item(
                 label = row.get('title') or row['image']['altTag'] or row.get('cName'),
@@ -224,6 +235,7 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0):
 
     return items
 
+
 @plugin.route()
 def shows(**kwargs):
     folder = plugin.Folder(_.SHOWS)
@@ -236,6 +248,7 @@ def shows(**kwargs):
 
     return folder
 
+
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
@@ -246,6 +259,7 @@ def live_tv(**kwargs):
 
     return folder
 
+
 @plugin.route()
 def content(slug, label=None, thumb=None, expand_media=0, **kwargs):
     data = api.content(slug)
@@ -254,16 +268,24 @@ def content(slug, label=None, thumb=None, expand_media=0, **kwargs):
         return show(slug, data, thumb)
 
     folder = plugin.Folder(label or data['title'])
-    items = _process_rows(data['items'], slug, int(expand_media))
+    items = _process_rows(data['items'], slug, int(expand_media), thumb=thumb)
     folder.add_items(items)
 
     return folder
+
+
+def _fanart(row):
+    for key in ['backgroundImage', 'backgroundImageLandscape', 'seriesBackgroundImage']:
+        if key in row:
+            return _image(row[key]['url'], width=1000)
+    return None
+
 
 def show(slug, data, thumb=None):
     show_name = data['pageMetaData']['pageTitle']
     plot = data['pageMetaData']['description']
     thumb = _image(thumb or data['pageMetaData']['objectGraphImage']['url'])
-    fanart = _image(data['items'][0]['backgroundImage']['url'], width=1000)
+    fanart = _fanart(data['items'][0])
 
     folder = plugin.Folder(data['title'], fanart=fanart)
 
@@ -299,7 +321,7 @@ def show(slug, data, thumb=None):
 
     seasons = sorted(seasons, key=lambda x: x[0])
     if len(seasons) == 1 and (settings.getBool('flatten_single_season', True) or len(seasons[0][2].get('mediaItems', [])) <= 1):
-        items = _process_rows(seasons[0][2].get('mediaItems', []), season_num=seasons[0][0])
+        items = _process_rows(seasons[0][2].get('mediaItems', []), season_num=seasons[0][0], thumb=thumb)
         folder.add_items(items)
     else:
         for season in seasons:
@@ -334,6 +356,7 @@ def show(slug, data, thumb=None):
 
     return folder
 
+
 @plugin.route()
 def component(slug, id, label, expand_media=0, fanart=None, **kwargs):
     expand_media = int(expand_media)
@@ -341,8 +364,8 @@ def component(slug, id, label, expand_media=0, fanart=None, **kwargs):
     folder = plugin.Folder(label, fanart=fanart)
     items = _process_rows(api.component(slug, id)['items'], slug, expand_media)
     folder.add_items(items)
-
     return folder
+
 
 @plugin.route()
 def play_vod(slug, **kwargs):
@@ -360,8 +383,8 @@ def play_vod(slug, **kwargs):
 
     parsed = urlparse(url)
     params = dict(parse_qsl(parsed.query))
-
     return _play(params['accountId'], params['referenceId'], live=False)
+
 
 @plugin.route()
 def play_channel(slug, **kwargs):
@@ -374,12 +397,13 @@ def play_channel(slug, **kwargs):
     item = _play(params['accountId'], params['referenceId'], live=True)
     item.label = data['posterImage']['altTag']
     item.art = {'thumb': _image(data['posterImage']['url'])}
-
     return item
+
 
 @plugin.route()
 def play(account, reference, **kwargs):
     return _play(account, reference, live=ROUTE_LIVE_TAG in kwargs)
+
 
 def _play(account, reference, live=False):
     item = api.play(account, reference, live)
@@ -388,8 +412,8 @@ def _play(account, reference, live=False):
     if live and item.inputstream:
         item.inputstream.live = True
         item.inputstream.force = True
-
     return item
+
 
 def _get_live_channels():
     data = api.content(LIVE_TV_SLUG)
@@ -408,6 +432,7 @@ def _get_live_channels():
 
     return sorted(channels, key=lambda x: int(x['channelId']))
 
+
 @plugin.route()
 @plugin.merge()
 def playlist(output, **kwargs):
@@ -419,6 +444,7 @@ def playlist(output, **kwargs):
                 chno=channel['channelId'], id=channel['channelId'], name=channel['name'], logo=_image(channel['channelLogo']['url']),
                     url=plugin.url_for(play_channel, slug=_get_url(channel['contentLink']['url']), _is_live=True),
             ))
+
 
 @plugin.route()
 @plugin.merge()

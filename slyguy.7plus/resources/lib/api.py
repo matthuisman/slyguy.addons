@@ -109,7 +109,7 @@ class API(object):
             'deliveryId': 'csai',
             'advertid': 'null',
             'deviceId': 'fm-k_zfMS1it5axvWRqkRt',
-            'pc': 3350,
+            'pc': 3350, #postcode
             'deviceType': PLATFORM_ID,
             'ozid': 'b09f7dc3-3999-47c7-a09f-8dce404c0455',
             'encryptionType': 'cenc',
