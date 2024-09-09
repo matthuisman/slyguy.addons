@@ -24,16 +24,16 @@ class HashField(peewee.TextField):
 
 
 class PickleField(peewee.BlobField):
+    def db_value(self, value):
+        pickled = cPickle.dumps(value)
+        return self._constructor(pickled)
+
     def python_value(self, value):
+        # value can be None when doing joins
         if value is not None:
             if isinstance(value, peewee.buffer_type):
                 value = bytes(value)
             return cPickle.loads(value)
-
-    def db_value(self, value):
-        if value is not None:
-            pickled = cPickle.dumps(value)
-            return self._constructor(pickled)
 
 
 class JSONField(peewee.TextField):
@@ -41,7 +41,9 @@ class JSONField(peewee.TextField):
         return json.dumps(value, ensure_ascii=False)
 
     def python_value(self, value):
-        return json.loads(value)
+        # value can be None when doing joins
+        if value is not None:
+            return json.loads(value)
 
 
 class Model(peewee.Model):
