@@ -1,3 +1,3 @@
-from resources.lib.plugin import plugin
+from slyguy import gui
 
-plugin.dispatch()
+gui.ok('Star+ was discontinued July 2024. You can now use the SlyGuy Disney+ add-on instead')
