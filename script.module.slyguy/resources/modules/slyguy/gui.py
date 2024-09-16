@@ -345,10 +345,6 @@ class Item(object):
             if 'original_language' in self.proxy_data:
                 li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
 
-            if KODI_VERSION > 19:
-                # improve live playback with a longer delay from head
-                li.setProperty('{}.live_delay'.format(self.inputstream.addon_id), '24')
-
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
                 license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
