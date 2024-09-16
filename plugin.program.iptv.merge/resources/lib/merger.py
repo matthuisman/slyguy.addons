@@ -6,7 +6,7 @@ import xml.parsers.expat
 
 import arrow
 from kodi_six import xbmc, xbmcvfs
-from six.moves.urllib.parse import unquote_plus
+from six.moves.urllib.parse import unquote_plus, quote_plus
 
 from slyguy import database, gui, userdata
 from slyguy.log import log
@@ -166,6 +166,7 @@ class Merger(object):
         self._extgroups = []
 
     def _call_addon_method(self, plugin_url, file_path):
+        file_path = quote_plus(file_path)
         plugin_url = plugin_url.replace('$FILE', file_path).replace('%24FILE', file_path)
         dirs, files = run_plugin(plugin_url, wait=True)
 
