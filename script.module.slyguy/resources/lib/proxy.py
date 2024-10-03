@@ -458,15 +458,15 @@ class RequestHandler(BaseHTTPRequestHandler):
                         except:
                             continue
 
-            log.debug('CHOOSE QUALITY')
+            start = time.time()
             index = gui.select(_.SELECT_QUALITY, labels, preselect=default, autoclose=5000)
             if index < 0:
                 self._session['selected_quality'] = QUALITY_EXIT
                 raise Exit('Cancelled quality select')
-            log.debug('CHOOSE QUALITY DONE')
+            self._session['selected_quality_time'] = time.time() - start
+            log.debug('Selected quality "{}": {}s'.format(labels[index], self._session['selected_quality_time']))
 
             quality = values[index]
-
             if current:
                PROXY_GLOBAL['last_qualities'].remove(current)
 
@@ -975,7 +975,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 adap_set.parentNode.removeChild(adap_set)
         #################
 
-        log.debug("Parse Dash: {}".format(time.time() - start))
+        log.debug("Parse Dash: {}s".format(time.time() - start - self._session.get('selected_quality_time', 0)))
 
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')
@@ -1304,9 +1304,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         response.stream.content = m3u8
 
         if is_master:
-            log.debug("Parse M3U8 Master: {}".format(time.time() - start))
+            log.debug("Parse M3U8 Master: {}s".format(time.time() - start - self._session.get('selected_quality_time', 0)))
         else:
-            log.debug("Parse M3U8 Sub: {}".format(time.time() - start))
+            log.debug("Parse M3U8 Sub: {}s".format(time.time() - start - self._session.get('selected_quality_time', 0)))
 
         if ADDON_DEV:
             m3u8 = b"\n".join([ll.rstrip() for ll in m3u8.splitlines() if ll.strip()])
