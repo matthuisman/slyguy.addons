@@ -488,6 +488,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             return None
 
     def _parse_dash(self, response):
+        start = time.time()
         data = response.stream.content.decode('utf8')
         response.stream.content = b''
 
@@ -974,6 +975,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 adap_set.parentNode.removeChild(adap_set)
         #################
 
+        log.debug("Parse Dash: {}".format(time.time() - start))
+
         if ADDON_DEV:
             mpd = root.toprettyxml(encoding='utf-8')
             mpd = b"\n".join([ll.rstrip() for ll in mpd.splitlines() if ll.strip()])
@@ -1259,6 +1262,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         return '\n'.join(new_lines)
 
     def _parse_m3u8(self, response):
+        start = time.time()
         m3u8 = response.stream.content.decode('utf8')
         response.stream.content = b''
 
@@ -1297,13 +1301,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         m3u8 = re.sub(r'(https?)://', r'{}\1://'.format(self.proxy_path), m3u8, flags=re.I)
 
         m3u8 = m3u8.encode('utf8')
+        response.stream.content = m3u8
+
+        if is_master:
+            log.debug("Parse M3U8 Master: {}".format(time.time() - start))
+        else:
+            log.debug("Parse M3U8 Sub: {}".format(time.time() - start))
 
         if ADDON_DEV:
             m3u8 = b"\n".join([ll.rstrip() for ll in m3u8.splitlines() if ll.strip()])
             with open(xbmc.translatePath('special://temp/'+file_name+'-out.m3u8'), 'wb') as f:
                 f.write(m3u8)
-
-        response.stream.content = m3u8
 
     def _proxy_request(self, method, url):
         self._session['redirecting'] = False
