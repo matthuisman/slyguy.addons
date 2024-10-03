@@ -19,7 +19,7 @@ from requests.cookies import RequestsCookieJar
 
 from slyguy import gui, settings, log, _
 from slyguy.constants import *
-from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language, pthms_to_seconds
+from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
@@ -905,11 +905,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             base_url_parents.append(elem.parentNode)
         ################
 
-        if KODI_VERSION < 21:
-            # wipe out manifest so not passed again
-            # Kodi 21 and up need to set mpd attribs again otherwise IA gets confused
-            # with missing reps
-            self._session['manifest'] = None
+        # wipe out manifest so not passed again
+        self._session['manifest'] = None
 
         ## Convert Location
         for elem in root.getElementsByTagName('Location'):
@@ -965,7 +962,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             process_attrib('media')
 
             ## Remove presentationTimeOffset PR: https://github.com/xbmc/inputstream.adaptive/pull/564/
-            if 'presentationTimeOffset' in e.attributes.keys():
+            # Removing below in Kodi 21 breaks some live streams
+            if KODI_VERSION < 21 and 'presentationTimeOffset' in e.attributes.keys():
                 e.removeAttribute('presentationTimeOffset')
                 log.debug('Dash Fix: presentationTimeOffset removed')
         ###############

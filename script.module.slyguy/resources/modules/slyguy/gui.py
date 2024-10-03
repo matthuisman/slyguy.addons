@@ -345,6 +345,11 @@ class Item(object):
             if 'original_language' in self.proxy_data:
                 li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
 
+            if KODI_VERSION >= 21:
+                # Kodi 21 IA removed the buffer settings
+                # 24s live delay gives us similiar buffer as <21
+                li.setProperty('{}.live_delay'.format(self.inputstream.addon_id), '24')
+
             if self.inputstream.license_key:
                 license_url = self.inputstream.license_key
                 license_headers = get_url_headers(self.inputstream.license_headers) if self.inputstream.license_headers else headers
