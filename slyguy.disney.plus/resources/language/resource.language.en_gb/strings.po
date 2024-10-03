@@ -109,6 +109,10 @@ msgid "Check {email} for 6-digit code and enter it below\n"
 "The code expires in 15 minutes"
 msgstr ""
 
+msgctxt "#30034"
+msgid "Add to Library"
+msgstr ""
+
 msgctxt "#30042"
 msgid "Continue Watching"
 msgstr ""
