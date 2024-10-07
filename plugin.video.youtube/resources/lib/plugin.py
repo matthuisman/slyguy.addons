@@ -46,6 +46,8 @@ def play(video_id, **kwargs):
         return play_android_apk(video_id)
 
     ydl_opts = {
+        'format': 'best/bestvideo+bestaudio',
+        'check_formats': False,
         'quiet': True,
         'cachedir': ADDON_PROFILE,
         'no_warnings': True,
