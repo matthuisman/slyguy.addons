@@ -15,7 +15,6 @@ from six.moves.socketserver import ThreadingMixIn
 from six.moves.urllib.parse import urlparse, urljoin, unquote_plus, parse_qsl
 from kodi_six import xbmc
 from pycaption import detect_format, WebVTTWriter
-from requests.cookies import RequestsCookieJar
 
 from slyguy import gui, settings, log, _
 from slyguy.constants import *
@@ -183,10 +182,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 if not self._session:
                     log.debug('Session created from proxy data')
                     self._session.update(proxy_data)
-
-                    self._session['cookie_jar'] = RequestsCookieJar()
-                    # re-load any previous saved cookies
-                    self._session['cookie_jar'].update(self._session.pop('cookies', {}))
 
         PROXY_GLOBAL['sessions'][session_type] = self._session
 
@@ -1306,7 +1301,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         if is_master:
             log.debug("Parse M3U8 Master: {}s".format(time.time() - start - self._session.get('selected_quality_time', 0)))
         else:
-            log.debug("Parse M3U8 Sub: {}s".format(time.time() - start - self._session.get('selected_quality_time', 0)))
+            log.debug("Parse M3U8 Sub: {}s".format(time.time() - start))
 
         if ADDON_DEV:
             m3u8 = b"\n".join([ll.rstrip() for ll in m3u8.splitlines() if ll.strip()])
@@ -1339,25 +1334,30 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Fix any double // in url
         url = fix_url(url)
 
-        session = RawSession(
-            verify = self._session.get('verify'),
-            timeout = self._session.get('timeout'),
-            ip_mode = self._session.get('ip_mode'),
-        )
-        session.set_dns_rewrites(self._session.get('dns_rewrites', []))
-        session.set_proxy(self._session.get('proxy_server'))
-        session.set_cert(self._session.get('cert'))
-        if 'cookie_jar' in self._session:
-            session.cookies = self._session['cookie_jar']
+        if not self._session.get('session'):
+            self._session['session'] = RawSession(
+                verify = self._session.get('verify'),
+                timeout = self._session.get('timeout'),
+                ip_mode = self._session.get('ip_mode'),
+                auto_close = False,
+            )
+            self._session['session'].set_dns_rewrites(self._session.get('dns_rewrites', []))
+            self._session['session'].set_proxy(self._session.get('proxy_server'))
+            self._session['session'].set_cert(self._session.get('cert'))
+            self._session['session'].cookies.update(self._session.pop('cookies', {}))
+        else:
+            self._session['session'].headers.clear()
+            #self._session['session'].cookies.clear() #lets handle cookies in session
 
         log.debug('REQUEST OUT: {} ({})'.format(url, method.upper()))
+        start = time.time()
         try:
-            with session as s:
-                response = s.request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
+            response = self._session['session'].request(method=method, url=url, headers=self._headers, data=self._post_data, allow_redirects=False, stream=True)
         except Exception as e:
             log.exception(e)
             raise
 
+        log.debug('REQUEST TIME: {}'.format(time.time() - start))
         log.debug('RESPONSE IN: {} ({})'.format(url, response.status_code))
         response.stream = ResponseStream(response)
 
@@ -1509,8 +1509,9 @@ def save_session():
     if not session:
         return
 
-    if 'cookie_jar' in session:
-        session['cookies'] = session.pop('cookie_jar').get_dict()
+    requests_session = session.pop('session', None)
+    if requests_session:
+        session['cookies'] = requests_session.cookies.get_dict()
 
     set_kodi_string('_slyguy_proxy_data', json.dumps(session))
     log.debug('Session saved')
