@@ -1268,7 +1268,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         is_master = False
         if '#EXTM3U' not in m3u8:
-            raise Exception('Invalid m3u8')
+            raise Exception('Invalid m3u8: {}'.format(m3u8))
 
         if '#EXT-X-STREAM-INF' in m3u8:
             is_master = True
@@ -1327,12 +1327,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 response.status_code = 200
                 with open(real_path, 'rb') as f:
                     response.stream.content = f.read()
-
-                if not ADDON_DEV:
-                    remove_file(real_path)
             else:
-                response.status_code = 500
-                response.stream.content = "File not found: {}".format(real_path).encode('utf-8')
+                raise Exception("File not found: {}".format(real_path))
 
             return response
 
