@@ -2,7 +2,9 @@ import hashlib
 import hmac
 import datetime
 
-from slyguy import userdata
+from kodi_six import xbmcgui
+
+from slyguy import userdata, dialog
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
@@ -160,6 +162,15 @@ class API(object):
             data = r.json()
         except:
             raise APIError(_(_.LOGIN_ERROR, msg=r.status_code))
+
+        # 2FA emailed code
+        if data.get('mfa_partial_token'):
+            code = dialog.input(_.ENTER_OTP, type=xbmcgui.INPUT_NUMERIC)
+            r = self._session.post('auth/two-factor/', json={'mfa_partial_token': data['mfa_partial_token'], 'otp': code})
+            try:
+                data = r.json()
+            except:
+                raise APIError(_(_.LOGIN_ERROR, msg=r.status_code))
 
         access_token = data.get('access_token')
         if not access_token:

@@ -65,3 +65,7 @@ msgctxt "#30011"
 msgid "{description}\n\n"
 "{num_lectures} Lectures"
 msgstr ""
+
+msgctxt "#30012"
+msgid "Enter the 6-digit code emailed you"
+msgstr ""

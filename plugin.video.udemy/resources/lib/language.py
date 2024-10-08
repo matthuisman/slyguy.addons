@@ -14,6 +14,7 @@ class Language(BaseLanguage):
     EDIT_LISTS       = 30009
     UPDATING_LISTS   = 30010
     CHAPTER_INFO     = 30011
+    ENTER_OTP        = 30012
 
 
 _ = Language()
