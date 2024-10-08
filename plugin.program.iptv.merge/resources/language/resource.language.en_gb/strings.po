@@ -417,3 +417,7 @@ msgstr ""
 msgctxt "#30099"
 msgid "Hour of day (24h)"
 msgstr ""
+
+msgctxt "#30100"
+msgid "Ignore Playlist EPGs: {value}"
+msgstr ""

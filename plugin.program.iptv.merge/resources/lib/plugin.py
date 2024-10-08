@@ -240,6 +240,11 @@ def edit_playlist(playlist_id, **kwargs):
     )
 
     folder.add_item(
+        label = _(_.IGNORE_PLAYLIST_EPGS, value=playlist.get_option('ignore_epgs', False)),
+        path  = plugin.url_for(edit_playlist_value, playlist_id=playlist.id, method=Playlist.toggle_ignore_epgs.__name__),
+    )
+
+    folder.add_item(
         label = _(_.USE_STARTING_CHNO, value=playlist.use_start_chno),
         path  = plugin.url_for(edit_playlist_value, playlist_id=playlist.id, method=Playlist.toggle_use_start_chno.__name__),
     )

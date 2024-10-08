@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.27.2">
+<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.27.3">
   <requires>
-    <import addon="script.module.slyguy" version="0.84.57"/>
+    <import addon="script.module.slyguy" version="0.85.32"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>executable</provides>
@@ -13,7 +13,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>New Settings!</news>
+    <news>Add Playlist option to ignore Playlist EPGs</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

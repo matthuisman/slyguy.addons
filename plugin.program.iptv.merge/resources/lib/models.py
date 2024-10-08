@@ -403,6 +403,7 @@ class EPG(Source):
     start_index = peewee.IntegerField(default=0)
     end_index = peewee.IntegerField(default=0)
 
+
 class Playlist(Source):
     skip_playlist_chno = peewee.BooleanField(default=False)
     use_start_chno = peewee.BooleanField(default=False)
@@ -411,7 +412,6 @@ class Playlist(Source):
     skip_playlist_groups = peewee.BooleanField(default=False)
     group_name = peewee.CharField(null=True)
     order = peewee.IntegerField()
-    #ignore_playlist_epg = peewee.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.order:
@@ -428,6 +428,18 @@ class Playlist(Source):
             return self.epgs.get()
         except EPG.DoesNotExist:
             return None
+
+    def get_option(self, key, default=None):
+        try:
+            return PlaylistOption.get(playlist=self, key=key).value
+        except PlaylistOption.DoesNotExist:
+            return default
+
+    def set_option(self, key, value):
+        option, created = PlaylistOption.get_or_create(playlist=self, key=key, defaults={'value': value})
+        if not created:
+            option.value = value
+            option.save()
 
     def select_start_chno(self):
         start_chno = gui.numeric(_.ENTER_START_CHNO, default=self.start_chno)
@@ -449,6 +461,11 @@ class Playlist(Source):
         self.skip_playlist_chno = not self.skip_playlist_chno
         return True
 
+    def toggle_ignore_epgs(self):
+        value = self.get_option('ignore_epgs', False)
+        self.set_option('ignore_epgs', not value)
+        return True
+
     def toggle_default_visible(self):
         self.default_visible = not self.default_visible
         return True
@@ -460,6 +477,16 @@ class Playlist(Source):
     @classmethod
     def after_merge(cls):
         Override.clean()
+
+
+class PlaylistOption(database.Model):
+    playlist = peewee.ForeignKeyField(Playlist, backref="options", on_delete='cascade')
+    key = peewee.CharField(index=True)
+    value = database.JSONField()
+
+    class Meta:
+        primary_key = peewee.CompositeKey('playlist', 'key')
+
 
 class Channel(database.Model):
     slug = peewee.CharField(primary_key=True)
@@ -744,5 +771,4 @@ class Override(database.Model):
         cls.delete().where((cls.fields=={}) & (cls.attribs=={}) & (cls.properties=={}) & (cls.headers=={})).execute()
 
 
-database.init([Playlist, EPG, Channel, Override])
-
+database.init([Playlist, PlaylistOption, EPG, Channel, Override], fast_connect=False)

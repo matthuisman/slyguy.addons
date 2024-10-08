@@ -282,13 +282,14 @@ class Merger(object):
                 if '#EXTM3U' in line:
                     #if not playlist.ignore_playlist_epg:
                     attribs = parse_attribs(line)[0]
-                    xml_urls = attribs.get('x-tvg-url', '').split(',')
-                    xml_urls.extend(attribs.get('url-tvg', '').split(','))
 
-                    for url in xml_urls:
-                        url = url.strip()
-                        if url:
-                            self._playlist_epgs.append(url)
+                    if not playlist.get_option('ignore_epgs', False):
+                        xml_urls = attribs.get('x-tvg-url', '').split(',')
+                        xml_urls.extend(attribs.get('url-tvg', '').split(','))
+                        for url in xml_urls:
+                            url = url.strip()
+                            if url:
+                                self._playlist_epgs.append(url)
 
                     if 'tvg-shift' in attribs:
                         default_attribs['tvg-shift'] = attribs['tvg-shift']
