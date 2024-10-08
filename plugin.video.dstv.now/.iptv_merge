@@ -1,3 +1,4 @@
 {
-    "playlist": "plugin://$ID/?_=playlist&output=$FILE"
+    "playlist": "plugin://$ID/?_=playlist&output=$FILE",
+    "epg": "https://i.mjh.nz/DStv/za.xml.gz"
 }

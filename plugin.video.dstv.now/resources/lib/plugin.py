@@ -394,10 +394,9 @@ def play_channel(id, **kwargs):
 @plugin.merge()
 def playlist(output, **kwargs):
     data = api.channels()
-    epg_url = ZA_EPG_URL
 
     with codecs.open(output, 'w', encoding='utf-8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(epg_url))
+        f.write(u'#EXTM3U')
 
         for row in data:
             genres = row.get('genres', [])
