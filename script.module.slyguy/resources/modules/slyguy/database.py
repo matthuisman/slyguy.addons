@@ -150,6 +150,7 @@ def get_db(db_path=DB_PATH):
 class Database(peewee.SqliteDatabase):
     def __init__(self, database, *args, **kwargs):
         self._tables = kwargs.pop('tables', [])
+        self._fast_connect = kwargs.pop('fast_connect', True)
         for table in self._tables:
             table._meta.database = self
         signals.add(signals.ON_EXIT, lambda db=self: close(db))
@@ -174,7 +175,7 @@ class Database(peewee.SqliteDatabase):
             return
 
         log.debug("Connecting to db: {}".format(self.database))
-        if os.path.exists(self.database):
+        if os.path.exists(self.database) and self._fast_connect:
             return super(Database, self).connect(*args, **kwargs)
 
         makedirs(os.path.dirname(self.database))
@@ -197,6 +198,6 @@ class Database(peewee.SqliteDatabase):
         return result
 
 
-def init(tables=None, db_path=DB_PATH):
-    db = DBS[db_path] = Database(db_path, pragmas=DB_PRAGMAS, timeout=10, autoconnect=True, tables=tables)
+def init(tables=None, db_path=DB_PATH, fast_connect=True):
+    db = DBS[db_path] = Database(db_path, pragmas=DB_PRAGMAS, timeout=10, autoconnect=True, tables=tables, fast_connect=fast_connect)
     return db
