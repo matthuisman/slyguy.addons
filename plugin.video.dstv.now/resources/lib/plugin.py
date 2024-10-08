@@ -11,7 +11,7 @@ from slyguy.util import get_system_arch
 
 from .api import API
 from .language import _
-from .constants import ZA_EPG_URL, LICENSE_COOLDOWN
+from .constants import LICENSE_COOLDOWN
 from .settings import settings
 
 
