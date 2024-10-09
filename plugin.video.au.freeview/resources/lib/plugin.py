@@ -125,9 +125,15 @@ def get_channels(region, slug=None):
 def playlist(output, **kwargs):
     region = settings.REGION.value
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL.format(region=region)))
+        f.write(u'#EXTM3U')
 
         for channel in get_channels(region):
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(
                 channel_id=channel['slug'], epg_id=channel.get('epg_id', channel['slug']), logo=channel.get('logo', ''), name=channel['name'], chno=channel.get('chno', ''),
                     url=plugin.url_for(play, region=region, slug=channel['slug'], _is_live=True)))
+
+
+@plugin.route()
+@plugin.merge()
+def epg(**kwargs):
+    return EPG_URL.format(region=settings.REGION.value)
