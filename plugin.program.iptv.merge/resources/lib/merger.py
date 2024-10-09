@@ -166,8 +166,8 @@ class Merger(object):
         self._extgroups = []
 
     def _call_addon_method(self, plugin_url, file_path):
-        file_path = quote_plus(file_path)
-        plugin_url = plugin_url.replace('$FILE', file_path).replace('%24FILE', file_path)
+        quoted_file_path = quote_plus(file_path)
+        plugin_url = plugin_url.replace('$FILE', quoted_file_path).replace('%24FILE', quoted_file_path)
         dirs, files = run_plugin(plugin_url, wait=True)
 
         try:
@@ -177,6 +177,7 @@ class Merger(object):
 
         if not result:
             raise AddonError(msg)
+        return msg or file_path
 
     def _process_source(self, source, method_name, file_path):
         remove_file(file_path)
@@ -214,8 +215,7 @@ class Merger(object):
 
     def _process_path(self, path, archive_type, file_path):
         if path.lower().startswith('plugin://'):
-            self._call_addon_method(path, file_path)
-            return
+            path = self._call_addon_method(path, file_path)
 
         if path.lower().startswith('http://') or path.lower().startswith('https://'):
             if 'drive.google.com' in path.lower():

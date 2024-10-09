@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.27.3">
+<addon id="plugin.program.iptv.merge" name="IPTV Merge" provider-name="SlyGuy" version="0.27.4">
   <requires>
     <import addon="script.module.slyguy" version="0.85.32"/>
   </requires>
@@ -13,7 +13,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Add Playlist option to ignore Playlist EPGs</news>
+    <news>Support plugin method returning url/path</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
