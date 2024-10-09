@@ -5,7 +5,7 @@ from slyguy import plugin, inputstream
 from slyguy.session import Session
 from slyguy.mem_cache import cached
 from slyguy.language import _
-from .settings import settings, ChannelMode, DATA_URL, EPG_URL
+from .settings import settings, ChannelMode, DATA_URL
 
 
 @plugin.route('')
@@ -120,7 +120,7 @@ def get_channels(slug=None):
 @plugin.merge()
 def playlist(output, **kwargs):
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(EPG_URL))
+        f.write(u'#EXTM3U')
 
         for channel in get_channels():
             f.write(u'\n#EXTINF:-1 channel-id="{channel_id}" tvg-id="{epg_id}" tvg-chno="{chno}" tvg-logo="{logo}",{name}\n{url}'.format(

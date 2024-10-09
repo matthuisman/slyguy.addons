@@ -5,7 +5,6 @@ from slyguy.language import _
 
 
 DATA_URL = 'https://i.mjh.nz/nz/tv.json.gz'
-EPG_URL = 'https://i.mjh.nz/nz/epg.xml.gz'
 
 
 class ChannelMode:
