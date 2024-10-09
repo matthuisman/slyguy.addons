@@ -177,7 +177,11 @@ class Merger(object):
 
         if not result:
             raise AddonError(msg)
-        return msg or file_path
+
+        if xbmcvfs.exists(file_path):
+            return file_path
+        else:
+            return msg
 
     def _process_source(self, source, method_name, file_path):
         remove_file(file_path)
@@ -216,6 +220,8 @@ class Merger(object):
     def _process_path(self, path, archive_type, file_path):
         if path.lower().startswith('plugin://'):
             path = self._call_addon_method(path, file_path)
+            if not path:
+                return
 
         if path.lower().startswith('http://') or path.lower().startswith('https://'):
             if 'drive.google.com' in path.lower():
