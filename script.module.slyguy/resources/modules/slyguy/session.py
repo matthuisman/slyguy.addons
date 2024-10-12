@@ -126,6 +126,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             log.exception(e)
             log.error('Connection error. Retrying...')
             # retry on connectionerror (pool or socket closed)
+            self._context_cache.clear()
             return super(SessionAdapter, self).send(*args, **kwargs)
 
     def init_poolmanager(self, *args, **kwargs):
