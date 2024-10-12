@@ -92,7 +92,8 @@ def _run():
 
                 check_repo()
             except Exception as e:
-                log.debug('Service loop failed: {}'.format(e))
+                log.exception(e)
+                log.warning('Service loop failed')
 
             if monitor.waitForAbort(30):
                 break

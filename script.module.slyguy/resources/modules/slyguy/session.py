@@ -121,11 +121,12 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
     def send(self, *args, **kwargs):
         try:
-            return super().send(*args, **kwargs)
-        except ConnectionError as e:
-            log.error('Connection error: {}. Retrying...'.format(e))
+            return super(SessionAdapter, self).send(*args, **kwargs)
+        except requests.exceptions.ConnectionError as e:
+            log.exception(e)
+            log.error('Connection error. Retrying...')
             # retry on connectionerror (pool or socket closed)
-            return super().send(*args, **kwargs)
+            return super(SessionAdapter, self).send(*args, **kwargs)
 
     def init_poolmanager(self, *args, **kwargs):
         # Set keep alive socket options
