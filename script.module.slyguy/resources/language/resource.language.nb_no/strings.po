@@ -140,7 +140,7 @@ msgstr "Er du sikker på at du vil logge ut?"
 msgctxt "#32028"
 msgid "Failed to login.\n"
 "Check your details are correct and try again."
-msgstr ""Innlogging feilet.\n"
+msgstr "Innlogging feilet.\n"
 "Sjekk dine innloggingsdetaljer, og prøv igjen."
 
 msgctxt "#32029"

@@ -171,8 +171,8 @@ msgid "WARNING: System architecture change detected ({old} -> {new})\n"
 "This may cause issues with binary addons as Kodi repo will still use {old}\n"
 "If you have issues, try revert back to Kodi {old}"
 msgstr "OSTRZEŻENIE: Wykryto zmianę architektury systemu ({old} -> {new})\n"
-"Może to powodować problemy z dodatkami binarnymi, ponieważ repozytorium Kodi nadal będzie używać {old}\n".
-"Jeśli masz problemy, spróbuj powrócić do Kodi {old}".
+"Może to powodować problemy z dodatkami binarnymi, ponieważ repozytorium Kodi nadal będzie używać {old}\n"
+"Jeśli masz problemy, spróbuj powrócić do Kodi {old}"
 
 msgctxt "#30037"
 msgid "Video view for menus"
@@ -507,7 +507,7 @@ msgstr "{fps:.2f} FPS"
 
 msgctxt "#32070"
 msgid "Available Widevine CDM Versions"
-msgstr Dostępne wersje Widevine CDM""
+msgstr "Dostępne wersje Widevine CDM"
 
 msgctxt "#32071"
 msgid "{label} (Unknown)"
@@ -529,7 +529,7 @@ msgctxt "#32075"
 msgid "Widevine CDM is built-in to Android\n"
 "If content does not play, your Android device may not have a suitable Widevine level."
 msgstr "Widevine CDM jest wbudowany w Androida\n"
-"Jeśli zawartość nie jest odtwarzana, Twoje urządzenie z Androidem może nie mieć odpowiedniego poziomu Widevine".
+"Jeśli zawartość nie jest odtwarzana, Twoje urządzenie z Androidem może nie mieć odpowiedniego poziomu Widevine."
 
 msgctxt "#32076"
 msgid "Use Inputstream HLS for Live Streams"
@@ -1113,7 +1113,7 @@ msgstr "Odtwórz od początku"
 
 msgctxt "#32210"
 msgid "Playback failed"
-msgstr "Odtwarzanie nie powiodło się""
+msgstr "Odtwarzanie nie powiodło się"
 
 msgctxt "#32211"
 msgid "Auto"

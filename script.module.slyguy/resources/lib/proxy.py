@@ -1415,7 +1415,13 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_HEAD(self):
         url = self._get_url('HEAD')
-        response = self._proxy_request('HEAD', url)
+        if url in (STOP_URL, ERROR_URL):
+            response = Response()
+            response.stream = ResponseStream(response)
+            response.headers = {}
+            response.status_code = 200
+        else:
+            response = self._proxy_request('HEAD', url)
         self._output_response(response)
 
     def do_POST(self):
