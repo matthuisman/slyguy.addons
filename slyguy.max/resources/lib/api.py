@@ -240,6 +240,7 @@ class API(object):
     def get_edit_id(self, id):
         params = {'include': 'edit'}
         data = self._session.get(self._endpoint('/content/videos/{}/activeVideoForShow'.format(id)), params=params).json()
+        self._check_errors(data)
         return self._process_data(data)[0]['edit']['id']
 
     def play(self, edit_id):
