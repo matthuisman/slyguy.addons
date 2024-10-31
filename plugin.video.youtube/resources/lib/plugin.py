@@ -42,7 +42,7 @@ def play(video_id, **kwargs):
     log.debug("YouTube ID {}".format(video_id))
 
     is_android = get_system_arch()[0] == 'Android'
-    if is_android and settings.getBool('play_with_youtube_apk', False):
+    if is_android and settings.PLAY_WITH_NATIVE_APK.value:
         return play_android_apk(video_id)
 
     if sys.version_info[0] < 3:
@@ -90,7 +90,7 @@ def play(video_id, **kwargs):
             groups['audio/mp4'].append(x)
 
     if not groups:
-        if is_android and settings.getBool('fallback_youtube_apk', False):
+        if is_android and settings.FALLBACK_YOUTUBE_APK.value:
             return play_android_apk(video_id)
         else:
             raise plugin.PluginError(_(_.NO_VIDEOS_FOUND, id=video_id, error=error))
