@@ -22,7 +22,7 @@ class Settings(database.Model):
 
 profile_path = xbmc.translatePath(COMMON_ADDON.getAddonInfo('profile'))
 db_path = os.path.join(profile_path, 'settings.db')
-db = database.init([Settings], db_path)
+db = database.init([Settings], db_path, delete_on_reset=False)
 
 
 class DBStorage():

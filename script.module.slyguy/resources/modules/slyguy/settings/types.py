@@ -475,6 +475,7 @@ def migrate_userdata(settings):
 
 def reset_addon():
     STORAGE.delete_all(ADDON_ID)
+    signals.emit(signals.AFTER_RESET)
     from slyguy import gui
     gui.notification(_.PLUGIN_RESET_OK)
     return True

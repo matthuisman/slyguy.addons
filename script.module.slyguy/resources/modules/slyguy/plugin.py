@@ -467,25 +467,6 @@ def _context(**kwargs):
     raise PluginError(_.NO_CONTEXT_METHOD)
 
 
-@route(ROUTE_RESET)
-def _reset(**kwargs):
-    if not gui.yes_no(_.PLUGIN_RESET_YES_NO):
-        return
-
-    _close()
-
-    try:
-        xbmc.executeJSONRPC('{{"jsonrpc":"2.0","id":1,"method":"Addons.SetAddonEnabled","params":{{"addonid":"{}","enabled":false}}}}'.format(ADDON_ID))
-        shutil.rmtree(ADDON_PROFILE)
-    except:
-        pass
-
-    xbmc.executeJSONRPC('{{"jsonrpc":"2.0","id":1,"method":"Addons.SetAddonEnabled","params":{{"addonid":"{}","enabled":true}}}}'.format(ADDON_ID))
-
-    gui.notification(_.PLUGIN_RESET_OK)
-    signals.emit(signals.AFTER_RESET)
-    gui.refresh()
-
 @route(ROUTE_SERVICE)
 def _service(**kwargs):
     try:

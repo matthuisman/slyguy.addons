@@ -61,7 +61,6 @@ MERGE_SETTING_FILE   = '.iptv_merge'
 
 #### ROUTING ####
 ROUTE_TAG              = '_'
-ROUTE_RESET            = '_reset'
 ROUTE_SETTINGS         = '_settings'
 ROUTE_IA_SETTINGS      = '_ia_settings'
 ROUTE_SETUP_MERGE      = '_setup_merge'
