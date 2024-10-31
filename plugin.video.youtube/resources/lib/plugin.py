@@ -45,6 +45,12 @@ def play(video_id, **kwargs):
     if is_android and settings.getBool('play_with_youtube_apk', False):
         return play_android_apk(video_id)
 
+    if sys.version_info[0] < 3:
+        if is_android:
+            raise plugin.PluginError(_.PYTHON3_NOT_SUPPORTED_ANDROID)
+        else:
+            raise plugin.PluginError(_.PYTHON3_NOT_SUPPORTED)
+
     ydl_opts = {
         'format': 'best/bestvideo+bestaudio',
         'check_formats': False,
@@ -86,16 +92,8 @@ def play(video_id, **kwargs):
     if not groups:
         if is_android and settings.getBool('fallback_youtube_apk', False):
             return play_android_apk(video_id)
-
-        if sys.version_info[0] < 3:
-            if is_android:
-                error = _.PYTHON3_NOT_SUPPORTED_ANDROID
-            else:
-                error = _.PYTHON3_NOT_SUPPORTED
         else:
-            error  = _(_.NO_VIDEOS_FOUND, id=video_id, error=error)
-
-        raise plugin.PluginError(error)
+            raise plugin.PluginError(_(_.NO_VIDEOS_FOUND, id=video_id, error=error))
 
     headers = {}
     str = '<MPD minBufferTime="PT1.5S" mediaPresentationDuration="PT{}S" type="static" profiles="urn:mpeg:dash:profile:isoff-main:2011"><Period>'.format(data["duration"])
