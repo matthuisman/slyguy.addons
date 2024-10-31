@@ -296,7 +296,7 @@ msgctxt "#30068"
 msgid "[B][COLOR orange]Pending[/COLOR][/B]\n\n"
 "'Run Merge' in main menu\n"
 "to force a merge"
-msgstr ""[B][COLOR orange]Oczekujący[/COLOR][/B]\n\n"
+msgstr "[B][COLOR orange]Oczekujący[/COLOR][/B]\n\n"
 "'Uruchom łączenie' w menu głównym\n"
 "wymuś łączenie"
 

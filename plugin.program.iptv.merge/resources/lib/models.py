@@ -771,4 +771,4 @@ class Override(database.Model):
         cls.delete().where((cls.fields=={}) & (cls.attribs=={}) & (cls.properties=={}) & (cls.headers=={})).execute()
 
 
-database.init([Playlist, PlaylistOption, EPG, Channel, Override], fast_connect=False)
+database.init([Playlist, PlaylistOption, EPG, Channel, Override])
