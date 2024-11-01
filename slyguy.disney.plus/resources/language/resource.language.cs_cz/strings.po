@@ -19,7 +19,7 @@ msgid "Password"
 msgstr "Heslo"
 
 msgctxt "#30003"
-msgid "API request failed\n"-
+msgid "API request failed\n"
 "Server Error: {msg}"
 msgstr "API selhalo\n"
 "Chyba serveru: {msg}"

@@ -925,8 +925,10 @@ def _get_explore_art(row):
     images = row['visuals']['artwork']['standard']
     if 'tile' in row['visuals']['artwork']:
         images['hero_tile'] = row['visuals']['artwork']['tile']['background']
-    if 'hero' in row['visuals']['artwork']:
+    try:
         images['background'] = row['visuals']['artwork']['hero']['background']
+    except KeyError:
+        pass
     if 'network' in row['visuals']['artwork']:
         images['thumbnail'] = row['visuals']['artwork']['network']['tile']
 
