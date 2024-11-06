@@ -759,3 +759,8 @@ def get_headers_from_url(url):
 
 def makedirs(path):
     xbmcvfs.mkdirs(path)
+
+
+def remove_duplicates(seq):
+    seen = set()
+    return [x for x in seq if not (x in seen or seen.add(x))]
