@@ -214,7 +214,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == host:
             ip = self.session_data['rewrite'][1]
-            ips.append(ips)
+            ips.append(ip)
             log.debug("DNS Rewrite: {} -> {}".format(host, ip))
 
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == host:
