@@ -311,9 +311,10 @@ class API(object):
     def _init_data(self, key):
         key = key.replace('-', '')
         key_len = '{:x}'.format(len(bytearray.fromhex(key)))
-        key = '12{}{}'.format(key_len, key)
-        key = bytearray.fromhex(key)
-        return cenc_init(key)
+        data = '12{}{}'.format(key_len, key)
+        data = bytearray.fromhex(data)
+        # kids needed to support IA in Kodi 21 that does not parse kid from data
+        return cenc_init(data, kids=[bytearray.fromhex(key)])
 
     def logout(self):
         userdata.delete('token')
