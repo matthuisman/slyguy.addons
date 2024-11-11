@@ -309,6 +309,7 @@ class BaseLanguage(object):
     MERGE_NOT_SUPPORTED         = 32220
     TRAILER_CONTEXT_MENU        = 32221
     NOT_SET                     = 32222
+    PROXY_PORT                  = 32223
 
     def __init__(self):
         self._addon_map = {}    

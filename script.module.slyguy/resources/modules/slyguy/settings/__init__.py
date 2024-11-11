@@ -6,7 +6,7 @@ from slyguy import dialog
 from slyguy.language import _
 from slyguy.log import log
 from slyguy.constants import *
-from slyguy.util import get_kodi_string, set_kodi_string
+from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc
 
 from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action
 
@@ -83,6 +83,11 @@ def set_trailer_context():
         set_kodi_string('_slyguy_trailer_context_menu', '1')
     else:
         set_kodi_string('_slyguy_trailer_context_menu', '0')
+
+
+def restart_service():
+    kodi_rpc('Addons.SetAddonEnabled', {'addonid': COMMON_ADDON_ID, 'enabled': False})
+    kodi_rpc('Addons.SetAddonEnabled', {'addonid': COMMON_ADDON_ID, 'enabled': True})
 
 
 def check_donor(force=False):
@@ -291,6 +296,7 @@ class CommonSettings(BaseSettings):
 
     # SYSTEM
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+    PROXY_PORT = Number('proxy_port', default=52103, override=False, visible=lambda: settings.PROXY_ENABLED.value, owner=COMMON_ADDON_ID, after_save=lambda val: restart_service(), after_clear=restart_service, category=Categories.SYSTEM)
     TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda val:set_trailer_context(),
         after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
@@ -305,7 +311,6 @@ class CommonSettings(BaseSettings):
     LAST_DONOR_CHECK = Number('last_donor_check', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_NEWS_CHECK = Number('last_news_check', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_NEWS_ID = Text('last_news_id', visible=False, override=False, owner=COMMON_ADDON_ID)
-    PROXY_PORT = Number('proxy_port', default=DEFAULT_PORT, visible=False, override=False, owner=COMMON_ADDON_ID)
     PROXY_PATH = Text('proxy_path', visible=False, override=False, owner=COMMON_ADDON_ID)
     UPDATES = Dict('updates', visible=False, override=False, owner=COMMON_ADDON_ID)
     NEWS = Dict('news', visible=False, override=False, owner=COMMON_ADDON_ID)

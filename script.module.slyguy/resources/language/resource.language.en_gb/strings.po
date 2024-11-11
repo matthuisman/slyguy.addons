@@ -1096,3 +1096,7 @@ msgstr ""
 msgctxt "#32222"
 msgid "Not Set"
 msgstr ""
+
+msgctxt "#32223"
+msgid "SlyGuy Proxy Listen Port"
+msgstr ""

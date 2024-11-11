@@ -1534,24 +1534,19 @@ class Proxy(object):
         if self.started:
             return
 
-        target_port = settings.getInt('_proxy_port') or DEFAULT_PORT
-        port = check_port(target_port)
-        if not port:
-            port = check_port()
-            if not port:
-                log.error('Unable to find port to start proxy! Some addon features will not work')
-                return
+        port = settings.PROXY_PORT.value
+        if not check_port(port):
+            settings.set('_proxy_path', '')
+            log.error('Unable to start proxy on port {}. Some addon features will not work. You can change port under slyguy advanced settings.'.format(port))
+            return
 
-            log.warning('Port {} not available. Switched to port {}'.format(target_port, port))
-            settings.setInt('_proxy_port', port)
-
-        self._server = ThreadedHTTPServer((HOST, port), RequestHandler)
+        self._server = ThreadedHTTPServer(('0.0.0.0', port), RequestHandler)
         self._server.allow_reuse_address = True
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
         self.started = True
 
-        proxy_path = 'http://{}:{}/'.format(HOST, port)
+        proxy_path = 'http://{}:{}/'.format('127.0.0.1', port)
         settings.set('_proxy_path', proxy_path)
         log.info("Proxy Started: {}".format(proxy_path))
 
