@@ -377,7 +377,6 @@ class API(object):
             raise APIError('Failed to obtain session token\n{}'.format(error))
 
         url = self._config.get_link_platform_url(video_id)
-        exception = None
         if url:
             try:
                 return self._play_link_platform(url, session)
@@ -430,8 +429,11 @@ class API(object):
 
         channels = []
         for row in data.get('channels', []):
-            if row['dma'] and dma:
+            if row.get('dma') and dma:
                 row['dma'] = dma['tokenDetails']
+            for listing in row.get('currentListing') or []:
+                if listing.get('dma') and dma:
+                    listing['dma'] = dma['tokenDetails']
             channels.append(row)
 
         return sorted(channels, key=lambda x: x['displayOrder'])
