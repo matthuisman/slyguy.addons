@@ -342,6 +342,10 @@ class Item(object):
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
                 li.setProperty('{}.manifest_headers'.format(self.inputstream.addon_id), headers)
 
+            # IA does not support HLS original language attribute (only dash) so need to use property
+            if self.proxy_data.get('original_language'):
+                li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
+
             if KODI_VERSION >= 21:
                 # Kodi 21 IA removed the buffer settings
                 # 24s live delay gives us similiar buffer as <21
