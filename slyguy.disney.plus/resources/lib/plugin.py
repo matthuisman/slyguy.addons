@@ -697,7 +697,7 @@ def _play(family_id=None, content_id=None, **kwargs):
         #v5
         media_stream = playback_data['stream']['complete'][0]['url']
 
-    original_language = video.get('originalLanguage') or 'en'
+    original_language = video.get('originalLanguage') or ''
     item = _parse_video(video)
     item.update(
         path = media_stream,
