@@ -342,7 +342,7 @@ class Item(object):
                 li.setProperty('{}.stream_headers'.format(self.inputstream.addon_id), headers)
                 li.setProperty('{}.manifest_headers'.format(self.inputstream.addon_id), headers)
 
-            if 'original_language' in self.proxy_data:
+            if self.proxy_data.get('original_language'):
                 li.setProperty('{}.original_audio_language'.format(self.inputstream.addon_id), self.proxy_data['original_language'])
 
             if KODI_VERSION >= 21:
@@ -423,6 +423,7 @@ class Item(object):
                     'audio_whitelist': settings.get('audio_whitelist', ''),
                     'subs_whitelist':  settings.get('subs_whitelist', ''),
                     'audio_description': settings.getBool('audio_description', True),
+                    'interface_language': xbmc.getLanguage(xbmc.ISO_639_1),
                     'subs_forced': settings.getBool('subs_forced', True),
                     'subs_non_forced': settings.getBool('subs_non_forced', True),
                     'remove_framerate': False,

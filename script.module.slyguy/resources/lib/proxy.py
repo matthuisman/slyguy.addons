@@ -545,10 +545,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         ec3_enabled = self._session.get('ec3', False)
 
         original_language = self._session.get('original_language', '')
+        interface_language = self._session.get('interface_language', '')
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
-        default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
-        default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
+        user_default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
+        user_default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
         max_bandwidth = self._session.get('max_bandwidth') or float('inf')
         max_width = self._session.get('max_width') or float('inf')
         max_height = self._session.get('max_height') or float('inf')
@@ -793,6 +794,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         ## Fix up languages
         subs = []
         audios = []
+        default_languages = []
+        default_subtitles = []
         for adap_set in root.getElementsByTagName('AdaptationSet'):
             language = adap_set.getAttribute('lang')
             if not language:
@@ -814,7 +817,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     adap_set.setAttribute('original', 'true')
 
                 # only remove languages that are not original and not in whitelist or default languages
-                if audio_whitelist and not lang_allowed(language, audio_whitelist + default_languages + [original_language]):
+                if audio_whitelist and not lang_allowed(language, audio_whitelist + default_languages + user_default_languages + [original_language]):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed audio adapt set: {}'.format(adap_set.getAttribute('id')))
                     continue
@@ -854,32 +857,44 @@ class RequestHandler(BaseHTTPRequestHandler):
                     adap_set.setAttribute('original', 'true')
 
                 # only remove subs that are not in whitelist or default subs
-                if subs_whitelist and not lang_allowed(language, subs_whitelist + default_subtitles):
+                if subs_whitelist and not lang_allowed(language, subs_whitelist + default_subtitles + user_default_subtitles):
                     adap_set.parentNode.removeChild(adap_set)
                     log.debug('Removed subtitle adapt set: {}'.format(adap_set.getAttribute('id')))
                     continue
 
                 subs.append([language, adap_set])
 
-        def set_default_laguage(defaults, rows):
+        def set_default_laguage(user_defaults, found_defaults, rows):
+            langs = []
+            for entry in user_defaults:
+                if entry == "default":
+                    langs.extend(found_defaults)
+                elif entry == "original":
+                    langs.append(original_language)
+                elif entry == "interface":
+                    langs.append(interface_language)
+                else:
+                    langs.append(entry)
+
+            langs = [x.strip() for x in langs if x.strip()]
+            if not langs:
+                langs = found_defaults
+
             found = False
-            for default in defaults:
-                default = original_language if default == 'original' else default
-                if not default:
+            for lang in langs:
+                if not lang:
                     continue
 
                 for row in rows:
-                    if lang_allowed(row[0], [default]):
+                    if lang_allowed(row[0], [lang]):
                         row[1].setAttribute('default', 'true')
                         found = True
 
                 if found:
                     break
 
-        #fallback to original if default languages not found
-        default_languages.append('original')
-        set_default_laguage(default_languages, audios)
-        set_default_laguage(default_subtitles, subs)
+        set_default_laguage(user_default_languages, default_languages, audios)
+        set_default_laguage(user_default_subtitles, default_subtitles, subs)
         ################
 
         ## Convert BaseURLS
@@ -1052,9 +1067,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
-        original_language = self._session.get('original_language', '').lower().strip()
-        default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
-        default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
+        original_language = self._session.get('original_language', '')
+        interface_language = self._session.get('interface_language', '')
+        user_default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
+        user_default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
         max_bandwidth = self._session.get('max_bandwidth') or float('inf')
         max_width = self._session.get('max_width') or float('inf')
         max_height = self._session.get('max_height') or float('inf')
@@ -1066,6 +1082,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         video = []
         new_lines = []
         audio_groups = {}
+        default_languages = []
+        default_subtitles = []
 
         for line in m3u8.splitlines():
             if not line.strip():
@@ -1083,7 +1101,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         attribs['DEFAULT'] = 'NO'
                         default_languages.append(language)
 
-                    if not audio_whitelist or lang_allowed(language, audio_whitelist + default_languages + [original_language]):
+                    if not audio_whitelist or lang_allowed(language, audio_whitelist + default_languages + user_default_languages + [original_language]):
                         audios.append(attribs)
 
                 elif attribs.get('TYPE') == 'SUBTITLES' and lang_allowed(language, subs_whitelist):
@@ -1091,7 +1109,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                         attribs['DEFAULT'] = 'NO'
                         default_subtitles.append(language)
 
-                    if not subs_whitelist or lang_allowed(language, subs_whitelist + default_subtitles):
+                    if not subs_whitelist or lang_allowed(language, subs_whitelist + default_subtitles + user_default_subtitles):
                         subs.append(attribs)
 
             elif line.startswith('#EXT-X-STREAM-INF'):
@@ -1172,25 +1190,37 @@ class RequestHandler(BaseHTTPRequestHandler):
                     video.pop(stream['index']-adjust)
                     adjust += 1
 
-        def set_default_laguage(defaults, rows):
+        def set_default_laguage(user_defaults, found_defaults, rows):
+            langs = []
+            for entry in user_defaults:
+                if entry == "default":
+                    langs.extend(found_defaults)
+                elif entry == "original":
+                    langs.append(original_language)
+                elif entry == "interface":
+                    langs.append(interface_language)
+                else:
+                    langs.append(entry)
+
+            langs = [x.strip() for x in langs if x.strip()]
+            if not langs:
+                langs = found_defaults
+
             found = False
-            for default in defaults:
-                default = original_language if default == 'original' else default
-                if not default:
+            for lang in langs:
+                if not lang:
                     continue
 
                 for row in rows:
-                    if lang_allowed(row.get('LANGUAGE',''), [default]):
+                    if lang_allowed(row.get('LANGUAGE',''), [lang]):
                         row['DEFAULT'] = 'YES'
                         found = True
 
                 if found:
                     break
 
-        #fallback to original if default languages not found
-        default_languages.append('original')
-        set_default_laguage(default_languages, audios)
-        set_default_laguage(default_subtitles, subs)
+        set_default_laguage(user_default_languages, default_languages, audios)
+        set_default_laguage(user_default_subtitles, default_subtitles, subs)
 
         for attribs in audios:
             if not audio_description and attribs.get('CHARACTERISTICS','').lower() == 'public.accessibility.describes-video':

@@ -253,8 +253,8 @@ class CommonSettings(BaseSettings):
     AUDIO_DESCRIPTION = Bool('audio_description', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
     SUBS_FORCED = Bool('subs_forced', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
     SUBS_NON_FORCED = Bool('subs_non_forced', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
-    DEFAULT_LANGUAGE = Text('default_language', default_label=_.MEDIA_DEFAULT, owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
-    DEFAULT_SUBTITLE = Text('default_subtitle', default_label=_.MEDIA_DEFAULT, owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
+    DEFAULT_LANGUAGE = Text('default_language', default='default,original,interface,en', owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
+    DEFAULT_SUBTITLE = Text('default_subtitle', default='default,original,interface,en', owner=COMMON_ADDON_ID, category=Categories.PLAYER_LANGUAGE)
 
     # PLAYER / ADVANCED
     REINSTALL_WV = Action("RunPlugin(plugin://{}/?_=_ia_install)".format(COMMON_ADDON_ID), visible="!system.platform.android", category=Categories.PLAYER_ADVANCED)
