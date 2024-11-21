@@ -656,6 +656,7 @@ def fix_language(language=None):
         return None
 
     language = language.strip()
+    language = language.replace('_', '-')
     split = language.split('-')
     if len(split) > 1 and split[1].lower() == split[0].lower():
         return split[0].lower()
