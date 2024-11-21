@@ -3,7 +3,7 @@ from collections import defaultdict
 from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, inputstream, signals
-from slyguy.util import get_system_arch, strip_html_tags
+from slyguy.util import get_system_arch, strip_html_tags, fix_language
 
 from .api import API
 from .language import _
@@ -261,8 +261,10 @@ def play(asset_id, **kwargs):
         cookies = {'access_token': token, 'client_id': CLIENT_ID},
     )
 
-    is_drm = stream_data.get('course_is_drmed', False)
+    for row in stream_data.get('captions') or []:
+        play_item.subtitles.append([row['url'], fix_language(row['locale_id']), 'text/vtt'])
 
+    is_drm = stream_data.get('course_is_drmed', False)
     hls_url = stream_data.get('hls_url')
     if hls_url and not is_drm:
         play_item.path = hls_url
@@ -298,23 +300,20 @@ def play(asset_id, **kwargs):
             mp4s.append([bandwidth, resolution, fps, codecs, item['file']])
 
     for row in stream_data.get('media_sources') or []:
-        if row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
-            adaptives.append([row['src'], inputstream.HLS(live=False)])
-
-        elif row['type'] == 'video/mp4':
+        if row['type'] == 'video/mp4':
             bandwidth, resolution = BANDWIDTH_MAP.get(int(row['label']))
             mp4s.append([bandwidth, resolution, '30', 'avc', row['src']])
 
-        if row['type'] == 'application/dash+xml':
-            play_item.path = row['src']
-
+        elif row['type'] == 'application/dash+xml':
             if is_drm:
                 token = stream_data['media_license_token']
                 ia = inputstream.Widevine(license_key=WV_URL.format(token=token))
             else:
                 ia = inputstream.MPD()
-
             adaptives.append([row['src'], ia])
+
+        elif row['type'] == 'application/x-mpegURL' and 'encrypted-files' not in row['src']:
+            adaptives.append([row['src'], inputstream.HLS(live=False)])
 
     if mp4s:
         play_item.path = 'special://temp/udemy.m3u8'
