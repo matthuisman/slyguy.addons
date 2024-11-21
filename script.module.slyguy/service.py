@@ -9,6 +9,11 @@ try:
 except Exception as e:
     import traceback
     import xbmc, xbmcgui
+
+    if 'Unknown addon id' in str(e):
+        xbmc.log('Slyguy common updating. Expected error: {}'.format(e), xbmc.LOGINFO)
+        sys.exit(0)
+
     xbmc.log('Failed to import Slyguy common service', xbmc.LOGFATAL)
     traceback.print_exc()
     if xbmcgui.Dialog().ok('SlyGuy Error', 'Error importing Slyguy common service\nThis major bug is usually fixed very quickly\n[B]Click OK to check for updates[/B]'):
