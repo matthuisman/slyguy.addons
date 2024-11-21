@@ -394,9 +394,9 @@ class Item(object):
                 proxy_data['middleware'][url] = {'type': MIDDLEWARE_CONVERT_SUB}
                 mimetype = 'text/vtt'
 
-            proxy_url = '{}{}.srt'.format(language, '.forced' if forced else '')
+            # kodi language urls only support basic language (no regional)
+            proxy_url = '{}{}.srt'.format(language.split('-')[0], '.forced' if forced else '')
             proxy_data['path_subs'][proxy_url] = url
-
             return u'{}{}'.format(proxy_path, proxy_url)
 
         if self.path and playing:
