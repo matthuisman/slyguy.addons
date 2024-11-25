@@ -434,7 +434,7 @@ def show(show_id, config=None, **kwargs):
             if not config:
                 continue
 
-            if config.get('display_seasons') and 'episodes' in config.get('section_type').lower():
+            if config.get('display_seasons') and 'episodes' in (config.get('section_type') or '').lower():
                 for row in sorted(api.seasons(show_id), key=lambda x: int(x['seasonNum'])):
                     if not row['totalCount']:
                         continue
