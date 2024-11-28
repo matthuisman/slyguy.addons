@@ -429,11 +429,8 @@ class API(object):
 
         channels = []
         for row in data.get('channels', []):
-            if row.get('dma') and dma:
+            if dma and 'event_dma' in row.get('channelTypes', []):
                 row['dma'] = dma['tokenDetails']
-            for listing in row.get('currentListing') or []:
-                if listing.get('dma') and dma:
-                    listing['dma'] = dma['tokenDetails']
             channels.append(row)
 
         return sorted(channels, key=lambda x: x['displayOrder'])
@@ -463,6 +460,7 @@ class API(object):
         }
 
         data = self._session.get('/v3.0/androidphone/dma.json', params=self._params(params)).json()
+
         try:
             return data['dmas'][0]
         except:

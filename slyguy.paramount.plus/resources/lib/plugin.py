@@ -748,9 +748,7 @@ def play_channel(slug, listing_id=None, **kwargs):
                         break
 
             if selected:
-                if selected['dma']:
-                    url = selected['dma']['playback_url']
-                elif selected['contentCANVideo'] and selected['contentCANVideo'].get('liveStreamingUrl'):
+                if selected['contentCANVideo'] and selected['contentCANVideo'].get('liveStreamingUrl'):
                     url = selected['contentCANVideo'].get('liveStreamingUrl')
                 elif selected['streamType'] == 'mpx_live':
                     item = _play(selected['videoContentId'])
