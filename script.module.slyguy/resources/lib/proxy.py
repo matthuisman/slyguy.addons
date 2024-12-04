@@ -644,7 +644,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if 'video' in attribs.get('mimeType', '') and not is_trick:
                         is_hdr = False
                         for supplem in adap_set.getElementsByTagName('SupplementalProperty'):
-                            if supplem.getAttribute('schemeIdUri') == 'http://dashif.org/metadata/hdr':
+                            if supplem.getAttribute('schemeIdUri') == 'http://dashif.org/metadata/hdr' or \
+                                    (supplem.getAttribute('schemeIdUri') == 'urn:mpeg:mpegB:cicp:TransferCharacteristics' and supplem.getAttribute('value') == '16'):
                                 is_hdr = True
                                 break
 
