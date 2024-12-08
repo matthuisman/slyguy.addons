@@ -540,6 +540,8 @@ def series(series_id, **kwargs):
     folder = plugin.Folder(title, fanart=art.get('fanart'))
 
     for row in data['seasons']['seasons']:
+        if row['seasonSequenceNumber'] < 0:
+            continue
         item = _parse_season(row, data['series'])
         folder.add_items(item)
 
