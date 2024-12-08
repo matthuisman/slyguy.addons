@@ -386,8 +386,6 @@ def _parse_video(row):
         info  = {
             'plot': _get_text(row, 'description', 'program'),
             'duration': row['mediaMetadata']['runtimeMillis']/1000,
-            'year': row['releases'][0]['releaseYear'] if row['releases'][0]['releaseDate'] else None,
-            'aired': row['releases'][0]['releaseDate'],
             'mediatype': 'movie',
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
@@ -395,6 +393,12 @@ def _parse_video(row):
         path = _get_play_path(content_id=row['contentId']),
         playable = True,
     )
+
+    try:
+        item.info['year'] = row['releases'][0]['releaseYear']
+        item.info['aired'] = row['releases'][0]['releaseDate']
+    except IndexError:
+        pass
 
     if row['programType'] == 'episode':
         item.info.update({
