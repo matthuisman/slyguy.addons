@@ -206,9 +206,11 @@ def install_widevine(reinstall=False):
     log.info('Widevine - System: {} | Arch: {}'.format(system, arch))
 
     if system == 'Android':
-        if KODI_VERSION > 18 and not is_wv_secure():
-            log.debug('Widevine - Disable IA secure decoder')
-            ia_addon.setSetting('NOSECUREDECODER', 'true')
+        if KODI_VERSION > 18:
+            value = 'false' if is_wv_secure() else 'true'
+            log.debug('Setting NOSECUREDECODER to: {}'.format(value))
+            ia_addon.setSetting('NOSECUREDECODER', value)
+
         log.debug('Widevine - Android: Builtin Widevine')
         return True
 

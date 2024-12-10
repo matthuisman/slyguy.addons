@@ -4,16 +4,12 @@ import time
 from kodi_six import xbmc
 from threading import Thread
 
-from slyguy.util import get_kodi_string, set_kodi_string, set_kodi_setting
+from slyguy.util import get_kodi_string, set_kodi_string
 from slyguy.router import add_url_args
 from slyguy.monitor import monitor
 
 
 class Player(xbmc.Player):
-    def __init__(self, *args, **kwargs):
-        self.play_data = {}
-        super(Player, self).__init__(*args, **kwargs)
-
     def playback(self):
         play_time = 0
         last_play_time = int(self.getTime())
@@ -61,36 +57,19 @@ class Player(xbmc.Player):
             callback = add_url_args(self._callback['callback'], _time=play_time)
             xbmc.executebuiltin('RunPlugin({})'.format(callback))
 
-    def _restore_settings(self):
-        if not self.play_data:
-            return
-
-        print("RESTORE!!!")
-        # store old and new and only change back if same value
-        for key in list(self.play_data['kodi_settings'].keys()):
-            print("REVERT: {} -> {}".format(key, self.play_data['kodi_settings'][key]))
-            set_kodi_setting(key, self.play_data['kodi_settings'][key])
-            self.play_data['kodi_settings'].pop(key)
-
-    def onPlayBackStarted(self):
+    def onAVStarted(self):
         try:
-            self.play_data = json.loads(get_kodi_string('_slyguy_play_data'))
-            set_kodi_string('_slyguy_play_data')
+            play_data = json.loads(get_kodi_string('_slyguy_play_data'))
         except:
             return
 
-    def onPlayBackStopped(self):
-        self._restore_settings()
+        set_kodi_string('_slyguy_play_data')
 
-    def onAVStarted(self):
         self._callback = None
         self._play_skips = []
         self._playing_file = self.getPlayingFile()
 
-        self._restore_settings()
-
-        if self.play_data.get('playing_file') != self._playing_file:
-            self.play_data = {}
+        if play_data['playing_file'] != self._playing_file:
             return
 
         if self.isPlayingVideo():
@@ -98,11 +77,11 @@ class Player(xbmc.Player):
         else:
             self._playlist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
 
-        play_skips = self.play_data['skips']
+        play_skips = play_data['skips']
 
-        if self.play_data['next']['next_file']:
-            self._playlist.remove(self.play_data['next']['next_file'])
-            self._playlist.add(self.play_data['next']['next_file'], index=self._playlist.getposition()+1)
+        if play_data['next']['next_file']:
+            self._playlist.remove(play_data['next']['next_file'])
+            self._playlist.add(play_data['next']['next_file'], index=self._playlist.getposition()+1)
 
         for skip in play_skips:
             if not skip.get('to'):
@@ -119,8 +98,8 @@ class Player(xbmc.Player):
 
             self._play_skips.append(skip)
 
-        if self.play_data['callback']['callback']:
-            self._callback = self.play_data['callback']
+        if play_data['callback']['callback']:
+            self._callback = play_data['callback']
 
         if self._callback or self._play_skips:
             self._thread = Thread(target=self.playback)
