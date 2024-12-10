@@ -389,7 +389,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             elif not stream['res_ok']:
                 color = 'orange'
             else:
-                color = 'blue'
+                color = None
 
             return _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution=resolution, fps=fps, codecs=codec_string, _color=color).replace('  ', ' ')
 

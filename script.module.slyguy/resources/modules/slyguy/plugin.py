@@ -12,7 +12,7 @@ from kodi_six import xbmc, xbmcplugin
 from slyguy import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache, is_donor, log, _
 from slyguy.constants import *
 from slyguy.exceptions import Error, PluginError, CancelDialog
-from slyguy.util import set_kodi_string, get_addon, remove_file, user_country
+from slyguy.util import set_kodi_string, get_addon, remove_file, user_country, set_kodi_setting, get_kodi_setting
 from slyguy.settings.types import Category
 
 
@@ -635,7 +635,7 @@ def live_or_start(seconds=1):
 
 #Plugin.Item()
 class Item(gui.Item):
-    def __init__(self, cache_key=None, play_next=None, callback=None, play_skips=None, geolock=None, bookmark=True, quality=None, *args, **kwargs):
+    def __init__(self, cache_key=None, play_next=None, callback=None, play_skips=None, geolock=None, bookmark=True, quality=None, kodi_settings=None, *args, **kwargs):
         super(Item, self).__init__(self, *args, **kwargs)
         self.cache_key = cache_key
         self.play_next = dict(play_next or {})
@@ -644,6 +644,7 @@ class Item(gui.Item):
         self.geolock = geolock
         self.bookmark = bookmark
         self.quality = quality
+        self.kodi_settings = dict(kodi_settings or {})
 
     def get_li(self, *args, **kwargs):
         # if settings.getBool('use_cache', True) and self.cache_key:
@@ -703,6 +704,17 @@ class Item(gui.Item):
         if self.callback:
             play_data['callback'].update(self.callback)
 
+        # we may play a different addon that sets these different
+        # need to check there isnt already some set.
+        # if there is - we need revert them here first etc..
+        original_settings = {}
+        for key in self.kodi_settings:
+            original_settings[key] = get_kodi_setting(key)
+            print("SET: {} -> {}".format(key, self.kodi_settings[key]))
+            set_kodi_setting(key, self.kodi_settings[key])
+            # problem: if we cancel at quality select, player never called
+
+        play_data['kodi_settings'] = original_settings
         set_kodi_string('_slyguy_play_data', json.dumps(play_data))
 
         if handle > 0:
