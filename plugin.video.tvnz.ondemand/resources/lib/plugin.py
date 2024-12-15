@@ -511,11 +511,17 @@ def play(livestream=None, brightcoveId=None, channel=None, mediakindhref=None, p
         if 'message' in data:
             plugin.exception(data['message'])
 
-        item = plugin.Item(
-            path = data['streaming']['dash']['url'],
-            inputstream = inputstream.Widevine(license_key=data['encryption']['licenseServers']['widevine']),
-        )
-        headers['Authorization'] = data['encryption']['drmToken']
+        if data['encryption']['drmEnabled']:
+            item = plugin.Item(
+                path = data['streaming']['dash']['url'],
+                inputstream = inputstream.Widevine(license_key=data['encryption']['licenseServers']['widevine']),
+            )
+            headers['Authorization'] = data['encryption']['drmToken']
+        else:
+            item = plugin.Item(
+                path = data['streaming']['hls']['url'],
+                inputstream = inputstream.HLS(live=ROUTE_LIVE_TAG in kwargs),
+            )
 
         if ROUTE_LIVE_TAG in kwargs:
             if not channel:
