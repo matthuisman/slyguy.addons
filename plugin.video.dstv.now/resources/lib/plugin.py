@@ -402,6 +402,6 @@ def playlist(output, **kwargs):
             genres = row.get('genres', [])
             genres = ';'.join(genres) if genres else ''
 
-            f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-chno="{channel}" tvg-name="{name}" group-title="{group}" tvg-logo="{logo}",{name}\n{url}'.format(
-                        id=row['id'], channel=row['number'], name=row['name'], logo=row['channelLogoPaths'].get('XLARGE', ''),
-                            group=genres, url=plugin.url_for(play_channel, id=row['id'], _is_live=True)))
+            f.write(u'\n#EXTINF:-1 tvg-id="{channel}.dstv_com" tvg-chno="{channel}" tvg-name="{name}" group-title="{group}" tvg-logo="{logo}",{name}\n{url}'.format(
+                        channel=row['number'], name=row['name'], logo=row['channelLogoPaths'].get('XLARGE', ''),
+                        group=genres, url=plugin.url_for(play_channel, id=row['id'], _is_live=True)))
