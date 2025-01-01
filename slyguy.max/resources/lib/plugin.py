@@ -226,16 +226,18 @@ def _process_items(rows, from_search=False):
 
 
 @plugin.route()
-def series(id, season=None, **kwargs):
+@plugin.pagination()
+def series(id, page=1, season=None, **kwargs):
     data = api.series(id)
     art = _art(data['images'])
     folder = plugin.Folder(data['name'])
 
     if season:
-        data = api.season(id, season)
+        data = api.season(id, season, page=page)
         items = _process_items(data.get('items',[]))
         folder.add_items(items)
-        return folder
+        more_pages = data['meta'].get('itemsCurrentPage', 1) < data['meta'].get('itemsTotalPages', 1)
+        return folder, more_pages
 
     for row in data.get('seasons', []):
         # ignore empty seasons
@@ -254,7 +256,7 @@ def series(id, season=None, **kwargs):
             art = art,
             path = plugin.url_for(series, id=id, season=row['seasonNumber']),
         )
-    return folder
+    return folder, False
 
 
 @plugin.route()

@@ -94,12 +94,13 @@ class API(object):
         return self._process_data(data)[0]['target']['primaryContent']
 
     @mem_cache.cached(60*5)
-    def season(self, series_id, season_num):
+    def season(self, series_id, season_num, page=1):
         params = {
             'include': 'default',
             'decorators': 'viewingHistory,badges,isFavorite,contentAction',
             'pf[show.id]': series_id,
             'pf[seasonNumber]': season_num,
+            'page[items.number]': page,
         }
         data = self._session.get(self._endpoint('/cms/collections/generic-show-page-rail-episodes-tabbed-content'), params=params, json={}).json()
         return self._process_data(data)[0]
