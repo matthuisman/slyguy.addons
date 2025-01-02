@@ -230,12 +230,7 @@ class API(object):
             'jwToken': userdata.get('token'),
         }
 
-        if userdata.get('profile_kids', False):
-            url = '/cat/v12/kids/programs/{program_id}.json'
-        else:
-            url = '/cat/v12/programs/{program_id}.json'
-
-        return self._session.get(url.format(program_id=program_id), params=params).json()
+        return self._session.get('/programs/v1/programs/{program_id}'.format(program_id=program_id), params=params).json()
 
     def play(self, program_id):
         self._check_token(force=True)
