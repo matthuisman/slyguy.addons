@@ -69,11 +69,15 @@ def play_channel(slug, **kwargs):
     if len(split) > 1:
         headers.update(get_header_dict(split[1]))
 
-    manifest_type = channel.properties.pop('inputstream.adaptive.manifest_type', '')
-    license_type = channel.properties.pop('inputstream.adaptive.license_type', '')
-    license_key = channel.properties.pop('inputstream.adaptive.license_key', '')
-    channel.properties.pop('inputstream', None)
-    channel.properties.pop('inputstreamaddon', None)
+    for property in ['drm', 'drm_legacy', 'license_type']:
+        drm = channel.properties.get('inputstream.adaptive.{}'.format(property), '')
+        if 'com.widevine.alpha' in drm.lower():
+            inputstream.install_widevine()
+            break
+
+    addon_id = channel.properties.get('inputstream', None) or channel.properties.get('inputstreamaddon', None)
+    if addon_id:
+        get_addon(addon_id, required=False, install=True)
 
     item = plugin.Item(
         label = channel.name,
@@ -86,30 +90,7 @@ def play_channel(slug, **kwargs):
 
     if channel.radio:
         item.quality = QUALITY_DISABLED
-
-    ## To do: support other IA Add-ons here (eg. ffmpeg.direct)
-    if license_type.lower() == 'com.widevine.alpha':
-        kwargs = {'license_key': license_key, 'manifest_type': manifest_type}
-        if '|' in license_key:
-            license_key, license_headers, challenge, response = license_key.split('|')
-            kwargs.update({
-                'license_key': license_key,
-                'license_headers': get_header_dict(license_headers) or None,
-                'challenge': challenge,
-                'response': response,
-            })
-        item.inputstream = inputstream.Widevine(**kwargs)
-
-    elif manifest_type.lower() == 'hls':
-        item.inputstream = inputstream.HLS(force=True, live=True)
-
-    elif manifest_type.lower() == 'ism':
-        item.inputstream = inputstream.Playready()
-
-    elif manifest_type.lower() == 'mpd':
-        item.inputstream = inputstream.MPD()
-
-    elif not channel.radio and '.m3u8' in split[0].lower() and settings.getBool('use_ia_hls_live'):
+    elif not channel.properties and '.m3u8' in split[0].lower() and settings.getBool('use_ia_hls_live'):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
