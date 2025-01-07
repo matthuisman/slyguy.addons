@@ -90,7 +90,7 @@ def play_channel(slug, **kwargs):
 
     if channel.radio:
         item.quality = QUALITY_DISABLED
-    elif not channel.properties and '.m3u8' in split[0].lower() and settings.getBool('use_ia_hls_live'):
+    elif not addon_id and '.m3u8' in split[0].lower() and settings.getBool('use_ia_hls_live'):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
