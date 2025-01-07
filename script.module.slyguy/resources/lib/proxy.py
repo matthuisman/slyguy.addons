@@ -1,10 +1,11 @@
-import threading
 import os
 import re
 import time
 import json
+import base64
 import shutil
 import binascii
+import threading
 
 from xml.dom.minidom import parseString
 from functools import cmp_to_key
@@ -18,7 +19,7 @@ from pycaption import detect_format, WebVTTWriter
 
 from slyguy import gui, settings, log, _
 from slyguy.constants import *
-from slyguy.util import check_port, remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
+from slyguy.util import remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
@@ -1359,7 +1360,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             return response
 
         if self._post_data and ADDON_DEV:
-            with open(xbmc.translatePath('special://temp/request.data'), 'wb') as f:
+            with open(xbmc.translatePath('special://temp/post.data'), 'wb') as f:
                 f.write(self._post_data)
 
         ## Fix any double // in url
@@ -1465,8 +1466,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             license_data = response.stream.content
             if ADDON_DEV:
-                with open(xbmc.translatePath('special://temp/license.data'), 'wb') as f:
-                    f.write(license_data)
+                with open(xbmc.translatePath('special://temp/license.request'), 'wb') as f:
+                    f.write(base64.b64encode(self._post_data))
+
+                with open(xbmc.translatePath('special://temp/license.response'), 'wb') as f:
+                    f.write(base64.b64encode(license_data))
 
             if response.ok and license_data:
                 log.info('WV License response OK and returned data')
@@ -1566,12 +1570,17 @@ class Proxy(object):
             return
 
         port = settings.PROXY_PORT.value
-        if not check_port(port):
+
+        try:
+            self._server = ThreadedHTTPServer(('0.0.0.0', port), RequestHandler)
+        except Exception as e:
+            log.exception(e)
             settings.set('_proxy_path', '')
-            log.error('Unable to start proxy on port {}. Some addon features will not work. You can change port under slyguy advanced settings.'.format(port))
+            error = 'Unable to start Slyguy Proxy on port: {}. Some addon features will not work. You can change port under Slyguy Settings -> System'.format(port)
+            log.error(error)
+            gui.error(error)
             return
 
-        self._server = ThreadedHTTPServer(('0.0.0.0', port), RequestHandler)
         self._server.allow_reuse_address = True
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
