@@ -1,5 +1,4 @@
 import os
-import time
 from copy import deepcopy
 from collections import defaultdict
 
@@ -33,10 +32,8 @@ class DBStorage():
 
     def get(self, addon_id, key, inherit=True):
         if not self._cache:
-            start = time.time()
             for row in Settings.select().where(Settings.addon_id.in_((ADDON_ID, COMMON_ADDON_ID))):
                 self._cache[row.addon_id][row.key] = (row.addon_id, row.value)
-            log.debug("Settings cache load time: {}".format(time.time() - start))
 
         try:
             return deepcopy(self._cache[addon_id][key])
