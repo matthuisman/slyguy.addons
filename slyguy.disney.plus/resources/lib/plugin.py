@@ -353,12 +353,16 @@ def _parse_series(row):
         art = _get_art(row),
         info = {
             'plot': _get_text(row, 'description', 'series'),
-            'year': row['releases'][0]['releaseYear'],
             'mediatype': 'tvshow',
             'trailer': plugin.url_for(play_trailer, series_id=row['encodedSeriesId']),
         },
         path = plugin.url_for(series, series_id=row['encodedSeriesId']),
     )
+
+    try:
+        item.info['year'] = row['releases'][0]['releaseYear']
+    except IndexError:
+        pass
 
     if not item.info['plot']:
         item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))))
@@ -368,17 +372,23 @@ def _parse_series(row):
 def _parse_season(row, series):
     title = _(_.SEASON, number=row['seasonSequenceNumber'])
 
-    return plugin.Item(
+    item = plugin.Item(
         label = title,
         info  = {
             'plot': _get_text(row, 'description', 'season') or _get_text(series, 'description', 'series'),
-            'year': row['releases'][0]['releaseYear'],
             'season': row['seasonSequenceNumber'],
             'mediatype': 'season',
         },
         art   = _get_art(row) or _get_art(series),
         path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
     )
+
+    try:
+        item.info['year'] = row['releases'][0]['releaseYear']
+    except IndexError:
+        pass
+
+    return item
 
 def _parse_video(row):
     item = plugin.Item(
