@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from looseversion import LooseVersion
 
 import peewee
-from six.moves.urllib_parse import parse_qsl
+from six.moves.urllib_parse import parse_qsl, urlparse
 from kodi_six import xbmc, xbmcgui, xbmcaddon
 
 from slyguy import database, gui, plugin, inputstream
@@ -46,6 +46,7 @@ def parse_attribs(line):
 def play_channel(slug, **kwargs):
     channel = Channel.get_by_id(slug)
     split = channel.url.split('|')
+    parse = urlparse(split[0])
 
     if settings.getBool('iptv_merge_proxy', True):
         headers = {
@@ -69,15 +70,29 @@ def play_channel(slug, **kwargs):
     if len(split) > 1:
         headers.update(get_header_dict(split[1]))
 
+    addon_id = channel.properties.get('inputstream', None) or channel.properties.get('inputstreamaddon', None)
     for property in ['drm', 'drm_legacy', 'license_type']:
         drm = channel.properties.get('inputstream.adaptive.{}'.format(property), '')
+        if not drm:
+            continue
+
+        addon_id = 'inputstream.adaptive'
+        if 'inputstream.adaptive.manifest_type' not in channel.properties:
+            if parse.path.endswith('.m3u') or parse.path.endswith('.m3u8'):
+                channel.properties['inputstream.adaptive.manifest_type'] = 'hls'
+            elif parse.path.endswith('.mpd'):
+                channel.properties['inputstream.adaptive.manifest_type'] = 'mpd'
+            elif parse.path.endswith('.ism'):
+                channel.properties['inputstream.adaptive.manifest_type'] = 'ism'
+
         if 'com.widevine.alpha' in drm.lower():
             inputstream.install_widevine()
-            break
 
-    addon_id = channel.properties.get('inputstream', None) or channel.properties.get('inputstreamaddon', None)
+        break
+
     if addon_id:
         get_addon(addon_id, required=False, install=True)
+        channel.properties['inputstream'] = channel.properties['inputstreamaddon'] = addon_id
 
     item = plugin.Item(
         label = channel.name,
@@ -90,7 +105,7 @@ def play_channel(slug, **kwargs):
 
     if channel.radio:
         item.quality = QUALITY_DISABLED
-    elif not addon_id and '.m3u8' in split[0].lower() and settings.getBool('use_ia_hls_live'):
+    elif not addon_id and settings.getBool('use_ia_hls_live') and (parse.path.endswith('.m3u') or parse.path.endswith('.m3u8')):
         item.inputstream = inputstream.HLS(live=True)
 
     return item
