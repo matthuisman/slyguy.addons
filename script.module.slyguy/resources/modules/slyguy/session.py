@@ -40,6 +40,9 @@ SSL_CIPHERS = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE
 SSL_CIPHERS = SSL_CIPHERS.split(':')
 random.shuffle(SSL_CIPHERS)
 SSL_CIPHERS = ':'.join(SSL_CIPHERS)
+if KODI_VERSION > 18:
+    # @SECLEVEL added in OpenSSL 1.1.1
+    SSL_CIPHERS += '@SECLEVEL=0'
 SSL_OPTIONS = urllib3.util.ssl_.OP_NO_SSLv2 | urllib3.util.ssl_.OP_NO_SSLv3 | urllib3.util.ssl_.OP_NO_COMPRESSION | urllib3.util.ssl_.OP_NO_TICKET
 DNS_CACHE = dns.resolver.Cache()
 
@@ -416,9 +419,6 @@ class RawSession(requests.Session):
             }
 
         if self._cert:
-            if KODI_VERSION > 18:
-                # @SECLEVEL added in OpenSSL 1.1.1
-                session_data['ssl_ciphers'] += '@SECLEVEL=0'
             kwargs['verify'] = False
             kwargs['cert'] = self._get_cert()
 
