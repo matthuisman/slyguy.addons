@@ -42,7 +42,9 @@ random.shuffle(SSL_CIPHERS)
 SSL_CIPHERS = ':'.join(SSL_CIPHERS)
 if KODI_VERSION > 18:
     # @SECLEVEL added in OpenSSL 1.1.1
+    # SECLEVEL=3 does not support SHA256 (EE certificate key too weak), therefore drop to SECLEVEL 0
     SSL_CIPHERS += '@SECLEVEL=0'
+
 SSL_OPTIONS = urllib3.util.ssl_.OP_NO_SSLv2 | urllib3.util.ssl_.OP_NO_SSLv3 | urllib3.util.ssl_.OP_NO_COMPRESSION | urllib3.util.ssl_.OP_NO_TICKET
 DNS_CACHE = dns.resolver.Cache()
 
@@ -216,16 +218,21 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         resolvers = []
 
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == host:
-            ip = self.session_data['rewrite'][1]
-            ips.append(ip)
-            log.debug("DNS Rewrite: {} -> {}".format(host, ip))
+            log.debug("DNS Rewrite: {} -> {}".format(host, self.session_data['rewrite'][1]))
+            host = self.session_data['rewrite'][1]
 
         elif self.session_data['resolver'] and self.session_data['resolver'][0] == host:
             resolvers.append(self.session_data['resolver'][1])
         # fallback to socket resolver
         resolvers.append(SocketResolver())
 
+        def is_ip(address):
+            return not address.split('.')[-1].isalpha()
+
         def resolve(host):
+            if is_ip(host):
+                return [host]
+
             if self.session_data['ip_mode'] == IPMode.ONLY_IPV4:
                 families = (socket.AF_INET,)
             elif self.session_data['ip_mode'] == IPMode.ONLY_IPV6:
@@ -248,8 +255,7 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
             raise socket.gaierror('Unable to resolve host: {} using ip mode: {}'.format(host, self.session_data['ip_mode']))
 
-        if not ips:
-            ips = resolve(host)
+        ips = resolve(host)
 
         # convert ips into correct object
         addresses = []
@@ -309,6 +315,13 @@ class RawSession(requests.Session):
                 elif entry.startswith('i:'):
                     _type = 'interface_ip'
                     entry = entry[2:]
+                elif entry.startswith('d:'):
+                    _type = 'dns'
+                    entry = entry[2:]
+                elif entry.startswith('s:'):
+                    _type = 'url_sub'
+                    entry = entry[2:]
+                # legacies
                 elif entry[0].isdigit():
                     _type = 'dns'
                 else:
