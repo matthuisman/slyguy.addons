@@ -204,11 +204,10 @@ def _parse_episode(row, use_name=False):
         if ',' in title:
             title = title.split(',')[1]
 
-    return plugin.Item(
+    item = plugin.Item(
         label = title,
         info = {
             'plot': row.get('shortDescription'),
-            'season': int(row['customFields']['tv_season']),
             'episode': episode,
             'tvshowtitle': row['customFields']['tv_show'],
             'mediatype': 'episode',
@@ -218,6 +217,13 @@ def _parse_episode(row, use_name=False):
         playable = True,
         path = plugin.url_for(play, id=row['id']),
     )
+
+    try:
+        item.info['season'] = int(row['customFields']['tv_season'])
+    except KeyError:
+        pass
+
+    return item
 
 def _season(show_id, season_id):
     show, episodes = api.season(show_id, season_id)
@@ -298,7 +304,7 @@ def play_channel(id, **kwargs):
 
     return plugin.Item(
         path = url,
-        headers = HEADERS,
+        headers = {'user-agent': 'otg/1.5.1 (AppleTv Apple TV 4; tvOS16.0; appletv.client) libcurl/7.58.0 OpenSSL/1.0.2o zlib/1.2.11 clib/1.8.56'},
         inputstream = inputstream.HLS(live=True, force=True),
     )
 
