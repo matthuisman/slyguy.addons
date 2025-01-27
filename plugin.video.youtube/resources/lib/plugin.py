@@ -1,3 +1,4 @@
+import os
 import sys
 from collections import defaultdict
 
@@ -57,16 +58,12 @@ def play(video_id, **kwargs):
         'quiet': True,
         'cachedir': ADDON_PROFILE,
         'no_warnings': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['ios', 'android', 'web']
-            }
-        },
     }
 
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     error = 'Unknown'
     try:
-        from .yt_dlp import YoutubeDL
+        from yt_dlp import YoutubeDL
         with YoutubeDL(ydl_opts) as ydl:
             data = ydl.extract_info('https://www.youtube.com/watch?v={}'.format(video_id), download=False)
     except Exception as e:
