@@ -214,7 +214,6 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
         return retval
 
     def getaddrinfo(self, host, port, family=0, type=0):
-        ips = []
         resolvers = []
 
         if self.session_data['rewrite'] and self.session_data['rewrite'][0] == host:
@@ -256,7 +255,6 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
             raise socket.gaierror('Unable to resolve host: {} using ip mode: {}'.format(host, self.session_data['ip_mode']))
 
         ips = resolve(host)
-
         # convert ips into correct object
         addresses = []
         for ip in ips:

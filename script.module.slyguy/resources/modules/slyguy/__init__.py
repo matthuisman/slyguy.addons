@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 from slyguy.language import _
 from slyguy.log import log
@@ -18,3 +19,13 @@ if ADDON_ID not in sys.path[0]:
             paths[0] = path
     sys.path = [x for x in paths if x] + [x for x in sys.path if x not in paths]
     log.debug('Fixed sys.path: {}'.format(sys.path))
+
+
+#fix for datatetime.strptime returns None
+class proxydt(datetime.datetime):
+    @staticmethod
+    def strptime(date_string, format):
+        import time
+        return datetime.datetime(*(time.strptime(date_string, format)[0:6]))
+
+datetime.datetime = proxydt
