@@ -7,7 +7,7 @@ from six.moves.urllib_parse import unquote
 
 from slyguy import plugin, inputstream
 from slyguy.log import log
-from slyguy.util import get_system_arch
+from slyguy.util import get_system_arch, fix_language
 from slyguy.constants import ADDON_PROFILE
 
 
@@ -92,13 +92,16 @@ def play(video_id, **kwargs):
         else:
             raise plugin.PluginError(_(_.NO_VIDEOS_FOUND, id=video_id, error=error))
 
+    def fix_url(url):
+        return unquote(url).replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+
     headers = {}
     str = '<MPD minBufferTime="PT1.5S" mediaPresentationDuration="PT{}S" type="static" profiles="urn:mpeg:dash:profile:isoff-main:2011"><Period>'.format(data["duration"])
     for idx, (group, formats) in enumerate(groups.items()):
-        str += '<AdaptationSet id="{}" mimeType="{}"><Role schemeIdUri="urn:mpeg:DASH:role:2011" value="main"/>'.format(idx, group)
+        str += '<AdaptationSet id="{}" mimeType="{}" lang="{}"><Role schemeIdUri="urn:mpeg:DASH:role:2011" value="main"/>'.format(idx, group, fix_language(formats[0].get('language')))
         for format in formats:
             headers.update(format['http_headers'])
-            format['url'] = unquote(format['url']).replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+            format['url'] = fix_url(format['url'])
             codec = format['vcodec'] if format['vcodec'] != 'none' else format['acodec']
             str += '<Representation id="{}" codecs="{}" bandwidth="{}"'.format(format["format_id"], codec, format["bitrate"])
             if format['vcodec'] != 'none':
@@ -112,6 +115,14 @@ def play(video_id, **kwargs):
             str += '</Representation>'
     
         str += '</AdaptationSet>'
+
+    for idx, lang in enumerate(data.get('automatic_captions', {})):
+        vtt = [x for x in data['automatic_captions'][lang] if x['ext'] == 'vtt']
+        if not vtt:
+            continue
+        url = fix_url(vtt[0]['url'])
+        str += '<AdaptationSet id="caption_{}" contentType="text" mimeType="text/vtt" lang="{}"'.format(idx, fix_language(lang.lower().replace('-orig', '')))
+        str += '><Representation id="caption_rep_{}"><BaseURL>{}</BaseURL></Representation></AdaptationSet>'.format(idx, url)
     str += '</Period></MPD>'
 
     path = 'special://temp/yt.mpd'
