@@ -1,5 +1,8 @@
 import sys
-import datetime
+# fix for asyncio crashes
+sys.modules['_asyncio'] = None
+# fix for striptime none https://github.com/python/cpython/issues/71587 / https://github.com/xbmc/xbmc/issues/17311
+import _strptime
 
 from slyguy.language import _
 from slyguy.log import log
@@ -19,13 +22,3 @@ if ADDON_ID not in sys.path[0]:
             paths[0] = path
     sys.path = [x for x in paths if x] + [x for x in sys.path if x not in paths]
     log.debug('Fixed sys.path: {}'.format(sys.path))
-
-
-#fix for datatetime.strptime returns None
-class proxydt(datetime.datetime):
-    @staticmethod
-    def strptime(date_string, format):
-        import time
-        return datetime.datetime(*(time.strptime(date_string, format)[0:6]))
-
-datetime.datetime = proxydt
