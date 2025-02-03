@@ -140,5 +140,6 @@ def play(video_id, **kwargs):
 
 # stub out search so tmdbhelper works
 @plugin.route('/search')
+@plugin.route('/kodion/search/query')
 def search(**kwargs):
     return plugin.Folder(no_items_label=_.NO_SEARCH_SUPPORT)
