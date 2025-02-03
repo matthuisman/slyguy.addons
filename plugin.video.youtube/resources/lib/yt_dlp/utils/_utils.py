@@ -55,6 +55,10 @@ from ..dependencies import xattr
 __name__ = __name__.rsplit('.', 1)[0]  # noqa: A001: Pretend to be the parent module
 
 
+def strptime(date_string, format):
+    return dt.datetime(*(time.strptime(date_string, format)[:6]))
+
+
 class NO_DEFAULT:
     pass
 
@@ -1221,7 +1225,7 @@ def parse_iso8601(date_str, delimiter='T', timezone=None):
 
     with contextlib.suppress(ValueError, TypeError):
         date_format = f'%Y-%m-%d{delimiter}%H:%M:%S'
-        dt_ = dt.datetime.strptime(date_str, date_format) - timezone
+        dt_ = strptime(date_str, date_format) - timezone
         return calendar.timegm(dt_.timetuple())
 
 
@@ -1243,7 +1247,7 @@ def unified_strdate(date_str, day_first=True):
 
     for expression in date_formats(day_first):
         with contextlib.suppress(ValueError):
-            upload_date = dt.datetime.strptime(date_str, expression).strftime('%Y%m%d')
+            upload_date = strptime(date_str, expression).strftime('%Y%m%d')
     if upload_date is None:
         timetuple = email.utils.parsedate_tz(date_str)
         if timetuple:
@@ -1278,7 +1282,7 @@ def unified_timestamp(date_str, day_first=True):
 
     for expression in date_formats(day_first):
         with contextlib.suppress(ValueError):
-            dt_ = dt.datetime.strptime(date_str, expression) - timezone + dt.timedelta(hours=pm_delta)
+            dt_ = strptime(date_str, expression) - timezone + dt.timedelta(hours=pm_delta)
             return calendar.timegm(dt_.timetuple())
 
     timetuple = email.utils.parsedate_tz(date_str)
@@ -1343,7 +1347,7 @@ def datetime_from_str(date_str, precision='auto', format='%Y%m%d'):
             return datetime_round(new_date, unit)
         return new_date
 
-    return datetime_round(dt.datetime.strptime(date_str, format), precision)
+    return datetime_round(strptime(date_str, format), precision)
 
 
 def date_from_str(date_str, format='%Y%m%d', strict=False):
@@ -2057,7 +2061,7 @@ def strftime_or_none(timestamp, date_format='%Y%m%d', default=None):
             datetime_object = (dt.datetime.fromtimestamp(0, dt.timezone.utc)
                                + dt.timedelta(seconds=timestamp))
         elif isinstance(timestamp, str):  # assume YYYYMMDD
-            datetime_object = dt.datetime.strptime(timestamp, '%Y%m%d')
+            datetime_object = strptime(timestamp, '%Y%m%d')
         date_format = re.sub(  # Support %s on windows
             r'(?<!%)(%%)*%s', rf'\g<1>{int(datetime_object.timestamp())}', date_format)
         return datetime_object.strftime(date_format)
