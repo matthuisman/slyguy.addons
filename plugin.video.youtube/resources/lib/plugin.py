@@ -118,7 +118,7 @@ def play(video_id, **kwargs):
 
     if settings.SUBTITLES.value:
         for idx, lang in enumerate(data.get('subtitles', {})):
-            vtt = [x for x in data['automatic_captions'][lang] if x['ext'] == 'vtt' and x.get('protocol') != 'm3u8_native']
+            vtt = [x for x in data['subtitles'][lang] if x['ext'] == 'vtt' and x.get('protocol') != 'm3u8_native']
             if not vtt:
                 continue
             url = fix_url(vtt[0]['url'])
