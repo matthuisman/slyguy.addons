@@ -49,3 +49,15 @@ msgctxt "#30008"
 msgid "Could not find a valid video ID in the below url\n"
 "{url}"
 msgstr ""
+
+msgctxt "#30009"
+msgid "Auto-translate"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Subtitles"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Auto-translated Subtitles"
+msgstr ""

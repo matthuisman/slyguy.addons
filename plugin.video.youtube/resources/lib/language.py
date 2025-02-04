@@ -10,6 +10,9 @@ class Language(BaseLanguage):
     NO_VIDEOS_FOUND = 30006
     NO_SEARCH_SUPPORT = 30007
     NO_VIDEO_ID_FOUND = 30008
+    AUTO_TRANSLATE = 30009
+    SUBTITLES = 30010
+    AUTO_SUBTITLES = 30011
 
 
 _ = Language()

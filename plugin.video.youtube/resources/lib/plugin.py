@@ -7,7 +7,7 @@ from six.moves.urllib_parse import unquote
 
 from slyguy import plugin, inputstream
 from slyguy.log import log
-from slyguy.util import get_system_arch, fix_language
+from slyguy.util import get_system_arch
 from slyguy.constants import ADDON_PROFILE
 
 
@@ -21,7 +21,7 @@ def home(**kwargs):
         return plugin.redirect(plugin.url_for(play, video_id=kwargs.get('videoid')))
 
     folder = plugin.Folder()
-    folder.add_item(label='TEST 4K', info={'trailer': plugin.url_for(play, video_id='NECyQhw4-_c')}, playable=True, path=plugin.url_for(play, video_id='NECyQhw4-_c'))
+    folder.add_item(label='TEST 4K', info={'trailer': plugin.url_for(play, video_id='Q82tQJyJwgk')}, playable=True, path=plugin.url_for(play, video_id='Q82tQJyJwgk'))
     folder.add_item(label='TEST 4K HDR', playable=True, path=plugin.url_for(play, video_id='tO01J-M3g0U'))
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
     return folder
@@ -96,38 +96,53 @@ def play(video_id, **kwargs):
         return unquote(url).replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
     headers = {}
-    str = '<MPD minBufferTime="PT1.5S" mediaPresentationDuration="PT{}S" type="static" profiles="urn:mpeg:dash:profile:isoff-main:2011"><Period>'.format(data["duration"])
+    str = '<MPD minBufferTime="PT1.5S" mediaPresentationDuration="PT{}S" type="static" profiles="urn:mpeg:dash:profile:isoff-main:2011">\n<Period>'.format(data["duration"])
     for idx, (group, formats) in enumerate(groups.items()):
-        str += '<AdaptationSet id="{}" mimeType="{}" lang="{}"><Role schemeIdUri="urn:mpeg:DASH:role:2011" value="main"/>'.format(idx, group, fix_language(formats[0].get('language')))
+        str += '\n<AdaptationSet id="{}" mimeType="{}" lang="{}"><Role schemeIdUri="urn:mpeg:DASH:role:2011" value="main"/>'.format(idx, group, formats[0].get('language'))
         for format in formats:
             headers.update(format['http_headers'])
             format['url'] = fix_url(format['url'])
             codec = format['vcodec'] if format['vcodec'] != 'none' else format['acodec']
-            str += '<Representation id="{}" codecs="{}" bandwidth="{}"'.format(format["format_id"], codec, format["bitrate"])
+            str += '\n<Representation id="{}" codecs="{}" bandwidth="{}"'.format(format["format_id"], codec, format["bitrate"])
             if format['vcodec'] != 'none':
                 str += ' width="{}" height="{}" frameRate="{}/1001"'.format(format["width"], format["height"], format["fps"]*1000)
             str += '>'
             if format['acodec'] != 'none':
-                str += '<AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="2"/>'
-            str += '<BaseURL>{}</BaseURL><SegmentBase indexRange="{}-{}"><Initialization range="{}-{}" /></SegmentBase>'.format(
+                str += '\n<AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="2"/>'
+            str += '\n<BaseURL>{}</BaseURL>\n<SegmentBase indexRange="{}-{}">\n<Initialization range="{}-{}" />\n</SegmentBase>'.format(
                 format["url"], format["indexRange"]["start"], format["indexRange"]["end"], format["initRange"]["start"], format["initRange"]["end"]
             )
-            str += '</Representation>'
+            str += '\n</Representation>'
     
-        str += '</AdaptationSet>'
+        str += '\n</AdaptationSet>'
 
-    for idx, lang in enumerate(data.get('automatic_captions', {})):
-        vtt = [x for x in data['automatic_captions'][lang] if x['ext'] == 'vtt']
-        if not vtt:
-            continue
-        url = fix_url(vtt[0]['url'])
-        str += '<AdaptationSet id="caption_{}" contentType="text" mimeType="text/vtt" lang="{}"'.format(idx, fix_language(lang.lower().replace('-orig', '')))
-        str += '><Representation id="caption_rep_{}"><BaseURL>{}</BaseURL></Representation></AdaptationSet>'.format(idx, url)
-    str += '</Period></MPD>'
+    if settings.SUBTITLES.value:
+        for idx, lang in enumerate(data.get('subtitles', {})):
+            vtt = [x for x in data['automatic_captions'][lang] if x['ext'] == 'vtt' and x.get('protocol') != 'm3u8_native']
+            if not vtt:
+                continue
+            url = fix_url(vtt[0]['url'])
+            str += '\n<AdaptationSet id="caption_{}" contentType="text" mimeType="text/vtt" lang="{}"'.format(idx, lang)
+            str += '>\n<Representation id="caption_rep_{}">\n<BaseURL>{}</BaseURL>\n</Representation>\n</AdaptationSet>'.format(idx, url)
+
+    if settings.AUTO_SUBTITLES.value:
+        for idx, lang in enumerate(data.get('automatic_captions', {})):
+            if 'orig' in lang.lower():
+                continue
+            vtt = [x for x in data['automatic_captions'][lang] if x['ext'] == 'vtt' and x.get('protocol') != 'm3u8_native']
+            if not vtt:
+                continue
+            url = fix_url(vtt[0]['url'])
+            str += '\n<AdaptationSet id="caption_{}" contentType="text" mimeType="text/vtt" lang="{}-({})"'.format(idx, lang, _.AUTO_TRANSLATE)
+            str += '>\n<Representation id="caption_rep_{}">\n<BaseURL>{}</BaseURL>\n</Representation>\n</AdaptationSet>'.format(idx, url)
+
+    str += '\n</Period>\n</MPD>'
 
     path = 'special://temp/yt.mpd'
     with open(xbmc.translatePath(path), 'w') as f:
         f.write(str)
+
+    print(data['subtitles'])
 
     #TODO Subtitles
     return plugin.Item(
