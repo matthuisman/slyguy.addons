@@ -102,6 +102,7 @@ class Language(BaseLanguage):
     MERGE_AT_HOUR          = 30098
     MERGE_HOUR             = 30099
     IGNORE_PLAYLIST_EPGS   = 30100
+    GZ_EPG                 = 30101
 
 
 _ = Language()

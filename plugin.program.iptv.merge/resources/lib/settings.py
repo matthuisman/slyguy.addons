@@ -1,4 +1,4 @@
-from slyguy.constants import ADDON, ADDON_ID
+from slyguy.constants import ADDON, ADDON_ID, KODI_VERSION
 from slyguy.settings import CommonSettings
 from slyguy.settings.types import Bool, Text, Browse, Number, Action
 
@@ -24,6 +24,7 @@ class Settings(CommonSettings):
     PAGE_SIZE = Number('page_size', _.PAGE_SIZE, default=200)
     ASK_TO_ADD = Bool('ask_to_add', _.ASK_TO_ADD, default=False)
     IPTV_MERGE_PROXY = Bool('iptv_merge_proxy', _.IPTV_MERGE_PROXY, default=True)
+    GZ_EPG = Bool('gz_epg', _.GZ_EPG, default=False, visible=KODI_VERSION >= 18)
 
 
 settings = Settings()

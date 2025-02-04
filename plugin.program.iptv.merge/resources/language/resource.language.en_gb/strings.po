@@ -421,3 +421,7 @@ msgstr ""
 msgctxt "#30100"
 msgid "Ignore Playlist EPGs: {value}"
 msgstr ""
+
+msgctxt "#30101"
+msgid "GZ Compress Output EPG XML"
+msgstr ""

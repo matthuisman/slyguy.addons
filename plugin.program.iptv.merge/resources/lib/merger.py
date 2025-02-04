@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import gzip
 import codecs
 import xml.parsers.expat
 
@@ -10,7 +11,7 @@ from six.moves.urllib.parse import unquote_plus, quote_plus
 
 from slyguy import database, gui, userdata
 from slyguy.log import log
-from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, run_plugin, safe_copy, unique
+from slyguy.util import remove_file, hash_6, FileIO, gzip_extract, xz_extract, run_plugin, safe_copy, unique, makedirs
 from slyguy.session import Session, gdrivedl
 from slyguy.constants import ADDON_PROFILE, CHUNK_SIZE
 from slyguy.exceptions import Error
@@ -23,6 +24,14 @@ from . import iptv_manager
 
 class AddonError(Error):
     pass
+
+
+def epg_file_name():
+    if settings.GZ_EPG.value:
+        return EPG_FILE_NAME + '.gz'
+    else:
+        return EPG_FILE_NAME
+
 
 def copy_partial_data(file_path, _out, start_index, end_index):
     if start_index < 1 or end_index < start_index:
@@ -44,6 +53,7 @@ def copy_partial_data(file_path, _out, start_index, end_index):
     except:
         return
 
+
 def _seek_file(f, index, truncate=True):
     cur_index = f.tell()
     if cur_index != index:
@@ -51,6 +61,7 @@ def _seek_file(f, index, truncate=True):
         f.seek(index, os.SEEK_SET)
         if truncate:
             f.truncate()
+
 
 class XMLParser(object):
     def __init__(self, out, epg_ids=None):
@@ -130,7 +141,7 @@ class XMLParser(object):
 def check_merge_required():
     output_dir = settings.get('output_dir', '').strip() or ADDON_PROFILE
     playlist_path = os.path.join(output_dir, PLAYLIST_FILE_NAME)
-    epg_path = os.path.join(output_dir, EPG_FILE_NAME)
+    epg_path = os.path.join(output_dir, epg_file_name())
 
     reload_time_hours = settings.getBool('auto_merge', True)
     if reload_time_hours:
@@ -153,6 +164,8 @@ class Merger(object):
     def __init__(self, output_path=None, forced=False):
         self.working_path = ADDON_PROFILE
         self.output_path = output_path or xbmc.translatePath(settings.get('output_dir', '').strip() or self.working_path)
+        self.temp_path = os.path.join(self.working_path, 'tmp')
+        self.tmp_file = os.path.join(self.temp_path, 'iptv_merge_tmp')
 
         if not xbmcvfs.exists(self.working_path):
             xbmcvfs.mkdirs(self.working_path)
@@ -160,8 +173,10 @@ class Merger(object):
         if not xbmcvfs.exists(self.output_path):
             xbmcvfs.mkdirs(self.output_path)
 
+        if not xbmcvfs.exists(self.temp_path):
+            xbmcvfs.mkdirs(self.temp_path)
+
         self.forced = forced
-        self.tmp_file = os.path.join(self.working_path, 'iptv_merge_tmp')
         self._playlist_epgs = []
         self._extgroups = []
 
@@ -525,9 +540,18 @@ class Merger(object):
         return working_path
 
     def epgs(self, refresh=True):
-        epg_path = os.path.join(self.output_path, EPG_FILE_NAME)
-        working_path = os.path.join(self.working_path, EPG_FILE_NAME)
-        epg_path_tmp = os.path.join(self.working_path, EPG_FILE_NAME+'_tmp')
+        epg_path = os.path.join(self.output_path, epg_file_name())
+        working_path = os.path.join(self.working_path, epg_file_name())
+        epg_path_tmp = os.path.join(self.temp_path, epg_file_name())
+
+        if settings.GZ_EPG.value:
+            # remove old non-gz if exists
+            remove_file(os.path.join(self.output_path, EPG_FILE_NAME))
+            remove_file(os.path.join(self.working_path, EPG_FILE_NAME))
+        else:
+            # remove old gz if exists
+            remove_file(os.path.join(self.output_path, EPG_FILE_NAME+'.gz'))
+            remove_file(os.path.join(self.working_path, EPG_FILE_NAME+'.gz'))
 
         if not refresh and xbmcvfs.exists(epg_path) and xbmcvfs.exists(working_path):
             return working_path
@@ -554,7 +578,7 @@ class Merger(object):
                         epgs.append(epg)
                         epg_urls.append(url.lower())
 
-            with FileIO(epg_path_tmp, 'wb') as _out:
+            with (gzip.open(epg_path_tmp, "wb") if settings.GZ_EPG.value else FileIO(epg_path_tmp, "wb")) as _out:
                 _out.write(b'<?xml version="1.0" encoding="UTF-8"?><tv>')
 
                 for count, epg in enumerate(epgs):
