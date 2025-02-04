@@ -658,8 +658,6 @@ def fix_language(language=None):
     language = language.strip()
     language = language.replace('_', '-')
     split = language.split('-')
-    if len(split) > 1 and split[1].lower() == split[0].lower():
-        return split[0].lower()
 
     # any non es-ES, treat as Spanish Argentina
     if len(split) > 1 and split[0].lower() == 'es':
@@ -671,9 +669,6 @@ def fix_language(language=None):
     if language.lower() == 'cmn-tw':
         return 'zh-TW'
 
-    if split[0].lower() == 'en':
-        return 'en'
-
     if language.lower() in ('nb','nn'):
         return 'no'
 
@@ -683,10 +678,10 @@ def fix_language(language=None):
     if language.lower() == 'lvs':
         return 'lv'
 
-    if len(split[0]) == 2 and KODI_VERSION < 20:
+    if len(split[0]) >= 2 and KODI_VERSION < 20:
         return split[0].lower()
 
-    return language
+    return '-'.join(split)
 
 
 def get_kodi_proxy():

@@ -1,8 +1,6 @@
 import sys
 # fix for asyncio crashes
 sys.modules['_asyncio'] = None
-# fix for striptime none https://github.com/python/cpython/issues/71587 / https://github.com/xbmc/xbmc/issues/17311
-import _strptime
 
 from slyguy.language import _
 from slyguy.log import log
