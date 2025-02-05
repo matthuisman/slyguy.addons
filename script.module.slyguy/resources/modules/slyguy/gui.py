@@ -223,11 +223,13 @@ class Item(object):
 
         if self.art:
             defaults = {
-                'poster': 'thumb',
                 'landscape': 'thumb',
                 'icon': 'thumb',
                 'banner': 'clearlogo',
             }
+
+            if info.get('mediatype') != 'episode':
+                defaults['poster'] = 'thumb'
 
             art = {}
             for key in self.art:
