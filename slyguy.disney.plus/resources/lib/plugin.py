@@ -947,6 +947,7 @@ def _get_explore_art(row):
     if not row or 'artwork' not in row['visuals']:
         return {}
 
+    is_episode = 'episodeTitle' in row['visuals']
     images = row['visuals']['artwork']['standard']
     if 'tile' in row['visuals']['artwork']:
         images['hero_tile'] = row['visuals']['artwork']['tile']['background']
@@ -970,6 +971,11 @@ def _get_explore_art(row):
     poster_ratios = ['0.71', '0.75', '0.80']
     clear_ratios = ['2.00', '1.78', '3.32']
     banner_ratios = ['3.91', '3.00', '1.78']
+
+    if is_episode:
+        thumbs = ('thumbnail',)
+    else:
+        thumbs = ('thumbnail', 'tile')
 
     fanart_count = 0
     for name in images or []:
@@ -997,7 +1003,7 @@ def _get_explore_art(row):
                 cr = ratio
                 break
 
-        if name in ('tile', 'thumbnail'):
+        if name in thumbs:
             if tr:
                 art['thumb'] = _first_image_url(art_type[tr]) + thumbsize
             if pr:
@@ -1018,6 +1024,9 @@ def _get_explore_art(row):
         elif name in ('title_treatment', 'logo'):
             if cr:
                 art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
+
+    if is_episode:
+        art.pop('poster', None)
 
     return art
 
