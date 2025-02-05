@@ -157,4 +157,5 @@ def play(video_id, **kwargs):
 @plugin.route('/search')
 @plugin.route('/kodion/search/query')
 def search(**kwargs):
-    return plugin.Folder(no_items_label=_.NO_SEARCH_SUPPORT)
+    log.warning("Youtube for Trailers does not support search ({}). Returning empty result".format(kwargs['_url']))
+    return plugin.Folder(no_items_label=None, show_news=False)
