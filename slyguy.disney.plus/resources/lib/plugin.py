@@ -444,6 +444,8 @@ def _get_art(row):
 
     def _first_image_url(d):
         for r1 in d:
+            if 'program' in d and r1 != 'program':
+                continue
             for r2 in d[r1]:
                 return d[r1][r2]['url']
 
@@ -459,6 +461,7 @@ def _get_art(row):
     banner_ratios = ['3.91', '3.00', '1.78']
 
     fanart_count = 0
+    episode = False
     for name in images or []:
         art_type = images[name]
 
@@ -485,8 +488,10 @@ def _get_art(row):
                 break
 
         if name in ('tile', 'thumbnail'):
-            if tr:
+            if tr and not episode:
                 art['thumb'] = _first_image_url(art_type[tr]) + thumbsize
+                if 'program' in art_type[tr]:
+                    episode = True
             if pr:
                 art['poster'] = _first_image_url(art_type[pr]) + thumbsize
 
@@ -505,6 +510,10 @@ def _get_art(row):
         elif name in ('title_treatment', 'logo'):
             if cr:
                 art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
+
+    # poster overrides thumb for episodes, so skip for eps
+    if episode:
+        art.pop('poster', None)
 
     return art
 
