@@ -53,7 +53,6 @@ def _events(label, status):
     folder = plugin.Folder(label)
 
     rows = api.home()['buckets']
-
     events = []
     for row in rows:
         if 'featured' not in row['name'].lower():
@@ -62,13 +61,14 @@ def _events(label, status):
             elif status == 'upcoming' and 'upcoming' not in row['name'].lower():
                 continue
 
-        events = [x for x in row['contents'] if x.get('status') == status]
-        if len(events) == row['metadata']['displayCount'] and row['metadata']['displayCount'] != row['metadata']['totalCount']:
+        bucket_events = [x for x in row['contents'] if x.get('status') == status]
+        if len(bucket_events) == row['metadata']['displayCount'] and row['metadata']['displayCount'] != row['metadata']['totalCount']:
             row['contents'] = api.bucket(row['id'])['buckets'][0]['contents']
-            events = [x for x in row['contents'] if x.get('status') == status]
-        items = _process_events(events)
-        folder.add_items(items)
+            bucket_events = [x for x in row['contents'] if x.get('status') == status]
+        events.extend(bucket_events)
 
+    items = _process_events(events)
+    folder.add_items(items)
     return folder
 
 def _process_events(rows):
