@@ -41,35 +41,33 @@ def index(**kwargs):
 
 @plugin.route()
 def live(**kwargs):
-    return _events(_.LIVE, ['also live', 'live'])
+    return _events(_.LIVE, status='live')
 
 
 @plugin.route()
 def upcoming(**kwargs):
-    return _events(_.UPCOMING, ['upcoming',])
+    return _events(_.UPCOMING, status='upcoming')
 
 
-def _events(label, needles):
+def _events(label, status):
     folder = plugin.Folder(label)
 
     rows = api.home()['buckets']
-    haystack = [row['name'].lower() for row in rows]
 
-    found = None
-    for needle in needles:
-        if needle.lower() in haystack:
-            found = needle
-
-    if not found:
-        return folder
-
+    events = []
     for row in rows:
-        if row['name'].lower() == found:
-            if row['metadata']['displayCount'] != row['metadata']['totalCount']:
-                row['contents'] = api.bucket(row['id'])['buckets'][0]['contents']
+        if 'featured' not in row['name'].lower():
+            if status == 'live' and 'live' not in row['name'].lower():
+                continue
+            elif status == 'upcoming' and 'upcoming' not in row['name'].lower():
+                continue
 
-            items = _process_events(row['contents'])
-            folder.add_items(items)
+        events = [x for x in row['contents'] if x.get('status') == status]
+        if len(events) == row['metadata']['displayCount'] and row['metadata']['displayCount'] != row['metadata']['totalCount']:
+            row['contents'] = api.bucket(row['id'])['buckets'][0]['contents']
+            events = [x for x in row['contents'] if x.get('status') == status]
+        items = _process_events(events)
+        folder.add_items(items)
 
     return folder
 

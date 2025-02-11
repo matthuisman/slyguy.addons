@@ -48,7 +48,9 @@ class API(object):
         return self._provider
 
     def home(self):
-        params = {'countryCode': self.geo()}
+        params = {
+            'countryCode': self.geo(),
+        }
         return self._session.get('/home', params=params).json()['page']
 
     def bucket(self, bucket_id):
