@@ -40,7 +40,7 @@ class Player(xbmc.Player):
                 if diff < 0:
                     play_skips.append(row)
                 elif diff <= 5:
-                    self.seekTime(row['to'])
+                    self.seek(row['to'])
             self._play_skips = play_skips
 
             diff = 0
@@ -56,6 +56,10 @@ class Player(xbmc.Player):
             # Stop playback callback
             callback = add_url_args(self._callback['callback'], _time=play_time)
             xbmc.executebuiltin('RunPlugin({})'.format(callback))
+
+    def seek(self, seconds):
+        # TODO: doesnt seem to mark as watched. try using API seek instead
+        self.seekTime(seconds)
 
     def onAVStarted(self):
         try:
@@ -88,7 +92,7 @@ class Player(xbmc.Player):
                 skip['to'] = int(self.getTotalTime())+1
             else:
                 if skip['to'] < 0:
-                    self.seekTime(self.getTotalTime() + skip['to'] - 3)
+                    self.seek(self.getTotalTime() + skip['to'] - 3)
                     continue
 
                 skip['to'] -= 3

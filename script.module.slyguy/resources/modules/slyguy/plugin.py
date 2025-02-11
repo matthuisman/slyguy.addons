@@ -681,6 +681,26 @@ class Item(gui.Item):
                 quality = int(quality)
         self.proxy_data['quality'] = quality
 
+        def merge_intervals(intervals, threshold=5):
+            if not intervals:
+                return []
+
+            intervals.sort(key=lambda x: x['from'])
+            merged = [intervals[0]]
+
+            for current in intervals[1:]:
+                previous = merged[-1]
+                if current['from'] - previous['to'] <= threshold:
+                    previous['to'] = max(previous['to'], current['to'])
+                else:
+                    merged.append(current)
+
+            return merged
+
+        self.play_skips = merge_intervals(self.play_skips)
+        if self.resume_from is None and self.play_skips and self.play_skips[0]['from'] <= 10:
+            self.resume_from = self.play_skips.pop(0)['to']
+
         if self.resume_from is not None and self.resume_from < 0:
             self.play_skips.append({'to': int(self.resume_from)})
             self.resume_from = 1
