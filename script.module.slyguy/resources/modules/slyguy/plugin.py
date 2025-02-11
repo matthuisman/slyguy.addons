@@ -697,6 +697,10 @@ class Item(gui.Item):
 
             return merged
 
+        if self.resume_from is not None:
+            # only keep skips starting after our resume time
+            self.play_skips = [x for x in self.play_skips if x['from'] > self.resume_from]
+
         self.play_skips = merge_intervals(self.play_skips)
         if self.resume_from is None and self.play_skips and self.play_skips[0]['from'] <= 10:
             self.resume_from = self.play_skips.pop(0)['to']
