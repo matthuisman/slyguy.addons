@@ -666,6 +666,7 @@ def search(query, page, **kwargs):
 def play(family_id=None, content_id=None, **kwargs):
     return _play(family_id, content_id, **kwargs)
 
+
 def _play(family_id=None, content_id=None, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
@@ -741,14 +742,17 @@ def _play(family_id=None, content_id=None, **kwargs):
             if item.resume_from == -1:
                 return
 
-        elif milestones and settings.getBool('skip_intros', False):
-            intro_start = _get_milestone(milestones, 'intro_start')
-            intro_end = _get_milestone(milestones, 'intro_end')
+    if milestones and settings.getBool('skip_recaps', False):
+        recap_start = _get_milestone(milestones, 'recap_start')
+        recap_end = _get_milestone(milestones, 'recap_end')
+        if recap_end > recap_start:
+            item.play_skips.append({'from': recap_start, 'to': recap_end})
 
-            if intro_start <= 10 and intro_end > intro_start:
-                item.resume_from = intro_end
-            elif intro_start > 0 and intro_end > intro_start:
-                item.play_skips.append({'from': intro_start, 'to': intro_end})
+    if milestones and settings.getBool('skip_intros', False):
+        intro_start = _get_milestone(milestones, 'intro_start')
+        intro_end = _get_milestone(milestones, 'intro_end')
+        if intro_end > intro_start:
+            item.play_skips.append({'from': intro_start, 'to': intro_end})
 
     if milestones and settings.getBool('skip_credits', False):
         credits_start = _get_milestone(milestones, 'up_next')
@@ -781,6 +785,7 @@ def _play(family_id=None, content_id=None, **kwargs):
         }
 
     return item
+
 
 @plugin.route()
 @plugin.no_error_gui()
@@ -1037,6 +1042,18 @@ def _get_explore_play_path(**kwargs):
 
     return plugin.url_for(explore_play, **kwargs)
 
+
+def _get_explore_milestone(milestones, name, default=0):
+    if not milestones:
+        return default
+
+    for row in milestones:
+        if row['label'] == name:
+            return int(row['offsetMillis'] / 1000)
+
+    return default
+
+
 @plugin.route()
 @plugin.login_required()
 def explore_play(page_id=None, resource_id=None, **kwargs):
@@ -1060,11 +1077,46 @@ def explore_play(page_id=None, resource_id=None, **kwargs):
         play_action = [x for x in data['actions'] if x['type'] == 'playback'][0]
         resource_id = play_action['resourceId']
 
+    #TODO: IMAX needs to be selected before explore_playback
     playback_data = api.explore_playback(resource_id, ia.wv_secure)
 
-    return plugin.Item(
+    item = plugin.Item(
         path = playback_data['stream']['sources'][0]['complete']['url'],
         inputstream = ia,
         headers = api.session.headers,
     )
+
+    milestones = playback_data['stream']['editorial']
+    item.play_next = {}
+    item.play_skips = []
+
+    if not kwargs.get(ROUTE_RESUME_TAG):
+        if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
+            item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
+            if item.resume_from == -1:
+                return
+
+    if milestones and settings.getBool('skip_recaps', False):
+        recap_start = _get_explore_milestone(milestones, 'recap_start')
+        recap_end = _get_explore_milestone(milestones, 'recap_end')
+        if recap_end > recap_start:
+            item.play_skips.append({'from': recap_start, 'to': recap_end})
+
+    if milestones and settings.getBool('skip_intros', False):
+        intro_start = _get_explore_milestone(milestones, 'intro_start')
+        intro_end = _get_explore_milestone(milestones, 'intro_end')
+        if intro_end > intro_start:
+            item.play_skips.append({'from': intro_start, 'to': intro_end})
+
+    if milestones and settings.getBool('skip_credits', False):
+        credits_start = _get_explore_milestone(milestones, 'up_next')
+        tag_start = _get_explore_milestone(milestones, 'tag_start')
+        tag_end = _get_explore_milestone(milestones, 'tag_end')
+        item.play_skips.append({'from': credits_start, 'to': tag_start})
+        if tag_end:
+            item.play_skips.append({'from': tag_end, 'to': 0})
+
+    #TODO: Upnext
+    #TODO: sync_playback
+    return item
 ### END EXPLORE ###

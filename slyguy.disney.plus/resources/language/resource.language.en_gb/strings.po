@@ -154,3 +154,7 @@ msgstr ""
 msgctxt "#30055"
 msgid "Widescreen"
 msgstr ""
+
+msgctxt "#30056"
+msgid "Skip Recaps"
+msgstr ""

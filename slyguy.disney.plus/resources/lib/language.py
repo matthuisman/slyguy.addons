@@ -36,6 +36,7 @@ class Language(BaseLanguage):
     NO_VIDEO_FOUND           = 30051
     PROFILE_SETTINGS         = 30053
     WIDESCREEN               = 30055
+    SKIP_RECAPS              = 30056
 
 
 _ = Language()

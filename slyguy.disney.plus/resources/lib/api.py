@@ -521,6 +521,13 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUpNext']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['upNext']
 
+    def explore_player_experience(self, content_id):
+        params = {
+            'contentId': content_id,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPlayerExperience']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['PlayerExperience']
+
     def explore_deeplink(self, family_id):
         params = {
             'refId': family_id,

@@ -13,6 +13,7 @@ class Ratio:
 class Settings(CommonSettings):
     PLAY_NEXT_EPISODE = Bool('play_next_episode', _.PLAY_NEXT_EPISODE, default=True)
     PLAY_NEXT_MOVIE = Bool('play_next_movie', _.PLAY_NEXT_MOVIE, default=False)
+    SKIP_RECAPS = Bool('skip_recaps', _.SKIP_RECAPS, default=False)
     SKIP_INTROS = Bool('skip_intros', _.SKIP_INTROS, default=False)
     SKIP_CREDITS = Bool('skip_credits', _.SKIP_CREDITS, default=True)
     SYNC_WATCHLIST = Bool('sync_watchlist', _.DISNEY_WATCHLIST, default=True)
