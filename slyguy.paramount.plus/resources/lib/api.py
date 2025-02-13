@@ -436,7 +436,7 @@ class API(object):
         for row in data.get('channels', []):
             if row.get('dma') and local_dma:
                 row['dma'] = local_dma['tokenDetails']
-            elif 'event_dma' in row.get('channelTypes', []) and dmas:
+            elif dmas and row.get('channelTypes') and 'event_dma' in row['channelTypes']:
                 row['dma'] = dmas[0]['tokenDetails']
             channels.append(row)
 
@@ -468,7 +468,7 @@ class API(object):
 
         data = self._session.get('/v3.0/androidphone/dma.json', params=self._params(params)).json()
         try:
-            return data['dmas']
+            return data['dmas'] or []
         except:
             log.warning('Failed to get local CBS channel for IP address ({}). Server message: {}'.format(ip, data.get('message')))
             return []
