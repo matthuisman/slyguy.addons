@@ -1,5 +1,4 @@
 import re
-from base64 import b64decode
 
 from kodi_six import xbmc
 
@@ -444,14 +443,12 @@ def _get_art(row):
 
     def _first_image_url(d):
         for r1 in d:
-            if 'program' in d and r1 != 'program':
-                continue
             for r2 in d[r1]:
                 return d[r1][r2]['url']
 
     art = {}
     # don't ask for jpeg thumb; might be transparent png instead
-    thumbsize = '/scale?width=400&aspectRatio=1.78'
+    thumbsize = '/scale?width=800&aspectRatio=1.78'
     bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
     fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
 
@@ -461,7 +458,13 @@ def _get_art(row):
     banner_ratios = ['3.91', '3.00', '1.78']
 
     fanart_count = 0
-    episode = False
+    is_episode = row.get('programType') == 'episode'
+
+    if is_episode:
+        thumbs = ('thumbnail',)
+    else:
+        thumbs = ('thumbnail', 'tile')
+
     for name in images or []:
         art_type = images[name]
 
@@ -487,11 +490,9 @@ def _get_art(row):
                 cr = ratio
                 break
 
-        if name in ('tile', 'thumbnail'):
-            if tr and not episode:
+        if name in thumbs:
+            if tr:
                 art['thumb'] = _first_image_url(art_type[tr]) + thumbsize
-                if 'program' in art_type[tr]:
-                    episode = True
             if pr:
                 art['poster'] = _first_image_url(art_type[pr]) + thumbsize
 
@@ -512,7 +513,7 @@ def _get_art(row):
                 art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
 
     # poster overrides thumb for episodes, so skip for eps
-    if episode:
+    if is_episode:
         art.pop('poster', None)
 
     return art
@@ -875,7 +876,7 @@ def _process_explore(data):
                 item = plugin.Item(
                     label = season['visuals']['name'],
                     info = {
-                        'plot': data['visuals']['description']['full'],
+                        'plot': data['visuals']['description']['medium'],
                         'tvshowtitle': title,
                         'mediatype': 'season',
                     },
@@ -901,7 +902,7 @@ def _process_explore(data):
                 },
                 art = _get_explore_art(row),
                 playable = True,
-                path = _get_explore_play_path(resource_id=row['actions'][0]['resourceId']),
+                path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId']),
             )
             folder.title = item.info['tvshowtitle']
             items.append(item)
@@ -917,7 +918,7 @@ def _process_explore(data):
                 item.path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
 
             if 'description' in row['visuals']:
-                item.info['plot'] = row['visuals']['description']['full']
+                item.info['plot'] = row['visuals']['description']['medium']
 
             if 'releaseYearRange' in meta:
                 item.info['year'] = meta['releaseYearRange']['startYear']
@@ -928,20 +929,13 @@ def _process_explore(data):
             if 'ratingInfo' in meta:
                 item.info['rating'] = meta['ratingInfo']['rating']['text']
 
-            info = b64decode(row['infoBlock'])
-            if b':movie' in info:
+            if row['visuals'].get('durationMs'):
+                item.info['duration'] = int(row['visuals'].get('durationMs', 0) / 1000),
                 item.info['mediatype'] = 'movie'
                 item.playable = True
-                if row['actions'][0]['type'] == 'legacyBrowse':
-                    item.path = _get_play_path(family_id=row['actions'][0]['refId'])
-                else:
-                    item.path = _get_explore_play_path(page_id=row['actions'][0]['pageId'])
-            elif b':series' in info:
+                item.path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId'])
+            else:
                 item.info['mediatype'] = 'tvshow'
-                if row['actions'][0]['type'] == 'legacyBrowse':
-                    item.path = plugin.url_for(series, series_id=row['actions'][0]['refId'])
-            elif is_show:
-                item.specialsort = 'bottom'
 
             items.append(item)
 
@@ -968,7 +962,7 @@ def _get_explore_art(row):
 
     art = {}
     # don't ask for jpeg thumb; might be transparent png instead
-    thumbsize = '/scale?width=400&aspectRatio=1.78'
+    thumbsize = '/scale?width=800&aspectRatio=1.78'
     bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
     fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
 
@@ -1056,7 +1050,7 @@ def _get_explore_milestone(milestones, name, default=0):
 
 @plugin.route()
 @plugin.login_required()
-def explore_play(page_id=None, resource_id=None, **kwargs):
+def explore_play(deeplink_id=None, family_id=None, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
     else:
@@ -1068,22 +1062,53 @@ def explore_play(page_id=None, resource_id=None, **kwargs):
         mimetype = 'application/vnd.apple.mpegurl',
         wv_secure = is_wv_secure(),
     )
-
     if not ia.check() or not inputstream.require_version(ver_required):
         gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
 
-    if resource_id is None:
-        data = api.explore_page(page_id)
-        play_action = [x for x in data['actions'] if x['type'] == 'playback'][0]
-        resource_id = play_action['resourceId']
+    if family_id:
+        data = api.explore_deeplink(family_id)
+    else:
+        data = api.explore_deeplink(deeplink_id.replace('entity-', ''), ref_type='deeplinkId', action='playback')
 
-    #TODO: IMAX needs to be selected before explore_playback
+    dmc_id = data['actions'][0]['partnerFeed']['dmcContentId']
+    resource_id = data['actions'][0]['resourceId']
+    upnext_id = data['actions'][0]['upNextId']
+
+    data = api.video(dmc_id)
+    video = data.get('video')
+    if not video:
+        raise PluginError(_.NO_VIDEO_FOUND)
+
     playback_data = api.explore_playback(resource_id, ia.wv_secure)
 
-    item = plugin.Item(
+    versions = video['mediaMetadata']['facets']
+    has_imax = False
+    for row in versions:
+        if row['activeAspectRatio'] == 1.9:
+            has_imax = True
+            break
+
+    if has_imax:
+        deault_ratio = settings.DEFAULT_RATIO.value
+
+        if deault_ratio == Ratio.ASK:
+            index = gui.context_menu([_.IMAX, _.WIDESCREEN])
+            if index == -1:
+                return
+            imax = True if index == 0 else False
+        else:
+            imax = True if deault_ratio == Ratio.IMAX else False
+
+        profile = api.profile()[0]
+        if imax != profile['attributes']['playbackSettings']['preferImaxEnhancedVersion']:
+            api.set_imax(imax)
+
+    item = _parse_video(video)
+    item.update(
         path = playback_data['stream']['sources'][0]['complete']['url'],
         inputstream = ia,
         headers = api.session.headers,
+        proxy_data = {'original_language': video.get('originalLanguage')},
     )
 
     milestones = playback_data['stream']['editorial']
@@ -1116,7 +1141,32 @@ def explore_play(page_id=None, resource_id=None, **kwargs):
         if tag_end:
             item.play_skips.append({'from': tag_end, 'to': 0})
 
-    #TODO: Upnext
+    upnext = None
+    if video['programType'] == 'episode' and settings.getBool('play_next_episode', True):
+        data = api.explore_upnext(upnext_id)
+        for row in data.get('items', []):
+            if row.get('type') != 'upNext' or not row.get('sequentialEpisode'):
+                continue
+
+            for action in row['item'].get('actions', []):
+                if action.get('type') == 'playback':
+                    upnext = action['deeplinkId']
+                    break
+
+    elif video['programType'] != 'episode' and settings.getBool('play_next_movie', False):
+        data = api.explore_upnext(upnext_id)
+        for row in data.get('items', []):
+            if row.get('type') != 'upNext' or row.get('sequentialEpisode'):
+                continue
+
+            for action in row['item'].get('actions', []):
+                if action.get('type') == 'playback':
+                    upnext = action['deeplinkId']
+                    break
+
+    if upnext:
+        item.play_next['next_file'] = _get_explore_play_path(deeplink_id=upnext)
+
     #TODO: sync_playback
     return item
 ### END EXPLORE ###

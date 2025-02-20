@@ -521,20 +521,19 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUpNext']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['upNext']
 
-    def explore_player_experience(self, content_id):
-        params = {
-            'contentId': content_id,
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPlayerExperience']['href'], version=EXPLORE_VERSION)
-        return self._json_call(endpoint, params=params)['data']['PlayerExperience']
+    def explore_player_experience(self, available_id):
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPlayerExperience']['href'], version=EXPLORE_VERSION, availId=available_id)
+        return self._json_call(endpoint)['data']['playerExperience']
 
-    def explore_deeplink(self, family_id):
+    def explore_deeplink(self, ref_id, ref_type='encodedFamilyId', action=None):
         params = {
-            'refId': family_id,
-            'refIdType': 'encodedFamilyId',
+            'refId': ref_id,
+            'refIdType': ref_type,
         }
+        if action:
+            params['action'] = action
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
-        return self._json_call(endpoint, params=params)['data']['deeplink']['actions'][0]['pageId'].replace('entity-','')
+        return self._json_call(endpoint, params=params)['data']['deeplink']#['actions'][0]['pageId'].replace('entity-','')
 
     def explore_playback(self, resource_id, wv_secure=False):
         self._set_token()
