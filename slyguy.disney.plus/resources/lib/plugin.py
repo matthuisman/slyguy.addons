@@ -4,7 +4,7 @@ from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
-from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
+from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG, RESUME_MINIMUM
 from slyguy.drm import is_wv_secure
 from slyguy.util import async_tasks
 
@@ -55,6 +55,7 @@ def index(**kwargs):
 
     return folder
 
+
 @plugin.route()
 def login(**kwargs):
     options = [
@@ -68,6 +69,7 @@ def login(**kwargs):
 
     _select_profile()
     gui.refresh()
+
 
 def _device_code():
     monitor = xbmc.Monitor()
@@ -83,6 +85,7 @@ def _device_code():
 
             if i % 5 == 0 and api.device_login(code):
                 return True
+
 
 def _email_password():
     email = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
@@ -118,6 +121,7 @@ def _email_password():
         api.login(email, password, token)
         return True
 
+
 @plugin.route()
 def hubs(**kwargs):
     folder = plugin.Folder(_.HUBS)
@@ -132,6 +136,7 @@ def hubs(**kwargs):
 
     return folder
 
+
 @plugin.route()
 def select_profile(**kwargs):
     if userdata.get('kid_lockdown', False):
@@ -139,6 +144,7 @@ def select_profile(**kwargs):
 
     _select_profile()
     gui.refresh()
+
 
 def _avatars(ids):
     avatars = {}
@@ -148,6 +154,7 @@ def _avatars(ids):
         avatars[row['avatarId']] = row['image']['tile']['1.00']['avatar']['default']['url'] + '/scale?width=300'
 
     return avatars
+
 
 def _select_profile():
     account = api.account()['account']
@@ -181,6 +188,7 @@ def _select_profile():
 
     _switch_profile(values[index])
 
+
 def _switch_profile(profile):
     pin = None
     if profile['attributes']['parentalControls']['isPinProtected']:
@@ -195,6 +203,7 @@ def _switch_profile(profile):
     userdata.set('profile', profile['name'])
     userdata.set('profile_id', profile['id'])
     gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['_avatar'])
+
 
 @plugin.route()
 def collection(slug, content_class, label=None, **kwargs):
@@ -241,18 +250,22 @@ def collection(slug, content_class, label=None, **kwargs):
 
     return folder
 
+
 @plugin.route()
 def watchlist(**kwargs):
     #TODO: if api.feature_flags().get('wpnx-disney-watchlistOnExplore'):
     return _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
 
+
 @plugin.route()
 def continue_watching(**kwargs):
     return _sets(set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE, **kwargs)
 
+
 @plugin.route()
 def sets(**kwargs):
     return _sets(**kwargs)
+
 
 @plugin.pagination()
 def _sets(set_id, set_type, page=1, **kwargs):
@@ -264,6 +277,7 @@ def _sets(set_id, set_type, page=1, **kwargs):
     folder.add_items(items)
 
     return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
+
 
 def _process_rows(rows, content_class=None):
     watchlist_enabled = settings.getBool('sync_watchlist', True)
@@ -310,15 +324,18 @@ def _process_rows(rows, content_class=None):
 
     return items
 
+
 @plugin.route()
 def add_watchlist(ref_type, ref_id, title=None, icon=None, **kwargs):
     gui.notification(_.ADDED_WATCHLIST, heading=title, icon=icon)
     api.add_watchlist(ref_type, ref_id)
 
+
 @plugin.route()
 def delete_watchlist(ref_type, ref_id, **kwargs):
     api.delete_watchlist(ref_type, ref_id)
     gui.refresh()
+
 
 def _parse_collection(row):
     path = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass'])
@@ -333,6 +350,7 @@ def _parse_collection(row):
         path = path,
     )
 
+
 def _get_play_path(**kwargs):
     if not kwargs:
         return None
@@ -345,6 +363,7 @@ def _get_play_path(**kwargs):
         kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(play, **kwargs)
+
 
 def _parse_series(row):
     item = plugin.Item(
@@ -368,6 +387,7 @@ def _parse_series(row):
 
     return item
 
+
 def _parse_season(row, series):
     title = _(_.SEASON, number=row['seasonSequenceNumber'])
 
@@ -388,6 +408,7 @@ def _parse_season(row, series):
         pass
 
     return item
+
 
 def _parse_video(row):
     item = plugin.Item(
@@ -423,6 +444,7 @@ def _parse_video(row):
         item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
 
     return item
+
 
 def _get_art(row):
     if not row:
@@ -518,6 +540,7 @@ def _get_art(row):
 
     return art
 
+
 def _get_text(row, field, source):
     if not row:
         return None
@@ -556,6 +579,7 @@ def _get_text(row, field, source):
 
     return sorted(candidates, key=lambda x: x[0])[0][1]
 
+
 @plugin.route()
 def series(series_id, **kwargs):
     data = api.series_bundle(series_id)
@@ -587,6 +611,7 @@ def series(series_id, **kwargs):
 
     return folder
 
+
 @plugin.route()
 @plugin.pagination()
 def season(season_id, title, page=1, **kwargs):
@@ -598,6 +623,7 @@ def season(season_id, title, page=1, **kwargs):
     folder.add_items(items)
 
     return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
+
 
 @plugin.route()
 def suggested(family_id=None, series_id=None, **kwargs):
@@ -612,6 +638,7 @@ def suggested(family_id=None, series_id=None, **kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 def play_trailer(family_id=None, series_id=None, **kwargs):
     if family_id:
@@ -624,6 +651,7 @@ def play_trailer(family_id=None, series_id=None, **kwargs):
         raise PluginError(_.TRAILER_NOT_FOUND)
 
     return _play(videos[0]['contentId'])
+
 
 @plugin.route()
 def extras(family_id=None, series_id=None, **kwargs):
@@ -639,6 +667,7 @@ def extras(family_id=None, series_id=None, **kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 def full_details(family_id=None, series_id=None, **kwargs):
     if series_id:
@@ -651,6 +680,7 @@ def full_details(family_id=None, series_id=None, **kwargs):
 
     gui.info(item)
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
@@ -661,6 +691,7 @@ def search(query, page, **kwargs):
         data = api.search(query)
         hits = [x['hit'] for x in data['hits']]
         return _process_rows(hits), False
+
 
 @plugin.route()
 @plugin.login_required()
@@ -860,6 +891,13 @@ def _process_explore(data):
     is_show = 'seasonsAvailable' in data['visuals'].get('metastringParts', {})
     is_season = data['type'] == 'season'
 
+    user_states = {}
+    if settings.SYNC_PLAYBACK.value:
+        pids = [row.get('personalization',{}).get('pid') for row in rows if row.get('visuals', {}).get('durationMs')]
+        pids = [x for x in pids if x]
+        if pids:
+            user_states = api.explore_userstate(pids)
+
     items = []
     for row in rows:
         if not is_show and row['type'] == 'set' and row['pagination'].get('totalCount', 0) > 0:
@@ -904,6 +942,7 @@ def _process_explore(data):
                 playable = True,
                 path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId']),
             )
+            _add_state(row['personalization']['pid'], user_states, item)
             folder.title = item.info['tvshowtitle']
             items.append(item)
 
@@ -930,10 +969,11 @@ def _process_explore(data):
                 item.info['rating'] = meta['ratingInfo']['rating']['text']
 
             if row['visuals'].get('durationMs'):
-                item.info['duration'] = int(row['visuals'].get('durationMs', 0) / 1000),
+                item.info['duration'] = int(row['visuals'].get('durationMs', 0) / 1000)
                 item.info['mediatype'] = 'movie'
                 item.playable = True
                 item.path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId'])
+                _add_state(row['personalization']['pid'], user_states, item)
             else:
                 item.info['mediatype'] = 'tvshow'
 
@@ -941,6 +981,23 @@ def _process_explore(data):
 
     folder.add_items(items)
     return folder
+
+
+def _add_state(pid, user_states, item):
+    state = user_states.get(pid)
+    if not state:
+        return
+
+    item.no_resume = False
+    item.info['playcount'] = -2
+    item.resume_from = 0
+    if state['progress']['secondsRemaining'] == 0:
+        # mark as unwatched shown. in Peirs we can hide these using new properties
+        item.info['playcount'] = 1
+    elif item.info['duration'] - state['progress']['secondsRemaining'] >= RESUME_MINIMUM:
+        item.resume_from = 1
+    #TODO: add/remove watchlist
+
 
 def _get_explore_art(row):
     if not row or 'artwork' not in row['visuals']:
@@ -1029,10 +1086,14 @@ def _get_explore_art(row):
 
     return art
 
+
 def _get_explore_play_path(**kwargs):
     profile_id = userdata.get('profile_id')
     if profile_id:
         kwargs['profile_id'] = profile_id
+
+    if settings.SYNC_PLAYBACK.value:
+        kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(explore_play, **kwargs)
 
@@ -1116,7 +1177,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     item.play_skips = []
 
     if not kwargs.get(ROUTE_RESUME_TAG):
-        if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
+        if settings.SYNC_PLAYBACK.value and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
             item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
             if item.resume_from == -1:
                 return
@@ -1167,6 +1228,13 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     if upnext:
         item.play_next['next_file'] = _get_explore_play_path(deeplink_id=upnext)
 
-    #TODO: sync_playback
+    if settings.SYNC_PLAYBACK.value:
+        telemetry = playback_data['tracking']['telemetry']
+        item.callback = {
+            'type':'interval',
+            'interval': 30,
+            'callback': plugin.url_for(callback, media_id=telemetry['mediaId'], fguid=telemetry['fguid']),
+        }
+
     return item
 ### END EXPLORE ###
