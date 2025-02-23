@@ -2,9 +2,14 @@ from difflib import SequenceMatcher
 
 from slyguy.session import Session
 from slyguy import util, mem_cache
+from slyguy.exceptions import Error
 from six.moves.urllib_parse import urljoin
 
 from .constants import HEADERS, API_URL, BRIGHTCOVE_URL, BRIGHTCOVE_KEY, BRIGHTCOVE_ACCOUNT, SEARCH_MATCH_RATIO
+
+
+class APIError(Error):
+    pass
 
 
 class API(object):
@@ -29,7 +34,7 @@ class API(object):
     def _get_page(self, url):
         data = self._session.get(url).json()
         if 'statusCode' in data and str(data['statusCode'])[0] != '2':
-            raise Exception(data.get('message'))
+            raise APIError(data.get('message'))
         return data
 
     def channels(self):
