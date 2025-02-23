@@ -13,18 +13,24 @@ class API(object):
 
     @mem_cache.cached(60*5)
     def live(self):
-        return self._session.get('live-epg').json()['channels']
+        return self._get_page('live-epg')['channels']
 
     @mem_cache.cached(60*10)
     def _shows(self):
-        return self._session.get('shows').json()
+        return self._get_page('shows')
 
     def shows(self):
         return self._shows()['shows']
 
     @mem_cache.cached(60*5)
     def show(self, id):
-        return self._session.get('shows/{}'.format(id)).json()
+        return self._get_page('shows/{}'.format(id))
+
+    def _get_page(self, url):
+        data = self._session.get(url).json()
+        if 'statusCode' in data and str(data['statusCode'])[0] != '2':
+            raise Exception(data.get('message'))
+        return data
 
     def channels(self):
         return self._shows()['channels']
