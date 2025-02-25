@@ -499,6 +499,13 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
+    def explore_season(self, season_id):
+        params = {
+            'limit': 999,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
+        return self._json_call(endpoint, params=params)['data']['season']
+
     def explore_userstate(self, pids):
         payload = {
             'pids': pids,

@@ -928,61 +928,68 @@ def _process_explore(data):
             items.extend(sorted(seasons, key=lambda item: item.info.get('season') or 9999, reverse=False))
 
         elif is_season and row['type'] == 'view':
-            item = plugin.Item(
-                label = row['visuals']['episodeTitle'],
-                info = {
-                    'plot': row['visuals']['description']['full'],
-                    'season': row['visuals']['seasonNumber'],
-                    'episode': row['visuals']['episodeNumber'],
-                    'tvshowtitle': row['visuals']['title'],
-                    'duration': int(row['visuals'].get('durationMs', 0) / 1000),
-                    'mediatype': 'episode',
-                },
-                art = _get_explore_art(row),
-                playable = True,
-                path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId']),
-            )
+            item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
-            folder.title = item.info['tvshowtitle']
             items.append(item)
 
         elif not is_show and row.get('actions', []) and row['actions'][0]['type'] in ('browse', 'legacyBrowse'):
-            meta = row['visuals']['metastringParts']
-            item = plugin.Item(
-                label = row['visuals']['title'],
-                art = _get_explore_art(row),
-            )
-
-            if row['actions'][0]['type'] == 'browse':
-                item.path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
-
-            if 'description' in row['visuals']:
-                item.info['plot'] = row['visuals']['description']['medium']
-
-            if 'releaseYearRange' in meta:
-                item.info['year'] = meta['releaseYearRange']['startYear']
-
-            if 'genres' in meta:
-                item.info['genre'] = meta['genres']['values']
-
-            if 'ratingInfo' in meta:
-                item.info['rating'] = meta['ratingInfo']['rating']['text']
-
-            if row['visuals'].get('durationMs'):
-                item.info['duration'] = int(row['visuals'].get('durationMs', 0) / 1000)
-                item.info['mediatype'] = 'movie'
-                item.playable = True
-                item.path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId'])
-                _add_progress(user_states.get(row['personalization']['pid']), item)
-               # _add_watchlist(user_states.get(row['personalization']['pid']), item)
-            else:
-                item.info['mediatype'] = 'tvshow'
-                #_add_watchlist(user_states.get(row['personalization']['pid']), item)
-
+            item = _parse_explore(row)
+            _add_progress(user_states.get(row['personalization']['pid']), item)
             items.append(item)
 
     folder.add_items(items)
     return folder
+
+
+def _parse_explore(row):
+    if 'episodeTitle' in row['visuals']:
+        item = plugin.Item(
+            label = row['visuals']['episodeTitle'],
+            info = {
+                'plot': row['visuals']['description']['full'],
+                'season': row['visuals']['seasonNumber'],
+                'episode': row['visuals']['episodeNumber'],
+                'tvshowtitle': row['visuals']['title'],
+                'duration': int(row['visuals'].get('durationMs', 0) / 1000),
+                'mediatype': 'episode',
+            },
+            art = _get_explore_art(row),
+            playable = True,
+            path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId']),
+        )
+        return item
+
+    meta = row['visuals']['metastringParts']
+    item = plugin.Item(
+        label = row['visuals']['title'],
+        art = _get_explore_art(row),
+    )
+
+    if row['actions'][0]['type'] == 'browse':
+        item.path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
+
+    if 'description' in row['visuals']:
+        item.info['plot'] = row['visuals']['description'].get('medium',  row['visuals']['description'].get('brief', row['visuals']['description']['full']))
+
+    if 'releaseYearRange' in meta:
+        item.info['year'] = meta['releaseYearRange']['startYear']
+
+    if 'genres' in meta:
+        item.info['genre'] = meta['genres']['values']
+
+    if 'ratingInfo' in meta:
+        item.info['rating'] = meta['ratingInfo']['rating']['text']
+
+    if row['visuals'].get('durationMs'):
+        item.info['duration'] = int(row['visuals'].get('durationMs', 0) / 1000)
+        item.info['mediatype'] = 'movie'
+        item.playable = True
+        item.path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId'])
+    else:
+        item.info['mediatype'] = 'tvshow'
+
+    return item
+
 
 def _add_watchlist(user_state, item):
     # watchlist only returned when single item queried
@@ -1002,15 +1009,14 @@ def _add_progress(user_state, item):
     if not user_state or not settings.SYNC_PLAYBACK.value:
         return
 
-    item.no_resume = False
-    item.info['playcount'] = -2
-    item.resume_from = 0
-
     if user_state['progress']['progressPercentage'] == 100:
-        # mark as unwatched shown. in Peirs we can hide these using new properties
         item.info['playcount'] = 1
+
     elif user_state['progress']['progressPercentage'] > 0:
-        item.resume_from = 1
+        if 'secondsRemaining' in user_state['progress']:
+            item.resume_from = int(item.info['duration'] - user_state['progress']['secondsRemaining'])
+        else:
+            item.resume_from = int(user_state['progress']['progressPercentage']/100.0 * item.info['duration'])
 
 
 def _get_explore_art(row):
@@ -1106,9 +1112,6 @@ def _get_explore_play_path(**kwargs):
     if profile_id:
         kwargs['profile_id'] = profile_id
 
-    if settings.SYNC_PLAYBACK.value:
-        kwargs[NO_RESUME_TAG] = True
-
     return plugin.url_for(explore_play, **kwargs)
 
 
@@ -1145,27 +1148,30 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     else:
         data = api.explore_deeplink(deeplink_id.replace('entity-', ''), ref_type='deeplinkId', action='playback')
 
+    deeplink_id = data['actions'][0]['deeplinkId']
     resource_id = data['actions'][0]['resourceId']
     upnext_id = data['actions'][0]['upNextId']
     available_id = data['actions'][0]['availId']
-    #series_id = data['actions'][0]['partnerFeed'].get('evaSeriesEntityId')
+    player_experience = api.explore_player_experience(available_id)
+    program_type = player_experience['analytics']['programType']
 
-    has_imax = False
+    flags = []
     item = plugin.Item()
+    if program_type == 'movie':
+        data = api.explore_page('entity-{}'.format(deeplink_id))
+        flags = [x['value'] for x in data['visuals']['metastringParts']['audioVisual']['flags']]
+        item = _parse_explore(data)
+    elif program_type == 'episode':
+        season = re.search('- s([0-9]{1,})e([0-9]{1,}) -', player_experience['internalTitle']).group(1)
+        show = api.explore_page(data['actions'][1]['pageId'])
+        season_id = show['containers'][0]['seasons'][int(season)-1]['id']
+        data = api.explore_season(season_id)
+        for row in data['items']:
+            if row['actions'][0]['deeplinkId'] == deeplink_id:
+                item = _parse_explore(row)
+                break
 
-    # TODO: new USA content doesnt have dmcContentId. need explore way to find info
-    dmc_id = data['actions'][0]['partnerFeed'].get('dmcContentId')
-    if dmc_id:
-        data = api.video(dmc_id)
-        if data.get('video'):
-            video = data['video']
-            item = _parse_video(video)
-            for row in video['mediaMetadata']['facets']:
-                if row['activeAspectRatio'] == 1.9:
-                    has_imax = True
-                    break
-
-    if has_imax:
+    if 'imax_enhanced' in flags:
         deault_ratio = settings.DEFAULT_RATIO.value
 
         if deault_ratio == Ratio.ASK:
@@ -1180,7 +1186,6 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         if imax != profile['attributes']['playbackSettings']['preferImaxEnhancedVersion']:
             api.set_imax(imax)
 
-    player_experience = api.explore_player_experience(available_id)
     playback_data = api.explore_playback(resource_id, ia.wv_secure)
 
     item.update(
@@ -1190,16 +1195,8 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         proxy_data = {'original_language': player_experience.get('originalLanguage')},
     )
 
-    milestones = playback_data['stream']['editorial']
-    item.play_next = {}
     item.play_skips = []
-
-    if not kwargs.get(ROUTE_RESUME_TAG):
-        if settings.SYNC_PLAYBACK.value and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
-            item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
-            if item.resume_from == -1:
-                return
-
+    milestones = playback_data['stream']['editorial']
     if milestones and settings.getBool('skip_recaps', False):
         recap_start = _get_explore_milestone(milestones, 'recap_start')
         recap_end = _get_explore_milestone(milestones, 'recap_end')
@@ -1221,7 +1218,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
             item.play_skips.append({'from': tag_end, 'to': 0})
 
     upnext = None
-    if player_experience['analytics']['programType'] == 'episode' and settings.getBool('play_next_episode', True):
+    if program_type == 'episode' and settings.getBool('play_next_episode', True):
         data = api.explore_upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or not row.get('sequentialEpisode'):
@@ -1232,7 +1229,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
                     upnext = action['deeplinkId']
                     break
 
-    elif player_experience['analytics']['programType'] == 'movie' and settings.getBool('play_next_movie', False):
+    elif program_type == 'movie' and settings.getBool('play_next_movie', False):
         data = api.explore_upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or row.get('sequentialEpisode'):
@@ -1244,7 +1241,8 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
                     break
 
     if upnext:
-        item.play_next['next_file'] = _get_explore_play_path(deeplink_id=upnext)
+        kwargs = {'deeplink_id': upnext}
+        item.play_next = {'next_file': _get_explore_play_path(**kwargs)}
 
     if settings.SYNC_PLAYBACK.value:
         telemetry = playback_data['tracking']['telemetry']
