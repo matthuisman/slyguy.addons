@@ -1148,7 +1148,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     else:
         data = api.explore_deeplink(deeplink_id.replace('entity-', ''), ref_type='deeplinkId', action='playback')
 
-    deeplink_id = data['actions'][0]['deeplinkId']
+    deeplink_id = data['actions'][0]['deeplinkId'].replace('entity-', '')
     resource_id = data['actions'][0]['resourceId']
     upnext_id = data['actions'][0]['upNextId']
     available_id = data['actions'][0]['availId']
@@ -1167,7 +1167,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         season_id = show['containers'][0]['seasons'][int(season)-1]['id']
         data = api.explore_season(season_id)
         for row in data['items']:
-            if row['actions'][0]['deeplinkId'] == deeplink_id:
+            if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
                 item = _parse_explore(row)
                 break
 
@@ -1189,6 +1189,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     playback_data = api.explore_playback(resource_id, ia.wv_secure)
 
     item.update(
+        playable = True,
         path = playback_data['stream']['sources'][0]['complete']['url'],
         inputstream = ia,
         headers = api.session.headers,
