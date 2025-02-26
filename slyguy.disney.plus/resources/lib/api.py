@@ -5,6 +5,8 @@ from slyguy import userdata, mem_cache
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
+import arrow
+
 from . import queries
 from .constants import *
 from .language import _
@@ -541,6 +543,30 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPlayerExperience']['href'], version=EXPLORE_VERSION, availId=available_id)
         return self._json_call(endpoint)['data']['playerExperience']
 
+    def explore_watchlist(self, event_type, page_info, action_info):
+        profile, session = self.profile()
+        event_time = arrow.utcnow().format("YYYY-MM-DDTHH:mm:ss.SSS") + "Z"
+        payload = [{
+            'data': {
+                'action_info_block': action_info,
+                'page_info_block': page_info,
+                'event_type': event_type,
+                'event_occurred_timestamp': event_time,
+            },
+            'datacontenttype': 'application/json;charset=utf-8',
+            'subject': 'sessionId={},profileId={}'.format(session['sessionId'], profile['id']),
+            'source': 'urn:dss:source:sdk:android:google:tv',
+            'type': 'urn:dss:event:cs:user-content-actions:preference:v1:watchlist',
+            'schemaurl': 'https://github.bamtech.co/schema-registry/schema-registry-client-signals/blob/series/0.X.X/smithy/dss/cs/event/user-content-actions/preference/v1/watchlist.smithy',
+            'id': str(uuid.uuid4()),
+            'time': event_time,
+        }]
+
+        endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['envelopeEvent']['href']
+        data = self._session.post(endpoint, json=payload).json()
+        self._check_errors(data)
+        return not any([x['error'] is not None for x in data])
+
     def explore_deeplink(self, ref_id, ref_type='encodedFamilyId', action=None):
         params = {
             'refId': ref_id,
@@ -549,7 +575,7 @@ class API(object):
         if action:
             params['action'] = action
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
-        return self._json_call(endpoint, params=params)['data']['deeplink']#['actions'][0]['pageId'].replace('entity-','')
+        return self._json_call(endpoint, params=params)['data']['deeplink']
 
     def explore_playback(self, resource_id, wv_secure=False):
         self._set_token()

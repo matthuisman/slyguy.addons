@@ -37,13 +37,13 @@ def index(**kwargs):
         folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(collection, slug='originals', content_class='originals'))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
-        if settings.getBool('sync_watchlist', False):
+        if settings.SYNC_WATCHLIST.value:
             folder.add_item(label=_(_.WATCHLIST, _bold=True), path=plugin.url_for(watchlist))
 
-        if settings.getBool('sync_playback', False):
+        if settings.SYNC_PLAYBACK.value:
             folder.add_item(label=_(_.CONTINUE_WATCHING, _bold=True), path=plugin.url_for(continue_watching))
 
-        if settings.getBool('bookmarks', True):
+        if settings.BOOKMARKS.value:
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
         if not userdata.get('kid_lockdown', False):
@@ -253,8 +253,12 @@ def collection(slug, content_class, label=None, **kwargs):
 
 @plugin.route()
 def watchlist(**kwargs):
-    #TODO: if api.feature_flags().get('wpnx-disney-watchlistOnExplore'):
-    return _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
+    if api.feature_flags().get('wpnx-disney-watchlistOnExplore'):
+        return _explore_watchlist()
+
+    folder = _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
+    folder.title = _.WATCHLIST
+    return folder
 
 
 @plugin.route()
@@ -824,6 +828,7 @@ def _play(family_id=None, content_id=None, **kwargs):
 def callback(media_id, fguid, _time, **kwargs):
     api.update_resume(media_id, fguid, int(_time))
 
+
 def _get_milestone(milestones, name, default=0):
     if not milestones:
         return default
@@ -833,6 +838,7 @@ def _get_milestone(milestones, name, default=0):
             return int(milestones[key][0]['milestoneTime'][0]['startMillis'] / 1000)
 
     return default
+
 
 @plugin.route()
 def logout(**kwargs):
@@ -857,12 +863,14 @@ def explore_page(page_id, **kwargs):
         return plugin.redirect(folder.items[0].path)
     return folder
 
+
 @plugin.route()
 @plugin.pagination()
 def explore_set(set_id, page=1, **kwargs):
     data = api.explore_set(set_id, page=page)
     folder = _process_explore(data)
     return folder, data['pagination']['hasMore']
+
 
 @plugin.route()
 def explore_season(show_id, season_id, **kwargs):
@@ -877,7 +885,8 @@ def explore_season(show_id, season_id, **kwargs):
 
     return folder
 
-def _process_explore(data):
+
+def _process_explore(data, watchlist=False):
     title = data['visuals'].get('title') or data['visuals'].get('name')
     folder = plugin.Folder(title, art=_get_explore_art(data))
 
@@ -928,16 +937,59 @@ def _process_explore(data):
             items.extend(sorted(seasons, key=lambda item: item.info.get('season') or 9999, reverse=False))
 
         elif is_season and row['type'] == 'view':
+            # EPISODE
             item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
             items.append(item)
 
         elif not is_show and row.get('actions', []) and row['actions'][0]['type'] in ('browse', 'legacyBrowse'):
+            # MOVIE / TV SHOW
             item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
+            if settings.SYNC_PLAYBACK.value:
+                if watchlist:
+                    item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
+                else:
+                    item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_add_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
             items.append(item)
 
     folder.add_items(items)
+    return folder
+
+
+@plugin.route()
+def explore_add_watchlist(deeplink_id, **kwargs):
+    data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+    art = _get_explore_art(data)
+
+    if not data['personalization']['userState'].get('inWatchlist'):
+        actions = {}
+        for row in data['actions']:
+            actions[row['type']] = row
+        api.explore_watchlist('add', page_info=data['infoBlock'], action_info=actions['modifySaves']['infoBlock'])
+
+    gui.notification(_.ADDED_WATCHLIST, heading=data['visuals']['title'], icon=art.get('poster') or art.get('thumb'))
+
+
+@plugin.route()
+def explore_delete_watchlist(deeplink_id, **kwargs):
+    with gui.busy():
+        data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        if data['personalization']['userState'].get('inWatchlist'):
+            actions = {}
+            for row in data['actions']:
+                actions[row['type']] = row
+            api.explore_watchlist('remove', page_info=data['infoBlock'], action_info=actions['modifySaves']['infoBlock'])
+
+    gui.refresh()
+
+
+def _explore_watchlist():
+    page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
+    set_id = api.explore_page(page_id)['containers'][0]['id']
+    data = api.explore_set(set_id)
+    folder = _process_explore(data, watchlist=True)
+    folder.title = _.WATCHLIST
     return folder
 
 
@@ -989,20 +1041,6 @@ def _parse_explore(row):
         item.info['mediatype'] = 'tvshow'
 
     return item
-
-
-def _add_watchlist(user_state, item):
-    # watchlist only returned when single item queried
-    if not settings.SYNC_PLAYBACK.value:
-        return
-
-    user_state = user_state or {}
-    if user_state.get('inWatchlist'):
-        raise Exception("watchlist")
-        item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, ref_type='', ref_id=''))))
-    else:
-        pass
-#        item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, ref_type='', ref_id='', title=item.label, icon=item.art.get('thumb')))))  
 
 
 def _add_progress(user_state, item):
@@ -1162,6 +1200,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         flags = [x['value'] for x in data['visuals']['metastringParts']['audioVisual']['flags']]
         item = _parse_explore(data)
     elif program_type == 'episode':
+        # TODO: this is a few requests and needs regex. Ideally an api endpoint for episode details exist
         season = re.search('- s([0-9]{1,})e([0-9]{1,}) -', player_experience['internalTitle']).group(1)
         show = api.explore_page(data['actions'][1]['pageId'])
         season_id = show['containers'][0]['seasons'][int(season)-1]['id']
