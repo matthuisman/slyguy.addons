@@ -935,7 +935,7 @@ def _process_explore(data, watchlist=False):
             # MOVIE / TV SHOW / EPISODE
             item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
-            if settings.SYNC_PLAYBACK.value and item.info.get('mediatype') in ('movie', 'tvshow'):
+            if settings.SYNC_WATCHLIST.value and item.info.get('mediatype') in ('movie', 'tvshow'):
                 if watchlist:
                     item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
                 else:
