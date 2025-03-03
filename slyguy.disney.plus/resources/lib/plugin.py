@@ -3,6 +3,7 @@ import re
 from kodi_six import xbmc
 
 from slyguy import plugin, gui, userdata, signals, inputstream
+from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
@@ -253,6 +254,16 @@ def collection(slug, content_class, label=None, **kwargs):
 
 @plugin.route()
 def watchlist(**kwargs):
+    if api.feature_flags().get('wpnx-disney-watchlistOnExplore'):
+        return _explore_watchlist()
+
+    log.info("Legacy watchlist")
+    folder = _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
+    folder.title = _.WATCHLIST
+    return folder
+
+
+def _explore_watchlist():
     page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
     set_id = api.explore_page(page_id)['containers'][0]['id']
     data = api.explore_set(set_id)
@@ -689,8 +700,14 @@ def full_details(family_id=None, series_id=None, **kwargs):
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    data = api.explore_search(query)
-    return _process_explore(data['containers'][0]).items if data['containers'] else [], False
+    if api.feature_flags().get('wpnx-disney-searchOnExplore'):
+        data = api.explore_search(query)
+        return _process_explore(data['containers'][0]).items if data['containers'] else [], False
+    else:
+        log.info("Legacy search")
+        data = api.search(query)
+        hits = [x['hit'] for x in data['hits']]
+        return _process_rows(hits), False
 
 
 @plugin.route()
@@ -931,7 +948,7 @@ def _process_explore(data, watchlist=False):
                 seasons.append(item)
             items.extend(sorted(seasons, key=lambda item: item.info.get('season') or 9999, reverse=False))
 
-        elif not is_show and row.get('actions', []) and row['actions'][0]['type'] in ('browse', 'legacyBrowse'):
+        elif not is_show and row.get('actions', []) and row['actions'][0]['type'] in ('browse', 'legacyBrowse', 'playback'):
             # MOVIE / TV SHOW / EPISODE
             item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
