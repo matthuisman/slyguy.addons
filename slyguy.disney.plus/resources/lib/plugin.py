@@ -948,9 +948,9 @@ def _process_explore(data, watchlist=False):
             _add_progress(user_states.get(row['personalization']['pid']), item)
             if settings.SYNC_PLAYBACK.value:
                 if watchlist:
-                    item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
+                    item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
                 else:
-                    item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_add_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
+                    item.context.insert(0, (_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_add_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
             items.append(item)
 
     folder.add_items(items)
@@ -959,15 +959,15 @@ def _process_explore(data, watchlist=False):
 
 @plugin.route()
 def explore_add_watchlist(deeplink_id, **kwargs):
-    data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
-    art = _get_explore_art(data)
+    with gui.busy():
+        data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        art = _get_explore_art(data)
 
-    if not data['personalization']['userState'].get('inWatchlist'):
-        actions = {}
-        for row in data['actions']:
-            actions[row['type']] = row
-        api.explore_watchlist('add', page_info=data['infoBlock'], action_info=actions['modifySaves']['infoBlock'])
-
+        if not data['personalization']['userState'].get('inWatchlist'):
+            actions = {}
+            for row in data['actions']:
+                actions[row['type']] = row
+            api.explore_watchlist('add', page_info=data['infoBlock'], action_info=actions['modifySaves']['infoBlock'])
     gui.notification(_.ADDED_WATCHLIST, heading=data['visuals']['title'], icon=art.get('poster') or art.get('thumb'))
 
 
@@ -980,7 +980,6 @@ def explore_delete_watchlist(deeplink_id, **kwargs):
             for row in data['actions']:
                 actions[row['type']] = row
             api.explore_watchlist('remove', page_info=data['infoBlock'], action_info=actions['modifySaves']['infoBlock'])
-
     gui.refresh()
 
 
@@ -990,6 +989,69 @@ def _explore_watchlist():
     data = api.explore_set(set_id)
     folder = _process_explore(data, watchlist=True)
     folder.title = _.WATCHLIST
+    return folder
+
+
+@plugin.route()
+def explore_play_trailer(deeplink_id, **kwargs):
+    with gui.busy():
+        data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        actions = {}
+        for row in data['actions']:
+            actions[row['type']] = row
+
+        if 'trailer' not in actions:
+            raise PluginError(_.TRAILER_NOT_FOUND)
+
+        trailer = actions['trailer']
+        item = _parse_explore(data)
+
+        ia = inputstream.Widevine(
+            license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
+            manifest_type = 'hls',
+            mimetype = 'application/vnd.apple.mpegurl',
+            wv_secure = is_wv_secure(),
+        )
+
+        playback_data = api.explore_playback(trailer['resourceId'], ia.wv_secure)
+
+    item.update(
+        label = u"{} ({})".format(item.label, _.TRAILER),
+        playable = True,
+        path = playback_data['stream']['sources'][0]['complete']['url'],
+        inputstream = ia,
+        headers = api.session.headers,
+    )
+    return item
+
+
+@plugin.route()
+def explore_extras(deeplink_id, **kwargs):
+    data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')), enhanced_limit=15)
+    containers = {}
+    for row in data['containers']:
+        containers[row['visuals']['name']] = row
+
+    if 'EXTRAS' in containers:
+        folder = _process_explore(containers['EXTRAS'])
+    else:
+        folder = plugin.Folder()
+    folder.title = u"{} ({})".format(data['visuals']['title'], _.EXTRAS)
+    return folder
+
+
+@plugin.route()
+def explore_suggested(deeplink_id, **kwargs):
+    data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')), enhanced_limit=15)
+    containers = {}
+    for row in data['containers']:
+        containers[row['visuals']['name']] = row
+
+    if 'SUGGESTED' in containers:
+        folder = _process_explore(containers['SUGGESTED'])
+    else:
+        folder = plugin.Folder()
+    folder.title = u"{} ({})".format(data['visuals']['title'], _.SUGGESTED)
     return folder
 
 
@@ -1015,6 +1077,9 @@ def _parse_explore(row):
     item = plugin.Item(
         label = row['visuals']['title'],
         art = _get_explore_art(row),
+        info = {
+            'trailer': plugin.url_for(explore_play_trailer, deeplink_id=row['actions'][0]['deeplinkId']),
+        }
     )
 
     if row['actions'][0]['type'] == 'browse':
@@ -1040,6 +1105,8 @@ def _parse_explore(row):
     else:
         item.info['mediatype'] = 'tvshow'
 
+    item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(explore_extras, deeplink_id=row['actions'][0]['deeplinkId']))))
+    item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(explore_suggested, deeplink_id=row['actions'][0]['deeplinkId']))))
     return item
 
 
@@ -1202,13 +1269,18 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     elif program_type == 'episode':
         # TODO: this is a few requests and needs regex. Ideally an api endpoint for episode details exist
         season = re.search('- s([0-9]{1,})e([0-9]{1,}) -', player_experience['internalTitle']).group(1)
-        show = api.explore_page(data['actions'][1]['pageId'])
-        season_id = show['containers'][0]['seasons'][int(season)-1]['id']
-        data = api.explore_season(season_id)
-        for row in data['items']:
+        show = api.explore_page(data['actions'][1]['pageId'], enhanced_limit=15)
+        season = show['containers'][0]['seasons'][int(season)-1]
+        for row in season['items']:
             if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
                 item = _parse_explore(row)
                 break
+        else:
+            data = api.explore_season(season['id'])
+            for row in data['items']:
+                if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
+                    item = _parse_explore(row)
+                    break
 
     if 'imax_enhanced' in flags:
         deault_ratio = settings.DEFAULT_RATIO.value

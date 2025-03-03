@@ -484,11 +484,11 @@ class API(object):
         self.new_session()
 
     ### EXPLORE ###
-    def explore_page(self, page_id):
+    def explore_page(self, page_id, enhanced_limit=0):
         params = {
             'disableSmartFocus': 'true',
             'limit': 999,
-            'enhancedContainersLimit': 0,
+            'enhancedContainersLimit': enhanced_limit,
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
         return self._json_call(endpoint, params=params)['data']['page']
