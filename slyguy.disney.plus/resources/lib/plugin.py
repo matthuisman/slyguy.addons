@@ -253,17 +253,18 @@ def collection(slug, content_class, label=None, **kwargs):
 
 @plugin.route()
 def watchlist(**kwargs):
-    if api.feature_flags().get('wpnx-disney-watchlistOnExplore'):
-        return _explore_watchlist()
-
-    folder = _sets(set_id=WATCHLIST_SET_ID, set_type=WATCHLIST_SET_TYPE, **kwargs)
+    page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
+    set_id = api.explore_page(page_id)['containers'][0]['id']
+    data = api.explore_set(set_id)
+    folder = _process_explore(data, watchlist=True)
     folder.title = _.WATCHLIST
     return folder
 
 
 @plugin.route()
 def continue_watching(**kwargs):
-    return _sets(set_id=CONTINUE_WATCHING_SET_ID, set_type=CONTINUE_WATCHING_SET_TYPE, **kwargs)
+    data = api.explore_set(CONTINUE_WATCHING_SET_ID)
+    return _process_explore(data)
 
 
 @plugin.route()
@@ -688,13 +689,8 @@ def full_details(family_id=None, series_id=None, **kwargs):
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    if api.feature_flags().get('wpnx-disney-searchOnExplore'):
-        data = api.explore_search(query)
-        return _process_explore(data['containers'][0]).items if data['containers'] else [], False
-    else:
-        data = api.search(query)
-        hits = [x['hit'] for x in data['hits']]
-        return _process_rows(hits), False
+    data = api.explore_search(query)
+    return _process_explore(data['containers'][0]).items if data['containers'] else [], False
 
 
 @plugin.route()
@@ -898,7 +894,6 @@ def _process_explore(data, watchlist=False):
         rows = []
 
     is_show = 'seasonsAvailable' in data['visuals'].get('metastringParts', {})
-    is_season = data['type'] == 'season'
 
     user_states = {}
     if settings.SYNC_PLAYBACK.value:
@@ -936,17 +931,11 @@ def _process_explore(data, watchlist=False):
                 seasons.append(item)
             items.extend(sorted(seasons, key=lambda item: item.info.get('season') or 9999, reverse=False))
 
-        elif is_season and row['type'] == 'view':
-            # EPISODE
-            item = _parse_explore(row)
-            _add_progress(user_states.get(row['personalization']['pid']), item)
-            items.append(item)
-
         elif not is_show and row.get('actions', []) and row['actions'][0]['type'] in ('browse', 'legacyBrowse'):
-            # MOVIE / TV SHOW
+            # MOVIE / TV SHOW / EPISODE
             item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
-            if settings.SYNC_PLAYBACK.value:
+            if settings.SYNC_PLAYBACK.value and item.info.get('mediatype') in ('movie', 'tvshow'):
                 if watchlist:
                     item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
                 else:
@@ -981,15 +970,6 @@ def explore_delete_watchlist(deeplink_id, **kwargs):
                 actions[row['type']] = row
             api.explore_watchlist('remove', page_info=data['infoBlock'], action_info=actions['modifySaves']['infoBlock'])
     gui.refresh()
-
-
-def _explore_watchlist():
-    page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
-    set_id = api.explore_page(page_id)['containers'][0]['id']
-    data = api.explore_set(set_id)
-    folder = _process_explore(data, watchlist=True)
-    folder.title = _.WATCHLIST
-    return folder
 
 
 @plugin.route()
@@ -1056,6 +1036,11 @@ def explore_suggested(deeplink_id, **kwargs):
 
 
 def _parse_explore(row):
+    actions = {}
+    for action in row['actions']:
+        actions[action['type']] = action
+    playback = actions.get('playback', actions.get('browse'))
+
     if 'episodeTitle' in row['visuals']:
         item = plugin.Item(
             label = row['visuals']['episodeTitle'],
@@ -1069,7 +1054,7 @@ def _parse_explore(row):
             },
             art = _get_explore_art(row),
             playable = True,
-            path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId']),
+            path = _get_explore_play_path(deeplink_id=playback['deeplinkId']),
         )
         return item
 
@@ -1078,12 +1063,9 @@ def _parse_explore(row):
         label = row['visuals']['title'],
         art = _get_explore_art(row),
         info = {
-            'trailer': plugin.url_for(explore_play_trailer, deeplink_id=row['actions'][0]['deeplinkId']),
+            'trailer': plugin.url_for(explore_play_trailer, deeplink_id=playback['deeplinkId']),
         }
     )
-
-    if row['actions'][0]['type'] == 'browse':
-        item.path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
 
     if 'description' in row['visuals']:
         item.info['plot'] = row['visuals']['description'].get('medium',  row['visuals']['description'].get('brief', row['visuals']['description']['full']))
@@ -1097,16 +1079,17 @@ def _parse_explore(row):
     if 'ratingInfo' in meta:
         item.info['rating'] = meta['ratingInfo']['rating']['text']
 
-    if row['visuals'].get('durationMs'):
-        item.info['duration'] = int(row['visuals'].get('durationMs', 0) / 1000)
+    if 'runtime' in meta:
+        item.info['duration'] = int(meta['runtime']['runtimeMs'] / 1000)
         item.info['mediatype'] = 'movie'
         item.playable = True
-        item.path = _get_explore_play_path(deeplink_id=row['actions'][0]['deeplinkId'])
+        item.path = _get_explore_play_path(deeplink_id=playback['deeplinkId'])
     else:
         item.info['mediatype'] = 'tvshow'
+        item.path = plugin.url_for(explore_page, page_id=actions['browse']['pageId'])
 
-    item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(explore_extras, deeplink_id=row['actions'][0]['deeplinkId']))))
-    item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(explore_suggested, deeplink_id=row['actions'][0]['deeplinkId']))))
+    item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(explore_extras, deeplink_id=playback['deeplinkId']))))
+    item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(explore_suggested, deeplink_id=playback['deeplinkId']))))
     return item
 
 
@@ -1118,6 +1101,7 @@ def _add_progress(user_state, item):
         item.info['playcount'] = 1
 
     elif user_state['progress']['progressPercentage'] > 0:
+        item.info['playcount'] = 0
         if 'secondsRemaining' in user_state['progress']:
             item.resume_from = int(item.info['duration'] - user_state['progress']['secondsRemaining'])
         else:
