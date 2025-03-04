@@ -484,7 +484,7 @@ class API(object):
         self.new_session()
 
     ### EXPLORE ###
-    @mem_cache.cached(60*60)
+    @mem_cache.cached(60*5)
     def explore_page(self, page_id, enhanced_limit=0):
         params = {
             'disableSmartFocus': 'true',
@@ -494,7 +494,6 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
         return self._json_call(endpoint, params=params)['data']['page']
 
-    @mem_cache.cached(60*60)
     def explore_set(self, set_id, page=1):
         params = {
             'limit': 999,
@@ -503,7 +502,6 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
-    @mem_cache.cached(60*60)
     def explore_season(self, season_id):
         params = {
             'limit': 999,
@@ -521,7 +519,6 @@ class API(object):
         self._check_errors(data)
         return data['data']['entityStates']
 
-    @mem_cache.cached(60*60)
     def explore_season(self, season_id, page=1):
         params = {
             'limit': 999,
@@ -530,7 +527,6 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
         return self._json_call(endpoint, params=params)['data']['season']
 
-    @mem_cache.cached(60*60)
     def explore_search(self, query):
         params = {
             'query': query,
@@ -574,7 +570,7 @@ class API(object):
         self._check_errors(data)
         return not any([x['error'] is not None for x in data])
 
-    @mem_cache.cached(60*60)
+    @mem_cache.cached(60*30)
     def explore_deeplink(self, ref_id, ref_type='encodedFamilyId', action=None):
         params = {
             'refId': ref_id,
