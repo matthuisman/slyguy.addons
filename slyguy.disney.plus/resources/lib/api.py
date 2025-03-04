@@ -30,11 +30,11 @@ class API(object):
         self.logged_in = userdata.get('refresh_token') != None
         self._cache = {}
 
-    @mem_cache.cached(60*60, key='config')
+    @mem_cache.cached(60*10, key='config')
     def get_config(self):
         return self._session.get(CONFIG_URL).json()
 
-    @mem_cache.cached(60*60, key='transaction_id')
+    @mem_cache.cached(60*10, key='transaction_id')
     def _transaction_id(self):
         return str(uuid.uuid4())
 
@@ -232,7 +232,7 @@ class API(object):
         self._check_errors(data)
         return data
 
-    @mem_cache.cached(60*60, key='account')
+    @mem_cache.cached(60*5, key='account')
     def account(self):
         self._set_token()
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
@@ -267,6 +267,7 @@ class API(object):
         data = self._session.post(endpoint, json=payload).json()
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk'])
+        mem_cache.delete('account')
 
     def set_imax(self, value):
         self._set_token()
@@ -570,7 +571,7 @@ class API(object):
         self._check_errors(data)
         return not any([x['error'] is not None for x in data])
 
-    @mem_cache.cached(60*30)
+    @mem_cache.cached(60*5)
     def explore_deeplink(self, ref_id, ref_type='encodedFamilyId', action=None):
         params = {
             'refId': ref_id,

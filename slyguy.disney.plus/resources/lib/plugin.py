@@ -143,7 +143,7 @@ def _avatars(ids):
 
 
 def _select_profile():
-    account = api.account()['account']
+    account = api.account(_skip_cache=True)['account']
     profiles = account['profiles']    
     avatars = _avatars([x['attributes']['avatar']['id'] for x in profiles])
 
