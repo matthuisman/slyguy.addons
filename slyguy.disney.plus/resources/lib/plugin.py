@@ -252,7 +252,7 @@ def hubs(**kwargs):
 def watchlist(**kwargs):
     page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
     set_id = api.explore_page(page_id)['containers'][0]['id']
-    data = api.explore_set(set_id, _skip_cache=True)
+    data = api.explore_set(set_id)
     folder = _process_explore(data, watchlist=True)
     folder.title = _.WATCHLIST
     return folder
@@ -263,7 +263,7 @@ def continue_watching(**kwargs):
     page_id = api.explore_deeplink(ref_id='home', ref_type='deeplinkId')['actions'][0]['pageId']
     page = api.explore_page(page_id)
     set_id = [x for x in page['containers'] if x['style']['name'] == 'continue_watching'][0]['id']
-    data = api.explore_set(set_id, _skip_cache=True)
+    data = api.explore_set(set_id)
     return _process_explore(data)
 
 
