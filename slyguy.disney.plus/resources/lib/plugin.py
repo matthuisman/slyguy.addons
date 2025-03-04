@@ -1276,20 +1276,27 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         flags = [x['value'] for x in data['visuals']['metastringParts']['audioVisual']['flags']]
         item = _parse_explore(data)
     elif program_type == 'episode':
-        # TODO: this is a few requests and needs regex. Ideally an api endpoint for episode details exist
-        season = re.search('- s([0-9]{1,})e([0-9]{1,}) -', player_experience['internalTitle']).group(1)
+        # TODO: this is a few requests and needs regex / name matching. Ideally an api endpoint for episode details exist
+        season_num = re.search('- s([0-9]{1,})e([0-9]{1,}) -', player_experience['internalTitle']).group(1)
         show = api.explore_page(data['actions'][1]['pageId'], enhanced_limit=15)
-        season = show['containers'][0]['seasons'][int(season)-1]
-        for row in season['items']:
-            if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
-                item = _parse_explore(row)
+
+        season = None
+        for row in show['containers'][0]['seasons']:
+            if row['visuals']['name'].endswith(str(season_num)):
+                season = row
                 break
-        else:
-            data = api.explore_season(season['id'])
-            for row in data['items']:
+
+        if season:
+            for row in season['items']:
                 if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
                     item = _parse_explore(row)
                     break
+            else:
+                data = api.explore_season(season['id'])
+                for row in data['items']:
+                    if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
+                        item = _parse_explore(row)
+                        break
 
     if 'imax_enhanced' in flags:
         deault_ratio = settings.DEFAULT_RATIO.value
