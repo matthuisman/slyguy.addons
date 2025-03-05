@@ -572,13 +572,12 @@ class API(object):
         return not any([x['error'] is not None for x in data])
 
     @mem_cache.cached(60*5)
-    def explore_deeplink(self, ref_id, ref_type='encodedFamilyId', action=None):
+    def explore_deeplink(self, ref_id, ref_type='deeplinkId', action='browse'):
         params = {
             'refId': ref_id,
             'refIdType': ref_type,
+            'action': action,
         }
-        if action:
-            params['action'] = action
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['deeplink']
 

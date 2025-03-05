@@ -239,7 +239,7 @@ def collection(slug, content_class, label=None, **kwargs):
 
 @plugin.route()
 def hubs(**kwargs):
-    page_id = api.explore_deeplink(ref_id='home', ref_type='deeplinkId')['actions'][0]['pageId']
+    page_id = api.explore_deeplink(ref_id='home')['actions'][0]['pageId']
     page = api.explore_page(page_id)
     set_id = [x for x in page['containers'] if x['visuals']['name'] == 'Brands'][0]['id']
     data = api.explore_set(set_id)
@@ -248,7 +248,7 @@ def hubs(**kwargs):
 
 @plugin.route()
 def watchlist(**kwargs):
-    page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
+    page_id = api.explore_deeplink(ref_id='watchlist')['actions'][0]['pageId']
     set_id = api.explore_page(page_id)['containers'][0]['id']
     data = api.explore_set(set_id)
     return _process_explore(data, title=_.WATCHLIST, watchlist=True)
@@ -256,7 +256,7 @@ def watchlist(**kwargs):
 
 @plugin.route()
 def continue_watching(**kwargs):
-    page_id = api.explore_deeplink(ref_id='home', ref_type='deeplinkId')['actions'][0]['pageId']
+    page_id = api.explore_deeplink(ref_id='home')['actions'][0]['pageId']
     page = api.explore_page(page_id)
     set_id = [x for x in page['containers'] if x['style']['name'] == 'continue_watching'][0]['id']
     data = api.explore_set(set_id)
@@ -356,9 +356,6 @@ def _get_play_path(**kwargs):
     profile_id = userdata.get('profile_id')
     if profile_id:
         kwargs['profile_id'] = profile_id
-
-    if settings.getBool('sync_playback', False):
-        kwargs[NO_RESUME_TAG] = True
 
     return plugin.url_for(play, **kwargs)
 
@@ -693,132 +690,6 @@ def search(query, page, **kwargs):
 
 
 @plugin.route()
-@plugin.login_required()
-def play(family_id=None, content_id=None, **kwargs):
-    return _play(family_id, content_id, **kwargs)
-
-
-def _play(family_id=None, content_id=None, **kwargs):
-    if KODI_VERSION > 18:
-        ver_required = '2.6.0'
-    else:
-        ver_required = '2.4.5'
-
-    ia = inputstream.Widevine(
-        license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
-        manifest_type = 'hls',
-        mimetype = 'application/vnd.apple.mpegurl',
-        wv_secure = is_wv_secure(),
-    )
-
-    if not ia.check() or not inputstream.require_version(ver_required):
-        gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
-
-    if family_id:
-        data = api.video_bundle(family_id)
-    else:
-        data = api.video(content_id)
-
-    video = data.get('video')
-    if not video:
-        raise PluginError(_.NO_VIDEO_FOUND)
-
-    versions = video['mediaMetadata']['facets']
-    has_imax = False
-    for row in versions:
-        if row['activeAspectRatio'] == 1.9:
-            has_imax = True
-
-    if has_imax:
-        deault_ratio = settings.DEFAULT_RATIO.value
-
-        if deault_ratio == Ratio.ASK:
-            index = gui.context_menu([_.IMAX, _.WIDESCREEN])
-            if index == -1:
-                return
-            imax = True if index == 0 else False
-        else:
-            imax = True if deault_ratio == Ratio.IMAX else False
-
-        profile = api.profile()[0]
-        if imax != profile['attributes']['playbackSettings']['preferImaxEnhancedVersion']:
-            api.set_imax(imax)
-
-    playback_url = video['mediaMetadata']['playbackUrls'][0]['href']
-    playback_data = api.playback_data(playback_url, ia.wv_secure)
-
-    try:
-        #v6
-        media_stream = playback_data['stream']['sources'][0]['complete']['url']
-    except KeyError:
-        #v5
-        media_stream = playback_data['stream']['complete'][0]['url']
-
-    original_language = video.get('originalLanguage') or ''
-    item = _parse_video(video)
-    item.update(
-        path = media_stream,
-        inputstream = ia,
-        headers = api.session.headers,
-        proxy_data = {'original_language': original_language},
-    )
-
-    milestones = video.get('milestone', [])
-    item.play_next = {}
-    item.play_skips = []
-
-    if not kwargs.get(ROUTE_RESUME_TAG):
-        if settings.getBool('sync_playback', False) and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
-            item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
-            if item.resume_from == -1:
-                return
-
-    if milestones and settings.getBool('skip_recaps', False):
-        recap_start = _get_milestone(milestones, 'recap_start')
-        recap_end = _get_milestone(milestones, 'recap_end')
-        if recap_end > recap_start:
-            item.play_skips.append({'from': recap_start, 'to': recap_end})
-
-    if milestones and settings.getBool('skip_intros', False):
-        intro_start = _get_milestone(milestones, 'intro_start')
-        intro_end = _get_milestone(milestones, 'intro_end')
-        if intro_end > intro_start:
-            item.play_skips.append({'from': intro_start, 'to': intro_end})
-
-    if milestones and settings.getBool('skip_credits', False):
-        credits_start = _get_milestone(milestones, 'up_next')
-        tag_start = _get_milestone(milestones, 'tag_start')
-        tag_end = _get_milestone(milestones, 'tag_end')
-        item.play_skips.append({'from': credits_start, 'to': tag_start})
-        if tag_end:
-            item.play_skips.append({'from': tag_end, 'to': 0})
-
-    if video['programType'] == 'episode' and settings.getBool('play_next_episode', True):
-        data = api.up_next(video['contentId'])
-        for row in data.get('items', []):
-            if row['type'] == 'DmcVideo' and row['programType'] == 'episode' and row['encodedSeriesId'] == video['encodedSeriesId']:
-                item.play_next['next_file'] = _get_play_path(content_id=row['contentId'])
-                break
-
-    elif video['programType'] != 'episode' and settings.getBool('play_next_movie', False):
-        data = api.up_next(video['contentId'])
-        for row in data.get('items', []):
-            if row['type'] == 'DmcVideo' and row['programType'] != 'episode':
-                item.play_next['next_file'] = _get_play_path(content_id=row['contentId'])
-                break
-
-    if settings.getBool('sync_playback', False):
-        telemetry = playback_data['tracking']['telemetry']
-        item.callback = {
-            'type':'interval',
-            'interval': 30,
-            'callback': plugin.url_for(callback, media_id=telemetry['mediaId'], fguid=telemetry['fguid']),
-        }
-
-    return item
-
-
-@plugin.route()
 @plugin.no_error_gui()
 def callback(media_id, fguid, _time, **kwargs):
     api.update_resume(media_id, fguid, int(_time))
@@ -988,11 +859,28 @@ def _process_explore(data, title=None, watchlist=False):
     return folder
 
 
+def _get_best_play_path(actions):
+    _actions = {}
+    for action in actions:
+        _actions[action['type']] = action
+
+    playback = _actions.get('playback') or _actions.get('browse')
+    legacy_id = playback.get('legacyPartnerFeed', {}).get('dmcContentId') or playback.get('partnerFeed',{}).get('dmcContentId')
+    if legacy_id:
+        # try keep old paths for kodi db watch status
+        return _get_play_path(content_id=legacy_id)
+    else:
+        # new content has no legacy ids, so needs to use deeplink
+        return _get_play_path(deeplink_id=playback['deeplinkId'])
+
+
 def _parse_explore(row):
     actions = {}
     for action in row['actions']:
         actions[action['type']] = action
     playback = actions.get('playback', actions.get('browse'))
+
+    play_path = _get_best_play_path(row['actions'])
 
     if 'episodeTitle' in row['visuals']:
         item = plugin.Item(
@@ -1007,7 +895,7 @@ def _parse_explore(row):
             },
             art = _get_explore_art(row),
             playable = True,
-            path = _get_explore_play_path(deeplink_id=playback['deeplinkId']),
+            path = play_path,
         )
         return item
 
@@ -1045,7 +933,7 @@ def _parse_explore(row):
         item.info['duration'] = int(meta['runtime']['runtimeMs'] / 1000)
         item.info['mediatype'] = 'movie'
         item.playable = True
-        item.path = _get_explore_play_path(deeplink_id=playback['deeplinkId'])
+        item.path = play_path
     else:
         item.info['mediatype'] = 'tvshow'
         # might be trailer which does not have trailer
@@ -1239,14 +1127,6 @@ def _get_explore_art(row):
     return art
 
 
-def _get_explore_play_path(**kwargs):
-    profile_id = userdata.get('profile_id')
-    if profile_id:
-        kwargs['profile_id'] = profile_id
-
-    return plugin.url_for(explore_play, **kwargs)
-
-
 def _get_explore_milestone(milestones, name, default=0):
     if not milestones:
         return default
@@ -1260,7 +1140,7 @@ def _get_explore_milestone(milestones, name, default=0):
 
 @plugin.route()
 @plugin.login_required()
-def explore_play(deeplink_id=None, family_id=None, **kwargs):
+def play(deeplink_id=None, family_id=None, content_id=None, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
     else:
@@ -1275,10 +1155,12 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
     if not ia.check() or not inputstream.require_version(ver_required):
         gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
 
-    if family_id:
-        data = api.explore_deeplink(family_id)
+    if content_id:
+        data = api.explore_deeplink(content_id, ref_type='dmcContentId', action='playback')
+    elif family_id:
+        data = api.explore_deeplink(family_id, ref_type='encodedFamilyId', action='playback')
     else:
-        data = api.explore_deeplink(deeplink_id.replace('entity-', ''), ref_type='deeplinkId', action='playback')
+        data = api.explore_deeplink(deeplink_id.replace('entity-', ''), action='playback')
 
     deeplink_id = data['actions'][0]['deeplinkId'].replace('entity-', '')
     resource_id = data['actions'][0]['resourceId']
@@ -1362,26 +1244,18 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or not row.get('sequentialEpisode'):
                 continue
-
-            for action in row['item'].get('actions', []):
-                if action.get('type') == 'playback':
-                    upnext = action['deeplinkId']
-                    break
+            upnext = row['item']
 
     elif program_type == 'movie' and settings.getBool('play_next_movie', False):
         data = api.explore_upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or row.get('sequentialEpisode'):
                 continue
-
-            for action in row['item'].get('actions', []):
-                if action.get('type') == 'playback':
-                    upnext = action['deeplinkId']
-                    break
+            upnext = row['item']
 
     if upnext:
-        kwargs = {'deeplink_id': upnext}
-        item.play_next = {'next_file': _get_explore_play_path(**kwargs)}
+        play_path = _get_best_play_path(upnext['actions'])
+        item.play_next = {'next_file': play_path}
 
     if settings.SYNC_PLAYBACK.value:
         telemetry = playback_data['tracking']['telemetry']
