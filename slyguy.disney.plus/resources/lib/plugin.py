@@ -349,7 +349,7 @@ def _parse_collection(row):
     )
 
 
-def _get_play_path(**kwargs):
+def _get_play_path(_legacy=True, **kwargs):
     if not kwargs:
         return None
 
@@ -406,6 +406,11 @@ def _parse_season(row, series):
 
 
 def _parse_video(row):
+    # legacy added no resume and did resume from in play
+    kwargs = {'content_id': row['contentId']}
+    if settings.SYNC_PLAYBACK.value:
+        kwargs[NO_RESUME_TAG] = True
+
     item = plugin.Item(
         label = _get_text(row, 'title', 'program'),
         info  = {
@@ -415,7 +420,7 @@ def _parse_video(row):
             'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
         },
         art  = _get_art(row),
-        path = _get_play_path(content_id=row['contentId']),
+        path = _get_play_path(**kwargs),
         playable = True,
     )
 
@@ -1207,6 +1212,13 @@ def play(deeplink_id=None, family_id=None, content_id=None, **kwargs):
             api.set_imax(imax)
 
     playback_data = api.explore_playback(resource_id, ia.wv_secure)
+
+    # LEGACY RESUME (Remove once legacy browsing removed)
+    if not kwargs.get(ROUTE_RESUME_TAG):
+        if settings.SYNC_PLAYBACK.value and NO_RESUME_TAG in kwargs and playback_data['playhead']['status'] == 'PlayheadFound':
+            item.resume_from = plugin.resume_from(playback_data['playhead']['position'])
+            if item.resume_from == -1:
+                return
 
     item.update(
         playable = True,
