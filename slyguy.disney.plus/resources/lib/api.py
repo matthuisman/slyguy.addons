@@ -486,10 +486,10 @@ class API(object):
 
     ### EXPLORE ###
     @mem_cache.cached(60*5)
-    def explore_page(self, page_id, enhanced_limit=0):
+    def explore_page(self, page_id, limit=999, enhanced_limit=0):
         params = {
             'disableSmartFocus': 'true',
-            'limit': 999,
+            'limit': limit,
             'enhancedContainersLimit': enhanced_limit,
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)

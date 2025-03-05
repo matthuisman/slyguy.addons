@@ -243,9 +243,7 @@ def hubs(**kwargs):
     page = api.explore_page(page_id)
     set_id = [x for x in page['containers'] if x['visuals']['name'] == 'Brands'][0]['id']
     data = api.explore_set(set_id)
-    folder = _process_explore(data)
-    folder.title = _.HUBS
-    return folder
+    return _process_explore(data, title=_.HUBS)
 
 
 @plugin.route()
@@ -253,9 +251,7 @@ def watchlist(**kwargs):
     page_id = api.explore_deeplink(ref_id='watchlist', ref_type='deeplinkId')['actions'][0]['pageId']
     set_id = api.explore_page(page_id)['containers'][0]['id']
     data = api.explore_set(set_id)
-    folder = _process_explore(data, watchlist=True)
-    folder.title = _.WATCHLIST
-    return folder
+    return _process_explore(data, title=_.WATCHLIST, watchlist=True)
 
 
 @plugin.route()
@@ -264,7 +260,7 @@ def continue_watching(**kwargs):
     page = api.explore_page(page_id)
     set_id = [x for x in page['containers'] if x['style']['name'] == 'continue_watching'][0]['id']
     data = api.explore_set(set_id)
-    return _process_explore(data)
+    return _process_explore(data, title=_.CONTINUE_WATCHING)
 
 
 @plugin.route()
@@ -873,30 +869,86 @@ def explore_set(set_id, page=1, **kwargs):
 
 @plugin.route()
 def explore_season(show_id, season_id, **kwargs):
-    data = api.explore_season(season_id)
-    folder = _process_explore(data)
-
     show_data = api.explore_page(show_id)
+    data = api.explore_season(season_id)
+    folder = _process_explore(data, title=show_data['visuals']['title'])
     show_art = _get_explore_art(show_data)
     for key in show_art:
         if key != 'poster' and not folder.art.get(key):
             folder.art[key] = show_art[key]
+    return folder
+
+
+@plugin.route()
+def explore_show(show_id, **kwargs):
+    show_data = api.explore_page(show_id, limit=1, enhanced_limit=15)
+
+    actions = {}
+    for row in show_data['actions']:
+        actions[row['type']] = row
+
+    containers = {}
+    for row in show_data['containers']:
+        containers[row['visuals']['name']] = row
+
+    show_plot = containers['DETAILS']['visuals']['description']['medium']
+    show_title = containers['DETAILS']['visuals']['title']
+
+    folder = plugin.Folder(show_title, art=_get_explore_art(show_data))
+    for season in containers['EPISODES']['seasons']:
+        folder.items.append(plugin.Item(
+            label = season['visuals']['name'],
+            info = {
+                'plot': u'{}\n\n{}'.format(show_plot, _(season['visuals']['episodeCountDisplayText'], _bold=True)),
+                'tvshowtitle': show_title,
+                'mediatype': 'season',
+            },
+            art = _get_explore_art(season),
+            path = plugin.url_for(explore_season, show_id=show_data['id'], season_id=season['id']),
+        ))
+
+    if 'trailer' in actions:
+        folder.items.append(plugin.Item(
+            label = _.TRAILER,
+            info = {
+                'plot': show_plot,
+                'mediatype': 'video',
+            },
+            path = plugin.url_for(explore_play_trailer, deeplink_id=show_data['id']),
+            playable = True,
+            specialsort = 'bottom',
+        ))
+
+    if 'SUGGESTED' in containers:
+        folder.items.append(plugin.Item(
+            label = _.SUGGESTED,
+            info = {
+                'plot': show_plot,
+            },
+            path = plugin.url_for(explore_suggested, deeplink_id=show_data['id']),
+            specialsort = 'bottom',
+        ))
+
+    if 'EXTRAS' in containers:
+        folder.items.append(plugin.Item(
+            label = _.EXTRAS,
+            info = {
+                'plot': show_plot,
+            },
+            path = plugin.url_for(explore_extras, deeplink_id=show_data['id']),
+            specialsort = 'bottom',
+        ))
 
     return folder
 
 
-def _process_explore(data, watchlist=False):
-    title = data['visuals'].get('title') or data['visuals'].get('name')
+def _process_explore(data, title=None, watchlist=False):
+    if not data or 'visuals' not in data:
+        return plugin.Folder(title)
+
+    title = title or data['visuals'].get('title') or data['visuals'].get('name')
     folder = plugin.Folder(title, art=_get_explore_art(data))
-
-    if 'containers' in data:
-        rows = data['containers']
-    elif 'items' in data:
-        rows = data['items']
-    else:
-        rows = []
-
-    is_show = 'seasonsAvailable' in data['visuals'].get('metastringParts', {})
+    rows = data.get('containers') or data.get('items') or []
 
     user_states = {}
     if settings.SYNC_PLAYBACK.value:
@@ -907,7 +959,7 @@ def _process_explore(data, watchlist=False):
 
     items = []
     for row in rows:
-        if not is_show and row['type'] == 'set':
+        if row['type'] == 'set':
             item = plugin.Item(
                 label = row['visuals']['name'],
                 art = _get_explore_art(row),
@@ -915,26 +967,7 @@ def _process_explore(data, watchlist=False):
             )
             items.append(item)
 
-        elif is_show and row['type'] == 'episodes':
-            seasons = []
-            for season in row.get('seasons', []):
-                item = plugin.Item(
-                    label = season['visuals']['name'],
-                    info = {
-                        'plot': data['visuals']['description']['medium'],
-                        'tvshowtitle': title,
-                        'mediatype': 'season',
-                    },
-                    art = _get_explore_art(season),
-                    path = plugin.url_for(explore_season, show_id=data['id'], season_id=season['id']),
-                )
-                match = re.search('Season ([0-9]+)', season['visuals']['name'], re.IGNORECASE)
-                if match:
-                    item.info['season'] = int(match.group(1))
-                seasons.append(item)
-            items.extend(sorted(seasons, key=lambda item: item.info.get('season') or 9999, reverse=False))
-
-        elif not is_show and row.get('actions', []):
+        elif row.get('actions', []):
             # MOVIE / TV SHOW / EPISODE
             item = _parse_explore(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
@@ -996,7 +1029,7 @@ def _parse_explore(row):
     )
 
     if 'description' in row['visuals']:
-        item.info['plot'] = row['visuals']['description'].get('medium',  row['visuals']['description'].get('brief', row['visuals']['description']['full']))
+        item.info['plot'] = row['visuals']['description'].get('medium') or row['visuals']['description'].get('brief') or row['visuals']['description'].get('full')
 
     if 'releaseYearRange' in meta:
         item.info['year'] = meta['releaseYearRange']['startYear']
@@ -1016,7 +1049,7 @@ def _parse_explore(row):
         item.info['mediatype'] = 'tvshow'
         # might be trailer which does not have trailer
         if 'browse' in actions:
-            item.path = plugin.url_for(explore_page, page_id=actions['browse']['pageId'])
+            item.path = plugin.url_for(explore_show, show_id=actions['browse']['pageId'])
 
     return item
 
@@ -1086,13 +1119,7 @@ def explore_extras(deeplink_id, **kwargs):
     containers = {}
     for row in data['containers']:
         containers[row['visuals']['name']] = row
-
-    if 'EXTRAS' in containers:
-        folder = _process_explore(containers['EXTRAS'])
-    else:
-        folder = plugin.Folder()
-    folder.title = u"{} ({})".format(data['visuals']['title'], _.EXTRAS)
-    return folder
+    return _process_explore(containers.get('EXTRAS'), title=u"{} ({})".format(data['visuals']['title'], _.EXTRAS))
 
 
 @plugin.route()
@@ -1101,14 +1128,7 @@ def explore_suggested(deeplink_id, **kwargs):
     containers = {}
     for row in data['containers']:
         containers[row['visuals']['name']] = row
-
-    if 'SUGGESTED' in containers:
-        folder = _process_explore(containers['SUGGESTED'])
-    else:
-        folder = plugin.Folder()
-    folder.title = u"{} ({})".format(data['visuals']['title'], _.SUGGESTED)
-    return folder
-
+    return _process_explore(containers.get('SUGGESTED'), title=u"{} ({})".format(data['visuals']['title'], _.SUGGESTED))
 
 
 def _add_progress(user_state, item):
@@ -1132,21 +1152,18 @@ def _get_explore_art(row):
 
     is_episode = 'episodeTitle' in row['visuals']
     images = row['visuals']['artwork']['standard']
+
     if 'tile' in row['visuals']['artwork']:
         images['hero_tile'] = row['visuals']['artwork']['tile']['background']
 
-    try:
-        images['background'] = row['visuals']['artwork']['hero']['background']
-    except KeyError:
-        pass
-
-    try:
-        images['background'] = row['visuals']['artwork']['brand']['background']
-    except KeyError:
-        pass
-
     if 'network' in row['visuals']['artwork']:
         images['thumbnail'] = row['visuals']['artwork']['network']['tile']
+
+    for key in ('hero', 'brand', 'up_next'):
+        try:
+            images['background'] = row['visuals']['artwork'][key]['background']
+        except KeyError:
+            pass
 
     def _first_image_url(d):
         return 'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/{}'.format(d['imageId'])
@@ -1271,32 +1288,25 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
 
     flags = []
     item = plugin.Item()
+
+    #TODO: dont need to do this if clicking from existing listitem with all info
+    # skip this if we already have good info
     if program_type == 'movie':
         data = api.explore_page('entity-{}'.format(deeplink_id))
         flags = [x['value'] for x in data['visuals']['metastringParts']['audioVisual']['flags']]
         item = _parse_explore(data)
     elif program_type == 'episode':
-        # TODO: this is a few requests and needs regex / name matching. Ideally an api endpoint for episode details exist
-        season_num = re.search('- s([0-9]{1,})e([0-9]{1,}) -', player_experience['internalTitle']).group(1)
-        show = api.explore_page(data['actions'][1]['pageId'], enhanced_limit=15)
-
-        season = None
+        # TODO: this is a few requests and needs ugly season name matching. Ideally an api endpoint for episode details exist
+        season_name = player_experience['subtitle'].split(':')[0].lower().strip().lstrip('s')
+        show = api.explore_page(data['actions'][1]['pageId'], limit=0, enhanced_limit=0)
         for row in show['containers'][0]['seasons']:
-            if row['visuals']['name'].endswith(str(season_num)):
-                season = row
-                break
-
-        if season:
-            for row in season['items']:
-                if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
-                    item = _parse_explore(row)
-                    break
-            else:
-                data = api.explore_season(season['id'])
+            if row['visuals']['name'].lower().endswith(season_name):
+                data = api.explore_season(row['id'])
                 for row in data['items']:
                     if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
                         item = _parse_explore(row)
                         break
+                break
 
     if 'imax_enhanced' in flags:
         deault_ratio = settings.DEFAULT_RATIO.value
