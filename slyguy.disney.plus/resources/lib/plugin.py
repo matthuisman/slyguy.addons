@@ -891,7 +891,8 @@ def explore_show(show_id, **kwargs):
     for row in show_data['containers']:
         containers[row['visuals']['name']] = row
 
-    show_plot = containers['DETAILS']['visuals']['description']['medium']
+    description = containers['DETAILS']['visuals']['description']
+    show_plot = description.get('medium') or description.get('brief') or description.get('full')
     show_title = containers['DETAILS']['visuals']['title']
 
     folder = plugin.Folder(show_title, art=_get_explore_art(show_data))
@@ -1330,7 +1331,7 @@ def explore_play(deeplink_id=None, family_id=None, **kwargs):
         path = playback_data['stream']['sources'][0]['complete']['url'],
         inputstream = ia,
         headers = api.session.headers,
-        proxy_data = {'original_language': player_experience.get('originalLanguage')},
+        proxy_data = {'original_language': player_experience.get('originalLanguage') or ''},
     )
 
     item.play_skips = []
