@@ -545,8 +545,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         ac3_enabled = self._session.get('ac3', False)
         ec3_enabled = self._session.get('ec3', False)
 
-        original_language = self._session.get('original_language', '')
-        interface_language = self._session.get('interface_language', '')
+        original_language = self._session.get('original_language') or ''
+        interface_language = self._session.get('interface_language') or ''
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
         user_default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
@@ -1069,8 +1069,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         audio_whitelist = [x.strip().lower() for x in self._session.get('audio_whitelist', '').split(',') if x]
         subs_whitelist = [x.strip().lower() for x in self._session.get('subs_whitelist', '').split(',') if x]
-        original_language = self._session.get('original_language', '')
-        interface_language = self._session.get('interface_language', '')
+        original_language = self._session.get('original_language') or ''
+        interface_language = self._session.get('interface_language') or ''
         user_default_languages = [x.strip().lower() for x in self._session.get('default_language', '').split(',') if x]
         user_default_subtitles = [x.strip().lower() for x in self._session.get('default_subtitle', '').split(',') if x]
         max_bandwidth = self._session.get('max_bandwidth') or float('inf')
