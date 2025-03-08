@@ -13,6 +13,7 @@ class Language(BaseLanguage):
     AUTO_TRANSLATE = 30009
     SUBTITLES = 30010
     AUTO_SUBTITLES = 30011
+    COOKIES_PATH = 30012
 
 
 _ = Language()

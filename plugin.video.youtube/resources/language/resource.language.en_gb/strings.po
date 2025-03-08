@@ -61,3 +61,7 @@ msgstr ""
 msgctxt "#30011"
 msgid "Auto-translated Subtitles"
 msgstr ""
+
+msgctxt "#30012"
+msgid "yt-dlp cookies.txt path"
+msgstr ""
