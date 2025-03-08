@@ -61,7 +61,7 @@ def play(video_id, **kwargs):
     }
 
     if settings.COOKIES_PATH.value:
-        ydl_opts['cookiefile'] = settings.COOKIES_PATH.value
+        ydl_opts['cookiefile'] = xbmc.translatePath(settings.COOKIES_PATH.value)
 
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     error = 'Unknown'
