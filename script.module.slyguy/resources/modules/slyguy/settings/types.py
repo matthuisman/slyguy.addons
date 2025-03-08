@@ -289,6 +289,7 @@ class Text(Setting):
 
 class Browse(Text):
     DIRECTORY = 'directory'
+    FILE = 'file'
 
     def __init__(self, *args, **kwargs):
         self._type = kwargs.pop('type')
@@ -300,6 +301,10 @@ class Browse(Text):
     def select(self):
         if self._type == Browse.DIRECTORY:
             value = xbmcgui.Dialog().browse(3 if self._allow_create else 0, self._label, shares=self._source, defaultt=self.value if self._use_default else None)
+            if value:
+                self.value = value
+        elif self._type == Browse.FILE:
+            value = xbmcgui.Dialog().browse(1, self._label, shares=self._source, defaultt=self.value if self._use_default else None)
             if value:
                 self.value = value
 
