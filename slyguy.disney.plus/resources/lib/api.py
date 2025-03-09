@@ -184,22 +184,6 @@ class API(object):
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk'])
 
-    # def device_code(self):
-    #     token = self.register_device()
-
-    #     payload = {
-    #         'variables': {},
-    #         'query': queries.REQUEST_DEVICE_CODE,
-    #     }
-
-    #     endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
-    #     data = self._session.post(endpoint, json=payload, headers={'authorization': token}).json()
-    #     self._check_errors(data)
-    #     return data['data']['requestLicensePlate']['licensePlate']
-
-    # def device_login(self, code):
-    #     return False
-
     def _check_errors(self, data, error=_.API_ERROR, raise_on_error=True):
         if not type(data) is dict:
             return
@@ -300,7 +284,7 @@ class API(object):
         app_language = profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US'
 
         _args = {
-            'apiVersion': '{apiVersion}',
+            'apiVersion': '5.1',
             'region': region,
             'impliedMaturityRating': maturity,
             'kidsModeEnabled': 'true' if kids_mode else 'false',
@@ -308,15 +292,7 @@ class API(object):
             'partner': BAM_PARTNER,
         }
         _args.update(**kwargs)
-
-        href = href.format(**_args)
-
-        # [3.0, 3.1, 3.2, 5.0, 3.3, 5.1, 6.0, 5.2, 6.1]
-        api_version = '6.1'
-        if '/search/' in href:
-            api_version = '5.1'
-
-        return href.format(apiVersion=api_version)
+        return href.format(**_args)
 
     def profile(self):
         session = self._cache.get('session')
@@ -334,159 +310,12 @@ class API(object):
 
         return profile, session
 
-    def search(self, query, page_size=PAGE_SIZE_CONTENT):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getSearchResults']['href'], query=query, queryType=SEARCH_QUERY_TYPE, pageSize=page_size)
-        return self._json_call(endpoint)['data']['search']
-
-    def feature_flags(self):
-        self._set_token()
-        return userdata.get('feature_flags')
-
     def avatar_by_id(self, ids):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getAvatars']['href'], avatarIds=','.join(ids))
         return self._json_call(endpoint)['data']['Avatars']
 
-    def video_bundle(self, family_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getDmcVideoBundle']['href'], encodedFamilyId=family_id)
-        return self._json_call(endpoint)['data']['DmcVideoBundle']
-
-    def up_next(self, content_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getUpNext']['href'], contentId=content_id)
-        return self._json_call(endpoint)['data']['UpNext'] or {}
-
-    def continue_watching(self):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCWSet']['href'], setId=CONTINUE_WATCHING_SET_ID)
-        return self._json_call(endpoint)['data']['ContinueWatchingSet']
-
-    def add_watchlist(self, ref_type, ref_id):
-        self._set_token()
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['putItemInWatchlist']['href'], refIdType=ref_type, refId=ref_id)
-        return self._session.put(endpoint).ok
-
-    def delete_watchlist(self, ref_type, ref_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['deleteItemFromWatchlist']['href'], refIdType=ref_type, refId=ref_id)
-        return self._session.delete(endpoint).ok
-
-    def collection_by_slug(self, slug, content_class, sub_type='StandardCollection'):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getCollection']['href'], collectionSubType=sub_type, contentClass=content_class, slug=slug)
-        return self._json_call(endpoint)['data']['Collection']
-
-    def set_by_id(self, set_id, set_type, page=1, page_size=PAGE_SIZE_SETS):
-        if set_type == 'ContinueWatchingSet':
-            endpoint = 'getCWSet'
-        elif set_type == 'CuratedSet':
-            endpoint = 'getCuratedSet'
-        else:
-            endpoint = 'getSet'
-
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints'][endpoint]['href'], setType=set_type, setId=set_id, pageSize=page_size, page=page)
-        return self._json_call(endpoint)['data'][set_type]
-
-    def video(self, content_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getDmcVideo']['href'], contentId=content_id)
-        return self._json_call(endpoint)['data']['DmcVideo']
-
-    def series_bundle(self, series_id):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getDmcSeriesBundle']['href'], encodedSeriesId=series_id)
-        return self._json_call(endpoint)['data']['DmcSeriesBundle']
-
-    def episodes(self, season_id, page=1, page_size=PAGE_SIZE_CONTENT):
-        endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getDmcEpisodes']['href'], seasonId=season_id, pageSize=page_size, page=page)
-        return self._json_call(endpoint)['data']['DmcEpisodes']
-
-    def update_resume(self, media_id, fguid, playback_time):
-        self._set_token()
-
-        payload = [{
-            'server': {
-                'fguid': fguid,
-                'mediaId': media_id,
-                # 'origin': '',
-                # 'host': '',
-                # 'cdn': '',
-                # 'cdnPolicyId': '',
-            },
-            'client': {
-                'event': 'urn:bamtech:api:stream-sample',
-                'timestamp': str(int(time()*1000)),
-                'play_head': playback_time,
-                # 'playback_session_id': str(uuid.uuid4()),
-                # 'interaction_id': str(uuid.uuid4()),
-                # 'bitrate': 4206,
-            },
-        }]
-
-        endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['postEvent']['href']
-        return self._session.post(endpoint, json=payload).status_code
-
-    def playback_data(self, playback_url, wv_secure=False):
-        self._set_token()
-
-        headers = {'accept': 'application/vnd.media-service+json; version={}'.format(6 if self._cache['basic_tier'] else 5), 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
-
-        payload = {
-            "playback": {
-                "attributes": {
-                    "codecs": {
-                        'supportsMultiCodecMaster': False, #if true outputs all codecs and resoultion in single playlist
-                    },
-                    "protocol": "HTTPS",
-                    #"ads": "",
-                    "frameRates": [60],
-                    "assetInsertionStrategy": "SGAI",
-                    "playbackInitializationContext": "ONLINE"
-                },
-            }
-        }
-
-        video_ranges = []
-        audio_types = []
-
-        # atmos not yet supported on version=6 (basic tier). Add in-case support is added
-        if settings.getBool('dolby_atmos', False):
-            audio_types.append('ATMOS')
-
-        # DTSX works on both tiers
-        if settings.getBool('dtsx', False):
-            audio_types.append('DTS_X')
-
-        if wv_secure and settings.getBool('dolby_vision', False):
-            video_ranges.append('DOLBY_VISION')
-
-        if wv_secure and settings.getBool('hdr10', False):
-            video_ranges.append('HDR10')
-
-        if settings.getBool('h265', False):
-            payload['playback']['attributes']['codecs'] = {'video': ['h264', 'h265']}
-
-        if audio_types:
-            payload['playback']['attributes']['audioTypes'] = audio_types
-
-        if video_ranges:
-            payload['playback']['attributes']['videoRanges'] = video_ranges
-
-        if not wv_secure:
-            payload['playback']['attributes']['resolution'] = {'max': ['1280x720']}
-
-        scenario = 'ctr-high' if wv_secure else 'ctr-regular'
-        endpoint = playback_url.format(scenario=scenario)
-        playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
-        self._check_errors(playback_data)
-        return playback_data
-
-    def logout(self):
-        mem_cache.delete('transaction_id')
-        mem_cache.delete('config')
-        mem_cache.delete('account')
-        userdata.delete('access_token')
-        userdata.delete('expires')
-        userdata.delete('refresh_token')
-        userdata.delete('feature_flags')
-        self.new_session()
-
-    ### EXPLORE ###
     @mem_cache.cached(60*5)
-    def explore_page(self, page_id, limit=999, enhanced_limit=0):
+    def page(self, page_id, limit=999, enhanced_limit=0):
         params = {
             'disableSmartFocus': 'true',
             'limit': limit,
@@ -495,22 +324,15 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
         return self._json_call(endpoint, params=params)['data']['page']
 
-    def explore_set(self, set_id, page=1):
+    def set(self, set_id, page=1):
         params = {
-            'limit': 999,
+            'limit': 48,
             'offset': 30*(page-1),
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
-    def explore_season(self, season_id):
-        params = {
-            'limit': 999,
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
-        return self._json_call(endpoint, params=params)['data']['season']
-
-    def explore_userstate(self, pids):
+    def userstates(self, pids):
         self._set_token()
         payload = {
             'pids': pids,
@@ -520,33 +342,33 @@ class API(object):
         self._check_errors(data)
         return data['data']['entityStates']
 
-    def explore_season(self, season_id, page=1):
+    def season(self, season_id, page=1):
         params = {
-            'limit': 999,
+            'limit': 48,
             'offset': 30*(page-1),
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
         return self._json_call(endpoint, params=params)['data']['season']
 
-    def explore_search(self, query):
+    def search(self, query):
         params = {
             'query': query,
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['search']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['page']
 
-    def explore_upnext(self, content_id):
+    def upnext(self, content_id):
         params = {
             'contentId': content_id,
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUpNext']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['upNext']
 
-    def explore_player_experience(self, available_id):
+    def player_experience(self, available_id):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPlayerExperience']['href'], version=EXPLORE_VERSION, availId=available_id)
         return self._json_call(endpoint)['data']['playerExperience']
 
-    def explore_watchlist(self, event_type, page_info, action_info):
+    def watchlist(self, event_type, page_info, action_info):
         self._set_token()
         profile, session = self.profile()
         event_time = arrow.utcnow().format("YYYY-MM-DDTHH:mm:ss.SSS") + "Z"
@@ -572,7 +394,7 @@ class API(object):
         return not any([x['error'] is not None for x in data])
 
     @mem_cache.cached(60*5)
-    def explore_deeplink(self, ref_id, ref_type='deeplinkId', action='browse'):
+    def deeplink(self, ref_id, ref_type='deeplinkId', action='browse'):
         params = {
             'refId': ref_id,
             'refIdType': ref_type,
@@ -581,7 +403,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
         return self._json_call(endpoint, params=params)['data']['deeplink']
 
-    def explore_playback(self, resource_id, wv_secure=False):
+    def playback(self, resource_id, wv_secure=False):
         self._set_token()
         headers = {'accept': 'application/vnd.media-service+json', 'authorization': userdata.get('access_token'), 'x-dss-feature-filtering': 'true'}
 
@@ -635,3 +457,13 @@ class API(object):
         playback_data = self._session.post(endpoint, headers=headers, json=payload).json()
         self._check_errors(playback_data)
         return playback_data
+
+    def logout(self):
+        mem_cache.delete('transaction_id')
+        mem_cache.delete('config')
+        mem_cache.delete('account')
+        userdata.delete('access_token')
+        userdata.delete('expires')
+        userdata.delete('refresh_token')
+        userdata.delete('feature_flags')
+        self.new_session()

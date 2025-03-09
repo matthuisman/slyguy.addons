@@ -5,7 +5,6 @@ class Language(BaseLanguage):
     API_ERROR                = 30003
     ORIGINALS                = 30006
     FULL_DETAILS             = 30007
-    HUBS                     = 30008
     IMAX                     = 30009
     SUGGESTED                = 30010
     FEATURED                 = 30011
@@ -37,6 +36,7 @@ class Language(BaseLanguage):
     PROFILE_SETTINGS         = 30053
     WIDESCREEN               = 30055
     SKIP_RECAPS              = 30056
+    BRANDS                   = 30057
 
 
 _ = Language()

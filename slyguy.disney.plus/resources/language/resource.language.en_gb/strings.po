@@ -27,9 +27,6 @@ msgctxt "#30007"
 msgid "Full Details"
 msgstr ""
 
-msgctxt "#30008"
-msgid "Hubs"
-msgstr ""
 
 msgctxt "#30009"
 msgid "IMAX"
@@ -157,4 +154,8 @@ msgstr ""
 
 msgctxt "#30056"
 msgid "Skip Recaps"
+msgstr ""
+
+msgctxt "#30057"
+msgid "Brands"
 msgstr ""

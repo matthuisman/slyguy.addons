@@ -1,13 +1,7 @@
-import re
-
-from kodi_six import xbmc
-
 from slyguy import plugin, gui, userdata, signals, inputstream
-from slyguy.log import log
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
-from slyguy.util import async_tasks
 
 from .api import API
 from .constants import *
@@ -31,11 +25,11 @@ def index(**kwargs):
     if not api.logged_in:
         folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
     else:
-        folder.add_item(label=_(_.FEATURED, _bold=True), path=plugin.url_for(collection, slug='home', content_class='home', label=_.FEATURED))
-        folder.add_item(label=_(_.HUBS, _bold=True), path=plugin.url_for(hubs))
-        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(collection, slug='movies', content_class='contentType'))
-        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(collection, slug='series', content_class='contentType'))
-        folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(collection, slug='originals', content_class='originals'))
+        folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(home))
+        folder.add_item(label=_(_.BRANDS, _bold=True), path=plugin.url_for(brands))
+        folder.add_item(label=_(_.MOVIES, _bold=True), path=plugin.url_for(movies))
+        folder.add_item(label=_(_.SERIES, _bold=True), path=plugin.url_for(series))
+        folder.add_item(label=_(_.ORIGINALS, _bold=True), path=plugin.url_for(originals))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.SYNC_WATCHLIST.value:
@@ -58,650 +52,69 @@ def index(**kwargs):
 
 
 @plugin.route()
-def login(**kwargs):
-    options = [
-        [_.EMAIL_PASSWORD, _email_password],
-     #   [_.DEVICE_CODE, _device_code],
-    ]
-
-    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
-    if index == -1 or not options[index][1]():
-        return
-
-    _select_profile()
-    gui.refresh()
-
-
-def _device_code():
-    monitor = xbmc.Monitor()
-    code = api.device_code()
-    timeout = 600
-
-    with gui.progress(_(_.DEVICE_LINK_STEPS, code=code, url=DEVICE_CODE_URL), heading=_.DEVICE_CODE) as progress:
-        for i in range(timeout):
-            if progress.iscanceled() or monitor.waitForAbort(1):
-                return
-
-            progress.update(int((i / float(timeout)) * 100))
-
-            if i % 5 == 0 and api.device_login(code):
-                return True
-
-
-def _email_password():
-    email = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
-    if not email:
-        return
-
-    userdata.set('username', email)
-
-    token = api.register_device()
-    next_step = api.check_email(email, token)
-
-    if next_step.lower() == 'register':
-        raise PluginError(_.EMAIL_NOT_FOUND)
-
-    elif next_step.lower() == 'otp':
-        api.request_otp(email, token)
-
-        while True:
-            otp = gui.input(_(_.OTP_INPUT, email=email)).strip()
-            if not otp:
-                return
-
-            error = api.login_otp(email, otp, token)
-            if not error:
-                return True
-
-            gui.error(error)
-    else:
-        password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-        if not password:
-            return
-
-        api.login(email, password, token)
-        return True
+def home(**kwargs):
+    return _deeplink_page('home')
 
 
 @plugin.route()
-def select_profile(**kwargs):
-    if userdata.get('kid_lockdown', False):
-        return
-
-    _select_profile()
-    gui.refresh()
-
-
-def _avatars(ids):
-    avatars = {}
-
-    data = api.avatar_by_id(ids)
-    for row in data['avatars']:
-        avatars[row['avatarId']] = row['image']['tile']['1.00']['avatar']['default']['url'] + '/scale?width=300'
-
-    return avatars
-
-
-def _select_profile():
-    account = api.account(_skip_cache=True)['account']
-    profiles = account['profiles']    
-    avatars = _avatars([x['attributes']['avatar']['id'] for x in profiles])
-
-    options = []
-    values = []
-    default = -1
-
-    for index, profile in enumerate(profiles):
-        values.append(profile)
-        profile['_avatar'] = avatars.get(profile['attributes']['avatar']['id'])
-
-        if profile['attributes']['parentalControls']['isPinProtected']:
-            label = _(_.PROFILE_WITH_PIN, name=profile['name'])
-        else:
-            label = profile['name']
-
-        options.append(plugin.Item(label=label, art={'thumb': profile['_avatar']}))
-
-        if account['activeProfile'] and profile['id'] == account['activeProfile']['id']:
-            default = index
-            userdata.set('avatar', profile['_avatar'])
-            userdata.set('profile', profile['name'])
-            userdata.set('profile_id', profile['id'])
-
-    index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
-    if index < 0:
-        return
-
-    _switch_profile(values[index])
-
-
-def _switch_profile(profile):
-    pin = None
-    if profile['attributes']['parentalControls']['isPinProtected']:
-        pin = gui.input(_.ENTER_PIN, hide_input=True).strip()
-
-    api.switch_profile(profile['id'], pin=pin)
-
-    if settings.getBool('kid_lockdown', False) and profile['attributes']['kidsModeEnabled']:
-        userdata.set('kid_lockdown', True)
-
-    userdata.set('avatar', profile['_avatar'])
-    userdata.set('profile', profile['name'])
-    userdata.set('profile_id', profile['id'])
-    gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['_avatar'])
+def movies(**kwargs):
+    return _deeplink_page('movies')
 
 
 @plugin.route()
-def collection(slug, content_class, label=None, **kwargs):
-    data = api.collection_by_slug(slug, content_class, 'PersonalizedCollection' if slug == 'home' else 'StandardCollection')
-    folder = plugin.Folder(label or _get_text(data, 'title', 'collection'), thumb=_get_art(data).get('fanart'))
-    if not data:
-        return folder
-
-    def process_row(row):
-        _set = row.get('set')
-        _style = row.get('style')
-        ref_type = _set['refType'] if _set['type'] == 'SetRef' else _set['type']
-
-        if _set.get('refIdType') == 'setId':
-            set_id = _set['refId']
-        else:
-            set_id = _set.get('setId')
-
-        if not set_id:
-            return
-
-        if slug == 'home' and (_style in ('brand', 'brandSix', 'hero', 'heroInteractive') or ref_type in ('ContinueWatchingSet', 'WatchlistSet')):
-            return
-
-        title = _get_text(_set, 'title', 'set')
-
-        if not title or '{title}' in title:
-            data = api.set_by_id(set_id, ref_type, page_size=0)
-            # if not data['meta']['hits']:
-            #     return
-            title = _get_text(data, 'title', 'set')
-            if not title or '{title}' in title:
-                return
-
-        return title, plugin.url_for(sets, set_id=set_id, set_type=ref_type)
-
-    tasks = [lambda row=row: process_row(row) for row in data['containers']]
-    results = [x for x in async_tasks(tasks) if x]
-    for row in results:
-        folder.add_item(
-            label = row[0],
-            path = row[1],
-        )
-
-    return folder
+def series(**kwargs):
+    return _deeplink_page('series')
 
 
 @plugin.route()
-def hubs(**kwargs):
-    data = api.explore_deeplink(ref_id='home')
+def originals(**kwargs):
+    return _deeplink_page('originals')
+
+
+def _deeplink_page(ref_id):
+    data = api.deeplink(ref_id=ref_id)
     page_id = _get_actions(data)[BROWSE]['pageId']
-    data = api.explore_page(page_id, limit=0, enhanced_limit=0)
-    set_id = [x for x in data['containers'] if 'brand' in x['style']['name'].lower()][0]['id']
-    data = api.explore_set(set_id)
-    return _process_explore(data, title=_.HUBS)
-
-
-@plugin.route()
-def continue_watching(**kwargs):
-    data = api.explore_deeplink(ref_id='home')
-    page_id = _get_actions(data)[BROWSE]['pageId']
-    data = api.explore_page(page_id, limit=0, enhanced_limit=0)
-    set_id = [x for x in data['containers'] if 'continue_watching' in x['style']['name'].lower()][0]['id']
-    data = api.explore_set(set_id)
-    return _process_explore(data, title=_.CONTINUE_WATCHING)
-
-
-@plugin.route()
-def watchlist(**kwargs):
-    data = api.explore_deeplink(ref_id='watchlist')
-    page_id = _get_actions(data)[BROWSE]['pageId']
-    data = api.explore_page(page_id, limit=1, enhanced_limit=15)
-    return _process_explore(data, title=_.WATCHLIST, watchlist=True, flatten=True)
+    data = api.page(page_id, limit=1, enhanced_limit=99)
+    return _process_rows(data)
 
 
 @plugin.route()
 @plugin.pagination()
-def explore_watchlist(set_id, page=1, **kwargs):
-    data = api.explore_set(set_id, page=page)
-    folder = _process_explore(data, watchlist=True)
+def brands(page=1, **kwargs):
+    data = api.deeplink(ref_id='home')
+    page_id = _get_actions(data)[BROWSE]['pageId']
+    data = api.page(page_id, limit=0, enhanced_limit=0)
+    set_id = [x for x in data['containers'] if 'brand' in x['style']['name'].lower()][0]['id']
+    data = api.set(set_id, page=page)
+    folder = _process_rows(data)
     return folder, data['pagination']['hasMore']
 
 
 @plugin.route()
-def sets(**kwargs):
-    return _sets(**kwargs)
-
-
 @plugin.pagination()
-def _sets(set_id, set_type, page=1, **kwargs):
-    data = api.set_by_id(set_id, set_type, page=page)
-    folder = plugin.Folder(_get_text(data, 'title', 'set'))
-    items = _process_rows(data.get('items', []), data['type'])
-    folder.add_items(items)
-    return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
-
-
-def _process_rows(rows, content_class=None):
-    watchlist_enabled = settings.getBool('sync_watchlist', True)
-
-    items = []
-    for row in rows:
-        item = None
-        content_type = row.get('type')
-
-        if content_type == 'DmcVideo':
-            program_type = row.get('programType')
-
-            if program_type == 'episode':
-                if content_class in ('episode', 'ContinueWatchingSet'):
-                    item = _parse_video(row)
-                else:
-                    item = _parse_series(row)
-            else:
-                item = _parse_video(row)
-
-        elif content_type == 'DmcSeries':
-            item = _parse_series(row)
-
-        elif content_type in ('PersonalizedCollection', 'StandardCollection'):
-            item = _parse_collection(row)
-
-        if not item:
-            continue
-
-        ref_types = ['programId', 'seriesId']
-        ref_type = None
-        for _type in ref_types:
-            if row.get(_type):
-                ref_type = _type
-                break
-
-        if watchlist_enabled and ref_type:
-            if content_class == 'WatchlistSet':
-                item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, ref_type=ref_type, ref_id=row[ref_type]))))
-            elif (content_type == 'DmcSeries' or (content_type == 'DmcVideo' and program_type != 'episode')):
-                item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, ref_type=ref_type, ref_id=row[ref_type], title=item.label, icon=item.art.get('thumb')))))
-
-        items.append(item)
-
-    return items
+def continue_watching(page=1, **kwargs):
+    data = api.deeplink(ref_id='home')
+    page_id = _get_actions(data)[BROWSE]['pageId']
+    data = api.page(page_id, limit=0, enhanced_limit=0)
+    set_id = [x for x in data['containers'] if 'continue_watching' in x['style']['name'].lower()][0]['id']
+    data = api.set(set_id, page=page)
+    folder = _process_rows(data, title=_.CONTINUE_WATCHING)
+    return folder, data['pagination']['hasMore']
 
 
 @plugin.route()
-def add_watchlist(ref_type, ref_id, title=None, icon=None, **kwargs):
-    gui.notification(_.ADDED_WATCHLIST, heading=title, icon=icon)
-    api.add_watchlist(ref_type, ref_id)
-
-
-@plugin.route()
-def delete_watchlist(ref_type, ref_id, **kwargs):
-    api.delete_watchlist(ref_type, ref_id)
-    gui.refresh()
-
-
-def _parse_collection(row):
-    path = plugin.url_for(collection, slug=row['collectionGroup']['slugs'][0]['value'], content_class=row['collectionGroup']['contentClass'])
-
-    if row.get('actions', []) and row['actions'][0]['type'] == 'browse':
-        path = plugin.url_for(explore_page, page_id=row['actions'][0]['pageId'])
-
-    return plugin.Item(
-        label = _get_text(row, 'title', 'collection'),
-        info = {'plot': _get_text(row, 'description', 'collection')},
-        art = _get_art(row),
-        path = path,
-    )
-
-
-def _get_play_path(**kwargs):
-    if not kwargs:
-        return None
-
-    profile_id = userdata.get('profile_id')
-    if profile_id:
-        kwargs['profile_id'] = profile_id
-
-    return plugin.url_for(play, **kwargs)
-
-
-def _parse_series(row):
-    item = plugin.Item(
-        label = _get_text(row, 'title', 'series'),
-        art = _get_art(row),
-        info = {
-            'plot': _get_text(row, 'description', 'series'),
-            'mediatype': 'tvshow',
-            'trailer': plugin.url_for(play_trailer, series_id=row['encodedSeriesId']),
-        },
-        path = plugin.url_for(series, series_id=row['encodedSeriesId']),
-    )
-
-    try:
-        item.info['year'] = row['releases'][0]['releaseYear']
-    except IndexError:
-        pass
-
-    if not item.info['plot']:
-        item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, series_id=row['encodedSeriesId']))))
-
-    return item
-
-
-def _parse_season(row, series):
-    title = _(_.SEASON, number=row['seasonSequenceNumber'])
-
-    item = plugin.Item(
-        label = title,
-        info  = {
-            'plot': _get_text(row, 'description', 'season') or _get_text(series, 'description', 'series'),
-            'season': row['seasonSequenceNumber'],
-            'mediatype': 'season',
-        },
-        art   = _get_art(row) or _get_art(series),
-        path  = plugin.url_for(season, season_id=row['seasonId'], title=title),
-    )
-
-    try:
-        item.info['year'] = row['releases'][0]['releaseYear']
-    except IndexError:
-        pass
-
-    return item
-
-
-def _parse_video(row):
-    # legacy added no resume and did resume from in play
-    kwargs = {'content_id': row['contentId']}
-    if settings.SYNC_PLAYBACK.value:
-        kwargs[NO_RESUME_TAG] = True
-
-    item = plugin.Item(
-        label = _get_text(row, 'title', 'program'),
-        info  = {
-            'plot': _get_text(row, 'description', 'program'),
-            'duration': row['mediaMetadata']['runtimeMillis']/1000,
-            'mediatype': 'movie',
-            'trailer': plugin.url_for(play_trailer, family_id=row['family']['encodedFamilyId']),
-        },
-        art  = _get_art(row),
-        path = _get_play_path(**kwargs),
-        playable = True,
-    )
-
-    try:
-        item.info['year'] = row['releases'][0]['releaseYear']
-        item.info['aired'] = row['releases'][0]['releaseDate']
-    except IndexError:
-        pass
-
-    if row['programType'] == 'episode':
-        item.info.update({
-            'mediatype': 'episode',
-            'season': row['seasonSequenceNumber'],
-            'episode': row['episodeSequenceNumber'],
-            'tvshowtitle': _get_text(row, 'title', 'series'),
-        })
-    else:
-        if not item.info['plot']:
-            item.context.append((_.FULL_DETAILS, 'RunPlugin({})'.format(plugin.url_for(full_details, family_id=row['family']['encodedFamilyId']))))
-        item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, family_id=row['family']['encodedFamilyId']))))
-        item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, family_id=row['family']['encodedFamilyId']))))
-
-    return item
-
-
-def _get_art(row):
-    if not row:
-        return {}
-
-    if 'image' in row:
-        # api 5.1
-        images = row['image']
-    elif 'images' in row:
-        #api 3.1
-        images = {}
-        for data in row['images']:
-            if data['purpose'] not in images:
-                images[data['purpose']] = {}
-            images[data['purpose']][str(data['aspectRatio'])] = {data['sourceEntity']: {'default': data}}
-    else:
-        return None
-
-    def _first_image_url(d):
-        for r1 in d:
-            for r2 in d[r1]:
-                return d[r1][r2]['url']
-
-    art = {}
-    # don't ask for jpeg thumb; might be transparent png instead
-    thumbsize = '/scale?width=800&aspectRatio=1.78'
-    bannersize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
-    fullsize = '/scale?width=1440&aspectRatio=1.78&format=jpeg'
-
-    thumb_ratios = ['1.78', '1.33', '1.00']
-    poster_ratios = ['0.71', '0.75', '0.80']
-    clear_ratios = ['2.00', '1.78', '3.32']
-    banner_ratios = ['3.91', '3.00', '1.78']
-
-    fanart_count = 0
-    is_episode = row.get('programType') == 'episode'
-
-    if is_episode:
-        thumbs = ('thumbnail',)
-    else:
-        thumbs = ('thumbnail', 'tile')
-
-    for name in images or []:
-        art_type = images[name]
-
-        tr = br = pr = ''
-
-        for ratio in thumb_ratios:
-            if ratio in art_type:
-                tr = ratio
-                break
-
-        for ratio in banner_ratios:
-            if ratio in art_type:
-                br = ratio
-                break
-
-        for ratio in poster_ratios:
-            if ratio in art_type:
-                pr = ratio
-                break
-
-        for ratio in clear_ratios:
-            if ratio in art_type:
-                cr = ratio
-                break
-
-        if name in thumbs:
-            if tr:
-                art['thumb'] = _first_image_url(art_type[tr]) + thumbsize
-            if pr:
-                art['poster'] = _first_image_url(art_type[pr]) + thumbsize
-
-        elif name == 'hero_tile':
-            if br:
-                art['banner'] = _first_image_url(art_type[br]) + bannersize
-
-        elif name in ('hero_collection', 'background_details', 'background'):
-            if tr:
-                k = 'fanart{}'.format(fanart_count) if fanart_count else 'fanart'
-                art[k] = _first_image_url(art_type[tr]) + fullsize
-                fanart_count += 1
-            if pr:
-                art['keyart'] = _first_image_url(art_type[pr]) + bannersize
-
-        elif name in ('title_treatment', 'logo'):
-            if cr:
-                art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
-
-    # poster overrides thumb for episodes, so skip for eps
-    if is_episode:
-        art.pop('poster', None)
-
-    return art
-
-
-def _get_text(row, field, source):
-    if not row:
-        return None
-
-    texts = None
-    if 'text' in row:
-        # api 5.1
-        texts = row['text']
-    elif 'texts' in row:
-        # api 3.1
-        texts = {}
-        for data in row['texts']:
-            if data['field'] not in texts:
-                texts[data['field']] = {}
-            texts[data['field']][data['type']] = {data['sourceEntity']: {'default': data}}
-
-    if not texts:
-        return None
-
-    _types = ['medium', 'brief', 'full']
-
-    candidates = []
-    for key in texts:
-        if key != field:
-            continue
-
-        for _type in texts[key]:
-            if _type not in _types or source not in texts[key][_type]:
-                continue
-
-            for row in texts[key][_type][source]:
-                candidates.append((_types.index(_type), texts[key][_type][source][row]['content']))
-
-    if not candidates:
-        return None
-
-    return sorted(candidates, key=lambda x: x[0])[0][1]
-
-
-@plugin.route()
-def series(series_id, **kwargs):
-    data = api.series_bundle(series_id)
-    art = _get_art(data['series'])
-    title = _get_text(data['series'], 'title', 'series')
-    folder = plugin.Folder(title, fanart=art.get('fanart'))
-
-    for row in data['seasons']['seasons']:
-        if row['seasonSequenceNumber'] < 0:
-            continue
-        item = _parse_season(row, data['series'])
-        folder.add_items(item)
-
-    if data['extras']['videos']:
-        folder.add_item(
-            label = (_.EXTRAS),
-            art   = art,
-            path  = plugin.url_for(extras, series_id=series_id, fanart=art.get('fanart')),
-            specialsort = 'bottom',
-        )
-
-    if data['related']['items']:
-        folder.add_item(
-            label = _.SUGGESTED,
-            art   = art,
-            path  = plugin.url_for(suggested, series_id=series_id),
-            specialsort = 'bottom',
-        )
-
-    return folder
-
-
-@plugin.route()
-@plugin.pagination()
-def season(season_id, title, page=1, **kwargs):
-    data = api.episodes(season_id, page=page)
-
-    folder = plugin.Folder(title)
-
-    items = _process_rows(data['videos'], content_class='episode')
-    folder.add_items(items)
-
-    return folder, (data['meta']['page_size'] + data['meta']['offset']) < data['meta']['hits']
-
-
-@plugin.route()
-def suggested(family_id=None, series_id=None, **kwargs):
-    if family_id:
-        data = api.video_bundle(family_id)
-    elif series_id:
-        data = api.series_bundle(series_id)
-
-    folder = plugin.Folder(_.SUGGESTED)
-
-    items = _process_rows(data['related']['items'])
-    folder.add_items(items)
-    return folder
-
-
-@plugin.route()
-def play_trailer(family_id=None, series_id=None, **kwargs):
-    if family_id:
-        data = api.video_bundle(family_id)
-    elif series_id:
-        data = api.series_bundle(series_id)
-
-    videos = [x for x in data['extras']['videos'] if x.get('contentType') == 'trailer']
-    if not videos:
-        raise PluginError(_.TRAILER_NOT_FOUND)
-
-    return _play(content_id=videos[0]['contentId'])
-
-
-@plugin.route()
-def extras(family_id=None, series_id=None, **kwargs):
-    if family_id:
-        data = api.video_bundle(family_id)
-        fanart = _get_art(data['video']).get('fanart')
-    elif series_id:
-        data = api.series_bundle(series_id)
-        fanart = _get_art(data['series']).get('fanart')
-
-    folder = plugin.Folder(_.EXTRAS, fanart=fanart)
-    items = _process_rows(data['extras']['videos'])
-    folder.add_items(items)
-    return folder
-
-
-@plugin.route()
-def full_details(family_id=None, series_id=None, **kwargs):
-    if series_id:
-        data = api.series_bundle(series_id)
-        item = _parse_series(data['series'])
-
-    elif family_id:
-        data = api.video_bundle(family_id)
-        item = _parse_video(data['video'])
-
-    gui.info(item)
+def watchlist(**kwargs):
+    data = api.deeplink(ref_id='watchlist')
+    page_id = _get_actions(data)[BROWSE]['pageId']
+    data = api.page(page_id, limit=1, enhanced_limit=15)
+    return _process_rows(data, title=_.WATCHLIST, watchlist=True, flatten=True)
 
 
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
-    if api.feature_flags().get('wpnx-disney-searchOnExplore'):
-        data = api.explore_search(query)
-        return _process_explore(data['containers'][0]).items if data['containers'] else [], False
-    else:
-        log.info("Legacy search")
-        data = api.search(query)
-        hits = [x['hit'] for x in data['hits']]
-        return _process_rows(hits), False
+    data = api.search(query)
+    return _process_rows(data['containers'][0]).items if data['containers'] else [], False
 
 
 @plugin.route()
@@ -710,51 +123,26 @@ def callback(media_id, fguid, _time, **kwargs):
     api.update_resume(media_id, fguid, int(_time))
 
 
-def _get_milestone(milestones, name, default=0):
-    if not milestones:
-        return default
-
-    for key in milestones:
-        if key == name:
-            return int(milestones[key][0]['milestoneTime'][0]['startMillis'] / 1000)
-
-    return default
-
-
 @plugin.route()
-def logout(**kwargs):
-    if not gui.yes_no(_.LOGOUT_YES_NO):
-        return
-
-    api.logout()
-    userdata.delete('kid_lockdown')
-    userdata.delete('avatar')
-    userdata.delete('profile')
-    userdata.delete('profile_id')
-    gui.refresh()
-
-
-### EXPLORE ###
-@plugin.route()
-def explore_page(page_id, **kwargs):
-    data = api.explore_page(page_id)
-    return _process_explore(data, flatten=True)
+def page(page_id, **kwargs):
+    data = api.page(page_id)
+    return _process_rows(data, flatten=True)
 
 
 @plugin.route()
 @plugin.pagination()
-def explore_set(set_id, page=1, **kwargs):
-    data = api.explore_set(set_id, page=page)
-    folder = _process_explore(data)
+def set(set_id, watchlist=0, page=1, **kwargs):
+    data = api.set(set_id, page=page)
+    folder = _process_rows(data, watchlist=bool(int(watchlist)))
     return folder, data['pagination']['hasMore']
 
 
 @plugin.route()
-def explore_season(show_id, season_id, **kwargs):
-    show_data = api.explore_page(show_id)
-    data = api.explore_season(season_id)
-    folder = _process_explore(data, title=show_data['visuals']['title'])
-    show_art = _get_explore_art(show_data)
+def season(show_id, season_id, **kwargs):
+    show_data = api.page(show_id)
+    data = api.season(season_id)
+    folder = _process_rows(data, title=show_data['visuals']['title'])
+    show_art = _get_art(show_data)
     for key in show_art:
         if key != 'poster' and not folder.art.get(key):
             folder.art[key] = show_art[key]
@@ -781,6 +169,17 @@ def _get_actions(data):
     return actions
 
 
+def _get_play_path(**kwargs):
+    if not kwargs:
+        return None
+
+    profile_id = userdata.get('profile_id')
+    if profile_id:
+        kwargs['profile_id'] = profile_id
+
+    return plugin.url_for(play, **kwargs)
+
+
 def _get_info(data):
     actions = _get_actions(data)
 
@@ -804,6 +203,7 @@ def _get_info(data):
     plot = description.get('medium') or description.get('brief') or description.get('full')
     title = containers[DETAILS]['visuals'].get('title') or data['visuals'].get('title')
 
+    # only works for episodes as movies in list views dont give us the legacy id
     legacy_id = actions[PLAYBACK].get('legacyPartnerFeed', {}).get('dmcContentId') or actions[PLAYBACK].get('partnerFeed',{}).get('dmcContentId')
     if legacy_id:
         # try keep old paths for kodi db watch status
@@ -814,25 +214,25 @@ def _get_info(data):
     else:
         playpath = None
 
-    return {'title': title, 'plot': plot, CONTAINERS: containers, ACTIONS: actions, 'art': _get_explore_art(data), 'playpath': playpath}
+    return {'title': title, 'plot': plot, CONTAINERS: containers, ACTIONS: actions, 'art': _get_art(data), 'playpath': playpath}
 
 
 @plugin.route()
-def explore_show(show_id, **kwargs):
-    data = api.explore_page(show_id, limit=1, enhanced_limit=15)
+def show(show_id, **kwargs):
+    data = api.page(show_id, limit=1, enhanced_limit=15)
     info = _get_info(data)
 
     folder = plugin.Folder(info['title'], art=info['art'])
-    for season in info[CONTAINERS][EPISODES]['seasons']:
+    for row in info[CONTAINERS][EPISODES]['seasons']:
         folder.items.append(plugin.Item(
-            label = season['visuals']['name'],
+            label = row['visuals']['name'],
             info = {
-                'plot': u'{}\n\n{}'.format(info['plot'], _(season['visuals']['episodeCountDisplayText'], _bold=True)),
+                'plot': u'{}\n\n{}'.format(info['plot'], _(row['visuals']['episodeCountDisplayText'], _bold=True)),
                 'tvshowtitle': info['title'],
                 'mediatype': 'season',
             },
-            art = _get_explore_art(season),
-            path = plugin.url_for(explore_season, show_id=data['id'], season_id=season['id']),
+            art = _get_art(row),
+            path = plugin.url_for(season, show_id=data['id'], season_id=row['id']),
         ))
 
     if info[ACTIONS][TRAILER]:
@@ -842,7 +242,7 @@ def explore_show(show_id, **kwargs):
                 'plot': info['plot'],
                 'mediatype': 'video',
             },
-            path = plugin.url_for(explore_play_trailer, deeplink_id=data['id']),
+            path = plugin.url_for(play_trailer, deeplink_id=data['id']),
             playable = True,
             specialsort = 'bottom',
         ))
@@ -853,7 +253,7 @@ def explore_show(show_id, **kwargs):
             info = {
                 'plot': info['plot'],
             },
-            path = plugin.url_for(explore_suggested, deeplink_id=data['id']),
+            path = plugin.url_for(suggested, deeplink_id=data['id']),
             specialsort = 'bottom',
         ))
 
@@ -863,19 +263,19 @@ def explore_show(show_id, **kwargs):
             info = {
                 'plot': info['plot'],
             },
-            path = plugin.url_for(explore_extras, deeplink_id=data['id']),
+            path = plugin.url_for(extras, deeplink_id=data['id']),
             specialsort = 'bottom',
         ))
 
     return folder
 
 
-def _process_explore(data, title=None, watchlist=False, flatten=False):
+def _process_rows(data, title=None, watchlist=False, flatten=False):
     if not data or 'visuals' not in data:
         return plugin.Folder(title)
 
     title = title or data['visuals'].get('title') or data['visuals'].get('name')
-    folder = plugin.Folder(title, art=_get_explore_art(data))
+    folder = plugin.Folder(title, art=_get_art(data))
     rows = data.get('containers') or data.get('items') or []
 
     user_states = {}
@@ -883,34 +283,39 @@ def _process_explore(data, title=None, watchlist=False, flatten=False):
         pids = [row.get('personalization',{}).get('pid') for row in rows if row['visuals'].get('durationMs')]
         pids = [x for x in pids if x]
         if pids:
-            user_states = api.explore_userstate(pids)
+            user_states = api.userstates(pids)
 
     items = []
     for row in rows:
         if row['type'] == 'set':
+            if 'hero' in row['style']['name'].lower() or 'brand' in row['style']['name'].lower() or 'continue_watching' in row['style']['name'].lower():
+                continue
+
+            kwargs = {'set_id': row['id']}
+            if watchlist:
+                kwargs['watchlist'] = 1
+
             item = plugin.Item(
                 label = row['visuals']['name'],
-                art = _get_explore_art(row),
-                path = plugin.url_for(explore_set, set_id=row['id']),
+                art = _get_art(row),
+                path = plugin.url_for(set, **kwargs),
             )
-            if watchlist:
-                item.path = plugin.url_for(explore_watchlist, set_id=row['id'])
             items.append(item)
 
         elif row.get('actions', []):
             # MOVIE / TV SHOW / EPISODE
-            item = _parse_explore(row)
+            item = _parse_row(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
 
             if item.info.get('mediatype') in ('movie', 'tvshow'):
                 if settings.SYNC_WATCHLIST.value:
                     if watchlist:
-                        item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
+                        item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
                     else:
-                        item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(explore_add_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
+                        item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
 
-                item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(explore_extras, deeplink_id=row['actions'][0]['deeplinkId']))))
-                item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(explore_suggested, deeplink_id=row['actions'][0]['deeplinkId']))))
+                item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, deeplink_id=row['actions'][0]['deeplinkId']))))
+                item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, deeplink_id=row['actions'][0]['deeplinkId']))))
             items.append(item)
 
     if flatten and len(items) == 1:
@@ -920,7 +325,7 @@ def _process_explore(data, title=None, watchlist=False, flatten=False):
     return folder
 
 
-def _parse_explore(data):
+def _parse_row(data):
     info = _get_info(data)
 
     if 'episodeTitle' in data['visuals']:
@@ -946,7 +351,7 @@ def _parse_explore(data):
         item = plugin.Item(
             label = info['title'],
             art = info['art'],
-            path = plugin.url_for(explore_page, page_id=info[ACTIONS][BROWSE]['pageId'])
+            path = plugin.url_for(page, page_id=info[ACTIONS][BROWSE]['pageId'])
         )
         return item
 
@@ -955,7 +360,7 @@ def _parse_explore(data):
         art = info['art'],
         info = {
             'plot': info['plot'],
-            'trailer': plugin.url_for(explore_play_trailer, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']),
+            'trailer': plugin.url_for(play_trailer, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']),
         }
     )
 
@@ -977,47 +382,47 @@ def _parse_explore(data):
         item.info['mediatype'] = 'tvshow'
         # might be trailer which does not have trailer
         if info[ACTIONS][BROWSE]:
-            item.path = plugin.url_for(explore_show, show_id=info[ACTIONS][BROWSE]['pageId'])
+            item.path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId'])
 
     return item
 
 
 @plugin.route()
-def explore_add_watchlist(deeplink_id, **kwargs):
+def add_watchlist(deeplink_id, **kwargs):
     with gui.busy():
-        data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
         if not data['personalization']['userState'].get('inWatchlist'):
-            api.explore_watchlist('add', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
+            api.watchlist('add', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
     gui.notification(_.ADDED_WATCHLIST, heading=info['title'], icon=info['art'].get('poster') or info['art'].get('thumb'))
 
 
 @plugin.route()
-def explore_delete_watchlist(deeplink_id, **kwargs):
+def delete_watchlist(deeplink_id, **kwargs):
     with gui.busy():
-        data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
         if data['personalization']['userState'].get('inWatchlist'):
-            api.explore_watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
+            api.watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
     gui.refresh()
 
 
 @plugin.route()
-def explore_play_trailer(deeplink_id, **kwargs):
+def play_trailer(deeplink_id, **kwargs):
     with gui.busy():
-        data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
         if not info[ACTIONS][TRAILER]:
             raise PluginError(_.TRAILER_NOT_FOUND)
 
-        item = _parse_explore(data)
+        item = _parse_row(data)
         ia = inputstream.Widevine(
             license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
             manifest_type = 'hls',
             mimetype = 'application/vnd.apple.mpegurl',
             wv_secure = is_wv_secure(),
         )
-        playback_data = api.explore_playback(info[ACTIONS][TRAILER]['resourceId'], ia.wv_secure)
+        playback_data = api.playback(info[ACTIONS][TRAILER]['resourceId'], ia.wv_secure)
 
         item.update(
             label = u"{} ({})".format(item.label, _.TRAILER),
@@ -1030,17 +435,17 @@ def explore_play_trailer(deeplink_id, **kwargs):
 
 
 @plugin.route()
-def explore_extras(deeplink_id, **kwargs):
-    data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')), enhanced_limit=15)
+def extras(deeplink_id, **kwargs):
+    data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')), enhanced_limit=15)
     info = _get_info(data)
-    return _process_explore(info[CONTAINERS][EXTRAS], title=u"{} ({})".format(info['title'], _.EXTRAS))
+    return _process_rows(info[CONTAINERS][EXTRAS], title=u"{} ({})".format(info['title'], _.EXTRAS))
 
 
 @plugin.route()
-def explore_suggested(deeplink_id, **kwargs):
-    data = api.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')), enhanced_limit=15)
+def suggested(deeplink_id, **kwargs):
+    data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')), enhanced_limit=15)
     info = _get_info(data)
-    return _process_explore(info[CONTAINERS][SUGGESTED], title=u"{} ({})".format(info['title'], _.SUGGESTED))
+    return _process_rows(info[CONTAINERS][SUGGESTED], title=u"{} ({})".format(info['title'], _.SUGGESTED))
 
 
 def _add_progress(user_state, item):
@@ -1058,7 +463,7 @@ def _add_progress(user_state, item):
             item.resume_from = int(user_state['progress']['progressPercentage']/100.0 * item.info['duration'])
 
 
-def _get_explore_art(row):
+def _get_art(row):
     if not row or 'artwork' not in row['visuals'] or 'standard' not in row['visuals']['artwork']:
         return {}
 
@@ -1150,7 +555,7 @@ def _get_explore_art(row):
     return art
 
 
-def _get_explore_milestone(milestones, name, default=0):
+def _get_milestone(milestones, name, default=0):
     if not milestones:
         return default
 
@@ -1183,17 +588,17 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
         gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
 
     if content_id:
-        data = api.explore_deeplink(content_id, ref_type='dmcContentId', action='playback')
+        data = api.deeplink(content_id, ref_type='dmcContentId', action='playback')
     elif family_id:
-        data = api.explore_deeplink(family_id, ref_type='encodedFamilyId', action='playback')
+        data = api.deeplink(family_id, ref_type='encodedFamilyId', action='playback')
     else:
-        data = api.explore_deeplink(deeplink_id.replace('entity-', ''), action='playback')
+        data = api.deeplink(deeplink_id.replace('entity-', ''), action='playback')
 
     deeplink_id = data['actions'][0]['deeplinkId'].replace('entity-', '')
     resource_id = data['actions'][0]['resourceId']
     upnext_id = data['actions'][0]['upNextId']
     available_id = data['actions'][0]['availId']
-    player_experience = api.explore_player_experience(available_id)
+    player_experience = api.player_experience(available_id)
     program_type = player_experience['analytics']['programType']
 
     flags = []
@@ -1202,20 +607,20 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
     #TODO: dont need to do this if clicking from existing listitem with all info
     # skip this if we already have good info
     if program_type == 'movie':
-        data = api.explore_page('entity-{}'.format(deeplink_id))
+        data = api.page('entity-{}'.format(deeplink_id))
         flags = [x['value'] for x in data['visuals']['metastringParts']['audioVisual']['flags']]
-        item = _parse_explore(data)
+        item = _parse_row(data)
     elif program_type == 'episode':
         # TODO: this is a few requests and needs ugly season name matching. Ideally an api endpoint for episode details exist
         season_name = player_experience['subtitle'].split(':')[0].lower().strip().lstrip('s')
-        show = api.explore_page(data['actions'][1]['pageId'], limit=0, enhanced_limit=0)
+        show = api.page(data['actions'][1]['pageId'], limit=0, enhanced_limit=0)
         for row in show['containers'][0]['seasons']:
             # TODO: this probably doesnt work for non-english
             if row['visuals']['name'].lower().endswith(season_name):
-                data = api.explore_season(row['id'])
+                data = api.season(row['id'])
                 for row in data['items']:
                     if row['actions'][0]['deeplinkId'].replace('entity-', '') == deeplink_id:
-                        item = _parse_explore(row)
+                        item = _parse_row(row)
                         break
                 break
 
@@ -1234,7 +639,7 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
         if imax != profile['attributes']['playbackSettings']['preferImaxEnhancedVersion']:
             api.set_imax(imax)
 
-    playback_data = api.explore_playback(resource_id, ia.wv_secure)
+    playback_data = api.playback(resource_id, ia.wv_secure)
 
     # LEGACY RESUME (Remove once legacy browsing removed)
     if not kwargs.get(ROUTE_RESUME_TAG):
@@ -1254,35 +659,35 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
     item.play_skips = []
     milestones = playback_data['stream']['editorial']
     if milestones and settings.getBool('skip_recaps', False):
-        recap_start = _get_explore_milestone(milestones, 'recap_start')
-        recap_end = _get_explore_milestone(milestones, 'recap_end')
+        recap_start = _get_milestone(milestones, 'recap_start')
+        recap_end = _get_milestone(milestones, 'recap_end')
         if recap_end > recap_start:
             item.play_skips.append({'from': recap_start, 'to': recap_end})
 
     if milestones and settings.getBool('skip_intros', False):
-        intro_start = _get_explore_milestone(milestones, 'intro_start')
-        intro_end = _get_explore_milestone(milestones, 'intro_end')
+        intro_start = _get_milestone(milestones, 'intro_start')
+        intro_end = _get_milestone(milestones, 'intro_end')
         if intro_end > intro_start:
             item.play_skips.append({'from': intro_start, 'to': intro_end})
 
     if milestones and settings.getBool('skip_credits', False):
-        credits_start = _get_explore_milestone(milestones, 'up_next')
-        tag_start = _get_explore_milestone(milestones, 'tag_start')
-        tag_end = _get_explore_milestone(milestones, 'tag_end')
+        credits_start = _get_milestone(milestones, 'up_next')
+        tag_start = _get_milestone(milestones, 'tag_start')
+        tag_end = _get_milestone(milestones, 'tag_end')
         item.play_skips.append({'from': credits_start, 'to': tag_start})
         if tag_end:
             item.play_skips.append({'from': tag_end, 'to': 0})
 
     upnext = None
     if program_type == 'episode' and settings.getBool('play_next_episode', True):
-        data = api.explore_upnext(upnext_id)
+        data = api.upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or not row.get('sequentialEpisode'):
                 continue
             upnext = row['item']
 
     elif program_type == 'movie' and settings.getBool('play_next_movie', False):
-        data = api.explore_upnext(upnext_id)
+        data = api.upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or row.get('sequentialEpisode'):
                 continue
@@ -1301,4 +706,133 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
         }
 
     return item
-### END EXPLORE ###
+
+
+@plugin.route()
+def login(**kwargs):
+    options = [
+        [_.EMAIL_PASSWORD, _email_password],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    _select_profile()
+    gui.refresh()
+
+
+def _email_password():
+    email = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+    if not email:
+        return
+
+    userdata.set('username', email)
+
+    token = api.register_device()
+    next_step = api.check_email(email, token)
+
+    if next_step.lower() == 'register':
+        raise PluginError(_.EMAIL_NOT_FOUND)
+
+    elif next_step.lower() == 'otp':
+        api.request_otp(email, token)
+
+        while True:
+            otp = gui.input(_(_.OTP_INPUT, email=email)).strip()
+            if not otp:
+                return
+
+            error = api.login_otp(email, otp, token)
+            if not error:
+                return True
+
+            gui.error(error)
+    else:
+        password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+        if not password:
+            return
+
+        api.login(email, password, token)
+        return True
+
+
+@plugin.route()
+def select_profile(**kwargs):
+    if userdata.get('kid_lockdown', False):
+        return
+
+    _select_profile()
+    gui.refresh()
+
+
+def _avatars(ids):
+    avatars = {}
+
+    data = api.avatar_by_id(ids)
+    for row in data['avatars']:
+        avatars[row['avatarId']] = row['image']['tile']['1.00']['avatar']['default']['url'] + '/scale?width=300'
+
+    return avatars
+
+
+def _select_profile():
+    account = api.account(_skip_cache=True)['account']
+    profiles = account['profiles']
+    avatars = _avatars([x['attributes']['avatar']['id'] for x in profiles])
+
+    options = []
+    values = []
+    default = -1
+
+    for index, profile in enumerate(profiles):
+        values.append(profile)
+        profile['_avatar'] = avatars.get(profile['attributes']['avatar']['id'])
+
+        if profile['attributes']['parentalControls']['isPinProtected']:
+            label = _(_.PROFILE_WITH_PIN, name=profile['name'])
+        else:
+            label = profile['name']
+
+        options.append(plugin.Item(label=label, art={'thumb': profile['_avatar']}))
+
+        if account['activeProfile'] and profile['id'] == account['activeProfile']['id']:
+            default = index
+            userdata.set('avatar', profile['_avatar'])
+            userdata.set('profile', profile['name'])
+            userdata.set('profile_id', profile['id'])
+
+    index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
+    if index < 0:
+        return
+
+    _switch_profile(values[index])
+
+
+def _switch_profile(profile):
+    pin = None
+    if profile['attributes']['parentalControls']['isPinProtected']:
+        pin = gui.input(_.ENTER_PIN, hide_input=True).strip()
+
+    api.switch_profile(profile['id'], pin=pin)
+
+    if settings.getBool('kid_lockdown', False) and profile['attributes']['kidsModeEnabled']:
+        userdata.set('kid_lockdown', True)
+
+    userdata.set('avatar', profile['_avatar'])
+    userdata.set('profile', profile['name'])
+    userdata.set('profile_id', profile['id'])
+    gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['_avatar'])
+
+
+@plugin.route()
+def logout(**kwargs):
+    if not gui.yes_no(_.LOGOUT_YES_NO):
+        return
+
+    api.logout()
+    userdata.delete('kid_lockdown')
+    userdata.delete('avatar')
+    userdata.delete('profile')
+    userdata.delete('profile_id')
+    gui.refresh()
