@@ -125,7 +125,7 @@ def callback(media_id, fguid, _time, **kwargs):
 
 @plugin.route()
 def page(page_id, **kwargs):
-    data = api.page(page_id)
+    data = api.page(page_id, limit=1, enhanced_limit=99)
     return _process_rows(data, flatten=True)
 
 
@@ -303,7 +303,7 @@ def _process_rows(data, title=None, watchlist=False, flatten=False):
             items.append(item)
 
         elif row.get('actions', []):
-            # MOVIE / TV SHOW / EPISODE
+            # MOVIE / TV SHOW / EPISODE / EVENT
             item = _parse_row(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
 
@@ -325,35 +325,82 @@ def _process_rows(data, title=None, watchlist=False, flatten=False):
     return folder
 
 
-def _parse_row(data):
+def _parse_episode(data):
     info = _get_info(data)
 
-    if 'episodeTitle' in data['visuals']:
-        item = plugin.Item(
-            label = data['visuals']['episodeTitle'],
-            info = {
-                'plot': data['visuals']['description']['full'],
-                'season': data['visuals']['seasonNumber'],
-                'episode': data['visuals']['episodeNumber'],
-                'tvshowtitle': info['title'],
-                'duration': int(data['visuals'].get('durationMs', 0) / 1000),
-                'mediatype': 'episode',
-            },
-            art = info['art'],
-            playable = True,
-            path = info['playpath'],
-        )
-        return item
+    item = plugin.Item(
+        label = data['visuals']['episodeTitle'],
+        art = info['art'],
+        info = {
+            'plot': info['plot'],
+            'season': data['visuals'].get('seasonNumber'),
+            'episode': data['visuals'].get('episodeNumber'),
+            'tvshowtitle': info['title'],
+            'duration': int(data['visuals'].get('durationMs', 0) / 1000),
+            'mediatype': 'episode',
+        },
+        playable = True,
+        path = info['playpath'],
+    )
+    return item
 
+
+def _parse_page(data):
+    info = _get_info(data)
+
+    item = plugin.Item(
+        label = info['title'],
+        art = info['art'],
+        info = {
+            'plot': info['plot'],
+        },
+        path = plugin.url_for(page, page_id=info[ACTIONS][BROWSE]['pageId']),
+    )
+    return item
+
+
+def _parse_event(data):
+    info = _get_info(data)
     meta = data['visuals'].get('metastringParts', {})
 
-    if not meta and info[ACTIONS][BROWSE]:
-        item = plugin.Item(
-            label = info['title'],
-            art = info['art'],
-            path = plugin.url_for(page, page_id=info[ACTIONS][BROWSE]['pageId'])
-        )
-        return item
+    item = plugin.Item(
+        label = info['title'],
+        art = info['art'],
+        info = {
+            'plot': info['plot'],
+        },
+        playable = True,
+        path = info['playpath'],
+    )
+
+    league = meta['sportsLeague']['name']
+    if 'releaseYearRange' in meta:
+        league = u'{} - {}'.format(league, meta['releaseYearRange']['startYear'])
+    item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(league, item.info['plot'])
+    return item
+
+
+def _parse_movie(data):
+    info = _get_info(data)
+    meta = data['visuals'].get('metastringParts', {})
+
+    item = plugin.Item(
+        label = info['title'],
+        art = info['art'],
+        info = {
+            'plot': info['plot'],
+            'duration': int(meta['runtime']['runtimeMs'] / 1000),
+            'trailer': plugin.url_for(play_trailer, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']),
+            'mediatype': 'movie',
+        },
+        playable = True,
+        path = info['playpath'],
+    )
+    return item
+
+
+def _parse_show(data):
+    info = _get_info(data)
 
     item = plugin.Item(
         label = info['title'],
@@ -361,28 +408,42 @@ def _parse_row(data):
         info = {
             'plot': info['plot'],
             'trailer': plugin.url_for(play_trailer, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']),
-        }
+            'mediatype': 'tvshow',
+        },
+        path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId']),
     )
+    return item
 
-    if 'releaseYearRange' in meta:
-        item.info['year'] = meta['releaseYearRange']['startYear']
+
+def _parse_row(data):
+    meta = data['visuals'].get('metastringParts', {})
+
+    if 'episodeTitle' in data['visuals']:
+        item = _parse_episode(data)
+
+    elif 'sportsLeague' in meta:
+        item = _parse_event(data)
+
+    elif 'runtime' in meta:
+        item = _parse_movie(data)
+
+    elif meta:
+        item = _parse_show(data)
+
+    else:
+        item = _parse_page(data)
+
+    if 'badging' in data['visuals'] and 'airingEventState' in data['visuals']['badging']:
+        item.label = u'{} [B][{}][/B]'.format(item.label, data['visuals']['badging']['airingEventState']['badgeLabel'])
+
+    if 'prompt' in data['visuals']:
+        item.info['plot'] = u'[B]{}[/B]\n{}'.format(data['visuals']['prompt'], item.info['plot'])
 
     if 'genres' in meta:
         item.info['genre'] = meta['genres']['values']
 
     if 'ratingInfo' in meta:
         item.info['rating'] = meta['ratingInfo']['rating']['text']
-
-    if 'runtime' in meta:
-        item.info['duration'] = int(meta['runtime']['runtimeMs'] / 1000)
-        item.info['mediatype'] = 'movie'
-        item.playable = True
-        item.path = info['playpath']
-    else:
-        item.info['mediatype'] = 'tvshow'
-        # might be trailer which does not have trailer
-        if info[ACTIONS][BROWSE]:
-            item.path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId'])
 
     return item
 
