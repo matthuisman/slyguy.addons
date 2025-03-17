@@ -101,8 +101,14 @@ def play(video_id, **kwargs):
     headers = {}
     str = '<MPD minBufferTime="PT1.5S" mediaPresentationDuration="PT{}S" type="static" profiles="urn:mpeg:dash:profile:isoff-main:2011">\n<Period>'.format(data["duration"])
     for idx, (group, formats) in enumerate(groups.items()):
-        str += '\n<AdaptationSet id="{}" mimeType="{}" lang="{}"><Role schemeIdUri="urn:mpeg:DASH:role:2011" value="main"/>'.format(idx, group, formats[0].get('language'))
         for format in formats:
+            original = default = ''
+            if 'original' in format.get('format', '').lower():
+                original = ' original="true"'
+            if 'default' in format.get('format', '').lower():
+                default = ' default="true"'
+
+            str += '\n<AdaptationSet id="{}" mimeType="{}" lang="{}"{}{}><Role schemeIdUri="urn:mpeg:DASH:role:2011" value="main"/>'.format(idx, group, format['language'], original, default)
             headers.update(format['http_headers'])
             format['url'] = fix_url(format['url'])
             codec = format['vcodec'] if format['vcodec'] != 'none' else format['acodec']
@@ -116,8 +122,7 @@ def play(video_id, **kwargs):
                 format["url"], format["indexRange"]["start"], format["indexRange"]["end"], format["initRange"]["start"], format["initRange"]["end"]
             )
             str += '\n</Representation>'
-    
-        str += '\n</AdaptationSet>'
+            str += '\n</AdaptationSet>'
 
     if settings.SUBTITLES.value:
         for idx, lang in enumerate(data.get('subtitles', {})):
