@@ -194,9 +194,9 @@ def _get_info(data):
             containers[EPISODES] = row
         elif row['type'] == 'details':
             containers[DETAILS] = row
-        elif row['id'] == SUGGESTED_ID:
+        elif row.get('id') == SUGGESTED_ID:
             containers[SUGGESTED] = row
-        elif row['id'] == EXTRAS_ID:
+        elif row.get('id') == EXTRAS_ID:
             containers[EXTRAS] = row
 
     description = containers[DETAILS]['visuals'].get('description') or data['visuals'].get('description', {})
