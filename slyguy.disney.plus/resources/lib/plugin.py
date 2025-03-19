@@ -1,3 +1,6 @@
+import json
+from base64 import b64decode
+
 from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
@@ -155,6 +158,7 @@ def _get_actions(data):
         PLAYBACK: {},
         TRAILER: {},
         MODIFYSAVES: {},
+        MODAL: {},
     }
     for row in data.get('actions', []):
         if row['type'] == 'browse':
@@ -165,6 +169,8 @@ def _get_actions(data):
             actions[TRAILER] = row
         elif row['type'] == 'modifySaves':
             actions[MODIFYSAVES] = row
+        elif row['type'] == 'modal':
+            actions[MODAL] = row
     actions[PLAYBACK] = actions[PLAYBACK] or actions[BROWSE]
     return actions
 
@@ -287,6 +293,10 @@ def _process_rows(data, title=None, watchlist=False, flatten=False):
 
     items = []
     for row in rows:
+        # flatten inline single heros
+        if row['type'] == 'set' and row['style']['name'] == 'hero_inline_single' and len(row['items']) == 1:
+            row = row['items'][0]
+
         if row['type'] == 'set':
             if 'hero' in row['style']['name'].lower() or 'brand' in row['style']['name'].lower() or 'continue_watching' in row['style']['name'].lower():
                 continue
@@ -303,19 +313,12 @@ def _process_rows(data, title=None, watchlist=False, flatten=False):
             items.append(item)
 
         elif row.get('actions', []):
-            # MOVIE / TV SHOW / EPISODE / EVENT
+            # MOVIE / TV SHOW / EPISODE / REPLAY / LIVE
             item = _parse_row(row)
             _add_progress(user_states.get(row['personalization']['pid']), item)
-
-            if item.info.get('mediatype') in ('movie', 'tvshow'):
-                if settings.SYNC_WATCHLIST.value:
-                    if watchlist:
-                        item.context.append((_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
-                    else:
-                        item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
-
-                item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, deeplink_id=row['actions'][0]['deeplinkId']))))
-                item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, deeplink_id=row['actions'][0]['deeplinkId']))))
+            if settings.SYNC_WATCHLIST.value and watchlist:
+                item.context = [x for x in item.context if x[0] != _.ADD_WATCHLIST]
+                item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
             items.append(item)
 
     if flatten and len(items) == 1:
@@ -362,21 +365,48 @@ def _parse_page(data):
 def _parse_event(data):
     info = _get_info(data)
     meta = data['visuals'].get('metastringParts', {})
+    is_live = data['visuals']['badging']['airingEventState']['state'] == 'live'
 
-    item = plugin.Item(
-        label = info['title'],
-        art = info['art'],
-        info = {
-            'plot': info['plot'],
-        },
-        playable = True,
-        path = info['playpath'],
-    )
+    # linear channel
+    if info[ACTIONS][MODAL]:
+        modal_actions = _get_actions(info[ACTIONS][MODAL])
+        resource_data = json.loads(b64decode(modal_actions[PLAYBACK]['resourceId']).decode("utf-8"))
+        item = plugin.Item(
+            label = data['visuals']['networkAttribution']['ttsText'],
+            info = {
+                'plot': '',
+                'mediatype': 'video',
+            },
+            art = None,
+            playable = True,
+            path = _get_play_path(channel_id=resource_data['channelId'], _is_live=is_live),
+        )
+    else:
+        item = plugin.Item(
+            label = info['title'],
+            art = info['art'],
+            info = {
+                'plot': info['plot'],
+                'mediatype': 'video',
+            },
+            playable = True,
+            path = _get_play_path(deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId'], _is_live=is_live),
+        )
+        if settings.SYNC_WATCHLIST.value:
+            item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
 
-    league = meta['sportsLeague']['name']
-    if 'releaseYearRange' in meta:
-        league = u'{} - {}'.format(league, meta['releaseYearRange']['startYear'])
-    item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(league, item.info['plot'])
+    if 'sportsLeague' in meta:
+        league = meta['sportsLeague']['name']
+        if 'releaseYearRange' in meta:
+            league = u'{} - {}'.format(league, meta['releaseYearRange']['startYear'])
+        item.info['plot'] = u'[B]{}[/B]\n\n{}'.format(league, item.info['plot'])
+
+    if data['visuals']['badging']['airingEventState']['state'] not in ('replay',):
+        item.label = u'[B][{}][/B] {}'.format(data['visuals']['badging']['airingEventState']['badgeLabel'], item.label)
+
+    if 'prompt' in data['visuals'] and not info[ACTIONS][MODAL]:
+        item.info['plot'] = u'[B]{}[/B]\n{}'.format(data['visuals']['prompt'], item.info['plot'])
+
     return item
 
 
@@ -396,6 +426,10 @@ def _parse_movie(data):
         playable = True,
         path = info['playpath'],
     )
+    if settings.SYNC_WATCHLIST.value:
+        item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
+    item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
+    item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
     return item
 
 
@@ -412,17 +446,21 @@ def _parse_show(data):
         },
         path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId']),
     )
+    if settings.SYNC_WATCHLIST.value:
+        item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
+    item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
+    item.context.append((_.SUGGESTED, "Container.Update({})".format(plugin.url_for(suggested, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
     return item
 
 
 def _parse_row(data):
     meta = data['visuals'].get('metastringParts', {})
 
-    if 'episodeTitle' in data['visuals']:
-        item = _parse_episode(data)
-
-    elif 'sportsLeague' in meta:
+    if 'airingEventState' in data['visuals'].get('badging', {}):
         item = _parse_event(data)
+
+    elif 'episodeTitle' in data['visuals']:
+        item = _parse_episode(data)
 
     elif 'runtime' in meta:
         item = _parse_movie(data)
@@ -432,12 +470,6 @@ def _parse_row(data):
 
     else:
         item = _parse_page(data)
-
-    if 'badging' in data['visuals'] and 'airingEventState' in data['visuals']['badging']:
-        item.label = u'{} [B][{}][/B]'.format(item.label, data['visuals']['badging']['airingEventState']['badgeLabel'])
-
-    if 'prompt' in data['visuals']:
-        item.info['plot'] = u'[B]{}[/B]\n{}'.format(data['visuals']['prompt'], item.info['plot'])
 
     if 'genres' in meta:
         item.info['genre'] = meta['genres']['values']
@@ -556,17 +588,18 @@ def _get_art(row):
     poster_ratios = ['0.71', '0.75', '0.80']
     clear_ratios = ['2.00', '1.78', '3.32']
     banner_ratios = ['3.91', '3.00', '1.78']
+    watermark_used = False
 
     if is_episode:
         thumbs = ('thumbnail',)
     else:
-        thumbs = ('thumbnail', 'tile')
+        thumbs = ('thumbnail', 'tile', 'watermark')
 
     fanart_count = 0
     for name in images or []:
         art_type = images[name]
 
-        tr = br = pr = ''
+        tr = br = pr = cr = ''
 
         for ratio in thumb_ratios:
             if ratio in art_type:
@@ -594,6 +627,9 @@ def _get_art(row):
             if pr:
                 art['poster'] = _first_image_url(art_type[pr]) + thumbsize
 
+            if (tr or pr) and name == 'watermark':
+                watermark_used = True
+
         elif name == 'hero_tile':
             if br:
                 art['banner'] = _first_image_url(art_type[br]) + bannersize
@@ -610,7 +646,7 @@ def _get_art(row):
             if cr:
                 art['clearlogo'] = _first_image_url(art_type[cr]) + thumbsize
 
-    if is_episode:
+    if is_episode or watermark_used:
         art.pop('poster', None)
 
     return art
@@ -629,18 +665,17 @@ def _get_milestone(milestones, name, default=0):
 
 @plugin.route()
 @plugin.login_required()
-def play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
-    return _play(family_id, content_id, deeplink_id, **kwargs)
+def play(**kwargs):
+    return _play(**kwargs)
 
 
-def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
+def _play(family_id=None, content_id=None, deeplink_id=None, channel_id=None, **kwargs):
     if KODI_VERSION > 18:
         ver_required = '2.6.0'
     else:
         ver_required = '2.4.5'
 
     ia = inputstream.Widevine(
-        license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
         manifest_type = 'hls',
         mimetype = 'application/vnd.apple.mpegurl',
         wv_secure = is_wv_secure(),
@@ -648,7 +683,9 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
     if not ia.check() or not inputstream.require_version(ver_required):
         gui.ok(_(_.IA_VER_ERROR, kodi_ver=KODI_VERSION, ver_required=ver_required))
 
-    if content_id:
+    if channel_id:
+        data = api.deeplink(channel_id, ref_type='channelId', action='playback')
+    elif content_id:
         data = api.deeplink(content_id, ref_type='dmcContentId', action='playback')
     elif family_id:
         data = api.deeplink(family_id, ref_type='encodedFamilyId', action='playback')
@@ -657,8 +694,10 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
 
     deeplink_id = data['actions'][0]['deeplinkId'].replace('entity-', '')
     resource_id = data['actions'][0]['resourceId']
-    upnext_id = data['actions'][0]['upNextId']
     available_id = data['actions'][0]['availId']
+    upnext_id = data['actions'][0].get('upNextId')
+    is_linear = data['actions'][0].get('contentType') == 'linear'
+
     player_experience = api.player_experience(available_id)
     program_type = player_experience['analytics']['programType']
 
@@ -667,7 +706,10 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
 
     #TODO: dont need to do this if clicking from existing listitem with all info
     # skip this if we already have good info
-    if program_type == 'movie':
+    if is_linear:
+        # TODO channel list item data
+        pass
+    elif program_type == 'movie':
         data = api.page('entity-{}'.format(deeplink_id))
         flags = [x['value'] for x in data['visuals']['metastringParts']['audioVisual']['flags']]
         item = _parse_row(data)
@@ -709,16 +751,23 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
             if item.resume_from == -1:
                 return
 
+    if is_linear:
+        url = playback_data['stream']['sources'][0]['slide']['url']
+        ia.license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLinearLicense']['href']
+    else:
+        url = playback_data['stream']['sources'][0]['complete']['url']
+        ia.license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href']
+
     item.update(
         playable = True,
-        path = playback_data['stream']['sources'][0]['complete']['url'],
+        path = url,
         inputstream = ia,
         headers = api.session.headers,
         proxy_data = {'original_language': player_experience.get('originalLanguage') or ''},
     )
 
     item.play_skips = []
-    milestones = playback_data['stream']['editorial']
+    milestones = playback_data['stream'].get('editorial', [])
     if milestones and settings.getBool('skip_recaps', False):
         recap_start = _get_milestone(milestones, 'recap_start')
         recap_end = _get_milestone(milestones, 'recap_end')
@@ -740,14 +789,14 @@ def _play(family_id=None, content_id=None, deeplink_id=None, **kwargs):
             item.play_skips.append({'from': tag_end, 'to': 0})
 
     upnext = None
-    if program_type == 'episode' and settings.getBool('play_next_episode', True):
+    if upnext_id and program_type == 'episode' and settings.getBool('play_next_episode', True):
         data = api.upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or not row.get('sequentialEpisode'):
                 continue
             upnext = row['item']
 
-    elif program_type == 'movie' and settings.getBool('play_next_movie', False):
+    elif upnext_id and program_type == 'movie' and settings.getBool('play_next_movie', False):
         data = api.upnext(upnext_id)
         for row in data.get('items', []):
             if row.get('type') != 'upNext' or row.get('sequentialEpisode'):
