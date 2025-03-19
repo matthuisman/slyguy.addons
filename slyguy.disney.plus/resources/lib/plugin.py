@@ -426,6 +426,10 @@ def _parse_movie(data):
         playable = True,
         path = info['playpath'],
     )
+
+    if 'releaseYearRange' in meta:
+        item.info['year'] = meta['releaseYearRange']['startYear']
+
     if settings.SYNC_WATCHLIST.value:
         item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
     item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
@@ -435,6 +439,7 @@ def _parse_movie(data):
 
 def _parse_show(data):
     info = _get_info(data)
+    meta = data['visuals'].get('metastringParts', {})
 
     item = plugin.Item(
         label = info['title'],
@@ -446,6 +451,10 @@ def _parse_show(data):
         },
         path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId']),
     )
+
+    if 'releaseYearRange' in meta:
+        item.info['year'] = meta['releaseYearRange']['startYear']
+
     if settings.SYNC_WATCHLIST.value:
         item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
     item.context.append((_.EXTRAS, "Container.Update({})".format(plugin.url_for(extras, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
