@@ -173,7 +173,7 @@ class Item(object):
                 info['aired'] = aired = premiered
 
             if year and not aired:
-                info['aired'] = aired = '{}-01-01'.format(year)
+                info['aired'] = aired = year
 
             if not premiered and aired:
                 info['premiered'] = premiered = aired

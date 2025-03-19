@@ -3,11 +3,14 @@ import re
 from kodi_six import xbmc, xbmcaddon
 from six.moves.urllib_parse import urlparse
 
-from slyguy import plugin, gui, _
+from slyguy import plugin, gui, settings, _
+from slyguy.log import log
+from slyguy.session import Session
 from slyguy.settings.types import STORAGE
 from slyguy.util import get_kodi_setting, get_addon
 from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS, ADDON_NAME
 
+from .constants import MDBLIST_API_KEY
 from .util import check_updates, get_slyguy_addons
 
 
@@ -36,10 +39,34 @@ def home(**kwargs):
 
     return folder
 
+
 @plugin.route(ROUTE_CONTEXT)
 def context(listitem, **kwargs):
     vid_tag = listitem.getVideoInfoTag()
     trailer_path = vid_tag.getTrailer()
+
+    if not trailer_path or settings.TRAILER_MDBLIST_FIRST.value:
+        unique_id = vid_tag.getIMDBNumber()
+        session = Session()
+
+        if not unique_id:
+            log.debug("mdblist search: {} ({})".format(listitem.getLabel(), vid_tag.getYear()))
+            data = session.get('https://api.mdblist.com/search/movie', params={'query': listitem.getLabel(), 'year': vid_tag.getYear(), 'limit_by_score': 65, 'limit': 1, 'apikey': MDBLIST_API_KEY}).json()
+            results = data['search']
+            if results:
+                log.debug("mdblist search result: {}".format(results[0]))
+                unique_id = results[0]['ids']['imdbid']
+
+        if unique_id:
+            provider = 'imdb' if unique_id.lower().startswith('tt') else 'tmdb'
+            data = session.get('https://api.mdblist.com/{}/movie/{}'.format(provider, unique_id), params={'apikey': MDBLIST_API_KEY}).json()
+            trailer = data.get('trailer')
+            if trailer and 'youtube' in trailer.lower():
+                log.info("mdblist trailer found: {}".format(trailer))
+                trailer_path = 'plugin://plugin.video.youtube/play/?video_id={}'.format(trailer.rsplit('=')[1])
+
+    if not trailer_path:
+        raise Exception("No trailer found!")
 
     parsed = urlparse(trailer_path)
     if parsed.scheme.lower() == 'plugin':
