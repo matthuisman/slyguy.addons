@@ -366,11 +366,12 @@ def _parse_event(data):
     info = _get_info(data)
     meta = data['visuals'].get('metastringParts', {})
     is_live = data['visuals']['badging']['airingEventState']['state'] == 'live'
+    actions = info[ACTIONS]
+    if actions[MODAL]:
+        actions = _get_actions(info[ACTIONS][MODAL])
 
-    # linear channel
-    if info[ACTIONS][MODAL]:
-        modal_actions = _get_actions(info[ACTIONS][MODAL])
-        resource_data = json.loads(b64decode(modal_actions[PLAYBACK]['resourceId']).decode("utf-8"))
+    if actions[PLAYBACK].get('contentType') == 'linear':
+        resource_data = json.loads(b64decode(actions[PLAYBACK]['resourceId']).decode("utf-8"))
         item = plugin.Item(
             label = data['visuals']['networkAttribution']['ttsText'],
             info = {
@@ -379,7 +380,7 @@ def _parse_event(data):
             },
             art = None,
             playable = True,
-            path = _get_play_path(channel_id=resource_data['channelId'], _is_live=is_live),
+            path = _get_play_path(channel_id=resource_data['channelId'], _is_live=True),
         )
     else:
         item = plugin.Item(
@@ -390,10 +391,11 @@ def _parse_event(data):
                 'mediatype': 'video',
             },
             playable = True,
-            path = _get_play_path(deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId'], _is_live=is_live),
+            path = _get_play_path(deeplink_id=actions[PLAYBACK]['deeplinkId'], _is_live=is_live),
         )
         if settings.SYNC_WATCHLIST.value:
-            item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']))))
+            item.context.append((_.ADD_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(add_watchlist, deeplink_id=actions[PLAYBACK]['deeplinkId']))))
+        # TODO: Watch from live / start
 
     if 'sportsLeague' in meta:
         league = meta['sportsLeague']['name']
