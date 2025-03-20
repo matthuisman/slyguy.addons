@@ -412,25 +412,32 @@ def process_brightcove(data):
     else:
         raise Error(_.NO_BRIGHTCOVE_SRC)
 
-def get_system_arch():
-    if xbmc.getCondVisibility('System.Platform.Android'):
-        system = 'Android'
+
+# TODO: Cache me
+def get_system():
+    if IS_ANDROID:
+        return 'Android'
     elif xbmc.getCondVisibility('System.Platform.WebOS') or os.path.exists('/var/run/nyx/os_info.json'):
-        system = 'WebOS'
+        return 'WebOS'
     elif xbmc.getCondVisibility('System.Platform.UWP') or '4n2hpmxwrvr6p' in xbmc.translatePath('special://xbmc/'):
-        system = 'UWP'
+        return 'UWP'
     elif xbmc.getCondVisibility('System.Platform.Windows'):
-        system = 'Windows'
+        return 'Windows'
     elif xbmc.getCondVisibility('System.Platform.IOS'):
-        system = 'IOS'
+        return 'IOS'
     elif xbmc.getCondVisibility('System.Platform.TVOS'):
-        system = 'TVOS'
+        return 'TVOS'
     elif xbmc.getCondVisibility('System.Platform.Darwin'):
-        system = 'Darwin'
+        return 'Darwin'
     elif xbmc.getCondVisibility('System.Platform.Linux') or xbmc.getCondVisibility('System.Platform.Linux.RaspberryPi'):
-        system = 'Linux'
+        return 'Linux'
     else:
-        system = platform.system()
+        return platform.system()
+
+
+# TODO: Cache me
+def get_system_arch():
+    system = get_system()
 
     if system == 'Windows':
         arch = platform.architecture()[0].lower()

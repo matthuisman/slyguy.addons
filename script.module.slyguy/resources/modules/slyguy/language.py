@@ -310,6 +310,22 @@ class BaseLanguage(object):
     TRAILER_CONTEXT_MENU        = 32221
     NOT_SET                     = 32222
     PROXY_PORT                  = 32223
+    YT_APK                      = 32224
+    YT_DLP_APK                  = 32225
+    YT_NATIVE_APK_ID            = 32226
+    PYTHON2_NOT_SUPPORTED       = 32227
+    PYTHON2_NOT_SUPPORTED_ANDROID = 32228
+    NO_VIDEOS_FOUND_FOR_YT      = 32229
+    AUTO_TRANSLATE              = 32230
+    YT_SUBTITLES                = 32231
+    YT_AUTO_SUBTITLES           = 32232
+    YT_DLP_COOKIES_PATH         = 32233
+    TRAILERS                    = 32234
+    YOUTUBE                     = 32235
+    YT_DLP                      = 32236
+    YT_PLUGIN                   = 32237
+    YT_PLAY_USING               = 32238
+    YT_DLP_PLUGIN               = 32239
 
     def __init__(self):
         self._addon_map = {}    

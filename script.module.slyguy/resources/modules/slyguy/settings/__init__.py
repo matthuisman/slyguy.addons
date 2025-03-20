@@ -8,7 +8,7 @@ from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc
 
-from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action
+from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action, Browse
 
 
 WV_AUTO = -1
@@ -32,6 +32,14 @@ class IPMode:
     PREFER_IPV6 = 'prefer_ipv6'
     ONLY_IPV4 = 'only_ipv4'
     ONLY_IPV6 = 'only_ipv6'
+
+
+class YTMode:
+    YT_DLP = 'yt_dlp'
+    PLUGIN = 'plugin'
+    APK = 'apk'
+    YT_DLP_APK = 'yt_dlp_apk'
+    YT_DLP_PLUGIN = 'yt_dlp_plugin'
 
 
 def is_donor():
@@ -230,6 +238,16 @@ if ADDON_DEV:
     WV_LEVEL_OPTIONS.append([_.WV_LEVEL_L1, WV_L1])
 
 
+YT_OPTIONS = [[_.YT_PLUGIN, YTMode.PLUGIN]]
+if IS_ANDROID:
+    YT_OPTIONS.append([_.YT_APK, YTMode.APK])
+if IS_PYTHON3:
+    YT_OPTIONS.insert(0, [_.YT_DLP, YTMode.YT_DLP])
+    YT_OPTIONS.append([_.YT_DLP_PLUGIN, YTMode.YT_DLP_PLUGIN])
+    if IS_ANDROID:
+        YT_OPTIONS.append([_.YT_DLP_APK, YTMode.YT_DLP_APK])
+
+
 class CommonSettings(BaseSettings):
     # PLAYER / QUALITY
     QUALITY_MODE = Enum('quality_mode', legacy_ids=['default_quality'], label=_.QUALITY_SELECT_MODE, default=QUALITY_ASK, disabled_value=QUALITY_SKIP, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY,
@@ -262,7 +280,7 @@ class CommonSettings(BaseSettings):
     DEFAULT_SUBTITLE = Text('default_subtitle', default='original,interface,en', owner=COMMON_ADDON_ID, disabled_value='', enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, category=Categories.PLAYER_LANGUAGE)
 
     # PLAYER / ADVANCED
-    REINSTALL_WV = Action("RunPlugin(plugin://{}/?_=_ia_install)".format(COMMON_ADDON_ID), visible="!system.platform.android", category=Categories.PLAYER_ADVANCED)
+    REINSTALL_WV = Action("RunPlugin(plugin://{}/?_=_ia_install)".format(COMMON_ADDON_ID), visible=not IS_ANDROID, category=Categories.PLAYER_ADVANCED)
     LIVE_PLAY_TYPE = Enum('live_play_type', options=[[_.PLAY_FROM_ASK, PLAY_FROM_ASK], [_.PLAY_FROM_LIVE_CONTEXT, PLAY_FROM_LIVE], [_.PLAY_FROM_BEGINNING, PLAY_FROM_START]],
                     loop=True, default=PLAY_FROM_ASK, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_LIVE = Bool('use_ia_hls_live', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
@@ -300,10 +318,19 @@ class CommonSettings(BaseSettings):
     # SYSTEM
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     PROXY_PORT = Number('proxy_port', default=8095, override=False, visible=lambda: settings.PROXY_ENABLED.value, owner=COMMON_ADDON_ID, after_save=lambda val: restart_service(), after_clear=restart_service, category=Categories.SYSTEM)
-    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda val:set_trailer_context(),
-        after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+
+    # TRAILERS
+    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda val:set_trailer_context(),
+        after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
+
+    # TRAILERS / YOUTUBE
+    YT_PLAY_USING = Enum('yt_play_using', _.YT_PLAY_USING, options=YT_OPTIONS, default=YT_OPTIONS[0][1], override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
+    YT_SUBTITLES = Bool('yt_subtitles', _.YT_SUBTITLES, default=True, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
+    YT_AUTO_SUBTITLES = Bool('yt_auto_subtitles', _.YT_AUTO_SUBTITLES, default=True, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
+    YT_COOKIES_PATH = Browse('yt_cookies_path', _.YT_DLP_COOKIES_PATH, type=Browse.FILE, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
+    YT_NATIVE_APK_ID = Text('yt_android_app_id', _.YT_NATIVE_APK_ID, default_label=_.AUTO, visible=IS_ANDROID, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
 
     # ROOT
     DONOR_ID = Donor('donor_id', override=False, confirm_clear=True, owner=COMMON_ADDON_ID, category=Categories.ROOT)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.71">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.72">
   <requires>
-    <import addon="slyguy.dependencies" version="0.0.20"/>
+    <import addon="slyguy.dependencies" version="0.0.24"/>
     <import addon="repository.slyguy" version="0.0.9"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
@@ -23,7 +23,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>Move userdata and bookmarks into settings!</news>
+    <news>Built-in yt-dlp trailers support!</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>

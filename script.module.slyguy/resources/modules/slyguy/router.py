@@ -96,6 +96,7 @@ def build_url(_url, _addon_id=ADDON_ID, **kwargs):
 
     return 'plugin://{}{}/?{}'.format(_addon_id, path, urlencode(params))
 
+
 def redirect(url):
     log.debug('Redirect -> {}'.format(url))
     function, params = parse_url(url)
@@ -106,7 +107,7 @@ def redirect(url):
 # router.dispatch('?_=_settings')
 def dispatch(url=None):
     if url is None:
-        if hasattr(sys, 'listitem'):
+        if hasattr(sys, 'listitem') and len(sys.argv) == 1:
             url = ROUTE_CONTEXT
             try:
                 #Kodi 19+ only

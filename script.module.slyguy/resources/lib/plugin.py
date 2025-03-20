@@ -1,12 +1,14 @@
 import re
 
 from kodi_six import xbmc, xbmcaddon
-from six.moves.urllib_parse import urlparse
+from six.moves.urllib_parse import urlparse, parse_qsl
 
 from slyguy import plugin, gui, _
+from slyguy.settings import settings, YTMode
 from slyguy.settings.types import STORAGE
 from slyguy.util import get_kodi_setting, get_addon
-from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS, ADDON_NAME
+from slyguy.yt import play_yt
+from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS, ADDON_NAME, YOTUBE_PLUGIN_ID
 
 from .util import check_updates, get_slyguy_addons
 
@@ -36,6 +38,12 @@ def home(**kwargs):
 
     return folder
 
+
+@plugin.route()
+def play_youtube(video_id, **kwargs):
+    return play_yt(video_id)
+
+
 @plugin.route(ROUTE_CONTEXT)
 def context(listitem, **kwargs):
     vid_tag = listitem.getVideoInfoTag()
@@ -44,7 +52,12 @@ def context(listitem, **kwargs):
     parsed = urlparse(trailer_path)
     if parsed.scheme.lower() == 'plugin':
         addon_id = parsed.netloc
-        get_addon(addon_id, required=True)
+        if addon_id.lower().strip() == YOTUBE_PLUGIN_ID and settings.YT_PLAY_USING.value != YTMode.PLUGIN:
+            query_params = dict(parse_qsl(parsed.query))
+            trailer_path = plugin.url_for(play_youtube, video_id=query_params['video_id'])
+        else:
+            # prompt to install if required
+            get_addon(addon_id, required=True)
 
     li = plugin.Item(path=trailer_path)
     li.label = u"{} ({})".format(listitem.getLabel(), _.TRAILER)

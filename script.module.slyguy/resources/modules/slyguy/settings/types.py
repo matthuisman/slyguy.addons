@@ -64,6 +64,8 @@ class Categories(object):
     NETWORK = Category(_.NETWORK, parent=ROOT)
     INTERFACE = Category(_.INTERFACE, parent=ROOT)
     PVR_LIVE_TV = Category(_.PVR_LIVE_TV, parent=ROOT)
+    TRAILERS = Category(_.TRAILERS, parent=ROOT)
+    YOUTUBE = Category(_.YOUTUBE, parent=TRAILERS)
     SYSTEM = Category(_.SYSTEM, parent=ROOT)
 
 
