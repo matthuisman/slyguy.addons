@@ -1,4 +1,5 @@
 import json
+import time
 from base64 import b64decode
 
 from slyguy import plugin, gui, userdata, signals, inputstream
@@ -100,7 +101,7 @@ def continue_watching(page=1, **kwargs):
     page_id = _get_actions(data)[BROWSE]['pageId']
     data = api.page(page_id, limit=0, enhanced_limit=0)
     set_id = [x for x in data['containers'] if 'continue_watching' in x['style']['name'].lower()][0]['id']
-    data = api.set(set_id, page=page)
+    data = api.set(set_id, page=page, _skip_cache=True)
     folder = _process_rows(data, title=_.CONTINUE_WATCHING)
     return folder, data['pagination']['hasMore']
 
@@ -109,8 +110,28 @@ def continue_watching(page=1, **kwargs):
 def watchlist(**kwargs):
     data = api.deeplink(ref_id='watchlist')
     page_id = _get_actions(data)[BROWSE]['pageId']
-    data = api.page(page_id, limit=1, enhanced_limit=15)
+    data = api.page(page_id, limit=1, enhanced_limit=15, _skip_cache=True)
     return _process_rows(data, title=_.WATCHLIST, watchlist=True, flatten=True)
+
+
+@plugin.route()
+def add_watchlist(deeplink_id, **kwargs):
+    with gui.busy():
+        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        info = _get_info(data)
+        api.watchlist('add', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
+    gui.notification(_.ADDED_WATCHLIST, heading=info['title'], icon=info['art'].get('poster') or info['art'].get('thumb'))
+
+
+@plugin.route()
+def delete_watchlist(deeplink_id, **kwargs):
+    with gui.busy():
+        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        info = _get_info(data)
+        api.watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
+        # above is async so wait a bit to make sure its removed from list refresh
+        time.sleep(1)
+    gui.refresh()
 
 
 @plugin.route()
@@ -135,7 +156,7 @@ def page(page_id, **kwargs):
 @plugin.route()
 @plugin.pagination()
 def set(set_id, watchlist=0, page=1, **kwargs):
-    data = api.set(set_id, page=page)
+    data = api.set(set_id, page=page, _skip_cache=bool(int(watchlist)))
     folder = _process_rows(data, watchlist=bool(int(watchlist)))
     return folder, data['pagination']['hasMore']
 
@@ -489,26 +510,6 @@ def _parse_row(data):
         item.info['rating'] = meta['ratingInfo']['rating']['text']
 
     return item
-
-
-@plugin.route()
-def add_watchlist(deeplink_id, **kwargs):
-    with gui.busy():
-        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
-        info = _get_info(data)
-        if not data['personalization']['userState'].get('inWatchlist'):
-            api.watchlist('add', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
-    gui.notification(_.ADDED_WATCHLIST, heading=info['title'], icon=info['art'].get('poster') or info['art'].get('thumb'))
-
-
-@plugin.route()
-def delete_watchlist(deeplink_id, **kwargs):
-    with gui.busy():
-        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
-        info = _get_info(data)
-        if data['personalization']['userState'].get('inWatchlist'):
-            api.watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
-    gui.refresh()
 
 
 @plugin.route()

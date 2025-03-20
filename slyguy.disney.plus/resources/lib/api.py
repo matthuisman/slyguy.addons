@@ -324,6 +324,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPage']['href'], version=EXPLORE_VERSION, pageId=page_id)
         return self._json_call(endpoint, params=params)['data']['page']
 
+    @mem_cache.cached(60*5)
     def set(self, set_id, page=1):
         params = {
             'limit': 48,
