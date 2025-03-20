@@ -119,7 +119,7 @@ def add_watchlist(deeplink_id, **kwargs):
     with gui.busy():
         data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
-        api.watchlist('add', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
+        api.edit_watchlist('add', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
     gui.notification(_.ADDED_WATCHLIST, heading=info['title'], icon=info['art'].get('poster') or info['art'].get('thumb'))
 
 
@@ -128,7 +128,7 @@ def delete_watchlist(deeplink_id, **kwargs):
     with gui.busy():
         data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
-        api.watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
+        api.edit_watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
         # above is async so wait a bit to make sure its removed from list refresh
         time.sleep(1)
     gui.refresh()

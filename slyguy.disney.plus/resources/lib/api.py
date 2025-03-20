@@ -30,11 +30,11 @@ class API(object):
         self.logged_in = userdata.get('refresh_token') != None
         self._cache = {}
 
-    @mem_cache.cached(60*10, key='config')
+    @mem_cache.cached(60*10)
     def get_config(self):
         return self._session.get(CONFIG_URL).json()
 
-    @mem_cache.cached(60*10, key='transaction_id')
+    @mem_cache.cached(60*10)
     def _transaction_id(self):
         return str(uuid.uuid4())
 
@@ -216,7 +216,7 @@ class API(object):
         self._check_errors(data)
         return data
 
-    @mem_cache.cached(60*5, key='account')
+    @mem_cache.cached(60*5)
     def account(self):
         self._set_token()
         endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
@@ -251,7 +251,7 @@ class API(object):
         data = self._session.post(endpoint, json=payload).json()
         self._check_errors(data)
         self._set_auth(data['extensions']['sdk'])
-        mem_cache.delete('account')
+        mem_cache.empty()
 
     def set_imax(self, value):
         self._set_token()
@@ -314,6 +314,26 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['content']['client']['endpoints']['getAvatars']['href'], avatarIds=','.join(ids))
         return self._json_call(endpoint)['data']['Avatars']
 
+    def userstates(self, pids):
+        self._set_token()
+        payload = {
+            'pids': pids,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUserState']['href'], version=EXPLORE_VERSION)
+        data = self._session.post(endpoint, json=payload).json()
+        self._check_errors(data)
+        return data['data']['entityStates']
+
+    @mem_cache.cached(60*5)
+    def deeplink(self, ref_id, ref_type='deeplinkId', action='browse'):
+        params = {
+            'refId': ref_id,
+            'refIdType': ref_type,
+            'action': action,
+        }
+        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
+        return self._json_call(endpoint, params=params)['data']['deeplink']
+
     @mem_cache.cached(60*5)
     def page(self, page_id, limit=999, enhanced_limit=0):
         params = {
@@ -333,16 +353,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
-    def userstates(self, pids):
-        self._set_token()
-        payload = {
-            'pids': pids,
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getUserState']['href'], version=EXPLORE_VERSION)
-        data = self._session.post(endpoint, json=payload).json()
-        self._check_errors(data)
-        return data['data']['entityStates']
-
+    @mem_cache.cached(60*5)
     def season(self, season_id, page=1):
         params = {
             'limit': 48,
@@ -351,6 +362,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
         return self._json_call(endpoint, params=params)['data']['season']
 
+    @mem_cache.cached(60*5)
     def search(self, query):
         params = {
             'query': query,
@@ -369,7 +381,7 @@ class API(object):
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getPlayerExperience']['href'], version=EXPLORE_VERSION, availId=available_id)
         return self._json_call(endpoint)['data']['playerExperience']
 
-    def watchlist(self, event_type, page_info, action_info):
+    def edit_watchlist(self, event_type, page_info, action_info):
         self._set_token()
         profile, session = self.profile()
         event_time = arrow.utcnow().format("YYYY-MM-DDTHH:mm:ss.SSS") + "Z"
@@ -393,16 +405,6 @@ class API(object):
         data = self._session.post(endpoint, json=payload).json()
         self._check_errors(data)
         return not any([x['error'] is not None for x in data])
-
-    @mem_cache.cached(60*5)
-    def deeplink(self, ref_id, ref_type='deeplinkId', action='browse'):
-        params = {
-            'refId': ref_id,
-            'refIdType': ref_type,
-            'action': action,
-        }
-        endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getDeeplink']['href'], version=EXPLORE_VERSION)
-        return self._json_call(endpoint, params=params)['data']['deeplink']
 
     def playback(self, resource_id, wv_secure=False):
         self._set_token()
@@ -460,9 +462,7 @@ class API(object):
         return playback_data
 
     def logout(self):
-        mem_cache.delete('transaction_id')
-        mem_cache.delete('config')
-        mem_cache.delete('account')
+        mem_cache.empty()
         userdata.delete('access_token')
         userdata.delete('expires')
         userdata.delete('refresh_token')
