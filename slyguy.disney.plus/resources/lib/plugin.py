@@ -472,8 +472,11 @@ def _parse_show(data):
             'trailer': plugin.url_for(play_trailer, deeplink_id=info[ACTIONS][PLAYBACK]['deeplinkId']),
             'mediatype': 'tvshow',
         },
-        path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId']),
     )
+
+    # this not available when quering the show entity directly
+    if info[ACTIONS][BROWSE]:
+        item.path = plugin.url_for(show, show_id=info[ACTIONS][BROWSE]['pageId'])
 
     if 'releaseYearRange' in meta:
         item.info['year'] = meta['releaseYearRange']['startYear']
