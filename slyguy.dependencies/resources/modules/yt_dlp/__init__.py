@@ -17,7 +17,7 @@ import traceback
 from .cookies import SUPPORTED_BROWSERS, SUPPORTED_KEYRINGS, CookieLoadError
 from .downloader.external import get_external_downloader
 from .extractor import list_extractor_classes
-from .extractor.adobepass import MSO_INFO
+#from .extractor.adobepass import MSO_INFO
 from .networking.impersonate import ImpersonateTarget
 from .options import parseOpts
 from .postprocessor import (
