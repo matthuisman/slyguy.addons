@@ -54,7 +54,8 @@ def context(listitem, **kwargs):
         addon_id = parsed.netloc
         if addon_id.lower().strip() == YOTUBE_PLUGIN_ID and settings.YT_PLAY_USING.value != YTMode.PLUGIN:
             query_params = dict(parse_qsl(parsed.query))
-            trailer_path = plugin.url_for(play_youtube, video_id=query_params['video_id'])
+            video_id = query_params.get('video_id') or query_params.get('videoid')
+            trailer_path = plugin.url_for(play_youtube, video_id=video_id)
         else:
             # prompt to install if required
             get_addon(addon_id, required=True)
