@@ -435,3 +435,4 @@ query GetGroup($railId: ID!) {
   }
 }
 """
+ACCOUNT = """\n  query CustomerDetails {\n    customer {\n      tier {\n        __typename\n        ... on SkyCustomerAccountTier {\n          status\n        }\n      }\n      profiles {\n        id\n        name\n        customerProfileAvatar {\n            id\n            image {\n                uri\n            }\n        }\n        isDefault\n      }\n    }\n  }\n"""

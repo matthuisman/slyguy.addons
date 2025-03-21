@@ -4,7 +4,7 @@ from xml.dom.minidom import parseString
 import arrow
 from kodi_six import xbmcplugin
 from slyguy.constants import MIDDLEWARE_PLUGIN
-from slyguy import plugin, gui, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream, log
 from slyguy.util import pthms_to_seconds
 
 from .api import API
@@ -36,6 +36,7 @@ def home(**kwargs):
         if settings.getBool('bookmarks', True):
             folder.add_item(label=_(_.BOOKMARKS, _bold=True), path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
+        folder.add_item(label=_.SELECT_PROFILE, path=plugin.url_for(select_profile), art={'thumb': userdata.get('avatar')}, info={'plot': userdata.get('profile')}, _kiosk=False, bookmark=False)
         folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
@@ -43,7 +44,13 @@ def home(**kwargs):
 
 
 def _ondemand(folder):
-    for row in api.vod_categories():
+    try:
+        categories = api.vod_categories()
+    except Exception as e:
+        log.exception(e)
+        return
+
+    for row in categories:
         folder.add_item(
             label = _(row['title'], _bold=True),
             path = plugin.url_for(collection, id=row['id']),
@@ -68,6 +75,7 @@ def featured(**kwargs):
 
     return folder
 
+
 @plugin.route()
 def group(id, **kwargs):
     data = api.group(id)
@@ -78,34 +86,13 @@ def group(id, **kwargs):
 
     return folder
 
-@plugin.route()
-def login(**kwargs):
-    username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
-    if not username:
-        return
-
-    userdata.set('username', username)
-
-    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
-    if not password:
-        return
-
-    api.login(username, password)
-    gui.refresh()
-
-@plugin.route()
-def logout(**kwargs):
-    if not gui.yes_no(_.LOGOUT_YES_NO):
-        return
-
-    api.logout()
-    gui.refresh()
 
 @plugin.route()
 @plugin.search()
 def search(query, page, **kwargs):
     results = api.search(query)
     return process_rows(results), False
+
 
 @plugin.route()
 @plugin.pagination(key='after')
@@ -130,6 +117,7 @@ def collection(id, filters=None, after=None, **kwargs):
     items = process_rows(data['contentPage']['content'])
     folder.add_items(items)
     return folder, data['contentPage']['pageInfo']['endCursor'] if data['contentPage']['pageInfo']['hasNextPage'] else None
+
 
 def process_rows(rows):
     items = []
@@ -203,6 +191,7 @@ def process_rows(rows):
 
     return items
 
+
 @plugin.route()
 def show(id, season=None, **kwargs):
     data = api.show(id)
@@ -254,6 +243,7 @@ def show(id, season=None, **kwargs):
 
     return folder
 
+
 @plugin.route()
 def live_tv(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
@@ -262,13 +252,16 @@ def live_tv(**kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 def play_linear(asset_id, **kwargs):
     return _play(asset_id, is_linear=True, is_live=True)
 
+
 @plugin.route()
 def play(asset_id, **kwargs):
     return _play(asset_id, is_linear=False, is_live=False)
+
 
 @plugin.route()
 @plugin.plugin_request()
@@ -279,6 +272,7 @@ def mpd_request(_data, _path,  **kwargs):
     mpd.setAttribute('minimumUpdatePeriod', 'PT5S')
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
+
 
 @plugin.login_required()
 def _play(asset_id, is_linear=False, is_live=False):
@@ -297,6 +291,87 @@ def _play(asset_id, is_linear=False, is_live=False):
         item.inputstream.properties['manifest_update_parameter'] = 'full'
 
     return item
+
+
+@plugin.route()
+def login(**kwargs):
+    options = [
+        [_.EMAIL_PASSWORD, _email_password],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    _select_profile()
+    gui.refresh()
+
+
+def _email_password():
+    email = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
+    if not email:
+        return
+
+    userdata.set('username', email)
+
+    password = gui.input(_.ASK_PASSWORD, hide_input=True).strip()
+    if not password:
+        return
+
+    api.login(email, password)
+    return True
+
+
+@plugin.route()
+def select_profile(**kwargs):
+    _select_profile()
+    gui.refresh()
+
+
+def _select_profile():
+    account = api.account()
+    profiles = account['profiles']
+
+    options = []
+    values = []
+    default = -1
+
+    for index, profile in enumerate(profiles):
+        values.append(profile)
+        profile['avatar'] = profile['customerProfileAvatar']['image']['uri']
+        options.append(plugin.Item(label=profile['name'], art={'thumb': profile['avatar']}))
+
+        if profile.get('isDefault') and not userdata.get('profile_id'):
+            _switch_profile(profile)
+
+        if profile['id'] == userdata.get('profile_id'):
+            default = index
+
+    index = gui.select(_.SELECT_PROFILE, options=options, preselect=default, useDetails=True)
+    if index < 0:
+        return
+
+    _switch_profile(values[index])
+
+
+def _switch_profile(profile):
+    userdata.set('avatar', profile['avatar'])
+    userdata.set('profile', profile['name'])
+    userdata.set('profile_id', profile['id'])
+    gui.notification(_.PROFILE_ACTIVATED, heading=profile['name'], icon=profile['avatar'])
+
+
+@plugin.route()
+def logout(**kwargs):
+    if not gui.yes_no(_.LOGOUT_YES_NO):
+        return
+
+    api.logout()
+    userdata.delete('avatar')
+    userdata.delete('profile')
+    userdata.delete('profile_id')
+    gui.refresh()
+
 
 @plugin.route()
 @plugin.merge()

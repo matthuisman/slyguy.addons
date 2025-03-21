@@ -32,13 +32,15 @@ class API(object):
         self._session.headers.update({'x-user-profile': userdata.get('profile_id')})
         self.logged_in = True
 
-    def _query_request(self, query, variables=None, **kwargs):
+    def _query_request(self, query, variables=None, operation_name=None, **kwargs):
         self._refresh_token()
 
         data = {
             'query': ' '.join(query.split()),
             'variables': variables or {},
         }
+        if operation_name:
+            data['operationName'] = operation_name
 
         data = self._session.post(GRAPH_URL, json=data, **kwargs).json()
         if 'errors' in data:
@@ -61,6 +63,9 @@ class API(object):
 
         self._oauth_token(payload)
 
+    def account(self):
+        return self._query_request(queries.ACCOUNT, operation_name='CustomerDetails', headers={'x-user-profile': None})['data']['customer']
+
     def _oauth_token(self, payload):
         token_data = self._session.post('https://login.sky.co.nz/oauth/token', json=payload, error_msg=_.TOKEN_ERROR).json()
 
@@ -73,12 +78,6 @@ class API(object):
         userdata.set('expires', int(time() + token_data['expires_in'] - 15))
         if 'refresh_token' in token_data:
             userdata.set('refresh_token', token_data['refresh_token'])
-
-        #Force 1st profile
-        data = jwt_data(token_data['access_token'])
-        profile_id = data['https://skygo.co.nz/profiles'][0]['id']
-        userdata.set('profile_id', profile_id)
-        ####
 
         self._set_authentication()
 
