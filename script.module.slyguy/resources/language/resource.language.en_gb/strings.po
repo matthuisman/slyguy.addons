@@ -1161,9 +1161,29 @@ msgid "YouTube Plugin"
 msgstr ""
 
 msgctxt "#32238"
-msgid "Play using"
+msgid "Play YouTube trailers with"
 msgstr ""
 
 msgctxt "#32239"
 msgid "yt-dlp with fallback to YouTube Plugin"
+msgstr ""
+
+msgctxt "#32240"
+msgid "Trailer Preference"
+msgstr ""
+
+msgctxt "#32241"
+msgid "Media trailer only"
+msgstr ""
+
+msgctxt "#32242"
+msgid "Media trailer with fallback to mdblist trailer"
+msgstr ""
+
+msgctxt "#32243"
+msgid "mdblist trailer with fallback to media trailer"
+msgstr ""
+
+msgctxt "#32244"
+msgid "Search mdblist for trailer using title and year"
 msgstr ""

@@ -326,6 +326,11 @@ class BaseLanguage(object):
     YT_PLUGIN                   = 32237
     YT_PLAY_USING               = 32238
     YT_DLP_PLUGIN               = 32239
+    TRAILER_MODE                = 32240
+    MEDIA                       = 32241
+    MEDIA_MDBLIST               = 32242
+    MDBLIST_MEDIA               = 32243
+    MDBLIST_SEARCH              = 32244
 
     def __init__(self):
         self._addon_map = {}    

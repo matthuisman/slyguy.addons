@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.74">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.75">
   <requires>
     <import addon="slyguy.dependencies" version="0.0.24"/>
     <import addon="repository.slyguy" version="0.0.9"/>
@@ -12,7 +12,10 @@
     <menu id="kodi.core.main">
       <item library="default.py">
         <label>$LOCALIZE[20410]</label>
-        <visible>!String.IsEmpty(ListItem.Trailer) + ![String.StartsWith(Container.FolderPath,plugin://) + String.Contains(Container.FolderPath,trailer)] + Integer.IsEqual(Window(10000).Property(_slyguy_trailer_context_menu),1)</visible>
+        <visible>[!String.IsEmpty(ListItem.Trailer) + ![String.StartsWith(Container.FolderPath,plugin://) + String.Contains(Container.FolderPath,trailer)] + Integer.IsGreaterOrEqual(Window(10000).Property(_slyguy_trailer_context_menu),1)] |
+                 [[!String.IsEmpty(ListItem.IMDBNumber) | !String.IsEmpty(ListItem.UniqueID())] + [String.IsEqual(ListItem.DBType,movie) | String.IsEqual(ListItem.DBType,tvshow)] + Integer.IsGreaterOrEqual(Window(10000).Property(_slyguy_trailer_context_menu),2)] |
+                 [!String.IsEmpty(ListItem.Label) + !String.IsEmpty(ListItem.Year) + [String.IsEqual(ListItem.DBType,movie) | String.IsEqual(ListItem.DBType,tvshow)] + Integer.IsGreaterOrEqual(Window(10000).Property(_slyguy_trailer_context_menu),3)]
+        </visible>
       </item>
     </menu>
   </extension>

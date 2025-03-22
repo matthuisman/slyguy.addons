@@ -42,6 +42,12 @@ class YTMode:
     YT_DLP_PLUGIN = 'yt_dlp_plugin'
 
 
+class TrailerMode:
+    MEDIA = 'media'
+    MEDIA_MDBLIST = 'media_mdblist'
+    MDBLIST_MEDIA = 'mdblist_media'
+
+
 def is_donor():
     return bool(settings.DONOR_ID_CHK.value and settings.DONOR_ID_CHK.value == settings.DONOR_ID.value)
 
@@ -87,10 +93,14 @@ def hdcp_level():
 
 
 def set_trailer_context():
-    if settings.TRAILER_CONTEXT_MENU.value:
-        set_kodi_string('_slyguy_trailer_context_menu', '1')
-    else:
+    if not settings.TRAILER_CONTEXT_MENU.value:
         set_kodi_string('_slyguy_trailer_context_menu', '0')
+    elif settings.TRAILER_MODE.value != TrailerMode.MEDIA:
+        set_kodi_string('_slyguy_trailer_context_menu', '2')
+        if settings.MDBLIST_SEARCH.value:
+            set_kodi_string('_slyguy_trailer_context_menu', '3')
+    else:
+        set_kodi_string('_slyguy_trailer_context_menu', '1')
 
 
 def restart_service():
@@ -331,13 +341,15 @@ class CommonSettings(BaseSettings):
     # TRAILERS
     TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda val:set_trailer_context(),
         after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
-
-    # TRAILERS / YOUTUBE
-    YT_PLAY_USING = Enum('yt_play_using', _.YT_PLAY_USING, options=YT_OPTIONS, default=YT_OPTIONS[0][1], override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
-    YT_SUBTITLES = Bool('yt_subtitles', _.YT_SUBTITLES, default=True, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
-    YT_AUTO_SUBTITLES = Bool('yt_auto_subtitles', _.YT_AUTO_SUBTITLES, default=True, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
-    YT_COOKIES_PATH = Browse('yt_cookies_path', _.YT_DLP_COOKIES_PATH, type=Browse.FILE, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
-    YT_NATIVE_APK_ID = Text('yt_android_app_id', _.YT_NATIVE_APK_ID, default_label=_.AUTO, visible=IS_ANDROID, override=False, owner=COMMON_ADDON_ID, category=Categories.YOUTUBE)
+    TRAILER_MODE = Enum('trailer_mode', _.TRAILER_MODE, options=[[_.MEDIA, TrailerMode.MEDIA], [_.MEDIA_MDBLIST, TrailerMode.MEDIA_MDBLIST], [_.MDBLIST_MEDIA, TrailerMode.MDBLIST_MEDIA]],
+                             default=TrailerMode.MEDIA_MDBLIST, disabled_value=TrailerMode.MEDIA, override=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID,
+                             after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, category=Categories.TRAILERS)
+    MDBLIST_SEARCH = Bool('mdblist_search', _.MDBLIST_SEARCH, default=True, override=False, owner=COMMON_ADDON_ID, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, disabled_value=False, category=Categories.TRAILERS)
+    YT_PLAY_USING = Enum('yt_play_using', _.YT_PLAY_USING, options=YT_OPTIONS, default=YT_OPTIONS[0][1], override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
+    YT_SUBTITLES = Bool('yt_subtitles', _.YT_SUBTITLES, default=True, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
+    YT_AUTO_SUBTITLES = Bool('yt_auto_subtitles', _.YT_AUTO_SUBTITLES, default=True, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
+    YT_COOKIES_PATH = Browse('yt_cookies_path', _.YT_DLP_COOKIES_PATH, type=Browse.FILE, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
+    YT_NATIVE_APK_ID = Text('yt_android_app_id', _.YT_NATIVE_APK_ID, default_label=_.AUTO, visible=IS_ANDROID, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
 
     # ROOT
     DONOR_ID = Donor('donor_id', override=False, confirm_clear=True, owner=COMMON_ADDON_ID, category=Categories.ROOT)

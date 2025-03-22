@@ -152,3 +152,4 @@ MIDDLEWARE_PLUGIN = 'plugin'
 
 ### TRAILERS ###
 YOTUBE_PLUGIN_ID = 'plugin.video.youtube'
+MDBLIST_API_KEY = 'tliqxfv0tg537ff7xyqkv7tug'

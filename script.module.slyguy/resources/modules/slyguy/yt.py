@@ -1,14 +1,15 @@
 from kodi_six import xbmc
 from collections import defaultdict
-from six.moves.urllib_parse import unquote
+from six.moves.urllib_parse import unquote, urlparse, parse_qsl
 
-from .plugin import Item, PluginError
+from . import plugin, gui
 from .inputstream import MPD
 from .language import _
-from .constants import ADDON_PROFILE, YOTUBE_PLUGIN_ID, ADDON_ID, IS_ANDROID, IS_PYTHON3
+from .constants import ADDON_PROFILE, YOTUBE_PLUGIN_ID, ADDON_ID, IS_ANDROID, IS_PYTHON3, KODI_VERSION, MDBLIST_API_KEY
 from .log import log
 from .util import get_addon
-from .settings import settings, YTMode
+from .settings import settings, YTMode, TrailerMode
+from .session import Session
 
 
 def play_android_apk(video_id):
@@ -24,7 +25,7 @@ def play_android_apk(video_id):
 
 def play_yt_plugin(video_id):
     get_addon(YOTUBE_PLUGIN_ID, required=True)
-    return Item(path='plugin://{}/play/?video_id={}'.format(YOTUBE_PLUGIN_ID, video_id))    
+    return plugin.Item(path='plugin://{}/play/?video_id={}'.format(YOTUBE_PLUGIN_ID, video_id))    
 
 
 def play_yt(video_id):
@@ -38,9 +39,9 @@ def play_yt(video_id):
 
     if not IS_PYTHON3:
         if IS_ANDROID:
-            raise PluginError(_.PYTHON2_NOT_SUPPORTED_ANDROID)
+            raise plugin.PluginError(_.PYTHON2_NOT_SUPPORTED_ANDROID)
         else:
-            raise PluginError(_.PYTHON2_NOT_SUPPORTED)
+            raise plugin.PluginError(_.PYTHON2_NOT_SUPPORTED)
 
     ydl_opts = {
         'format': 'best/bestvideo+bestaudio',
@@ -85,7 +86,7 @@ def play_yt(video_id):
         elif settings.YT_PLAY_USING.value == YTMode.YT_DLP_PLUGIN and ADDON_ID != YOTUBE_PLUGIN_ID:
             return play_yt_plugin(video_id)
         else:
-            raise PluginError(_(_.NO_VIDEOS_FOUND_FOR_YT, id=video_id, error=error))
+            raise plugin.PluginError(_(_.NO_VIDEOS_FOUND_FOR_YT, id=video_id, error=error))
 
     def fix_url(url):
         return unquote(url).replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
@@ -142,9 +143,101 @@ def play_yt(video_id):
     with open(xbmc.translatePath(path), 'w') as f:
         f.write(str)
 
-    return Item(
+    return plugin.Item(
         path = path,
         slug = video_id,
         inputstream = MPD(),
         headers = headers,
     )
+
+
+@plugin.route()
+def play_youtube(video_id, **kwargs):
+    return play_yt(video_id)
+
+
+def li_trailer(listitem, ignore_trailer_path=False):
+    vid_tag = listitem.getVideoInfoTag()
+    trailer_path = vid_tag.getTrailer()
+    media_type = vid_tag.getMediaType()
+    title = listitem.getLabel()
+    year = vid_tag.getYear()
+
+    if ignore_trailer_path:
+        trailer_path = ''
+
+    if (YOTUBE_PLUGIN_ID in trailer_path.lower() or not trailer_path.lower().startswith('plugin')) and \
+        (settings.TRAILER_MODE.value == TrailerMode.MDBLIST_MEDIA or (not trailer_path and settings.TRAILER_MODE.value != TrailerMode.MEDIA)):
+        session = Session()
+
+        providers = []
+        unique_id = None
+        if KODI_VERSION >= 20:
+            for id_type in ('imdb', 'tvdb', 'tmdb'):
+                unique_id = vid_tag.getUniqueID(id_type)
+                if unique_id:
+                    providers = [id_type]
+                    break
+
+        if not unique_id:
+            unique_id = vid_tag.getIMDBNumber()
+            if 'tt' in unique_id.lower():
+                providers = ['imdb']
+            elif media_type == 'movie':
+                providers = ['tmdb']
+            else:
+                # can be tvdb or tmdb for shows
+                providers = ['tvdb', 'tmdb']
+
+        if not unique_id and settings.MDBLIST_SEARCH.value and title and year:
+            log.info("mdblist search: {} ({})".format(title, year))
+            data = session.get('https://api.mdblist.com/search/{}'.format('show' if media_type == 'tvshow' else 'movie'), params={'query': title, 'year': year, 'limit_by_score': 65, 'limit': 1, 'apikey': MDBLIST_API_KEY}).json()
+            results = data['search']
+            if results:
+                log.info("mdblist search result: {}".format(results[0]))
+                unique_id = results[0]['ids']['imdbid']
+                providers = ['imdb']
+
+        if unique_id:
+            for provider in providers:
+                data = session.get('https://api.mdblist.com/{}/{}/{}'.format(provider, 'show' if media_type == 'tvshow' else 'movie', unique_id), params={'apikey': MDBLIST_API_KEY}).json()
+                trailer = data.get('trailer')
+                if trailer and 'youtube' in trailer.lower():
+                    log.info("mdblist trailer found: {}".format(trailer))
+                    trailer_path = 'plugin://plugin.video.youtube/play/?video_id={}'.format(trailer.rsplit('=')[1])
+                    break
+
+    if not trailer_path:
+        gui.notification(_.TRAILER_NOT_FOUND)
+        return
+
+    parsed = urlparse(trailer_path)
+    if parsed.scheme.lower() == 'plugin':
+        addon_id = parsed.netloc
+        if addon_id.lower().strip() == YOTUBE_PLUGIN_ID and settings.YT_PLAY_USING.value != YTMode.PLUGIN:
+            query_params = dict(parse_qsl(parsed.query))
+            video_id = query_params.get('video_id') or query_params.get('videoid')
+            trailer_path = plugin.url_for(play_youtube, video_id=video_id)
+        else:
+            # prompt to install if required
+            get_addon(addon_id, required=True)
+
+    li = plugin.Item(path=trailer_path)
+    li.label = u"{} ({})".format(listitem.getLabel(), _.TRAILER)
+    li.info = {
+        'plot': vid_tag.getPlot(),
+        'tagline': vid_tag.getTagLine(),
+        'year': vid_tag.getYear(),
+        'mediatype': vid_tag.getMediaType(),
+    }
+
+    try:
+        # v20+
+        li.info['genre'] = vid_tag.getGenres()
+    except AttributeError:
+        li.info['genre'] = vid_tag.getGenre()
+
+    for key in ['thumb','poster','banner','fanart','clearart','clearlogo','landscape','icon']:
+        li.art[key] = listitem.getArt(key)
+
+    return li
