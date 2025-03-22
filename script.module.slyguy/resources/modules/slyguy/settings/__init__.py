@@ -342,7 +342,7 @@ class CommonSettings(BaseSettings):
     TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', default=True, enable=is_donor, after_save=lambda val:set_trailer_context(),
         after_clear=set_trailer_context, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
     TRAILER_MODE = Enum('trailer_mode', _.TRAILER_MODE, options=[[_.MEDIA, TrailerMode.MEDIA], [_.MEDIA_MDBLIST, TrailerMode.MEDIA_MDBLIST], [_.MDBLIST_MEDIA, TrailerMode.MDBLIST_MEDIA]],
-                             default=TrailerMode.MEDIA_MDBLIST, disabled_value=TrailerMode.MEDIA, override=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID,
+                             default=TrailerMode.MEDIA, override=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID,
                              after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, category=Categories.TRAILERS)
     MDBLIST_SEARCH = Bool('mdblist_search', _.MDBLIST_SEARCH, default=True, override=False, owner=COMMON_ADDON_ID, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, disabled_value=False, category=Categories.TRAILERS)
     YT_PLAY_USING = Enum('yt_play_using', _.YT_PLAY_USING, options=YT_OPTIONS, default=YT_OPTIONS[0][1], override=False, owner=COMMON_ADDON_ID, category=Categories.TRAILERS)
