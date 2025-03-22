@@ -6,6 +6,7 @@ from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
+from slyguy.yt import li_trailer
 
 from .api import API
 from .constants import *
@@ -520,10 +521,11 @@ def play_trailer(deeplink_id, **kwargs):
     with gui.busy():
         data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
-        if not info[ACTIONS][TRAILER]:
-            raise PluginError(_.TRAILER_NOT_FOUND)
-
         item = _parse_row(data)
+
+        if not info[ACTIONS][TRAILER]:
+            return li_trailer(item.get_li(), ignore_trailer_path=True)
+
         ia = inputstream.Widevine(
             license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
             manifest_type = 'hls',
