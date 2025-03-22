@@ -8,7 +8,7 @@ from kodi_six import xbmc, xbmcgui
 from slyguy import dialog, log, signals
 from slyguy.util import remove_file
 from slyguy.language import _
-from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, ADDON_PROFILE, ADDON_NAME, COMMON_ADDON
+from slyguy.constants import ADDON_ID, COMMON_ADDON_ID, ADDON_PROFILE, ADDON_NAME
 
 from slyguy.settings.db_storage import DBStorage
 
@@ -161,7 +161,7 @@ class Setting(object):
         return True
 
     def can_bulk_clear(self):
-        return self.owner == ADDON_ID and self.can_clear() and not self.confirm_clear
+        return self.can_clear() and not self.confirm_clear
 
     def _set_value(self, value):
         STORAGE.set(self.owner, self.id, value)
@@ -480,19 +480,10 @@ def migrate_userdata(settings):
     log.info("Migrated Userdata")
 
 
-def reset_addon():
-    STORAGE.delete_all(ADDON_ID)
-    signals.emit(signals.AFTER_RESET)
-    from slyguy import gui
-    gui.notification(_.PLUGIN_RESET_OK)
-    return True
-
-
 class BaseSettings(object):
     MIGRATED = Bool('migrated', visible=False, override=False, inherit=False)
     USERDATA = Dict('userdata', visible=False, override=False, inherit=False) #LEGACY
     BOOKMARKS_DATA = List('bookmarks_data', visible=False, override=False, inherit=False)
-    RESET_ADDON = Action(reset_addon, confirm_action=_.PLUGIN_RESET_YES_NO, order=float('inf'))
     SETTINGS = {}
 
     def __init__(self, addon_id=ADDON_ID):

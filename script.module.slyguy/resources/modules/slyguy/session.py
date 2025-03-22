@@ -21,7 +21,7 @@ from slyguy import userdata, settings, signals, mem_cache, log, _
 from slyguy.util import get_kodi_proxy, remove_duplicates
 from slyguy.smart_urls import get_dns_rewrites
 from slyguy.exceptions import SessionError, Error
-from slyguy.constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION
+from slyguy.constants import DEFAULT_USERAGENT, CHUNK_SIZE, KODI_VERSION, DEPENDENCIES_ADDON_ID
 from slyguy.settings import IPMode
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -264,6 +264,9 @@ class SessionAdapter(requests.adapters.HTTPAdapter):
 
 class RawSession(requests.Session):
     def __init__(self, verify=None, timeout=None, auto_close=True, ssl_ciphers=SSL_CIPHERS, ssl_options=SSL_OPTIONS, proxy=None, ip_mode=None, interface_ip=None):
+        if DEPENDENCIES_ADDON_ID.lower() not in str(urllib3).lower():
+            raise SessionError("{} must be imported from slyguy.dependencies. sys.path issue?".format(str(urllib3)))
+
         super(RawSession, self).__init__()
         self._verify = verify
         self._timeout = timeout

@@ -2,13 +2,13 @@ import os
 import re
 from time import time
 
-from slyguy import dialog
+from slyguy import dialog, signals
 from slyguy.language import _
 from slyguy.log import log
 from slyguy.constants import *
 from slyguy.util import get_kodi_string, set_kodi_string, kodi_rpc
 
-from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action, Browse
+from .types import BaseSettings, Bool, Dict, Number, Text, Enum, Categories, Action, Browse, STORAGE
 
 
 WV_AUTO = -1
@@ -233,6 +233,14 @@ class Donor(Text):
             return _.SUPPORTER_HELP
 
 
+def reset_addon():
+    STORAGE.delete_all(ADDON_ID)
+    signals.emit(signals.AFTER_RESET)
+    from slyguy import gui
+    gui.notification(_.PLUGIN_RESET_OK)
+    return True
+
+
 WV_LEVEL_OPTIONS = [[_.AUTO, WV_AUTO], [_.WV_LEVEL_L3, WV_L3]]
 if ADDON_DEV:
     WV_LEVEL_OPTIONS.append([_.WV_LEVEL_L1, WV_L1])
@@ -318,7 +326,6 @@ class CommonSettings(BaseSettings):
     # SYSTEM
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     PROXY_PORT = Number('proxy_port', default=8095, override=False, visible=lambda: settings.PROXY_ENABLED.value, owner=COMMON_ADDON_ID, after_save=lambda val: restart_service(), after_clear=restart_service, category=Categories.SYSTEM)
-    UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
 
     # TRAILERS
@@ -334,6 +341,8 @@ class CommonSettings(BaseSettings):
 
     # ROOT
     DONOR_ID = Donor('donor_id', override=False, confirm_clear=True, owner=COMMON_ADDON_ID, category=Categories.ROOT)
+    UPDATE_ADDONS = Action("RunPlugin(plugin://{}/?_=update_addons)".format(COMMON_ADDON_ID), enable=is_donor, disabled_reason=_.SUPPORTER_ONLY, owner=COMMON_ADDON_ID, category=Categories.ROOT)
+    RESET_ADDON = Action(reset_addon, confirm_action=_.PLUGIN_RESET_YES_NO, owner=COMMON_ADDON_ID, category=Categories.ROOT)
 
     # HIDDEN
     DONOR_ID_CHK = Text('donor_id_chk', visible=False, override=False, owner=COMMON_ADDON_ID)
