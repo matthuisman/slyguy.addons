@@ -461,6 +461,31 @@ class API(object):
         self._check_errors(playback_data)
         return playback_data
 
+    def update_resume(self, media_id, fguid, playback_time):
+        self._set_token()
+
+        payload = [{
+            'server': {
+                'fguid': fguid,
+                'mediaId': media_id,
+                # 'origin': '',
+                # 'host': '',
+                # 'cdn': '',
+                # 'cdnPolicyId': '',
+            },
+            'client': {
+                'event': 'urn:bamtech:api:stream-sample',
+                'timestamp': str(int(time()*1000)),
+                'play_head': playback_time,
+                # 'playback_session_id': str(uuid.uuid4()),
+                # 'interaction_id': str(uuid.uuid4()),
+                # 'bitrate': 4206,
+            },
+        }]
+
+        endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['postEvent']['href']
+        return self._session.post(endpoint, json=payload).status_code
+
     def logout(self):
         mem_cache.empty()
         userdata.delete('access_token')
