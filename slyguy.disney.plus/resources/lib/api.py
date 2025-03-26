@@ -345,19 +345,20 @@ class API(object):
         return self._json_call(endpoint, params=params)['data']['page']
 
     @mem_cache.cached(60*5)
-    def set(self, set_id, page=1):
+    def set(self, set_id, limit=48, page=1):
         params = {
-            'limit': 48,
-            'offset': 30*(page-1),
+            'limit': limit,
+            'offset': limit*(page-1),
         }
+        params['offset'] = params['limit']*(page-1)
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
     @mem_cache.cached(60*5)
-    def season(self, season_id, page=1):
+    def season(self, season_id, limit=48, page=1):
         params = {
-            'limit': 48,
-            'offset': 30*(page-1),
+            'limit': limit,
+            'offset': limit*(page-1),
         }
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSeason']['href'], version=EXPLORE_VERSION, seasonId=season_id)
         return self._json_call(endpoint, params=params)['data']['season']
