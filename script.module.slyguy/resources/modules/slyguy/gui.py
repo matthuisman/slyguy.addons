@@ -299,7 +299,12 @@ class Item(object):
         def get_url(url, plugin_proxy=False):
             _url = url.lower()
 
-            if os.path.exists(xbmc.translatePath(url)) or _url.startswith('special://') or (plugin_proxy and _url.startswith('plugin://')) or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.getBool('proxy_enabled', True):
+            if os.path.exists(xbmc.translatePath(url)):
+                # local path that isnt a supported manifest (eg. a mp4 trailer)
+                if not _url.endswith(('.mpd', '.m3u8', '.m3u', '.ism')):
+                    return url
+
+            if _url.startswith('special://') or (plugin_proxy and _url.startswith('plugin://')) or (is_http(_url) and self.use_proxy and not _url.startswith(proxy_path)) and settings.getBool('proxy_enabled', True):
                 url = u'{}{}'.format(proxy_path, url)
 
             return url

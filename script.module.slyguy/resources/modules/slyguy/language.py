@@ -331,6 +331,7 @@ class BaseLanguage(object):
     MEDIA_MDBLIST               = 32242
     MDBLIST_MEDIA               = 32243
     MDBLIST_SEARCH              = 32244
+    TRAILER_LOCAL               = 32245
 
     def __init__(self):
         self._addon_map = {}    

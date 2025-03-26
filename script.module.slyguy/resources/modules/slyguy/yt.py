@@ -1,5 +1,7 @@
-from kodi_six import xbmc
+import os
 from collections import defaultdict
+
+from kodi_six import xbmc, xbmcvfs
 from six.moves.urllib_parse import unquote, urlparse, parse_qsl
 
 from . import plugin, gui
@@ -48,7 +50,7 @@ def play_yt(video_id):
         'check_formats': False,
         'quiet': True,
         'cachedir': ADDON_PROFILE,
-        'no_warnings': True,
+       # 'no_warnings': True,
     }
 
     if settings.YT_COOKIES_PATH.value:
@@ -158,15 +160,47 @@ def play_youtube(video_id, **kwargs):
 
 def li_trailer(listitem, ignore_trailer_path=False):
     vid_tag = listitem.getVideoInfoTag()
-    trailer_path = vid_tag.getTrailer()
+    trailer_path = '' if ignore_trailer_path else vid_tag.getTrailer()
     media_type = vid_tag.getMediaType()
     title = listitem.getLabel()
     year = vid_tag.getYear()
 
-    if ignore_trailer_path:
-        trailer_path = ''
+    forced = False
+    if media_type == 'movie':
+        filepath = vid_tag.getFilenameAndPath()
+        if filepath:
+            filename, ext = os.path.splitext(os.path.basename(filepath.lower()))
+            path = os.path.dirname(filepath)
+            files = xbmcvfs.listdir(path)[1]
+            for file in files:
+                name, ext = os.path.splitext(file.lower())
+                if name in ('movie-trailer', "{}-trailer".format(filename)):
+                    forced = True
+                    trailer_path = os.path.join(path, file)
+                    if ext == '.txt':
+                        with xbmcvfs.File(trailer_path) as f:
+                            trailer_path = f.read().strip()
+                    break
 
-    if (YOTUBE_PLUGIN_ID in trailer_path.lower() or not trailer_path.lower().startswith('plugin')) and \
+    elif media_type == 'tvshow':
+        path = vid_tag.getPath()
+        if path:
+            folder_name = os.path.basename(os.path.dirname(path.lower()))
+            files = xbmcvfs.listdir(path)[1]
+            for file in files:
+                name, ext = os.path.splitext(file.lower())
+                if name in ('tvshow-trailer', "{}-trailer".format(folder_name)):
+                    forced = True
+                    trailer_path = os.path.join(path, file)
+                    if ext == '.txt':
+                        with xbmcvfs.File(trailer_path) as f:
+                            trailer_path = f.read().strip()
+                    break
+
+    if 'youtube.com' in trailer_path.lower():
+        trailer_path = 'plugin://plugin.video.youtube/play/?video_id={}'.format(trailer_path.rsplit('=')[1])
+
+    if not forced and (YOTUBE_PLUGIN_ID in trailer_path.lower() or not trailer_path.lower().startswith('plugin')) and \
         (settings.TRAILER_MODE.value == TrailerMode.MDBLIST_MEDIA or (not trailer_path and settings.TRAILER_MODE.value != TrailerMode.MEDIA)):
         session = Session()
 

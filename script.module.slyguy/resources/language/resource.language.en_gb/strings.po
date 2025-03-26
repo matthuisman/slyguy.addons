@@ -1187,3 +1187,7 @@ msgstr ""
 msgctxt "#32244"
 msgid "Search mdblist for trailer using title and year"
 msgstr ""
+
+msgctxt "#32245"
+msgid "Use local trailers when available"
+msgstr ""
