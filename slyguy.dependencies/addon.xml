@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.dependencies" name="SlyGuy Dependencies" provider-name="SlyGuy" version="0.0.24">
+<addon id="slyguy.dependencies" name="SlyGuy Dependencies" provider-name="SlyGuy" version="0.0.25">
   <requires>
     <import addon="repository.slyguy"/>
   </requires>
@@ -10,7 +10,7 @@
     <license></license>
     <language></language>
     <website></website>
-    <news>add yt_dl</news>
+    <news>bump yt_dl to 2025.03.26</news>
     <assets>
       <icon>icon.png</icon>
       <fanart>fanart.jpg</fanart>
