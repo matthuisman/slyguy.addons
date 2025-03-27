@@ -254,7 +254,11 @@ class Item(object):
                 self.properties['IsPlayable'] = 'true'
                 if self.path:
                     self.path = add_url_args(self.path, _play=1)
-                if KODI_VERSION < 20 or ROUTE_LIVE_TAG not in self.path:
+
+                # Kodi 21 and up correct for both
+                # Kodi 20 correct for PVR. Needs for vod
+                # Kodi 19 and below needs for both
+                if KODI_VERSION < 21 and (ROUTE_LIVE_TAG not in self.path or KODI_VERSION < 20):
                     # PlayNext added in Kodi 18
                     if KODI_VERSION > 17:
                         context_items.append((_.PLAY_NEXT, 'Action(PlayNext)'))
