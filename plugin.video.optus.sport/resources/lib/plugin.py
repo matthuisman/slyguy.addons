@@ -121,7 +121,7 @@ def editorial(id, title, **kwargs):
             item.label += start_time.to('local').format(_.DATE_FORMAT)
 
         elif is_linear:
-            item.path = plugin.url_for(play, asset=row['id'], _is_live=is_live)
+            item.path = plugin.url_for(play, asset=row['id'], linear=1, _is_live=is_live)
 
         elif is_live:
             item.label = _(_.LIVE, label=item.label)
@@ -198,44 +198,12 @@ def logout(**kwargs):
 def mpd_request(url, _data, _path, **kwargs):
     _data = _data.decode('utf8')
 
-    ## OS1 HACK
-    if '/OptusSport1/' in url:
+    ## OS1 / OS2 / Premiere / Laliga
+    if '/OSG1/' in url or '/OSG2/' in url or '/OSG11/' in url or '/OSG12/' in url:
         to_add = r'''\1\n
-        <Representation id="1" width="1920" height="1080" frameRate="50/1" bandwidth="8000000" codecs="avc1.640020"/>
-        <Representation id="2" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
+        <Representation id="_1080p50avc" width="1920" height="1080" frameRate="50/1" bandwidth="8000000" codecs="avc1.640020"/>
+        <Representation id="_1080p50hevc" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>
         '''
-        if settings.getBool('h265', True):
-            to_add += '<Representation id="10" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
-
-    ## OS2 HACK
-    elif '/OptusSport2/' in url:
-        to_add = r'''\1\n
-        <Representation id="2" width="1920" height="1080" frameRate="50/1" bandwidth="8000000" codecs="avc1.640020"/>
-        <Representation id="3" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
-        '''
-        if settings.getBool('h265', True):
-            to_add += '<Representation id="1" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
-
-    ## OS11 Premier League HACK
-    elif '/OptusSport11/' in url:
-        to_add = r'''\1\n
-        <Representation id="8" width="1920" height="1080" frameRate="50/1" bandwidth="8000000" codecs="avc1.640020"/>
-        <Representation id="1" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
-        '''
-        if settings.getBool('h265', True):
-           to_add += '<Representation id="7" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
-        _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
-
-    ## OS12 Laliga HACK
-    elif '/OptusSport12/' in url:
-        to_add = r'''\1\n
-        <Representation id="10" width="1920" height="1080" frameRate="50/1" bandwidth="8000000" codecs="avc1.640020"/>
-        <Representation id="1" width="1280" height="720" frameRate="50/1" bandwidth="5780830" codecs="avc1.640020"/>
-        '''
-        if settings.getBool('h265', True):
-           to_add += '<Representation id="11" width="1920" height="1080" frameRate="50/1" bandwidth="7135999" codecs="hvc1.1.6.H120.B0"/>'
         _data = re.sub('(<Representation .*? width="1280".*?>)', to_add, _data, 1)
 
     with open(_path, 'wb') as f:
@@ -243,8 +211,9 @@ def mpd_request(url, _data, _path, **kwargs):
 
 @plugin.route()
 @plugin.login_required()
-def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
+def play(asset, play_type=PLAY_FROM_LIVE, linear=0, **kwargs):
     play_type = int(play_type)
+    linear = int(linear)
 
     from_start = False
     if play_type == PLAY_FROM_START or (play_type == PLAY_FROM_ASK and not gui.yes_no(_.PLAY_FROM, yeslabel=_.PLAY_FROM_LIVE, nolabel=_.PLAY_FROM_START)):
@@ -265,7 +234,7 @@ def play(asset, play_type=PLAY_FROM_LIVE, **kwargs):
     if stream['protocol'] == 'CMAF':
         item.inputstream.manifest_type = 'hls'
         item.inputstream.mimetype = 'application/vnd.apple.mpegurl'
-    elif 'v6/OptusSport' in stream['url'] or 'v7/OptusSport' in stream['url']:
+    elif linear:
         item.proxy_data['middleware'] = {stream['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request, url=stream['url'])}}
 
     drm_data = stream['license'].get('drmData')
@@ -288,4 +257,4 @@ def playlist(output, **kwargs):
                 continue
 
             f.write(u'\n#EXTINF:-1 tvg-id="{id}" tvg-logo="{logo}",{name}\n{url}'.format(
-                id=row['channel']['id'], logo=row.get('imageUrl') or DEFAULT_IMG, name=row['title'], url=plugin.url_for(play, asset=row['id'], _is_live=True)))
+                id=row['channel']['id'], logo=row.get('imageUrl') or DEFAULT_IMG, name=row['title'], url=plugin.url_for(play, asset=row['id'], linear=1, _is_live=True)))
