@@ -28,8 +28,8 @@ from .cache import Cache
 from .compat import urllib  # isort: split
 from .compat import urllib_req_to_req
 from .cookies import CookieLoadError, LenientSimpleCookie, load_cookies
-from .downloader import FFmpegFD, get_suitable_downloader, shorten_protocol_name
-from .downloader.rtmp import rtmpdump_version
+#from .downloader import FFmpegFD, get_suitable_downloader, shorten_protocol_name
+#from .downloader.rtmp import rtmpdump_version
 from .extractor import gen_extractor_classes, get_info_extractor
 from .extractor.common import UnsupportedURLIE
 from .extractor.openload import PhantomJSwrapper
@@ -45,22 +45,22 @@ from .networking.exceptions import (
 )
 from .networking.impersonate import ImpersonateRequestHandler
 from .plugins import directories as plugin_directories
-from .postprocessor import _PLUGIN_CLASSES as plugin_pps
-from .postprocessor import (
-    EmbedThumbnailPP,
-    FFmpegFixupDuplicateMoovPP,
-    FFmpegFixupDurationPP,
-    FFmpegFixupM3u8PP,
-    FFmpegFixupM4aPP,
-    FFmpegFixupStretchedPP,
-    FFmpegFixupTimestampPP,
-    FFmpegMergerPP,
-    FFmpegPostProcessor,
-    FFmpegVideoConvertorPP,
-    MoveFilesAfterDownloadPP,
-    get_postprocessor,
-)
-from .postprocessor.ffmpeg import resolve_mapping as resolve_recode_mapping
+# from .postprocessor import _PLUGIN_CLASSES as plugin_pps
+# from .postprocessor import (
+#     EmbedThumbnailPP,
+#     FFmpegFixupDuplicateMoovPP,
+#     FFmpegFixupDurationPP,
+#     FFmpegFixupM3u8PP,
+#     FFmpegFixupM4aPP,
+#     FFmpegFixupStretchedPP,
+#     FFmpegFixupTimestampPP,
+#     FFmpegMergerPP,
+#     FFmpegPostProcessor,
+#     FFmpegVideoConvertorPP,
+#     MoveFilesAfterDownloadPP,
+#     get_postprocessor,
+# )
+# from .postprocessor.ffmpeg import resolve_mapping as resolve_recode_mapping
 from .update import (
     REPOSITORY,
     _get_system_deprecation,
@@ -182,6 +182,30 @@ def _catch_unsafe_extension_error(func):
                 f'If you believe this is an error{bug_reports_message(",")}')
 
     return wrapper
+
+
+def shorten_protocol_name(proto, simplify=False):
+    short_protocol_names = {
+        'm3u8_native': 'm3u8',
+        'm3u8': 'm3u8F',
+        'rtmp_ffmpeg': 'rtmpF',
+        'http_dash_segments': 'dash',
+        'http_dash_segments_generator': 'dashG',
+        'niconico_dmc': 'dmc',
+        'websocket_frag': 'WSfrag',
+    }
+    if simplify:
+        short_protocol_names.update({
+            'https': 'http',
+            'ftps': 'ftp',
+            'm3u8': 'm3u8',  # Reverse above m3u8 mapping
+            'm3u8_native': 'm3u8',
+            'http_dash_segments_generator': 'dash',
+            'rtmp_ffmpeg': 'rtmp',
+            'm3u8_frag_urls': 'm3u8',
+            'dash_frag_urls': 'dash',
+        })
+    return short_protocol_names.get(proto, proto)
 
 
 class YoutubeDL:

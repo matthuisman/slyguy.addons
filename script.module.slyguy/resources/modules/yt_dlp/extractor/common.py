@@ -28,8 +28,8 @@ from ..compat import (
     urllib_req_to_req,
 )
 from ..cookies import LenientSimpleCookie
-from ..downloader.f4m import get_base_url, remove_encrypted_media
-from ..downloader.hls import HlsFD
+#from ..downloader.f4m import get_base_url, remove_encrypted_media
+#from ..downloader.hls import HlsFD
 from ..networking import HEADRequest, Request
 from ..networking.exceptions import (
     HTTPError,
@@ -2098,7 +2098,8 @@ class InfoExtractor:
             errnote=None, fatal=True, data=None, headers={}, query={},
             video_id=None):
         formats, subtitles = [], {}
-        has_drm = HlsFD._has_drm(m3u8_doc)
+      #  has_drm = HlsFD._has_drm(m3u8_doc)
+        has_drm = False
 
         def format_url(url):
             return url if re.match(r'https?://', url) else urllib.parse.urljoin(m3u8_url, url)
