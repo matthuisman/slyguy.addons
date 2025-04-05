@@ -91,7 +91,23 @@ class API(object):
             'page[items.size]': PAGE_SIZE,
         }
         data = self._session.get(self._endpoint('/cms/routes/show/{}'.format(id)), params=params, json={}).json()
-        return self._process_data(data)[0]['target']['primaryContent']
+        return self.find(self._process_data(data), 'show')
+
+    def find(self, json_data, target_key):
+        if isinstance(json_data, dict):
+            if target_key in json_data:
+                return json_data[target_key]
+
+            for value in json_data.values():
+                result = self.find(value, target_key)
+                if result is not None:
+                    return result
+        elif isinstance(json_data, list):
+            for item in json_data:
+                result = self.find(item, target_key)
+                if result is not None:
+                    return result
+        return None
 
     @mem_cache.cached(60*5)
     def season(self, series_id, season_num, page=1):
@@ -101,6 +117,7 @@ class API(object):
             'pf[show.id]': series_id,
             'pf[seasonNumber]': season_num,
             'page[items.number]': page,
+            'page[items.size]': PAGE_SIZE,
         }
         data = self._session.get(self._endpoint('/cms/collections/generic-show-page-rail-episodes-tabbed-content'), params=params, json={}).json()
         return self._process_data(data)[0]
