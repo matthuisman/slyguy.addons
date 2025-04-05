@@ -50,7 +50,6 @@ from ..compat import (
     compat_expanduser,
     compat_HTMLParseError,
 )
-from ..dependencies import xattr
 
 __name__ = __name__.rsplit('.', 1)[0]  # noqa: A001: Pretend to be the parent module
 

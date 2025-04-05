@@ -25,11 +25,6 @@ from .aes import (
     aes_gcm_decrypt_and_verify_bytes,
     unpad_pkcs7,
 )
-from .dependencies import (
-    _SECRETSTORAGE_UNAVAILABLE_REASON,
-    secretstorage,
-    sqlite3,
-)
 from .minicurses import MultilinePrinter, QuietMultilinePrinter
 from .utils import (
     DownloadError,

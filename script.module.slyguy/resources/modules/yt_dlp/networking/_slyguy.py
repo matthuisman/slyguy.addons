@@ -1,5 +1,3 @@
-import logging
-
 from ._helper import (
     InstanceStoreMixin,
     add_accept_encoding_header,
@@ -26,9 +24,7 @@ SUPPORTED_ENCODINGS = [
 
 
 import requests
-import urllib3.connection
 import urllib3.exceptions
-
 
 from slyguy.session import Session
 
@@ -56,31 +52,6 @@ class RequestsResponseAdapter(Response):
         except urllib3.exceptions.HTTPError as e:
             # catch-all for any other urllib3 response exceptions
             raise TransportError(cause=e) from e
-
-class Urllib3LoggingFilter(logging.Filter):
-
-    def filter(self, record):
-        # Ignore HTTP request messages since HTTPConnection prints those
-        return record.msg != '%s://%s:%s "%s %s %s" %s %s'
-
-
-class Urllib3LoggingHandler(logging.Handler):
-    """Redirect urllib3 logs to our logger"""
-
-    def __init__(self, logger, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._logger = logger
-
-    def emit(self, record):
-        try:
-            msg = self.format(record)
-            if record.levelno >= logging.ERROR:
-                self._logger.error(msg)
-            else:
-                self._logger.stdout(msg)
-
-        except Exception:
-            self.handleError(record)
 
 
 @register_rh

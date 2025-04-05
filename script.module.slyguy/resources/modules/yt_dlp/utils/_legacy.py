@@ -11,7 +11,6 @@ import zlib
 
 from ._utils import Popen, decode_base_n, preferredencoding
 from .traversal import traverse_obj
-from ..dependencies import certifi, websockets
 from ..networking._helper import make_ssl_context
 from ..networking._urllib import HTTPHandler
 
@@ -30,8 +29,6 @@ from ..networking._urllib import (  # noqa: F401
 )
 from ..networking.exceptions import HTTPError, network_exceptions  # noqa: F401
 
-has_certifi = bool(certifi)
-has_websockets = bool(websockets)
 
 
 class WebSocketsWrapper:

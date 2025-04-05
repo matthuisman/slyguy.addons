@@ -11,7 +11,6 @@ import urllib.parse
 import urllib.request
 
 from .exceptions import RequestError
-from ..dependencies import certifi
 from ..socks import ProxyType, sockssocket
 from ..utils import format_field, traverse_obj
 
