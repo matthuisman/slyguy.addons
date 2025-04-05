@@ -2,7 +2,6 @@
 
 import base64
 import collections
-import ctypes
 import getpass
 import html.entities
 import html.parser
@@ -35,12 +34,6 @@ from .compat_utils import passthrough_module
 from ..networking.exceptions import HTTPError as compat_HTTPError
 
 passthrough_module(__name__, '...utils', ('WINDOWS_VT_MODE', 'windows_enable_vt_mode'))
-
-
-# compat_ctypes_WINFUNCTYPE = ctypes.WINFUNCTYPE
-# will not work since ctypes.WINFUNCTYPE does not exist in UNIX machines
-def compat_ctypes_WINFUNCTYPE(*args, **kwargs):
-    return ctypes.WINFUNCTYPE(*args, **kwargs)
 
 
 def compat_setenv(key, value, env=os.environ):

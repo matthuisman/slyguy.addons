@@ -1053,7 +1053,7 @@ def _real_main(argv=None):
             ydl.warn_if_short_id(args)
 
             # Show a useful error message and wait for keypress if not launched from shell on Windows
-            if not args and os.name == 'nt' and getattr(sys, 'frozen', False):
+            if not args and os.name == 'none' and getattr(sys, 'frozen', False):
                 import ctypes.wintypes
                 import msvcrt
 

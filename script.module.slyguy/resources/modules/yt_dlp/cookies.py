@@ -1057,7 +1057,6 @@ def _decrypt_windows_dpapi(ciphertext, logger):
     References:
         - https://docs.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptunprotectdata
     """
-
     import ctypes
     import ctypes.wintypes
 
