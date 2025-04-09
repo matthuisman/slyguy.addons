@@ -2,6 +2,7 @@ import json
 import time
 from base64 import b64decode
 
+import arrow
 from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
@@ -391,19 +392,41 @@ def _parse_event(data):
     actions = info[ACTIONS]
     if actions[MODAL]:
         actions = _get_actions(info[ACTIONS][MODAL])
+        info['art'] = _get_art(info[ACTIONS][MODAL])
 
     if actions[PLAYBACK].get('contentType') == 'linear':
+        start_time = arrow.get(data['visuals']['badging']['airingEventState']['timeline']['startTime']).to('local')
+        end_time = arrow.get(data['visuals']['badging']['airingEventState']['timeline']['endTime']).to('local')
+        plot = u'[B]{} - {}[/B]\n{}'.format(start_time.format('h:mmA').lower(), end_time.format('hh:mmA').lower(), info['title'])
+
+        if data['visuals'].get('episodeTitle') and data['visuals']['episodeTitle'] != info['title']:
+            try:
+                plot += u'\n\nS{}:E{}\n{}'.format(data['visuals']['seasonNumber'], data['visuals']['episodeNumber'], data['visuals']['episodeTitle'])
+            except KeyError:
+                plot += u'\n\n{}'.format(data['visuals']['episodeTitle'])
+
+        if info['plot']:
+            plot += u'\n\n{}'.format(info['plot'])
+
+        try:
+            info['art']['clearlogo'] = 'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/{}/scale?width=800&aspectRatio=1.78'.format(
+                data['visuals']['networkAttribution']['artwork']['brand']['logo']['2.00']['imageId'])
+        except KeyError:
+            pass
+
         resource_data = json.loads(b64decode(actions[PLAYBACK]['resourceId']).decode("utf-8"))
         item = plugin.Item(
             label = data['visuals']['networkAttribution']['ttsText'],
             info = {
-                'plot': '',
+                'plot': plot,
                 'mediatype': 'video',
             },
-            art = None,
+            art = info['art'],
             playable = True,
             path = _get_play_path(channel_id=resource_data['channelId'], _is_live=True),
         )
+        # if data['visuals'].get('episodeNumber'):
+        #     item.context.append(("Play VOD", 'RunPlugin({})'.format(_get_play_path(deeplink_id=actions[PLAYBACK]['deeplinkId']))))
     else:
         item = plugin.Item(
             label = info['title'],
