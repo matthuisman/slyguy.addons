@@ -107,7 +107,8 @@ def _process_channels(channels, query=None, provider=ALL):
             art = {'thumb': channel['thumb']},
             playable = True,
             path = plugin.url_for(play, id=channel['id'], _is_live=True),
-            context = ((_.DEL_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(del_favourite, id=channel['id']))),) if provider == MY_CHANNELS else ((_.ADD_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(add_favourite, id=channel['id'], name=channel['title'], icon=channel['thumb']))),),
+            context = ((_.DEL_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(del_favourite, id=channel['id']))),) if provider == MY_CHANNELS else \
+                      ((_.ADD_MY_CHANNEL, 'RunPlugin({})'.format(plugin.url_for(add_favourite, id=channel['id'], name=channel['title'], icon=channel['thumb']))),),
         )
         items.append(item)
 
@@ -301,7 +302,7 @@ def playlist(output, **kwargs):
 
     providers = _providers(api.channels())
     with codecs.open(output, 'w', encoding='utf8') as f:
-        f.write(u'#EXTM3U x-tvg-url="{}"'.format(plugin.url_for(epg, output='$FILE')))
+        f.write(u'#EXTM3U')
 
         added = []
         for key in sorted(providers, key=lambda x: (providers[x]['sort'], providers[x]['name'].lower())):
