@@ -7,7 +7,7 @@ from six.moves.urllib_parse import unquote, urlparse, parse_qsl
 from . import plugin, gui
 from .inputstream import MPD
 from .language import _
-from .constants import ADDON_PROFILE, YOTUBE_PLUGIN_ID, ADDON_ID, IS_ANDROID, IS_PYTHON3, KODI_VERSION, MDBLIST_API_KEY
+from .constants import ADDON_PROFILE, YOTUBE_PLUGIN_ID, TUBED_PLUGIN_ID, ADDON_ID, IS_ANDROID, IS_PYTHON3, KODI_VERSION, MDBLIST_API_KEY
 from .log import log
 from .util import get_addon
 from .settings import settings, YTMode, TrailerMode
@@ -165,6 +165,13 @@ def li_trailer(listitem, ignore_trailer_path=False):
     title = listitem.getLabel()
     year = vid_tag.getYear()
 
+    if YOTUBE_PLUGIN_ID in trailer_path.lower():
+        yt_plugin = YOTUBE_PLUGIN_ID
+    elif TUBED_PLUGIN_ID in trailer_path.lower():
+        yt_plugin = TUBED_PLUGIN_ID
+    else:
+        yt_plugin = None
+
     forced = False
     if media_type == 'movie':
         filepath = vid_tag.getFilenameAndPath()
@@ -200,7 +207,7 @@ def li_trailer(listitem, ignore_trailer_path=False):
     if 'youtube.com' in trailer_path.lower():
         trailer_path = 'plugin://plugin.video.youtube/play/?video_id={}'.format(trailer_path.rsplit('=')[1])
 
-    if not forced and (YOTUBE_PLUGIN_ID in trailer_path.lower() or not trailer_path.lower().startswith('plugin')) and \
+    if not forced and (yt_plugin or not trailer_path.lower().startswith('plugin')) and \
         (settings.TRAILER_MODE.value == TrailerMode.MDBLIST_MEDIA or (not trailer_path and settings.TRAILER_MODE.value != TrailerMode.MEDIA)):
         session = Session()
 
@@ -248,7 +255,7 @@ def li_trailer(listitem, ignore_trailer_path=False):
     parsed = urlparse(trailer_path)
     if parsed.scheme.lower() == 'plugin':
         addon_id = parsed.netloc
-        if addon_id.lower().strip() == YOTUBE_PLUGIN_ID and settings.YT_PLAY_USING.value != YTMode.PLUGIN:
+        if addon_id.lower().strip() == yt_plugin and settings.YT_PLAY_USING.value != YTMode.PLUGIN:
             query_params = dict(parse_qsl(parsed.query))
             video_id = query_params.get('video_id') or query_params.get('videoid')
             trailer_path = plugin.url_for(play_youtube, video_id=video_id)
