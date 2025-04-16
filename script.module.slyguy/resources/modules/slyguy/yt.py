@@ -9,7 +9,7 @@ from .inputstream import MPD
 from .language import _
 from .constants import ADDON_PROFILE, YOTUBE_PLUGIN_ID, TUBED_PLUGIN_ID, ADDON_ID, IS_ANDROID, IS_PYTHON3, KODI_VERSION, MDBLIST_API_KEY
 from .log import log
-from .util import get_addon
+from .util import get_addon, kodi_rpc
 from .settings import settings, YTMode, TrailerMode
 from .session import Session
 
@@ -33,7 +33,27 @@ def play_yt_plugin(video_id):
 def play_yt(video_id):
     log.debug("YouTube ID {}".format(video_id))
 
-    if settings.YT_PLAY_USING.value == YTMode.PLUGIN and ADDON_ID != YOTUBE_PLUGIN_ID:
+    # data = kodi_rpc('VideoLibrary.GetMovies', {'properties': ["trailer"]})
+    # for row in data.get("movies", []):
+    #     if row.get("trailer") and row["trailer"].lower().endswith(video_id.lower()):
+    #         data = kodi_rpc('VideoLibrary.GetMovieDetails', {'movieid': row['movieid'], 'properties': ['title', 'year', 'imdbnumber', 'uniqueid', 'file']})['moviedetails']
+    #         item = plugin.Item(
+    #             label = data['title'],
+    #             info = {
+    #                 'title': data['title'],
+    #                 'year': data['year'],
+    #                 'mediatype': 'movie',
+    #                 'imdbnumber': data['imdbnumber'],
+    #                 'trailer': 'plugin://plugin.video.youtube/play/?video_id={}'.format(video_id),
+    #             },
+    #             path = data['file'],
+    #         )
+    #         li = item.get_li()
+    #         video = li.getVideoInfoTag()
+    #         video.setFilenameAndPath(data['file'])
+    #         li = li_trailer(li)
+
+    if settings.YT_PLAY_USING.value == YTMode.PLUGIN and ADDON_ID not in [YOTUBE_PLUGIN_ID, TUBED_PLUGIN_ID]:
         return play_yt_plugin(video_id)
 
     if IS_ANDROID and settings.YT_PLAY_USING.value == YTMode.APK:
@@ -173,7 +193,7 @@ def li_trailer(listitem, ignore_trailer_path=False):
         yt_plugin = None
 
     forced = False
-    if media_type == 'movie':
+    if media_type == 'movie' and settings.TRAILER_LOCAL.value:
         filepath = vid_tag.getFilenameAndPath()
         if filepath:
             filename, ext = os.path.splitext(os.path.basename(filepath.lower()))
@@ -189,7 +209,7 @@ def li_trailer(listitem, ignore_trailer_path=False):
                             trailer_path = f.read().strip()
                     break
 
-    elif media_type == 'tvshow':
+    elif media_type == 'tvshow' and settings.TRAILER_LOCAL.value:
         path = vid_tag.getPath()
         if path:
             folder_name = os.path.basename(os.path.dirname(path.lower()))
