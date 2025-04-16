@@ -5,8 +5,9 @@ from slyguy.yt import play_yt
 
 @plugin.route('/')
 def home(**kwargs):
-    if kwargs.get('action') == 'play_video':
-        return plugin.redirect(plugin.url_for(play, video_id=kwargs.get('videoid')))
+    video_id = kwargs.get('videoid') or kwargs.get('video_id')
+    if video_id:
+        return plugin.redirect(plugin.url_for(play, video_id=video_id))
 
     folder = plugin.Folder()
     folder.add_item(label='TEST 4K', info={'trailer': plugin.url_for(play, video_id='Q82tQJyJwgk')}, playable=True, path=plugin.url_for(play, video_id='Q82tQJyJwgk'))
