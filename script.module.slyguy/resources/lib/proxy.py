@@ -1325,7 +1325,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         m3u8 = re.sub(r'URI="/', r'URI="{}'.format(base_url), m3u8, flags=re.I|re.M)
 
         ## Convert to proxy paths
-        m3u8 = re.sub(r'(https?)://', r'{}\1://'.format(self.proxy_path), m3u8, flags=re.I)
+        m3u8 = re.sub(r'^(https?)://', r'{}\1://'.format(self.proxy_path), m3u8, flags=re.I|re.M)
+        m3u8 = re.sub(r'"(https?)://', r'"{}\1://'.format(self.proxy_path), m3u8, flags=re.I|re.M)
 
         m3u8 = m3u8.encode('utf8')
         response.stream.content = m3u8
