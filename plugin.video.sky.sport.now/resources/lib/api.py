@@ -196,7 +196,8 @@ class API(object):
         self._refresh_token(force=True)
         event_data = self._session.get('/v2/event/{}'.format(event_id)).json()
         stream_data = self._session.get('/v2/stream/event/{}'.format(event_id)).json()
-        playback_data = self._session.get(stream_data['playerUrlCallback']).json()
+        url = stream_data['playerUrlCallback'] + '&dvr=true'
+        playback_data = self._session.get(url).json()
         self._check_errors(playback_data)
         return playback_data, event_data
 

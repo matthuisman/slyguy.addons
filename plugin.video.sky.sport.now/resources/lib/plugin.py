@@ -32,7 +32,7 @@ def home(**kwargs):
 
         folder.add_item(label=_(_.HOME, _bold=True), path=plugin.url_for(content, content_id='home', label=_.HOME))
         folder.add_item(label=_(_.SPORTS, _bold=True), path=plugin.url_for(content, content_id='browse', label=_.SPORTS))
-     #   folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
+        folder.add_item(label=_(_.REPLAYS, _bold=True), path=plugin.url_for(replays))
         folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
         if settings.getBool('bookmarks', True):
@@ -43,6 +43,7 @@ def home(**kwargs):
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
+
 
 @plugin.route()
 def login(**kwargs):
@@ -56,6 +57,7 @@ def login(**kwargs):
         return
 
     gui.refresh()
+
 
 def _device_code():
     start = time.time()
@@ -75,6 +77,7 @@ def _device_code():
             if api.device_login(data['pin'], data['anchor']):
                 return True
 
+
 def _email_password():
     username = gui.input(_.ASK_EMAIL, default=userdata.get('username', '')).strip()
     if not username:
@@ -88,6 +91,7 @@ def _email_password():
     api.login(username=username, password=password)
     return True
 
+
 @plugin.route()
 def content(content_id, label, **kwargs):
     folder = plugin.Folder(label)
@@ -96,6 +100,7 @@ def content(content_id, label, **kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 def vod_playlist(playlist_id, **kwargs):
     data = api.playlist(playlist_id)
@@ -103,6 +108,7 @@ def vod_playlist(playlist_id, **kwargs):
     items = process_rows(data['videos'].get('vods', []))
     folder.add_items(items)
     return folder
+
 
 @plugin.route()
 @plugin.pagination('last_seen')
@@ -115,11 +121,13 @@ def bucket(content_id, bucket_id, last_seen=None, **kwargs):
 
     return folder, data['paging']['lastSeen'] if data['paging']['moreDataAvailable'] else None
 
+
 @plugin.route()
 @plugin.search()
 def search(query, page=1, **kwargs):
     data = api.search(query, page=page)
     return process_rows(data['hits']), data['nbPages'] > page+1
+
 
 def process_rows(rows, content_id=None):
     items = []
@@ -214,6 +222,7 @@ def process_rows(rows, content_id=None):
         items.append(item)
     return items
 
+
 @plugin.route()
 def live(**kwargs):
     folder = plugin.Folder(_.LIVE_TV)
@@ -223,6 +232,7 @@ def live(**kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 def replays(**kwargs):
     folder = plugin.Folder(_.REPLAYS)
@@ -230,7 +240,7 @@ def replays(**kwargs):
     channels = {str(x['programmingInfo']['channelId']): x for x in api.channels() if x['live']}
 
     now = arrow.now()
-    start = now.shift(days=-1)
+    start = now.shift(hours=-6)
     epg = api.epg(list(channels.keys()), start, now)
 
     programs = []
@@ -250,6 +260,7 @@ def replays(**kwargs):
     folder.add_items(items)
     return folder
 
+
 @plugin.route()
 def logout(**kwargs):
     if not gui.yes_no(_.LOGOUT_YES_NO):
@@ -257,6 +268,7 @@ def logout(**kwargs):
 
     api.logout()
     gui.refresh()
+
 
 @plugin.route()
 @plugin.plugin_request()
@@ -300,58 +312,71 @@ def mpd_request(_data, _path, **kwargs):
     with open(_path, 'wb') as f:
         f.write(root.toprettyxml(encoding='utf-8'))
 
+
 @plugin.route()
 @plugin.login_required()
 def play_event(event_id, start=None, play_type=None, **kwargs):
     data, event = api.play_event(event_id)
     is_live = event.get('live', False)
 
+    if 'hlsWidevine' in data:
+        data = data['hlsWidevine']
+        ia = inputstream.Widevine(
+            manifest_type = 'hls',
+            mimetype = 'application/vnd.apple.mpegurl',
+            license_key = data['drm']['url'],
+        )
+        proxy_data = {}
+    else:
+        data = data['dash']
+        ia = inputstream.Widevine(
+            license_key = data['drm']['url'],
+            properties = {'manifest_config': '{"timeshift_bufferlimit":86400}'},
+        )
+        proxy_data = {
+            'middleware': {data['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request),}},
+        }
+
     headers = HEADERS
     headers.update({
-        'Authorization': 'Bearer {}'.format(data['dash']['drm']['jwtToken']),
+        'Authorization': 'Bearer {}'.format(data['drm']['jwtToken']),
         'x-drm-info': 'eyJzeXN0ZW0iOiJjb20ud2lkZXZpbmUuYWxwaGEifQ==', #{"system":"com.widevine.alpha"} b64 encoded 
     })
 
     item = plugin.Item(
-        path = data['dash']['url'],
-        inputstream = inputstream.Widevine(
-            license_key = data['dash']['drm']['url'],
-            properties = {'manifest_config': '{"timeshift_bufferlimit":86400}'},
-        ),
+        path = data['url'],
+        inputstream = ia,
         headers = headers,
-        proxy_data = {
-            'middleware': {data['dash']['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request),}},
-        }
+        proxy_data = proxy_data,
     )
 
-    # if start is None:
-    #     start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
-    # else:
-    #     start = int(start)
-    #     play_type = PLAY_FROM_START
+    if start is None:
+        start = arrow.get(event['programmingInfo']['currentProgramme']['startDate']).timestamp
+    else:
+        start = int(start)
+        play_type = PLAY_FROM_START
 
-    # offset = arrow.now().timestamp - start
-    # if is_live and offset > 0:
-    #     offset = (24*3600 + 20) - offset
+    offset = arrow.now().timestamp - start
+    if is_live and offset > 0:
+        if play_type is None:
+            play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
 
-    #     if play_type is None:
-    #         play_type = settings.getEnum('live_play_type', PLAY_FROM_TYPES, default=PLAY_FROM_ASK)
+        if play_type == PLAY_FROM_ASK:
+            result = plugin.live_or_start()
+            if result == -1:
+                return
+            elif result == 1:
+                item.resume_from = -offset
 
-    #     if play_type == PLAY_FROM_ASK:
-    #         result = plugin.live_or_start()
-    #         if result == -1:
-    #             return
-    #         elif result == 1:
-    #             item.resume_from = max(1, offset)
+        elif play_type == PLAY_FROM_START:
+            item.resume_from = -offset
 
-    #     elif play_type == PLAY_FROM_START:
-    #         item.resume_from = max(1, offset)
-
-    # if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
-    #     ## Need below to seek to live over multi-periods
-    #     item.resume_from = LIVE_HEAD
+    if not item.resume_from and ROUTE_LIVE_TAG in kwargs:
+        ## Need below to seek to live over multi-periods
+        item.resume_from = LIVE_HEAD
 
     return item
+
 
 @plugin.route()
 @plugin.login_required()
@@ -373,6 +398,7 @@ def play_vod(vod_id, **kwargs):
     )
 
     return item
+
 
 @plugin.route()
 @plugin.merge()
