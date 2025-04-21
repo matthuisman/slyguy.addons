@@ -104,7 +104,7 @@ def continue_watching(page=1, **kwargs):
     data = api.page(page_id, limit=0, enhanced_limit=0)
     set_id = [x for x in data['containers'] if 'continue_watching' in x['style']['name'].lower()][0]['id']
     data = api.set(set_id, page=page, _skip_cache=True)
-    folder = _process_rows(data, title=_.CONTINUE_WATCHING)
+    folder = _process_rows(data, title=_.CONTINUE_WATCHING, continue_watching=True)
     return folder, data['pagination']['hasMore']
 
 
@@ -127,12 +127,25 @@ def add_watchlist(deeplink_id, **kwargs):
 
 @plugin.route()
 def delete_watchlist(deeplink_id, **kwargs):
+    # TODO: remove list item and dont refresh
     with gui.busy():
         data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
         info = _get_info(data)
         api.edit_watchlist('remove', page_info=data['infoBlock'], action_info=info[ACTIONS][MODIFYSAVES]['infoBlock'])
         # above is async so wait a bit to make sure its removed from list refresh
-        time.sleep(1)
+        time.sleep(1.5)
+    gui.refresh()
+
+
+@plugin.route()
+def remove_continue_watching(deeplink_id, **kwargs):
+    # TODO: remove list item and dont refresh
+    with gui.busy():
+        data = api.page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+        info = _get_info(data)
+        api.remove_continue_watching(action_info=info[ACTIONS][REMOVECONTINUEWATCHING]['infoBlock'])
+        # above is async so wait a bit to make sure its removed from list refresh
+        time.sleep(1.5)
     gui.refresh()
 
 
@@ -181,6 +194,7 @@ def _get_actions(data):
         PLAYBACK: {},
         TRAILER: {},
         MODIFYSAVES: {},
+        REMOVECONTINUEWATCHING: {},
         MODAL: {},
     }
     for row in data.get('actions', []):
@@ -192,6 +206,10 @@ def _get_actions(data):
             actions[TRAILER] = row
         elif row['type'] == 'modifySaves':
             actions[MODIFYSAVES] = row
+        elif row['type'] == 'contextMenu':
+            for sub_row in row.get('actions', []):
+                if sub_row['type'] == 'removeFromContinueWatching':
+                    actions[REMOVECONTINUEWATCHING] = sub_row
         elif row['type'] == 'modal':
             actions[MODAL] = row
     actions[PLAYBACK] = actions[PLAYBACK] or actions[BROWSE]
@@ -299,7 +317,7 @@ def show(show_id, **kwargs):
     return folder
 
 
-def _process_rows(data, title=None, watchlist=False, flatten=False):
+def _process_rows(data, title=None, watchlist=False, flatten=False, continue_watching=False):
     if not data or 'visuals' not in data:
         return plugin.Folder(title)
 
@@ -342,6 +360,9 @@ def _process_rows(data, title=None, watchlist=False, flatten=False):
             if settings.SYNC_WATCHLIST.value and watchlist:
                 item.context = [x for x in item.context if x[0] != _.ADD_WATCHLIST]
                 item.context.insert(0, (_.DELETE_WATCHLIST, 'RunPlugin({})'.format(plugin.url_for(delete_watchlist, deeplink_id=row['actions'][0]['deeplinkId']))))
+            if settings.SYNC_PLAYBACK.value and continue_watching:
+                item.context = [x for x in item.context if x[0] != _.ADD_WATCHLIST]
+                item.context.insert(0, (_.REMOVE_CONTINUE_WATCHING, 'RunPlugin({})'.format(plugin.url_for(remove_continue_watching, deeplink_id=row['actions'][0]['deeplinkId']))))
             items.append(item)
 
     if flatten and len(items) == 1:

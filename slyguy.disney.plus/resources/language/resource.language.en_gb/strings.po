@@ -159,3 +159,7 @@ msgstr ""
 msgctxt "#30057"
 msgid "Brands"
 msgstr ""
+
+msgctxt "#30058"
+msgid "Remove from Continue Watching"
+msgstr ""

@@ -37,6 +37,7 @@ class Language(BaseLanguage):
     WIDESCREEN               = 30055
     SKIP_RECAPS              = 30056
     BRANDS                   = 30057
+    REMOVE_CONTINUE_WATCHING = 30058
 
 
 _ = Language()

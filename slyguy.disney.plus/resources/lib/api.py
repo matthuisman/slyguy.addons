@@ -350,7 +350,6 @@ class API(object):
             'limit': limit,
             'offset': limit*(page-1),
         }
-        params['offset'] = params['limit']*(page-1)
         endpoint = self._endpoint(self.get_config()['services']['explore']['client']['endpoints']['getSet']['href'], version=EXPLORE_VERSION, setId=set_id)
         return self._json_call(endpoint, params=params)['data']['set']
 
@@ -398,6 +397,28 @@ class API(object):
             'source': 'urn:dss:source:sdk:android:google:tv',
             'type': 'urn:dss:event:cs:user-content-actions:preference:v1:watchlist',
             'schemaurl': 'https://github.bamtech.co/schema-registry/schema-registry-client-signals/blob/series/0.X.X/smithy/dss/cs/event/user-content-actions/preference/v1/watchlist.smithy',
+            'id': str(uuid.uuid4()),
+            'time': event_time,
+        }]
+
+        endpoint = self.get_config()['services']['telemetry']['client']['endpoints']['envelopeEvent']['href']
+        data = self._session.post(endpoint, json=payload).json()
+        self._check_errors(data)
+        return not any([x['error'] is not None for x in data])
+
+    def remove_continue_watching(self, action_info):
+        self._set_token()
+        profile, session = self.profile()
+        event_time = arrow.utcnow().format("YYYY-MM-DDTHH:mm:ss.SSS") + "Z"
+        payload = [{
+            'data': {
+                'action_info_block': action_info,
+            },
+            'datacontenttype': 'application/json;charset=utf-8',
+            'subject': 'sessionId={},profileId={}'.format(session['sessionId'], profile['id']),
+            'source': 'urn:dss:source:sdk:android:google:tv',
+            'type': 'urn:dss:event:cs:user-content-actions:preference:v1:watch-history-preference',
+            'schemaurl': 'https://github.bamtech.co/schema-registry/schema-registry-client-signals/blob/series/1.X.X/smithy/dss/cs/event/user-content-actions/preference/v1/watch-history-preference.smithy',
             'id': str(uuid.uuid4()),
             'time': event_time,
         }]
