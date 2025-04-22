@@ -119,6 +119,7 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0, thumb=None):
                 patterns = [
                     ['([0-9]+)h ([0-9]+)m ([0-9]+)s', lambda match: int(match.group(1))*3600 + int(match.group(2))*60 + int(match.group(3))],
                     ['([0-9]+)h ([0-9]+)m', lambda match: int(match.group(1))*3600 + int(match.group(2))*60],
+                    ['([0-9]+)h', lambda match: int(match.group(1))*3600],
                     ['([0-9]+)m$', lambda match: int(match.group(1))*60],
                     ['([0-9]+)s$', lambda match: int(match.group(1))],
                 ]
@@ -155,13 +156,14 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0, thumb=None):
             info['season'], info['episode'] = _get_season_episode(row)
             info['duration'] = _get_duration(row)
 
-            if not info['season'] and not info['episode'] and count == 1:
+            if info['season'] == season_num:
+                info['mediatype'] = 'episode'
+                art  = {'thumb': _image(row['cardData']['image']['url'])}
+            else:
+                info['season'], info['episode'] = None, None
                 info['mediatype'] = 'movie'
                 info['year'] = season_num
                 art  = {'thumb': _image(thumb or row['cardData']['image']['url'])}
-            else:
-                info['mediatype'] = 'episode'
-                art  = {'thumb': _image(row['cardData']['image']['url'])}
 
             if 'seriesLogo' in row['cardData']:
                 art['clearlogo'] = _image(row['cardData']['seriesLogo']['url'])
@@ -335,7 +337,7 @@ def show(slug, data, thumb=None):
                     'mediatype': 'season',
                     'tvshowtitle': data['title'],
                 },
-                path = plugin.url_for(component, slug=slug, id=season[2]['id'], label=show_name, fanart=fanart),
+                path = plugin.url_for(component, slug=slug, id=season[2]['id'], season_num=season[0], label=show_name, fanart=fanart),
             )
 
     if clips and not settings.getBool('hide_clips', False):
@@ -360,11 +362,12 @@ def show(slug, data, thumb=None):
 
 
 @plugin.route()
-def component(slug, id, label, expand_media=0, fanart=None, **kwargs):
+def component(slug, id, label, expand_media=0, season_num=0, fanart=None, **kwargs):
     expand_media = int(expand_media)
+    season_num = int(season_num)
 
     folder = plugin.Folder(label, fanart=fanart)
-    items = _process_rows(api.component(slug, id)['items'], slug, expand_media)
+    items = _process_rows(api.component(slug, id)['items'], slug, expand_media, season_num=season_num)
     folder.add_items(items)
     return folder
 
