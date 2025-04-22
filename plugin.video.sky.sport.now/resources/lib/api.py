@@ -79,6 +79,10 @@ class API(object):
         }
 
         data = self._session.post('/v2/token/refresh', json=payload).json()
+        if data.get('code') == 'TOO_MANY_REQUESTS':
+            log.debug('Refresh too early. Token still valid. Ignoring')
+            return
+
         self._check_errors(data)
         self._parse_auth(data)
 
@@ -160,13 +164,10 @@ class API(object):
         return data
 
     def _check_errors(self, data):
-        if 'statusCode' in data and data['statusCode'] != 200:
-            error = data.get('message') or data.get('statusText')
+        code = data.get('statusCode') or data.get('status')
+        if code and code != 200:
+            error = data.get('message') or data.get('statusText') or data.get('messages', [''])[0]
             raise APIError(error)
-        # code = data.get('statusCode') or data.get('status')
-        # if code and code != 200:
-        #     error = data.get('message') or data.get('statusText') or data.get('messages', [''])[0]
-        #     raise APIError(error)
 
     def channels(self, page=1):
         self._refresh_token()
