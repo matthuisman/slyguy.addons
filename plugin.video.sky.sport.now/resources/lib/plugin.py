@@ -240,7 +240,7 @@ def replays(**kwargs):
     channels = {str(x['programmingInfo']['channelId']): x for x in api.channels() if x['live']}
 
     now = arrow.now()
-    start = now.shift(hours=-6)
+    start = now.shift(seconds=-BUFFER_SECONDS)
     epg = api.epg(list(channels.keys()), start, now)
 
     programs = []
@@ -270,47 +270,24 @@ def logout(**kwargs):
     gui.refresh()
 
 
-@plugin.route()
-@plugin.plugin_request()
-def mpd_request(_data, _path, **kwargs):
-    root = parseString(_data)
+def _get_live_delay(url):
+    root = parseString(api._session.get(url).content)
     mpd = root.getElementsByTagName("MPD")[0]
-
-    if not inputstream.require_version('21.0.0'):
-        # IA doesnt support multi-period with different baseurls in rep (https://github.com/xbmc/inputstream.adaptive/issues/1500)
-        # For now, lets remove all periods except the latest
-        periods_to_remove = [x for x in root.getElementsByTagName('Period')][:-1]
-        if periods_to_remove:
-            for period in periods_to_remove:
-                period.parentNode.removeChild(period)
-            mpd.setAttribute('timeShiftBufferDepth', 'PT300S')
 
     seconds_diff = 0
     utc = mpd.getElementsByTagName("UTCTiming")
-    publish_time = arrow.get(mpd.getAttribute('publishTime'))
+    now = arrow.utcnow()
     if utc:
         utc_time = arrow.get(utc[0].getAttribute('value'))
-        seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
+        seconds_diff = max((now - utc_time).total_seconds(), 0)
     else:
         for elem in mpd.getElementsByTagName("SupplementalProperty"):
             if elem.getAttribute('schemeIdUri') == 'urn:scte:dash:utc-time':
                 utc_time = arrow.get(elem.getAttribute('value'))
-                seconds_diff = max((utc_time - publish_time).total_seconds(), 0)
-                break
+                seconds_diff = max((now - utc_time).total_seconds(), 0)
 
-    if seconds_diff > 0:
-        seconds_diff += 24
-        # Kodi 21+
-        if KODI_VERSION > 20:
-            mpd.setAttribute('suggestedPresentationDelay', 'PT{}S'.format(seconds_diff))
-        else:
-            avail = mpd.getAttribute('availabilityStartTime')
-            if avail:
-                avail_start = arrow.get(avail).shift(seconds=seconds_diff)
-                mpd.setAttribute('availabilityStartTime', avail_start.format('YYYY-MM-DDTHH:mm:ss'+'Z'))
-
-    with open(_path, 'wb') as f:
-        f.write(root.toprettyxml(encoding='utf-8'))
+    seconds_diff += 24
+    return int(seconds_diff)
 
 
 @plugin.route()
@@ -325,17 +302,23 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
             manifest_type = 'hls',
             mimetype = 'application/vnd.apple.mpegurl',
             license_key = data['drm']['url'],
+            minversion = '2.6.0',
         )
-        proxy_data = {}
     else:
         data = data['dash']
+        live_delay = _get_live_delay(data['url'])
+
+        if KODI_VERSION >= 21 and event['title'] == 'ESPN':
+            live_delay += 146 # this only needed for ESPN (not espn2)
+
         ia = inputstream.Widevine(
             license_key = data['drm']['url'],
-            properties = {'manifest_config': '{"timeshift_bufferlimit":86400}'},
+            properties = {
+                'live_delay': str(live_delay), #legacy live delay
+                'manifest_config': '{{"timeshift_bufferlimit":{},"live_delay":{}}}'.format(BUFFER_SECONDS, live_delay)
+            },
+            minversion = '20.3.7',
         )
-        proxy_data = {
-            'middleware': {data['url']: {'type': MIDDLEWARE_PLUGIN, 'url': plugin.url_for(mpd_request),}},
-        }
 
     headers = HEADERS
     headers.update({
@@ -347,7 +330,6 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
         path = data['url'],
         inputstream = ia,
         headers = headers,
-        proxy_data = proxy_data,
     )
 
     if start is None:

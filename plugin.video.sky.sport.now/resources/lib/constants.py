@@ -5,6 +5,7 @@ HEADERS = {
     'user-agent': 'okhttp/4.9.2',
 }
 
+BUFFER_SECONDS = 21600 # 6hours
 API_URL = 'https://dce-frontoffice.imggaming.com/api{}'
 DEVICE_CODE_URL = 'https://www.skysportnow.co.nz/tv-login'
 EPG_URL = 'https://i.mjh.nz/SkySportNow/epg.xml.gz'
