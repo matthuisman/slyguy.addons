@@ -79,6 +79,8 @@ def search(query, page, **kwargs):
 
 
 def _image(url, width=IMAGE_WIDTH):
+    if url is None:
+        return None
     return IMAGE_URL.format(url=quote_plus(url.encode('utf8')), width=width)
 
 
@@ -134,11 +136,11 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0, thumb=None):
                 return 0
 
             def _get_season_episode(row):
-                titles = [row['cardData']['title'], row['cardData']['image'].get('altTag','')]
+                titles = [row['cardData']['title'], row['cardData']['image'].get('altTag',''), row.get('catalogueNumber')]
                 if 'infoPanelData' in row:
                     titles.insert(0, row['infoPanelData']['title'])
 
-                patterns = ['(S([0-9]+) E([0-9]+))', '(Season ([0-9]+)) Episode ([0-9]+)', '(Year ([0-9]+)) Episode ([0-9]+)']
+                patterns = ['(S([0-9]+) E([0-9]+))', '(Season ([0-9]+)) Episode ([0-9]+)', '(Year ([0-9]+)) Episode ([0-9]+)', '(([0-9]+)-([0-9]+)$)']
 
                 for title in titles:
                     title = re.sub('^([0-9]+\.)', '', title)
@@ -156,7 +158,7 @@ def _process_rows(rows, slug='', expand_media=False, season_num=0, thumb=None):
             if not info['season'] and not info['episode'] and count == 1:
                 info['mediatype'] = 'movie'
                 info['year'] = season_num
-                art  = {'thumb': _image(thumb)}
+                art  = {'thumb': _image(thumb or row['cardData']['image']['url'])}
             else:
                 info['mediatype'] = 'episode'
                 art  = {'thumb': _image(row['cardData']['image']['url'])}
