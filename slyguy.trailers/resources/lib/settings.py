@@ -1,6 +1,6 @@
 from slyguy.util import set_kodi_string
 from slyguy.constants import IS_ANDROID
-from slyguy.settings import CommonSettings
+from slyguy.settings import CommonSettings, is_donor
 from slyguy.settings.types import Bool, Browse, Text
 
 from .language import _
@@ -26,15 +26,15 @@ def set_trailer_context():
 
 class Settings(CommonSettings):
     TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', _.TRAILER_CONTEXT_MENU, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context)
-    TRAILER_LOCAL = Bool('trailer_local', _.TRAILER_LOCAL, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
+    TRAILER_LOCAL = Bool('trailer_local', _.TRAILER_LOCAL, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU, disabled_value=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY)
 
-    MDBLIST = Bool('mdblist', _.MDBLIST, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
+    MDBLIST = Bool('mdblist', _.MDBLIST, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU, disabled_value=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY)
     MDBLIST_SEARCH = Bool('mdblist_search', _.MDBLIST_SEARCH, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=MDBLIST)
 
-    YT_APK = Bool('yt_apk', _.YT_APK, default=False, visible=IS_ANDROID)
+    YT_APK = Bool('yt_apk', _.YT_APK, default=False, visible=IS_ANDROID, disabled_value=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY)
     YT_APK_ID = Text('yt_apk_id', _.YT_NATIVE_APK_ID, default_label=_.AUTO, parent=YT_APK)
 
-    YT_DLP = Bool('yt_dlp', _.YT_DLP, default=True, disabled_value=False)
+    YT_DLP = Bool('yt_dlp', _.YT_DLP, default=True, disabled_value=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY)
     YT_SUBTITLES = Bool('dlp_subtitles', _.YT_SUBTITLES, default=True, parent=YT_DLP)
     YT_AUTO_SUBTITLES = Bool('dlp_auto_subtitles', _.YT_AUTO_SUBTITLES, default=True, parent=YT_DLP)
     YT_COOKIES_PATH = Browse('dlp_cookies_path', _.YT_DLP_COOKIES_PATH, type=Browse.FILE, parent=YT_DLP)
