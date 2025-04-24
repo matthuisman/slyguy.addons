@@ -31,7 +31,7 @@ class Settings(CommonSettings):
     MDBLIST = Bool('mdblist', _.MDBLIST, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
     MDBLIST_SEARCH = Bool('mdblist_search', _.MDBLIST_SEARCH, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=MDBLIST)
 
-    YT_APK = Bool('yt_apk', _.YT_APK, default=False, visible=IS_ANDROID, disabled_value=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY)
+    YT_APK = Bool('yt_apk', _.YT_APK, default=False, visible=IS_ANDROID)
     YT_APK_ID = Text('yt_apk_id', _.YT_NATIVE_APK_ID, default_label=_.AUTO, parent=YT_APK)
 
     YT_DLP = Bool('yt_dlp', _.YT_DLP, default=True, disabled_value=False)
