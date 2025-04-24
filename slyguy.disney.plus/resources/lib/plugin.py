@@ -7,7 +7,6 @@ from slyguy import plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
 from slyguy.constants import KODI_VERSION, NO_RESUME_TAG, ROUTE_RESUME_TAG
 from slyguy.drm import is_wv_secure
-from slyguy.yt import li_trailer
 
 from .api import API
 from .constants import *
@@ -567,24 +566,18 @@ def play_trailer(deeplink_id, **kwargs):
         info = _get_info(data)
         item = _parse_row(data)
 
-        if not info[ACTIONS][TRAILER]:
-            return li_trailer(item.get_li(), ignore_trailer_path=True)
+        item = plugin.get_trailer_item(item, check=not info[ACTIONS][TRAILER])
+        if info[ACTIONS][TRAILER]:
+            item.inputstream = inputstream.Widevine(
+                license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
+                manifest_type = 'hls',
+                mimetype = 'application/vnd.apple.mpegurl',
+                wv_secure = is_wv_secure(),
+            )
+            playback_data = api.playback(info[ACTIONS][TRAILER]['resourceId'], item.inputstream.wv_secure)
+            item.path = playback_data['stream']['sources'][0]['complete']['url']
+            item.headers = api.session.headers
 
-        ia = inputstream.Widevine(
-            license_key = api.get_config()['services']['drm']['client']['endpoints']['widevineLicense']['href'],
-            manifest_type = 'hls',
-            mimetype = 'application/vnd.apple.mpegurl',
-            wv_secure = is_wv_secure(),
-        )
-        playback_data = api.playback(info[ACTIONS][TRAILER]['resourceId'], ia.wv_secure)
-
-        item.update(
-            label = u"{} ({})".format(item.label, _.TRAILER),
-            playable = True,
-            path = playback_data['stream']['sources'][0]['complete']['url'],
-            inputstream = ia,
-            headers = api.session.headers,
-        )
         return item
 
 

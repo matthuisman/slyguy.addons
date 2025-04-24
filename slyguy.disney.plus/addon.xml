@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.20.15">
+<addon id="slyguy.disney.plus" name="Disney+" provider-name="Slyguy" version="0.20.16">
   <requires>
-    <import addon="script.module.slyguy" version="0.85.75"/>
+    <import addon="script.module.slyguy" version="0.85.87"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
     <provides>video</provides>
