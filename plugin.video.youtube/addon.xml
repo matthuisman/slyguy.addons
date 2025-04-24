@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.youtube" name="YouTube for Trailers" provider-name="SlyGuy" version="99.2.20">
+<addon id="plugin.video.youtube" name="YouTube -> SlyGuy Trailers" provider-name="SlyGuy" version="99.2.21">
     <requires>
-        <import addon="script.module.slyguy" version="0.85.72"/>
         <import addon="repository.slyguy.youtube"/>
     </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py" provides="video">
-        <provides>video</provides>
-    </extension>
+    <extension point="xbmc.service"/>
+    <extension point="xbmc.python.pluginsource" library="default.py"/>
     <extension point="xbmc.addon.metadata">
-        <description lang="en">A drop-in replacement over official Kodi YouTube add-on to allow for trailers playback without login / api key
-NOTE: Does not allow browsing YouTube content. Simply for playback.</description>
+        <description lang="en">Redirects Youtube plugin trailers to Slyguy Trailers plugin</description>
         <reuselanguageinvoker>true</reuselanguageinvoker>
         <license></license>
         <language></language>
         <website></website>
-        <news>Move core into slyguy common. this now thin wrapper over that</news>
+        <news>Use new SlyGuy Trailers</news>
         <assets>
         <icon>icon.png</icon>
-        <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
 </addon>
