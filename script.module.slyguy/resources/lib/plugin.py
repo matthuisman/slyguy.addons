@@ -2,11 +2,11 @@ import re
 
 from kodi_six import xbmc, xbmcaddon
 
-from slyguy import plugin, gui, _
+from slyguy import plugin, gui, _, settings
+from slyguy.settings import reset_addon
 from slyguy.settings.types import STORAGE
 from slyguy.util import get_kodi_setting, get_addon
-from slyguy.yt import li_trailer
-from slyguy.constants import ROUTE_CONTEXT, ROUTE_SETTINGS, ADDON_NAME
+from slyguy.constants import ROUTE_SETTINGS, ADDON_NAME
 
 from .util import check_updates, get_slyguy_addons
 
@@ -16,30 +16,34 @@ def home(**kwargs):
     folder = plugin.Folder(_.SETTINGS)
 
     folder.add_item(
-        label = ADDON_NAME,
+        label = _.COMMON,
         path = plugin.url_for(ROUTE_SETTINGS),
         bookmark = False,
     )
 
+    addons = []
     for addon_id in STORAGE.get_addon_ids():
         try:
-            addon = xbmcaddon.Addon(addon_id)
+            addons.append(xbmcaddon.Addon(addon_id))
         except:
             continue
 
+    for addon in sorted(addons, key=lambda x: x.getAddonInfo('name')):
         folder.add_item(
             label = addon.getAddonInfo('name'),
             art = {'thumb': addon.getAddonInfo('icon')},
-            path = plugin.url_for(ROUTE_SETTINGS, _addon_id=addon_id),
+            path = plugin.url_for(ROUTE_SETTINGS, _addon_id=addon.getAddonInfo('id')),
             bookmark = False,
+            context = ((_.RESET_ADDON, 'RunPlugin({})'.format(plugin.url_for(reset, addon_id=addon.getAddonInfo('id')))),),
         )
 
     return folder
 
 
-@plugin.route(ROUTE_CONTEXT)
-def trailer(listitem, **kwargs):
-    return li_trailer(listitem)
+@plugin.route()
+def reset(addon_id, **kwargs):
+    if reset_addon(addon_id):
+        gui.refresh()
 
 
 @plugin.route()

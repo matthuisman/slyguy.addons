@@ -17,6 +17,7 @@ ADDON_DEV      = bool(int(os.environ.get('SLYGUY_DEV', '0')))
 
 REPO_ADDON_ID = 'repository.slyguy'
 DEPENDENCIES_ADDON_ID = 'slyguy.dependencies'
+TRAILERS_ADDON_ID = 'slyguy.trailers'
 COMMON_ADDON_ID = 'script.module.slyguy'
 COMMON_ADDON = xbmcaddon.Addon(COMMON_ADDON_ID)
 IS_ANDROID = xbmc.getCondVisibility('System.Platform.Android')
@@ -149,8 +150,3 @@ MAX_QUALITY_HISTORY = 10
 MIDDLEWARE_CONVERT_SUB = 'convert_sub'
 MIDDLEWARE_REGEX = 'regex'
 MIDDLEWARE_PLUGIN = 'plugin'
-
-### TRAILERS ###
-YOTUBE_PLUGIN_ID = 'plugin.video.youtube'
-TUBED_PLUGIN_ID = 'plugin.video.tubed'
-MDBLIST_API_KEY = 'tliqxfv0tg537ff7xyqkv7tug'

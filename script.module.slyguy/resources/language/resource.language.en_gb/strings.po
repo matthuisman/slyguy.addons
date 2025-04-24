@@ -875,7 +875,7 @@ msgid "Supporter ID not found"
 msgstr ""
 
 msgctxt "#32168"
-msgid "[Common]"
+msgid "Common"
 msgstr ""
 
 msgctxt "#32169"
@@ -1090,7 +1090,7 @@ msgid "IPTV Merge integration is not available for this add-on"
 msgstr ""
 
 msgctxt "#32221"
-msgid "Trailer Context Menu Item"
+msgid "Add-on"
 msgstr ""
 
 msgctxt "#32222"
@@ -1099,95 +1099,4 @@ msgstr ""
 
 msgctxt "#32223"
 msgid "SlyGuy Proxy Listen Port"
-msgstr ""
-
-msgctxt "#32224"
-msgid "Native Android App"
-msgstr ""
-
-msgctxt "#32225"
-msgid "yt-dlp with fallback to Native Android App"
-msgstr ""
-
-msgctxt "#32226"
-msgid "Native Android App ID"
-msgstr ""
-
-msgctxt "#32227"
-msgid "This addon uses yt_dlp which does not support Python 2\n"
-"You need to update to Kodi 19 or higher to use this addon"
-msgstr ""
-
-msgctxt "#32228"
-msgid "This addon uses yt_dlp which does not support Python 2\n"
-"You can enable playback via Android native app instead in the addon settings"
-msgstr ""
-
-msgctxt "#32229"
-msgid "No content found for ID: {id}\n"
-"Error: {error}"
-msgstr ""
-
-msgctxt "#32230"
-msgid "Auto-translate"
-msgstr ""
-
-msgctxt "#32231"
-msgid "yt-dlp - Subtitles"
-msgstr ""
-
-msgctxt "#32232"
-msgid "yt-dlp - Auto-translated Subtitles"
-msgstr ""
-
-msgctxt "#32233"
-msgid "yt-dlp - cookies.txt path"
-msgstr ""
-
-msgctxt "#32234"
-msgid "Trailers"
-msgstr ""
-
-msgctxt "#32235"
-msgid "YouTube"
-msgstr ""
-
-msgctxt "#32236"
-msgid "yt-dlp (built-in)"
-msgstr ""
-
-msgctxt "#32237"
-msgid "YouTube Plugin"
-msgstr ""
-
-msgctxt "#32238"
-msgid "Play YouTube trailers with"
-msgstr ""
-
-msgctxt "#32239"
-msgid "yt-dlp with fallback to YouTube Plugin"
-msgstr ""
-
-msgctxt "#32240"
-msgid "Trailer Preference"
-msgstr ""
-
-msgctxt "#32241"
-msgid "Media trailer only"
-msgstr ""
-
-msgctxt "#32242"
-msgid "Media trailer with fallback to mdblist trailer"
-msgstr ""
-
-msgctxt "#32243"
-msgid "mdblist trailer with fallback to media trailer"
-msgstr ""
-
-msgctxt "#32244"
-msgid "Search mdblist for trailer using title and year"
-msgstr ""
-
-msgctxt "#32245"
-msgid "Use local trailers when available"
 msgstr ""

@@ -6,7 +6,6 @@ from slyguy import gui, settings, log, check_donor, is_donor, set_drm_level, _
 from slyguy.session import Session
 from slyguy.monitor import monitor
 from slyguy.util import get_system_arch
-from slyguy.settings import set_trailer_context
 from slyguy.settings.db_storage import db
 
 from .proxy import Proxy
@@ -74,7 +73,6 @@ def _run():
 
     set_drm_level()
     check_arch()
-    set_trailer_context()
 
     ## Inital wait on boot
     monitor.waitForAbort(10)

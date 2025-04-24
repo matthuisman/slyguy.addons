@@ -8,7 +8,7 @@ from kodi_six import xbmcgui, xbmc
 
 from slyguy import settings, _
 from slyguy.constants import *
-from slyguy.router import add_url_args
+from slyguy.router import build_url, add_url_args
 from slyguy.smart_urls import get_dns_rewrites
 from slyguy.util import fix_url, set_kodi_string, hash_6, get_url_headers, get_headers_from_url, get_addon
 from slyguy.session import Session

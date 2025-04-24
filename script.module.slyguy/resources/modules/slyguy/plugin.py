@@ -1,6 +1,5 @@
 import sys
 import re
-import shutil
 import random
 import time
 import json
@@ -84,6 +83,8 @@ def route(url=None):
                 item.display()
             elif isinstance(item, Item):
                 item.play(**kwargs)
+            elif isinstance(item, str) and item.lower().startswith('plugin://'):
+                redirect(item)
             else:
                 resolve()
 
@@ -972,3 +973,23 @@ def process_news():
 
     except Exception as e:
         log.exception(e)
+
+
+def get_trailer_item(item, check=True):
+    title = item.label
+    year = item.info.get('year')
+    media_type = item.info.get('mediatype')
+
+    if check:
+        if not title or not year or media_type not in ('tvshow', 'movie'):
+            gui.notification(_.TRAILER_NOT_FOUND)
+            return
+
+        get_addon(TRAILERS_ADDON_ID, required=True, install=True)
+
+    item.update(
+        label = u"{} ({})".format(item.label, _.TRAILER),
+        path = router.build_url('/by_title_year', title=title, year=year, media_type=media_type, _addon_id=TRAILERS_ADDON_ID),
+        playable = True,
+    )
+    return item

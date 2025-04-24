@@ -55,7 +55,7 @@ class Category(object):
 
 class Categories(object):
     ROOT = Category(_.SETTINGS)
-    ADDON = Category(ADDON_NAME, parent=ROOT)
+    ADDON = Category(_.ADDON, parent=ROOT)
     PLAYER = Category(_.PLAYER, parent=ROOT)
     PLAYER_QUALITY = Category(_.QUALITY, parent=PLAYER)
     PLAYER_CODECS = Category(_.CODECS, parent=PLAYER)
@@ -77,7 +77,7 @@ class Setting(object):
 
     def __init__(self, id, label=None, owner=ADDON_ID, default=USE_DEFAULT, visible=True, enable=True, disabled_value=USE_DEFAULT, disabled_reason=None, 
                  override=True, before_save=lambda _: True, default_label=None, inherit=True, category=None, value_str='{value}',
-                 confirm_clear=False, after_clear=lambda: True, legacy_ids=None, after_save=lambda _: True, description=None, private_value=False, order=None):
+                 confirm_clear=False, after_clear=lambda: True, legacy_ids=None, after_save=lambda _: True, description=None, private_value=False, order=None, parent=None):
         self._id = str(id)
         self._label = label
         self._owner = owner
@@ -94,6 +94,7 @@ class Setting(object):
         self._category = category
         self._value_str = value_str
         self._private_value = private_value
+        self._parent = parent
         self.confirm_clear = confirm_clear
         self._after_clear = after_clear
         self._legacy_ids = legacy_ids or []
@@ -127,11 +128,17 @@ class Setting(object):
 
     @property
     def is_enabled(self):
-        return self._get_bool_condition(self._enable)
+        enabled = self._get_bool_condition(self._enable)
+        if enabled and self._parent:
+            enabled = self._parent.is_enabled and self._parent.value
+        return enabled
 
     @property
     def is_visible(self):
-        return self._get_bool_condition(self._visible)
+        visible = self._get_bool_condition(self._visible)
+        if visible and self._parent:
+            visible = self._parent.is_visible and self._parent.value
+        return visible
 
     @property
     def value(self):
@@ -170,6 +177,12 @@ class Setting(object):
         STORAGE.delete(self.owner, self._id)
         self._after_clear()
 
+    def _get_indent(self, indent=0):
+        if self._parent:
+            return self._parent._get_indent(indent+1)
+        else:
+            return indent
+
     @property
     def label(self):
         owner, value = self._get_value_owner()
@@ -181,15 +194,16 @@ class Setting(object):
         else:
             value = self.get_value_label(value)
 
+        label = '{}{}'.format('    '*self._get_indent(), self._label)
         if not self.is_enabled:
             value = _(value, _color='gray')
         elif self.can_clear():
             value = _(value, _bold=True)
 
         if owner == COMMON_ADDON_ID and ADDON_ID != COMMON_ADDON_ID:
-            return u'{}: {} {}'.format(self._label, value, _.INHERITED_SETTING)
+            return u'{}: {} [{}]'.format(label, value, _.COMMON)
         else:
-            return u'{}: {}'.format(self._label, value)
+            return u'{}: {}'.format(label, value)
 
     @property
     def description(self):
