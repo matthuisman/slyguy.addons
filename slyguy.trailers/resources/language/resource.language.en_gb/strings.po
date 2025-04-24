@@ -1,0 +1,66 @@
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Play with Android App"
+msgstr ""
+
+msgctxt "#30002"
+msgid "App ID"
+msgstr ""
+
+msgctxt "#30003"
+msgid "This addon uses yt_dlp which does not support Python 2\n"
+"You need to update to Kodi 19 or higher to use this addon"
+msgstr ""
+
+msgctxt "#30004"
+msgid "This addon uses yt_dlp which does not support Python 2\n"
+"You can enable playback via Android native app instead in the addon settings"
+msgstr ""
+
+msgctxt "#30005"
+msgid "No content found for ID: {id}\n"
+"Error: {error}"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Auto-translate"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Subtitles"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Auto-translated Subtitles"
+msgstr ""
+
+msgctxt "#30009"
+msgid "cookies.txt path"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Play with yt-dlp (built-in)"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Use mdblist API if no media trailer"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Search by title / year if no unique ID"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Allow local trailers"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Trailer Context Menu Item"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Can not playback using SlyGuy redirect addon: {addon_id}\n"
+"Uninstall SlyGuy version to use Kodi version for playback"
+msgstr ""
