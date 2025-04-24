@@ -10,4 +10,4 @@ from .common import (
     Response,
 )
 
-from . import _slyguy
+from . import _requests
