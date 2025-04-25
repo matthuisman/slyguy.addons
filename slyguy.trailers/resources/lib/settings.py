@@ -1,6 +1,6 @@
 from slyguy.util import set_kodi_string
 from slyguy.constants import IS_ANDROID
-from slyguy.settings import CommonSettings, is_donor
+from slyguy.settings import CommonSettings
 from slyguy.settings.types import Bool, Browse, Text
 
 from .language import _
@@ -25,7 +25,7 @@ def set_trailer_context():
 
 
 class Settings(CommonSettings):
-    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', _.TRAILER_CONTEXT_MENU, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, disabled_value=False, enable=is_donor, disabled_reason=_.SUPPORTER_ONLY)
+    TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', _.TRAILER_CONTEXT_MENU, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context)
     TRAILER_LOCAL = Bool('trailer_local', _.TRAILER_LOCAL, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
 
     MDBLIST = Bool('mdblist', _.MDBLIST, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
@@ -33,6 +33,9 @@ class Settings(CommonSettings):
 
     YT_APK = Bool('yt_apk', _.YT_APK, default=False, visible=IS_ANDROID)
     YT_APK_ID = Text('yt_apk_id', _.YT_NATIVE_APK_ID, default_label=_.AUTO, parent=YT_APK)
+
+    YT_PLUGIN_YT = Bool('yt_plugin_yt', _.YT_PLUGIN_YT, default=False)
+    YT_PLUGIN_TUBED = Bool('yt_plugin_tubed', _.YT_PLUGIN_TUBED, default=False)
 
     YT_DLP = Bool('yt_dlp', _.YT_DLP, default=True, disabled_value=False)
     YT_SUBTITLES = Bool('dlp_subtitles', _.YT_SUBTITLES, default=True, parent=YT_DLP)

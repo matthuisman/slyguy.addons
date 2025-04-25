@@ -34,10 +34,14 @@ def is_youtube_url(url):
 def play_youtube(video_id):
     if settings.YT_APK.value:
         return play_yt_apk(video_id)
-    elif settings.YT_DLP.value:
-        return play_yt_dlp(video_id)
+    elif settings.YT_PLUGIN_YT.value:
+        assert_not_redirect(YOTUBE_PLUGIN_ID)
+        return plugin.Item(path='plugin://{}/play/?video_id={}'.format(YOTUBE_PLUGIN_ID, video_id))
+    elif settings.YT_PLUGIN_TUBED.value:
+        assert_not_redirect(TUBED_PLUGIN_ID)
+        return plugin.Item(path='plugin://{}/?mode=play&video_id={}'.format(TUBED_PLUGIN_ID, video_id))
     else:
-        return play_yt_plugin(video_id)
+        return play_yt_dlp(video_id)
 
 
 def play_yt_dlp(video_id):
@@ -158,22 +162,8 @@ def play_yt_apk(video_id):
     xbmc.executebuiltin(start_activity)
 
 
-def has_addon(addon_id):
+def assert_not_redirect(addon_id):
     addon = get_addon(addon_id, install=False, required=False)
-    if addon:
-        return addon.getAddonInfo('author').lower() != 'slyguy'
-    return False
-
-
-def assert_not_slyguy(addon_id):
-    if xbmcaddon.Addon(addon_id).getAddonInfo('author').lower() == 'slyguy':
-        raise plugin.PluginError(_(_.PLAYBACK_IS_REDIRECT_ERROR, addon_id=addon_id))
-
-
-def play_yt_plugin(video_id):
-    if has_addon(TUBED_PLUGIN_ID):
-        return plugin.Item(path='plugin://{}/?mode=play&video_id={}'.format(TUBED_PLUGIN_ID, video_id))
-
-    get_addon(YOTUBE_PLUGIN_ID, install=True, required=True)
-    assert_not_slyguy(YOTUBE_PLUGIN_ID)
-    return plugin.Item(path='plugin://{}/play/?video_id={}'.format(YOTUBE_PLUGIN_ID, video_id))
+    if addon and addon.getAddonInfo('author').lower() == 'slyguy':
+        raise plugin.PluginError(_.CANT_PLAY_REDIRECTED)
+    

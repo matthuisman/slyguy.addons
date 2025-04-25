@@ -61,6 +61,14 @@ msgid "Trailer Context Menu Item"
 msgstr ""
 
 msgctxt "#30023"
-msgid "Can not playback using SlyGuy redirect addon: {addon_id}\n"
-"Uninstall SlyGuy version to use Kodi version for playback"
+msgid "Your chosen plugin for playback has the SlyGuy redirect version installed and cant be used for playback\n"
+"Check your SlyGuy Trailers settings"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Play with YouTube plugin"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Play with Tubed plugin"
 msgstr ""

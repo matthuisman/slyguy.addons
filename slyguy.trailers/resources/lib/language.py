@@ -16,7 +16,8 @@ class Language(BaseLanguage):
     MDBLIST_SEARCH              = 30020
     TRAILER_LOCAL               = 30021
     TRAILER_CONTEXT_MENU        = 30022
-    PLAYBACK_IS_REDIRECT_ERROR  = 30023
-
+    CANT_PLAY_REDIRECTED        = 30023
+    YT_PLUGIN_YT                = 30024
+    YT_PLUGIN_TUBED             = 30025
 
 _ = Language()
