@@ -5,5 +5,9 @@ HEADERS = {
 DEVICE_ACTIVATE_URL = 'https://hulu.com/activate'
 API_URL = 'https://discover.hulu.com{}'
 
-DEEJAY_DEVICE_ID = 210
-DEEJAY_KEY_VERSION = 1
+# this is old device that returns 4K MPD:
+# https://vodmanifest.hulustream.com
+# newer devices return 2K MPD:
+# https://dynamic-manifest.hulustream.com
+DEEJAY_DEVICE_ID = 189
+DEEJAY_KEY_VERSION = 8

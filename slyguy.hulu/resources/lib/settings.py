@@ -4,17 +4,6 @@ from slyguy.settings.types import Bool, Text
 from .language import _
 
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
-}
-
-DEVICE_ACTIVATE_URL = 'https://hulu.com/activate'
-API_URL = 'https://discover.hulu.com{}'
-
-DEEJAY_DEVICE_ID = 210
-DEEJAY_KEY_VERSION = 1
-
-
 class Settings(CommonSettings):
     LAT_LONG = Text('lat_long', _.LAT_LONG, default_label=_.AUTO)
     SYNC_PLAYBACK = Bool('sync_playback', _.SYNC_PLAYBACK, default=False)

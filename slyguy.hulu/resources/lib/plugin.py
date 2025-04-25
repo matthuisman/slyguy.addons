@@ -13,7 +13,8 @@ from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, PLAY_FROM_LIVE, PLAY_FRO
 
 from .api import API
 from .language import _
-from .settings import settings, DEVICE_ACTIVATE_URL, HEADERS
+from .settings import settings
+from .constants import DEVICE_ACTIVATE_URL, HEADERS
 
 
 api = API()

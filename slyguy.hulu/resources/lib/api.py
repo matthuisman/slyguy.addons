@@ -11,7 +11,8 @@ from slyguy.log import log
 from slyguy.drm import req_hdcp_level, HDCP_2_2, is_wv_secure
 
 from .language import _
-from .settings import settings, API_URL, HEADERS, DEEJAY_DEVICE_ID, DEEJAY_KEY_VERSION
+from .settings import settings
+from .constants import API_URL, HEADERS, DEEJAY_DEVICE_ID, DEEJAY_KEY_VERSION
 
 
 class APIError(Error):
@@ -358,9 +359,9 @@ class API(object):
 
         av_features = bundle.get('av_features', [])
 
-        vid_types = [{'type':'H264','width':3840,'height':2160,'framerate':60,'level':'4.2','profile':'HIGH'}]
+        vid_types = [{'type':'H264','width':9999,'height':9999,'framerate':60,'level':'9','profile':'HIGH'}]
         if settings.getBool('h265'):
-            vid_types.append({'type':'H265','width':3840,'height':2160,'framerate':60,'level':'5.1','profile':'MAIN_10','tier':'MAIN'})
+            vid_types.append({'type':'H265','width':9999,'height':9999,'framerate':60,'level':'9','profile':'MAIN_10','tier':'MAIN'})
 
         aud_types = [{'type':'AAC'}]
         if settings.getBool('ec3'):
