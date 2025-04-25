@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.slyguy.youtube" name="SlyGuy YouTube Repository" provider-name="SlyGuy" version="0.0.5">
-  <extension point="xbmc.addon.repository" name="SlyGuy YouTube Repository">
+<addon id="repository.slyguy.youtube" name="SlyGuy Trailers Redirects Repository" provider-name="SlyGuy" version="0.0.6">
+  <extension point="xbmc.addon.repository" name="SlyGuy Trailers Redirects Repository">
     <dir>
       <info compressed="false">https://slyguy.uk/.repo/repository.slyguy.youtube/addons.xml</info>
       <checksum>https://slyguy.uk/.repo/repository.slyguy.youtube/addons.xml.md5</checksum>
@@ -9,14 +9,13 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <description lang="en">YouTube for Trailers add-on by SlyGuy repository</description>
+    <description lang="en">This repo contains various addons that redirect to the SlyGuy Trailers addon</description>
     <license></license>
     <language></language>
     <website></website>
     <news></news>
     <assets>
       <icon>icon.png</icon>
-      <fanart>fanart.jpg</fanart>
     </assets>
   </extension>
 </addon>
