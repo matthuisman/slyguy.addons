@@ -1100,3 +1100,7 @@ msgstr ""
 msgctxt "#32223"
 msgid "SlyGuy Proxy Listen Port"
 msgstr ""
+
+msgctxt "#32224"
+msgid "If you enjoy SlyGuy addons - please consider donating to unlock some extra perks!\n\n[B]https://donate.slyguy.uk[/B]"
+msgstr ""

@@ -32,6 +32,8 @@ REDIRECT_HOSTS = ['i.mjh.nz', 'r.mjh.nz', 'c.mjh.nz', 'jmp2.uk']
 DONOR_URL = 'https://d.slyguy.uk/donors/{id}'
 DONOR_CHECK_TIME = (60*60*1) #1 hour
 DONOR_TIMEOUT = 172800 #48 hours
+SUPPORT_REMINDER = 604800 # 1 week
+SUPPORT_TIMEOUT = 5
 UPDATE_TIME_LIMIT = 86400 #24 hours
 REQUIRED_UPDATE = [ADDON_ID, COMMON_ADDON_ID, DEPENDENCIES_ADDON_ID, REPO_ADDON_ID]
 

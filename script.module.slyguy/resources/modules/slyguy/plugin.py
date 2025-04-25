@@ -6,7 +6,7 @@ import json
 from functools import wraps
 from six.moves.urllib_parse import quote_plus
 
-from kodi_six import xbmc, xbmcplugin
+from kodi_six import xbmc, xbmcplugin, xbmcaddon
 
 from slyguy import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache, is_donor, log, _
 from slyguy.constants import *
@@ -326,7 +326,7 @@ def move_bookmark(index, shift, **kwargs):
 
 @route(ROUTE_BOOKMARKS)
 def _bookmarks(**kwargs):
-    folder = Folder(_.BOOKMARKS)
+    folder = Folder(_.BOOKMARKS, show_news=False)
 
     _bookmarks = bookmarks.get()
     for index, row in enumerate(_bookmarks):
@@ -387,7 +387,7 @@ def _migrate_done(old_addon_id, **kwargs):
 @route(ROUTE_SETTINGS)
 def _settings(category=0, **kwargs):
     category = Category.get(int(category))
-    folder = Folder(category.label, content='files')
+    folder = Folder(category.label, content='files', show_news=False)
 
     for subcat in category.categories:
         folder.add_item(
@@ -730,6 +730,8 @@ class Item(gui.Item):
 
         set_kodi_string('_slyguy_play_data', json.dumps(play_data))
 
+        process_support()
+
         if handle > 0:
             xbmcplugin.setResolvedUrl(handle, True, li)
         else:
@@ -867,6 +869,7 @@ class Folder(object):
         xbmcplugin.endOfDirectory(handle, succeeded=True, updateListing=self.updateListing, cacheToDisc=self.cacheToDisc)
 
         if self.show_news:
+            process_support()
             process_news()
 
     def add_item(self, *args, **kwargs):
@@ -923,6 +926,21 @@ def require_update():
         log.error(_(_.UPDATES_REQUIRED, updates_required='\n'.join(['{} ({})'.format(entry[1], entry[2]) for entry in need_updated])))
 
 
+def process_support():
+    if is_donor():
+        return
+
+    _time = int(time.time())
+    if settings.LAST_SUPPORT_REMINDER.value == 0:
+        settings.LAST_SUPPORT_REMINDER.value = _time
+
+    if _time < settings.LAST_SUPPORT_REMINDER.value + SUPPORT_REMINDER:
+        return
+
+    settings.LAST_SUPPORT_REMINDER.value = _time
+    gui.ok(_.SHOW_SUPPORT)
+
+
 def process_news():
     news = settings.getDict('_news')
     if not news:
@@ -954,9 +972,6 @@ def process_news():
         if news.get('requires') and not get_addon(news['requires'], install=False):
             log.debug('news only for users with add-on: {} '.format(news['requires']))
             return
-
-        if news['type'] in ('message', 'donate'):
-            gui.ok(news['message'], news.get('heading', _.NEWS_HEADING))
 
         elif news['type'] == 'addon_release':
             if get_addon(news['addon_id'], install=False):

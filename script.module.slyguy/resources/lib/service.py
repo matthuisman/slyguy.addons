@@ -29,9 +29,6 @@ def _check_news():
     if 'id' not in news or news['id'] == settings.get('_last_news_id'):
         return
     settings.set('_last_news_id', news['id'])
-
-    if news['type'] == 'donate' and is_donor():
-        return
     settings.setDict('_news', news)
 
 
@@ -56,6 +53,7 @@ def run():
     except Exception as e:
         log.exception(e)
         gui.exception()
+
 
 def _run():
     log.info('Shared Service: Started')

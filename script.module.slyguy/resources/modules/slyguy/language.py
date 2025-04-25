@@ -310,6 +310,7 @@ class BaseLanguage(object):
     ADDON                       = 32221
     NOT_SET                     = 32222
     PROXY_PORT                  = 32223
+    SHOW_SUPPORT                = 32224
 
     def __init__(self):
         self._addon_map = {}    

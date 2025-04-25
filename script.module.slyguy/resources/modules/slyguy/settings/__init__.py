@@ -316,6 +316,7 @@ class CommonSettings(BaseSettings):
     DONOR_ID_CHK = Text('donor_id_chk', visible=False, override=False, owner=COMMON_ADDON_ID)
     ADDONS_MD5 = Text('addon_md5', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_DONOR_CHECK = Number('last_donor_check', visible=False, override=False, owner=COMMON_ADDON_ID)
+    LAST_SUPPORT_REMINDER = Number('last_support_reminder', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_NEWS_CHECK = Number('last_news_check', visible=False, override=False, owner=COMMON_ADDON_ID)
     LAST_NEWS_ID = Text('last_news_id', visible=False, override=False, owner=COMMON_ADDON_ID)
     PROXY_PATH = Text('proxy_path', visible=False, override=False, owner=COMMON_ADDON_ID)
