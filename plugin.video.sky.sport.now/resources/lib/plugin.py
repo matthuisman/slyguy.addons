@@ -306,10 +306,16 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
         )
     else:
         data = data['dash']
-        live_delay = _get_live_delay(data['url'])
 
-        if KODI_VERSION >= 21 and event['title'] == 'ESPN':
-            live_delay += 146 # this only needed for ESPN (not espn2)
+        if KODI_VERSION >= 22:
+            live_delay = 0
+            minversion = '22.2.2'
+        else:
+            live_delay = _get_live_delay(data['url'])
+            if KODI_VERSION == 21:
+                minversion = '21.5.12'
+            else:
+                minversion = '20.3.7'
 
         ia = inputstream.Widevine(
             license_key = data['drm']['url'],
@@ -317,7 +323,7 @@ def play_event(event_id, start=None, play_type=None, **kwargs):
                 'live_delay': str(live_delay), #legacy live delay
                 'manifest_config': '{{"timeshift_bufferlimit":{},"live_delay":{}}}'.format(BUFFER_SECONDS, live_delay)
             },
-            minversion = '20.3.7',
+            minversion = minversion,
         )
 
     headers = HEADERS
