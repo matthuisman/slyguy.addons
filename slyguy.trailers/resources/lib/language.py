@@ -11,13 +11,18 @@ class Language(BaseLanguage):
     YT_SUBTITLES                = 30007
     YT_AUTO_SUBTITLES           = 30008
     YT_DLP_COOKIES_PATH         = 30009
+    YT_PLAY_WITH                = 30010
+    NO_YT_PLAY_MODE             = 30011
     YT_DLP                      = 30012
+    YT_PLAY_FALLBACK            = 30013
+    TEST_STREAMS                = 30014
     MDBLIST                     = 30018
     MDBLIST_SEARCH              = 30020
     TRAILER_LOCAL               = 30021
     TRAILER_CONTEXT_MENU        = 30022
     CANT_PLAY_REDIRECTED        = 30023
-    YT_PLUGIN_YT                = 30024
-    YT_PLUGIN_TUBED             = 30025
+    YOUTUBE_PLUGIN              = 30024
+    TUBED_PLUGIN                = 30025
+
 
 _ = Language()

@@ -29,6 +29,8 @@ class API(object):
             'query': title,
             'year': year,
             'limit': limit,
+            'limit_by_score': 30,
+            'sort_by_score': True,
             'apikey': MDBLIST_API_KEY,
         }
         return self._session.get('/search/{}'.format(mediatype), params=params).json()['search']

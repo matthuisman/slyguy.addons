@@ -2,17 +2,17 @@ import os
 import sys
 from collections import defaultdict
 
-from kodi_six import xbmc, xbmcaddon
+from kodi_six import xbmc
 from six.moves.urllib_parse import unquote, urlparse, parse_qsl
 
-from slyguy import plugin
+from slyguy import plugin, gui
 from slyguy.inputstream import MPD
 from slyguy.constants import IS_ANDROID, IS_PYTHON3, ADDON_PROFILE, ADDON_ID
 from slyguy.log import log
 from slyguy.util import get_addon
 
 from .constants import YOTUBE_PLUGIN_ID, TUBED_PLUGIN_ID
-from .settings import settings
+from .settings import settings, YTMode
 from .language import _
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -31,17 +31,28 @@ def is_youtube_url(url):
     return ADDON_ID.lower() in url or YOTUBE_PLUGIN_ID.lower() in url.lower() or TUBED_PLUGIN_ID.lower() in url.lower() or 'youtube.com' in url.lower()
 
 
-def play_youtube(video_id):
-    if settings.YT_APK.value:
+def play_youtube(video_id, mode=None):
+    mode = mode or settings.YT_PLAY_WITH.value
+
+    if mode == YTMode.APK:
         return play_yt_apk(video_id)
-    elif settings.YT_PLUGIN_YT.value:
+    elif mode == YTMode.YOUTUBE_PLUGIN:
         assert_not_redirect(YOTUBE_PLUGIN_ID)
         return plugin.Item(path='plugin://{}/play/?video_id={}'.format(YOTUBE_PLUGIN_ID, video_id))
-    elif settings.YT_PLUGIN_TUBED.value:
+    elif mode == YTMode.TUBED_PLUGIN:
         assert_not_redirect(TUBED_PLUGIN_ID)
         return plugin.Item(path='plugin://{}/?mode=play&video_id={}'.format(TUBED_PLUGIN_ID, video_id))
+    elif mode == YTMode.YT_DLP:
+        try:
+            return play_yt_dlp(video_id)
+        except Exception as e:
+            if settings.YT_PLAY_FALLBACK.value:
+                gui.notification(str(e))
+                return play_youtube(video_id, mode=settings.YT_PLAY_FALLBACK.value)
+            else:
+                raise
     else:
-        return play_yt_dlp(video_id)
+        raise plugin.Error(_.NO_YT_PLAY_MODE)
 
 
 def play_yt_dlp(video_id):
@@ -166,4 +177,3 @@ def assert_not_redirect(addon_id):
     addon = get_addon(addon_id, install=False, required=False)
     if addon and addon.getAddonInfo('author').lower() == 'slyguy':
         raise plugin.PluginError(_.CANT_PLAY_REDIRECTED)
-    

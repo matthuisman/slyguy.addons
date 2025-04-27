@@ -174,25 +174,28 @@ def _unique_id_mdblist_trailer(media_type, id, id_type=None):
 
 @plugin.route('/by_unique_id')
 def by_unique_id(media_type, id, id_type=None, **kwargs):
-    trailer = _unique_id_mdblist_trailer(media_type, id, id_type)
-    if trailer:
-        return plugin.Item(path=trailer)
-    else:
-        gui.notification(_.TRAILER_NOT_FOUND)
+    with gui.busy():
+        trailer = _unique_id_mdblist_trailer(media_type, id, id_type)
+        if trailer:
+            return play_youtube(get_youtube_id(trailer))
+        else:
+            gui.notification(_.TRAILER_NOT_FOUND)
 
 
 @plugin.route('/by_title_year')
 def by_title_year(media_type, title, year, **kwargs):
-    trailer = _search_mdblist_trailer(media_type, title, year)
-    if trailer:
-        return plugin.Item(path=trailer)
-    else:
-        gui.notification(_.TRAILER_NOT_FOUND)
+    with gui.busy():
+        trailer = _search_mdblist_trailer(media_type, title, year)
+        if trailer:
+            return play_youtube(get_youtube_id(trailer))
+        else:
+            gui.notification(_.TRAILER_NOT_FOUND)
 
 
 @plugin.route('/play')
 def play_yt(video_id, **kwargs):
-    return play_youtube(video_id)
+    with gui.busy():
+        return play_youtube(video_id)
 
 
 # stub out search so tmdbhelper works
@@ -201,3 +204,20 @@ def play_yt(video_id, **kwargs):
 def search(**kwargs):
     log.warning("SlyGuy Trailers does not support Youtube search ({}). Returning empty result".format(kwargs['_url']))
     return plugin.Folder(no_items_label=None, show_news=False)
+
+
+@plugin.route('/test_streams')
+def test_streams(**kwargs):
+    STREAMS = [
+        ['YouTube 4K', plugin.url_for(play_yt, video_id='Q82tQJyJwgk')],
+        ['YouTube 4K HDR', plugin.url_for(play_yt, video_id='tO01J-M3g0U')],
+        ['Show tvdb id -> mdblist -> YouTube', plugin.url_for(by_unique_id, media_type='tvshow', id='392256', id_type='tvdb')],
+        ['Movie imdb id -> mdblist -> YouTube', plugin.url_for(by_unique_id, media_type='movie', id='tt0133093', id_type='imdb')],
+        ['Show Title / Year -> mdblist -> YouTube', plugin.url_for(by_title_year, media_type='tvshow', title='The Last of Us', year='2023')],
+        ['Movie Title / Year -> mdblist -> YouTube', plugin.url_for(by_title_year, media_type='movie', title='The Matrix', year='1999')],
+    ]
+
+    folder = plugin.Folder(_.TEST_STREAMS, content=None)
+    for stream in STREAMS:
+        folder.add_item(label=stream[0], is_folder=False, path=stream[1])
+    return folder

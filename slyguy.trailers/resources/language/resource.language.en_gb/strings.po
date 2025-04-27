@@ -2,11 +2,11 @@ msgid ""
 msgstr ""
 
 msgctxt "#30000"
-msgid "Play with Android App"
+msgid "Android App"
 msgstr ""
 
 msgctxt "#30002"
-msgid "App ID"
+msgid "Android App ID"
 msgstr ""
 
 msgctxt "#30003"
@@ -16,7 +16,7 @@ msgstr ""
 
 msgctxt "#30004"
 msgid "This addon uses yt_dlp which does not support Python 2\n"
-"You can enable playback via Android native app instead in the addon settings"
+"You can enable playback via Android app instead in the addon settings"
 msgstr ""
 
 msgctxt "#30005"
@@ -40,8 +40,25 @@ msgctxt "#30009"
 msgid "cookies.txt path"
 msgstr ""
 
+msgctxt "#30010"
+msgid "Play YouTube trailers with"
+msgstr ""
+
+msgctxt "#30011"
+msgid "No suitable YouTube playback mode was available\n"
+"Check your SlyGuy Trailers settings"
+msgstr ""
+
 msgctxt "#30012"
-msgid "Play with yt-dlp (built-in)"
+msgid "yt-dlp (built-in)"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Fallback on failure to"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Test Streams"
 msgstr ""
 
 msgctxt "#30018"
@@ -61,14 +78,14 @@ msgid "Trailer Context Menu Item"
 msgstr ""
 
 msgctxt "#30023"
-msgid "Your chosen plugin for playback has the SlyGuy redirect version installed and cant be used for playback\n"
+msgid "Your chosen add-on for playback has the SlyGuy redirect version installed and cant be used for playback\n"
 "Check your SlyGuy Trailers settings"
 msgstr ""
 
 msgctxt "#30024"
-msgid "Play with YouTube plugin"
+msgid "YouTube add-on"
 msgstr ""
 
 msgctxt "#30025"
-msgid "Play with Tubed plugin"
+msgid "Tubed add-on"
 msgstr ""
