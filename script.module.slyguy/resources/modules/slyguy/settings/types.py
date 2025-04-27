@@ -219,6 +219,10 @@ class Setting(object):
         else:
             return ''
 
+    @property
+    def value_label(self):
+        return self.get_value_label(self.value)
+
     def get_value_label(self, value):
         if value is None or value == "":
             return _.NOT_SET
