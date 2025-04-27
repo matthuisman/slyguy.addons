@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="slyguy.trailers" name="SlyGuy Trailers" provider-name="SlyGuy" version="0.0.7">
+<addon id="slyguy.trailers" name="SlyGuy Trailers" provider-name="SlyGuy" version="0.0.8">
     <requires>
         <import addon="script.module.slyguy" version="0.85.89"/>
     </requires>
@@ -24,7 +24,7 @@
         <reuselanguageinvoker>true</reuselanguageinvoker>
         <license></license>
         <language></language>
-        <website>https://www.matthuisman.nz/2025/04/slyguy-trailers-kodi-add-on.html</website>
+        <website></website>
         <news>Rework settings</news>
         <assets>
         <icon>icon.png</icon>
