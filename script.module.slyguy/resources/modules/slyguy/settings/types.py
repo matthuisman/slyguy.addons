@@ -76,7 +76,7 @@ class Setting(object):
     ORDER = 0
 
     def __init__(self, id, label=None, owner=ADDON_ID, default=USE_DEFAULT, visible=True, enable=True, disabled_value=USE_DEFAULT, disabled_reason=None, 
-                 override=True, before_save=lambda _: True, default_label=None, inherit=True, category=None, value_str='{value}',
+                 override=True, before_save=lambda _: True, default_label=None, inherit=None, category=None, value_str='{value}',
                  confirm_clear=False, after_clear=lambda: True, legacy_ids=None, after_save=lambda _: True, description=None, private_value=False, order=None, parent=None):
         self._id = str(id)
         self._label = label
@@ -88,6 +88,8 @@ class Setting(object):
         self._disabled_value = self._default if disabled_value == USE_DEFAULT else disabled_value
         self._disabled_reason = disabled_reason
         self._override = override  # when False, an addon cant have its own value
+        if inherit is None:
+            inherit = True if owner == COMMON_ADDON_ID else False
         self._inherit = inherit # when False, an addon can only have its own value
         self._before_save = before_save
         self._after_save = after_save
@@ -140,14 +142,17 @@ class Setting(object):
             visible = self._parent.is_visible and self._parent.value
         return visible
 
+    def _is_valid_value(self, value):
+        return True
+
     @property
     def value(self):
         value = self._get_value_owner()[1]
-        return deepcopy(self._default) if value == DBStorage.NO_ENTRY else value
+        return deepcopy(self._default) if value == DBStorage.NO_ENTRY or not self._is_valid_value(value) else value
 
     @value.setter
     def value(self, value):
-        if not self._before_save(value):
+        if not self._is_valid_value(value) or not self._before_save(value):
             return
         self._set_value(value)
         self._after_save(value)
@@ -186,7 +191,7 @@ class Setting(object):
     @property
     def label(self):
         owner, value = self._get_value_owner()
-        if value == DBStorage.NO_ENTRY:
+        if value == DBStorage.NO_ENTRY or not self._is_valid_value(value):
             value = deepcopy(self._default)
 
         if value == self._default and self._default_label:
@@ -388,31 +393,38 @@ class Number(Setting):
 
 
 class Enum(Setting):
+    DEFAULT = None
+
     def __init__(self, *args, **kwargs):
         self._options = kwargs.pop('options', [])
         self._loop = kwargs.pop('loop', False)
         super(Enum, self).__init__(*args, **kwargs)
-    
+
+    def _is_valid_value(self, value):
+        return value in [x[1] for x in self._options]
+
     def select(self):
-        from slyguy import gui
-        current = [x[1] for x in self._options].index(self.value)
+        try:
+            current = [x[1] for x in self._options].index(self.value)
+        except ValueError:
+            current = -1
 
         if self._loop:
             index = current + 1
             if index > len(self._options) - 1:
                 index = 0
         else:
+            from slyguy import gui
             index = gui.select(self._label, options=[x[0] for x in self._options], preselect=current)
 
         if index != -1:
             self.value = self._options[index][1]
 
-    @property
-    def value_label(self):
-        return self.get_value_label(self.value)
-
     def get_value_label(self, value):
-        return [x[0] for x in self._options if x[1] == value][0]
+        try:
+            return [x[0] for x in self._options if x[1] == value][0]
+        except IndexError:
+            return super(Enum, self).get_value_label(value)
 
     def from_text(self, value):
         return self._options[int(value)][1]
