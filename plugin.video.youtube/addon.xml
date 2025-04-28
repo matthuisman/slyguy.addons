@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.youtube" name="YouTube -> SlyGuy Trailers" provider-name="SlyGuy" version="99.2.23">
+<addon id="plugin.video.youtube" name="YouTube -> SlyGuy Trailers" provider-name="SlyGuy" version="99.2.24">
     <requires>
         <import addon="repository.slyguy.youtube"/>
     </requires>
