@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.slyguy.globalsearch" name="SlyGuy Global Search+ Repository" provider-name="SlyGuy" version="0.0.1">
+<addon id="repository.slyguy.globalsearch" name="SlyGuy Global Search+ Repository" provider-name="SlyGuy" version="0.0.2">
   <extension point="xbmc.addon.repository" name="SlyGuy Global Search+ Repository">
     <dir>
       <info compressed="false">https://slyguy.uk/.repo/repository.slyguy.globalsearch/addons.xml</info>
