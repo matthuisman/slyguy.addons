@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.slyguy.youtube" name="SlyGuy Trailers Redirects Repository" provider-name="SlyGuy" version="0.0.6">
+<addon id="repository.slyguy.youtube" name="SlyGuy Trailers Redirects Repository" provider-name="SlyGuy" version="0.0.7">
   <extension point="xbmc.addon.repository" name="SlyGuy Trailers Redirects Repository">
     <dir>
       <info compressed="false">https://slyguy.uk/.repo/repository.slyguy.youtube/addons.xml</info>
