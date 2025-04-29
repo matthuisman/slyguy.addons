@@ -5,7 +5,7 @@ from slyguy.session import Session
 from slyguy.exceptions import Error
 from slyguy.util import jwt_data
 
-from .constants import HEADERS, BASE_URL, SITE_ID, APP_VERSION, CLIENT_ID, BRAND_ID, REALM, PAGE_SIZE
+from .constants import BASE_URL, SITE_ID, APP_VERSION_URL, APP_VERSION_FALLBACK, CLIENT_ID, BRAND_ID, REALM, PAGE_SIZE
 
 
 class APIError(Error):
@@ -15,16 +15,25 @@ class APIError(Error):
 class API(object):
     def new_session(self):
         self.logged_in = False
-        self._session = Session(HEADERS)
-
         if not userdata.get('device_id'):
             userdata.set('device_id', self._device_id())
 
-        self._session.headers.update({
-            'x-device-info': '{}/{} (NVIDIA/SHIELD Android TV; android/9-mdarcy-userdebug; {}/{})'.format(SITE_ID, APP_VERSION, userdata.get('device_id'), CLIENT_ID),
-        })
-
+        self._session = Session()
+        headers = {
+            'x-disco-client': 'ANDROIDTV:9:{}:{}'.format(SITE_ID, self._app_version()),
+            'x-disco-params': 'realm={},bid={},features=ar'.format(REALM, BRAND_ID),
+            'x-device-info': '{}/{} (NVIDIA/SHIELD Android TV; android/9-mdarcy-userdebug; {}/{})'.format(SITE_ID, self._app_version(), userdata.get('device_id'), CLIENT_ID),
+            'user-agent': 'androidtv {}/{} (android/9; en-NZ; SHIELD Android TV-NVIDIA; Build/1)'.format(SITE_ID, self._app_version()),
+        }
+        self._session.headers.update(headers)
         self._set_authentication(userdata.get('access_token'))
+
+    @mem_cache.cached(60*60)
+    def _app_version(self):
+        try:
+            return self._session.get(APP_VERSION_URL).text.strip()
+        except:
+            return APP_VERSION_FALLBACK
 
     def _set_authentication(self, access_token):
         if not access_token:
