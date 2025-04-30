@@ -29,6 +29,7 @@ class Language(BaseLanguage):
     GCQ                    = 30024
     NLM                    = 30025
     NEW                    = 30026
+    TOKEN_REFRESH_ERROR    = 30027
 
 
 _ = Language()

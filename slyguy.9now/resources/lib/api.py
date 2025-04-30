@@ -2,8 +2,10 @@ import time
 
 from slyguy import util, userdata, log
 from slyguy.session import Session
+from slyguy.exceptions import Error
 
 from .constants import *
+from .language import _
 
 
 class API(object):
@@ -55,7 +57,7 @@ class API(object):
         }
         data = self._session.post(AUTH_URL.format('/refresh-token'), params=params).json()
         if 'error' in data:
-            raise Exception(data['error'])
+            raise Error(_(_.TOKEN_REFRESH_ERROR, error=data['error']))
 
         userdata.set('access_token', data['accessToken'])
         userdata.set('token_expires', int(time.time()) + data['expiresIn'] - 30)
