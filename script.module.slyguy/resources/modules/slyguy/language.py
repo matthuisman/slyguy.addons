@@ -124,7 +124,7 @@ class BaseLanguage(object):
     PLAY_FROM_START             = 32064
     PLAY_FROM_LIVE              = 32065
     PLAY_FROM                   = 32067
-    QUALITY_BITRATE             = 32068
+    QUALITY_LABEL               = 32068
     QUALITY_FPS                 = 32069
     SELECT_WV_VERSION           = 32070
     WV_UNKNOWN                  = 32071
@@ -311,6 +311,7 @@ class BaseLanguage(object):
     NOT_SET                     = 32222
     PROXY_PORT                  = 32223
     SHOW_SUPPORT                = 32224
+    QUALITY_BITRATE             = 32225
 
     def __init__(self):
         self._addon_map = {}    

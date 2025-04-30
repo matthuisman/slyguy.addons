@@ -392,7 +392,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             else:
                 color = None
 
-            return _(_.QUALITY_BITRATE, bandwidth=int((stream['bandwidth']/10000.0))/100.00, resolution=resolution, fps=fps, codecs=codec_string, _color=color).replace('  ', ' ')
+            if stream['bandwidth']:
+                bandwidth = _(_.QUALITY_BITRATE, bitrate=int((stream['bandwidth']/10000.0))/100.00)
+            else:
+                bandwidth = ''
+
+            return _(_.QUALITY_LABEL, bandwidth=bandwidth, resolution=resolution, fps=fps, codecs=codec_string, _color=color, _strip=True).replace('  ', ' ')
 
         if self._session.get('selected_quality') is not None:
             if self._session['selected_quality'] == QUALITY_EXIT:

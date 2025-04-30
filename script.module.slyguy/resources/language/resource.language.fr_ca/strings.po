@@ -317,7 +317,7 @@ msgid "Play From?"
 msgstr ""
 
 msgctxt "#32068"
-msgid "{bandwidth:.2f} Mbit/s {resolution} {fps}"
+msgid "{bandwidth} {resolution} {fps}"
 msgstr ""
 
 msgctxt "#32069"

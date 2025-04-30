@@ -498,8 +498,8 @@ msgid "Play From?"
 msgstr "Odtwarzaj z?"
 
 msgctxt "#32068"
-msgid "{bandwidth:.2f} Mbit/s {resolution} {fps} {codecs}"
-msgstr "{bandwidth:.2f} Mbit/s {resolution} {fps} {codecs}"
+msgid "{bandwidth} {resolution} {fps} {codecs}"
+msgstr "{bandwidth} {resolution} {fps} {codecs}"
 
 msgctxt "#32069"
 msgid "{fps:.2f} FPS"

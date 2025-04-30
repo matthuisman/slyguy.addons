@@ -437,8 +437,8 @@ msgid "Play From?"
 msgstr "Wiedergabe von?"
 
 msgctxt "#32068"
-msgid "{bandwidth:.2f} Mbit/s {resolution} {fps}"
-msgstr "{bandwidth:.2f} Mbit/s {resolution} {fps}"
+msgid "{bandwidth} {resolution} {fps}"
+msgstr "{bandwidth} {resolution} {fps}"
 
 msgctxt "#32069"
 msgid "{fps:.2f} FPS"
