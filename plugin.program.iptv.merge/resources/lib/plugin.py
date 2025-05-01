@@ -4,11 +4,10 @@ import re
 from kodi_six import xbmc, xbmcvfs
 from looseversion import LooseVersion
 
-from slyguy import plugin, gui, userdata
+from slyguy import plugin, gui, userdata, monitor
 from slyguy.util import set_kodi_setting, kodi_rpc, set_kodi_string, get_kodi_string, get_addon, run_plugin
 from slyguy.constants import ADDON_PROFILE, ADDON_ID, ADDON_NAME
 from slyguy.exceptions import PluginError
-from slyguy.monitor import monitor
 from slyguy.log import log
 
 from .language import _
