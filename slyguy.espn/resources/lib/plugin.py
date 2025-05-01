@@ -1,7 +1,6 @@
 import arrow
-from slyguy import plugin, gui, signals, inputstream, userdata
+from slyguy import plugin, gui, signals, inputstream, userdata, monitor
 from slyguy.exceptions import PluginError
-from slyguy.monitor import monitor
 from slyguy.exceptions import PluginError
 from slyguy.constants import PLAY_FROM_TYPES, PLAY_FROM_ASK, PLAY_FROM_START, ROUTE_LIVE_TAG
 
