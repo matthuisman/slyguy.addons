@@ -5,9 +5,8 @@ from xml.sax.saxutils import escape
 
 import arrow
 from six.moves.urllib_parse import quote
-from slyguy import plugin, gui, userdata, signals, inputstream
+from slyguy import plugin, gui, userdata, signals, inputstream, monitor
 from slyguy.exceptions import PluginError
-from slyguy.monitor import monitor
 from slyguy.log import log
 from slyguy.constants import LIVE_HEAD, ROUTE_LIVE_TAG, PLAY_FROM_LIVE, PLAY_FROM_START, ROUTE_RESUME_TAG, PLAY_FROM_TYPES, PLAY_FROM_ASK, NO_RESUME_TAG
 
