@@ -3,9 +3,8 @@ import time
 
 import arrow
 
-from slyguy import plugin, gui, userdata, inputstream, signals
+from slyguy import plugin, gui, userdata, inputstream, signals, monitor
 from slyguy.log import log
-from slyguy.monitor import monitor
 from slyguy.session import Session
 from slyguy.util import get_system_arch
 
