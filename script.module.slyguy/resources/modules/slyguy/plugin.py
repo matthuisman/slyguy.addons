@@ -8,7 +8,7 @@ from six.moves.urllib_parse import quote_plus
 
 from kodi_six import xbmc, xbmcplugin, xbmcaddon
 
-from slyguy import router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache, is_donor, log, _
+from slyguy import monitor, router, gui, settings, userdata, inputstream, signals, migrate, bookmarks, mem_cache, is_donor, log, _
 from slyguy.constants import *
 from slyguy.exceptions import Error, PluginError, CancelDialog
 from slyguy.util import set_kodi_string, get_addon, remove_file, user_country
@@ -531,8 +531,6 @@ def _service(**kwargs):
 #     gui.refresh()
 
 def service(interval=ROUTE_SERVICE_INTERVAL):
-    monitor = xbmc.Monitor()
-
     delay = settings.getInt('service_delay', 0) or random.randint(10, 60)
     monitor.waitForAbort(delay)
 
