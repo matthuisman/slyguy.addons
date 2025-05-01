@@ -4,9 +4,8 @@ from xml.sax.saxutils import escape
 from xml.dom.minidom import parseString
 
 import arrow
-from slyguy import plugin, gui, userdata, signals, inputstream
+from slyguy import monitor, plugin, gui, userdata, signals, inputstream
 from slyguy.exceptions import PluginError
-from slyguy.monitor import monitor
 from slyguy.drm import is_wv_secure
 from slyguy.constants import MIDDLEWARE_PLUGIN, NO_RESUME_TAG, ROUTE_RESUME_TAG, ROUTE_LIVE_TAG
 
