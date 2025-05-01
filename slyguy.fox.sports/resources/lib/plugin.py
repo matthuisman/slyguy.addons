@@ -1,7 +1,6 @@
 import arrow
-from slyguy import plugin, gui, signals, inputstream
+from slyguy import plugin, gui, signals, inputstream, monitor
 from slyguy.exceptions import PluginError
-from slyguy.monitor import monitor
 
 from .api import API
 from .language import _
