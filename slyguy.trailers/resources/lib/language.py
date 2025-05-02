@@ -23,6 +23,8 @@ class Language(BaseLanguage):
     CANT_PLAY_REDIRECTED        = 30023
     YOUTUBE_PLUGIN              = 30024
     TUBED_PLUGIN                = 30025
+    TRAILER_IMDB                = 30026
+    TRAILER_IMDB_TV             = 30027
 
 
 _ = Language()

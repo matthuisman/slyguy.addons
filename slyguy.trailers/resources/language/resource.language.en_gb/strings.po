@@ -89,3 +89,11 @@ msgstr ""
 msgctxt "#30025"
 msgid "Tubed add-on"
 msgstr ""
+
+msgctxt "#30026"
+msgid "Use IMDB Trailer"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Enable for TV Shows"
+msgstr ""

@@ -8,21 +8,30 @@ from .language import _
 
 
 def set_trailer_context():
+    value = '1,'
     if not settings.TRAILER_CONTEXT_MENU.value:
         # dont show
-        set_kodi_string('_slyguy_trailer_context_menu', '0')
+        value = '0'
+
     elif settings.TRAILER_LOCAL.value:
-        # always show
-        set_kodi_string('_slyguy_trailer_context_menu', '4')
+        # always show for movie/show
+        value += '6,7'
+
+    elif settings.TRAILER_IMDB.value:
+        # show if unique id for movie
+        value += '2'
+        if settings.TRAILER_IMDB_TV.value:
+            # show if unique id for show
+            value += ',3'
+
     elif settings.MDBLIST.value:
-        # show if unique id to find via mdblist
-        set_kodi_string('_slyguy_trailer_context_menu', '2')
+        # show if unique id for movie/show
+        value += '2,3'
         if settings.MDBLIST_SEARCH.value:
-            # no unique id, but search enabled so show if name/year
-            set_kodi_string('_slyguy_trailer_context_menu', '3')
-    else:
-        # show if trailer path on listitem
-        set_kodi_string('_slyguy_trailer_context_menu', '1')
+            # show if name/year for movie/show
+            value += ',4,5'
+
+    set_kodi_string('_slyguy_trailer_context_menu', value)
 
 
 class YTMode:
@@ -44,6 +53,8 @@ YT_OPTIONS.append([_.TUBED_PLUGIN, YTMode.TUBED_PLUGIN])
 class Settings(CommonSettings):
     TRAILER_CONTEXT_MENU = Bool('trailer_context_menu', _.TRAILER_CONTEXT_MENU, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context)
     TRAILER_LOCAL = Bool('trailer_local', _.TRAILER_LOCAL, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
+    TRAILER_IMDB = Bool('trailer_imdb', _.TRAILER_IMDB, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
+    TRAILER_IMDB_TV = Bool('trailer_imdb_tv', _.TRAILER_IMDB_TV, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_IMDB)
     MDBLIST = Bool('mdblist', _.MDBLIST, default=False, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=TRAILER_CONTEXT_MENU)
     MDBLIST_SEARCH = Bool('mdblist_search', _.MDBLIST_SEARCH, default=True, after_save=lambda val:set_trailer_context(), after_clear=set_trailer_context, parent=MDBLIST)
 
