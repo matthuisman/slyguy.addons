@@ -114,8 +114,10 @@ class Widevine(InputstreamItem):
     license_type = 'com.widevine.alpha'
     minversion = IA_WV_MIN_VER
 
-    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype='application/dash+xml', server_certificate=None, license_data=None, license_headers=None, wv_secure=False, flags=None, **kwargs):
+    def __init__(self, license_key=None, content_type='application/octet-stream', challenge='R{SSM}', response='', manifest_type='mpd', mimetype=None, server_certificate=None, license_data=None, license_headers=None, wv_secure=False, flags=None, **kwargs):
         super(Widevine, self).__init__(**kwargs)
+        if mimetype is None:
+            mimetype = 'application/vnd.apple.mpegurl' if manifest_type == 'hls' else 'application/dash+xml'
         self.license_key = license_key
         self.content_type = content_type
         self.challenge = challenge
