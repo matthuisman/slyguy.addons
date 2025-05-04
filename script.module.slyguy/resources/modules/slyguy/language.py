@@ -312,6 +312,8 @@ class BaseLanguage(object):
     PROXY_PORT                  = 32223
     SHOW_SUPPORT                = 32224
     QUALITY_BITRATE             = 32225
+    WV_REQUIRE_IA               = 32226
+    WV_UNSUPPORTED_IA           = 32227
 
     def __init__(self):
         self._addon_map = {}    

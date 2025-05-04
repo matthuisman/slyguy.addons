@@ -268,6 +268,17 @@ def install_widevine(reinstall=False):
             wv['compatible'] = False
             wv['label'] = _(_.WV_REVOKED, label=wv['label'])
             wv['confirm'] = _.WV_REVOKED_CONFIRM
+
+        elif wv.get('min_ia'):
+            min_ia = wv['min_ia'].get(str(KODI_VERSION))
+            if not min_ia or not require_version(min_ia):
+                wv['compatible'] = False
+                wv['label'] = _(_.WV_ISSUES, label=wv['label'])
+                if min_ia:
+                    wv['confirm'] = _(_.WV_REQUIRE_IA, version=min_ia)
+                else:
+                    wv['confirm'] = _.WV_UNSUPPORTED_IA
+
         elif wv.get('issues'):
             wv['compatible'] = False
             wv['label'] = _(_.WV_ISSUES, label=wv['label'])
