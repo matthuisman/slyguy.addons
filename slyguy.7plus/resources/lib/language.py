@@ -25,6 +25,7 @@ class Language(BaseLanguage):
     TWB                   = 30029
     TSV                   = 30030
     REGION                = 30031
+    WBY                   = 30032
 
 
 _ = Language()

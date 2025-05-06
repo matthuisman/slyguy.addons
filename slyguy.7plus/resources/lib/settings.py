@@ -19,6 +19,7 @@ class Region:
     RKY = 8 # Rockhampton
     TWB = 9 # Toowoomba
     TSV = 10 # Townsville
+    WBY = 32 # Wide Bay
 
 
 class Settings(CommonSettings):
@@ -28,7 +29,7 @@ class Settings(CommonSettings):
     REGION = Enum('region', _.REGION, default=Region.AUTO,
                     options=[[_.AUTO, Region.AUTO], [_.MEL, Region.MEL], [_.SYD, Region.SYD], [_.BRI, Region.BRI],
                         [_.PER, Region.PER], [_.ADE, Region.ADE], [_.CNS, Region.CNS], [_.MKY, Region.MKY], [_.SSC, Region.SSC],
-                        [_.RKY, Region.RKY], [_.TWB, Region.TWB], [_.TSV, Region.TSV]])
+                        [_.RKY, Region.RKY], [_.TWB, Region.TWB], [_.TSV, Region.TSV], [_.WBY, Region.WBY]])
 
 
 settings = Settings()
