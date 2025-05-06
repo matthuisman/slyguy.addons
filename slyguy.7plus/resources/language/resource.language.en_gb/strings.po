@@ -57,3 +57,51 @@ msgstr ""
 msgctxt "#30019"
 msgid "Season {number}"
 msgstr ""
+
+msgctxt "#30020"
+msgid "Melbourne"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Sydney"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Brisbane"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Perth"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Adelaide"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Cairns"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Mackay"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Sunshine Coast"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Rockhampton"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Toowoomba"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Townsville"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Region"
+msgstr ""

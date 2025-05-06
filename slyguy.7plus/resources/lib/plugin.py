@@ -435,7 +435,7 @@ def _get_live_channels():
                 channels.append(row)
                 added.append(row['channelId'])
 
-    return sorted(channels, key=lambda x: int(x['channelId']))
+    return sorted(channels, key=lambda x: int(x['rank']))
 
 
 @plugin.route()

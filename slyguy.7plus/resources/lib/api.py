@@ -6,7 +6,7 @@ from slyguy.log import log
 
 from .constants import *
 from .language import _
-from .settings import settings
+from .settings import settings, Region
 
 
 class APIError(Error):
@@ -19,29 +19,18 @@ class API(object):
         self._session = Session(headers=HEADERS)
 
     def _market_id(self):
-        SYDNEY_MARKET_ID = 4
-
-        @mem_cache.cached(60*10)
+        @mem_cache.cached(60*5)
         def auto():
             try:
                 return self._session.get('https://market-cdn.swm.digital/v1/market/ip/', params={'apikey': 'web'}).json()['_id']
             except:
                 log.debug('Failed to get market id from IP. Default to Sydney')
-                return SYDNEY_MARKET_ID
+                return Region.SYD
 
-        @mem_cache.cached(60*30)
-        def lat_long(lat, long):
-            try:
-                return self._session.get('https://market-cdn.swm.digital/v1/market/location/', params={'apikey': 'web', 'lat': '{:.4f}'.format(lat), 'lon': '{:.4f}'.format(long)}).json()['_id']
-            except:
-                log.debug('Failed to get market id from lat long. Default to Sydney')
-                return SYDNEY_MARKET_ID
-
-        try:
-            latitude, longitude = settings.get('lat_long').strip().split(',')
-            market_id = lat_long(float(latitude), float(longitude))
-        except:
+        if settings.REGION.value == Region.AUTO:
             market_id = auto()
+        else:
+            market_id = settings.REGION.value
 
         log.debug('Market ID: {}'.format(market_id))
         return market_id
