@@ -7,4 +7,4 @@ API_URL = 'https://discover.hulu.com{}'
 
 
 DEEJAY_DEVICE_ID = 166
-DEEJAY_KEY_VERSION = 4
+DEEJAY_KEY_VERSION = 9999999
