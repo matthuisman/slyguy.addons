@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.94">
+<addon id="script.module.slyguy" name="SlyGuy Common" provider-name="SlyGuy" version="0.85.95">
   <requires>
     <import addon="slyguy.dependencies" version="0.0.24"/>
     <import addon="repository.slyguy" version="0.0.9"/>
+    <import addon="slyguy.trailers" optional="true"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>executable</provides>
