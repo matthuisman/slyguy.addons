@@ -176,15 +176,16 @@ def set(set_id, watchlist=0, page=1, **kwargs):
 
 
 @plugin.route()
-def season(show_id, season_id, **kwargs):
+@plugin.pagination()
+def season(show_id, season_id, page=1, **kwargs):
     show_data = api.page(show_id)
-    data = api.season(season_id)
+    data = api.season(season_id, page=page)
     folder = _process_rows(data, title=show_data['visuals']['title'])
     show_art = _get_art(show_data)
     for key in show_art:
         if key != 'poster' and not folder.art.get(key):
             folder.art[key] = show_art[key]
-    return folder
+    return folder, data['pagination']['hasMore']
 
 
 def _get_actions(data):

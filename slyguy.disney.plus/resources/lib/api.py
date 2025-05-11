@@ -345,7 +345,7 @@ class API(object):
         return self._json_call(endpoint, params=params)['data']['page']
 
     @mem_cache.cached(60*5)
-    def set(self, set_id, limit=48, page=1):
+    def set(self, set_id, limit=100, page=1):
         params = {
             'limit': limit,
             'offset': limit*(page-1),
@@ -354,7 +354,7 @@ class API(object):
         return self._json_call(endpoint, params=params)['data']['set']
 
     @mem_cache.cached(60*5)
-    def season(self, season_id, limit=48, page=1):
+    def season(self, season_id, limit=100, page=1):
         params = {
             'limit': limit,
             'offset': limit*(page-1),
