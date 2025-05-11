@@ -136,6 +136,7 @@ DEFAULT_WORKERS = 5
 BOOKMARK_FILE = os.path.join(ADDON_PROFILE, 'bookmarks.json')
 
 #### PROXY #####
+DEFAULT_PROXY_PORT = 8095
 REMOVE_IN_HEADERS = ['upgrade', 'host', 'accept-encoding']
 REMOVE_OUT_HEADERS = ['date', 'server', 'transfer-encoding', 'keep-alive', 'connection']
 ERROR_URL = 'error.m3u8'

@@ -272,7 +272,6 @@ class CommonSettings(BaseSettings):
                     loop=True, default=PLAY_FROM_ASK, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_LIVE = Bool('use_ia_hls_live', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     USE_IA_HLS_VOD = Bool('use_ia_hls_vod', default=True, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
-    PROXY_ENABLED = Bool('proxy_enabled', default=True, before_save=lambda val: val or dialog.yes_no(_.CONFIRM_DISABLE_PROXY), owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     WV_LEVEL = Enum('wv_level', after_save=set_drm_level, options=WV_LEVEL_OPTIONS, loop=True, default=WV_AUTO, owner=COMMON_ADDON_ID, category=Categories.PLAYER_ADVANCED)
     HDCP_LEVEL = Enum('hdcp_level', before_save=lambda val: settings.HDCP_LEVEL.value != HDCP_AUTO or dialog.yes_no(_.CONFIRM_CHANGE_HDCP_LEVEL), after_save=set_drm_level,
                       options=[[_.AUTO, HDCP_AUTO], [_.HDCP_OFF, HDCP_NONE], [_.HDCP_1, HDCP_1], [_.HDCP_2_2, HDCP_2_2], [_.HDCP_3_0, HDCP_3_0]], 
@@ -304,7 +303,8 @@ class CommonSettings(BaseSettings):
 
     # SYSTEM
     FAST_UPDATES = Bool('fast_updates', default=True, enable=is_donor, disabled_value=False, disabled_reason=_.SUPPORTER_ONLY, override=False, owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
-    PROXY_PORT = Number('proxy_port', default=8095, override=False, visible=lambda: settings.PROXY_ENABLED.value, owner=COMMON_ADDON_ID, after_save=lambda val: restart_service(), after_clear=restart_service, category=Categories.SYSTEM)
+    PROXY_ENABLED = Bool('proxy_enabled', default=True, before_save=lambda val: val or dialog.yes_no(_.CONFIRM_DISABLE_PROXY), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
+    PROXY_PORT = Number('proxy_port', default=None, default_label=_.AUTO, override=False, visible=lambda: settings.PROXY_ENABLED.value, owner=COMMON_ADDON_ID, after_save=lambda val: restart_service(), after_clear=restart_service, category=Categories.SYSTEM)
     CHECK_LOG = Action("RunPlugin(plugin://{}/?_=check_log)".format(COMMON_ADDON_ID), owner=COMMON_ADDON_ID, category=Categories.SYSTEM)
 
     # ROOT

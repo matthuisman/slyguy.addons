@@ -19,7 +19,7 @@ from pycaption import detect_format, WebVTTWriter
 
 from slyguy import gui, settings, log, _
 from slyguy.constants import *
-from slyguy.util import remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language
+from slyguy.util import remove_file, get_kodi_string, set_kodi_string, fix_url, run_plugin, lang_allowed, fix_language, check_port
 from slyguy.exceptions import Exit
 from slyguy.session import RawSession
 from slyguy.router import add_url_args
@@ -1576,6 +1576,11 @@ class Proxy(object):
             return
 
         port = settings.PROXY_PORT.value
+        if port is None:
+            port = check_port(DEFAULT_PROXY_PORT)
+            if not port:
+                port = check_port()
+                log.warning('Port {} not available. Switched to port {}'.format(DEFAULT_PROXY_PORT, port))
 
         try:
             self._server = ThreadedHTTPServer(('0.0.0.0', port), RequestHandler)
@@ -1587,6 +1592,7 @@ class Proxy(object):
             gui.error(error)
             return
 
+        settings.PROXY_PORT._set_value(port)
         self._server.allow_reuse_address = True
         self._httpd_thread = threading.Thread(target=self._server.serve_forever)
         self._httpd_thread.start()
