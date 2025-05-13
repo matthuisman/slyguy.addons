@@ -314,6 +314,7 @@ class BaseLanguage(object):
     QUALITY_BITRATE             = 32225
     WV_REQUIRE_IA               = 32226
     WV_UNSUPPORTED_IA           = 32227
+    VALID_TO                    = 32228
 
     def __init__(self):
         self._addon_map = {}    

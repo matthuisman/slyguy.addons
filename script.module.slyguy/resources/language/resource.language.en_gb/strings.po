@@ -1120,3 +1120,7 @@ msgid "This CDM requires a newer inputstream.adaptive add-on version\n"
 "that is not available for your Kodi version. You may need to manually find and install it.\n"
 "Select Yes to install anyway"
 msgstr ""
+
+msgctxt "#32228"
+msgid "{supporter_id} (Valid to {expires})"
+msgstr ""

@@ -2,6 +2,8 @@ import os
 import re
 from time import time
 
+import arrow
+
 from slyguy import dialog, signals
 from slyguy.language import _
 from slyguy.log import log
@@ -95,7 +97,11 @@ def check_donor(force=False):
 
     try:
         from slyguy.session import Session
-        result = Session().head(DONOR_URL.format(id=settings.DONOR_ID.value), log_url=DONOR_URL.format(id='xxxxx')).status_code == 200
+        resp = Session().get(DONOR_URL.format(id=settings.DONOR_ID.value), log_url=DONOR_URL.format(id='xxxxx'))
+        result = (resp.status_code == 200)
+        if result:
+            try: settings.setInt('donor_expires', int(resp.text))
+            except: pass
     except Exception as e:
         log.warning("Failed to check donor id due to: {}".format(e))
         if _time > settings.getInt('last_donor_check', 0) + DONOR_TIMEOUT:
@@ -201,10 +207,17 @@ class Donor(Text):
         elif self.can_clear():
             value = _(value, _bold=True)
 
+        expires = settings.getInt('donor_expires', 0)
+        if expires > 0:
+            expires = arrow.get(expires)
+
         if is_donor():
             value = _(value, _color='green')
         else:
             value = _(value, _color='red')
+
+        if expires:
+            value = _(_.VALID_TO, supporter_id=value, expires=expires.to('local').format('D MMMM YYYY'))
 
         label = u'{}: {}'.format(self._label, value)
         return label
