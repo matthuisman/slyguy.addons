@@ -77,6 +77,8 @@ def originals(**kwargs):
 
 
 def _deeplink_page(ref_id):
+    if not api.is_subscribed():
+        gui.ok(_.NOT_SUBSCRIBER)
     data = api.deeplink(ref_id=ref_id)
     page_id = _get_actions(data)[BROWSE]['pageId']
     data = api.page(page_id, limit=1, enhanced_limit=99)

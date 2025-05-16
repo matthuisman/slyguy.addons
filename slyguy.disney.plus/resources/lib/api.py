@@ -1,7 +1,7 @@
 import uuid
 from time import time
 
-from slyguy import userdata, mem_cache
+from slyguy import userdata, mem_cache, log
 from slyguy.session import Session
 from slyguy.exceptions import Error
 
@@ -293,6 +293,13 @@ class API(object):
         }
         _args.update(**kwargs)
         return href.format(**_args)
+
+    def is_subscribed(self):
+        try:
+            return self.profile()[1]['isSubscriber']
+        except Exception as e:
+            log.warning("Failed to check subscriber due to: {}".format(e))
+            return True
 
     def profile(self):
         session = self._cache.get('session')

@@ -163,3 +163,8 @@ msgstr ""
 msgctxt "#30058"
 msgid "Remove from Continue Watching"
 msgstr ""
+
+msgctxt "#30059"
+msgid "It appears your Disney+ subscription has expired\n"
+"You may not be able to view any content"
+msgstr ""

@@ -38,6 +38,7 @@ class Language(BaseLanguage):
     SKIP_RECAPS              = 30056
     BRANDS                   = 30057
     REMOVE_CONTINUE_WATCHING = 30058
+    NOT_SUBSCRIBER           = 30059
 
 
 _ = Language()
