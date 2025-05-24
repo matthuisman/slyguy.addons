@@ -83,22 +83,20 @@ def _find_content_from_trailer(trailer):
     if not trailer:
         return []
 
-    if KODI_VERSION >= 22:
-        # https://github.com/xbmc/xbmc/pull/26718
-        results = kodi_rpc('VideoLibrary.GetMovies', {'filter': {'field': 'trailer', 'operator': 'contains', 'value': [trailer]},
-                                                      'properties': ['title', 'year', 'imdbnumber', 'uniqueid', 'file', 'trailer']})['movies']
-        if not results:
-            results = kodi_rpc('VideoLibrary.GetTvShows', {'filter': {'field': 'trailer', 'operator': 'contains', 'value': [trailer]},
-                                                           'properties': ['title', 'year', 'imdbnumber', 'uniqueid', 'file', 'trailer']})['tvshows']
-        return results
-    else:
-        results = []
-        rows = kodi_rpc('VideoLibrary.GetMovies', {'filter': {'field': 'hastrailer', 'operator': 'true', 'value': '1'}, 'properties': ['trailer']})['movies']
+    results = []
+    rows = kodi_rpc('VideoLibrary.GetMovies', {'filter': {'field': 'hastrailer', 'operator': 'true', 'value': '1'}, 'properties': ['trailer']})['movies']
+    for row in rows:
+        if trailer in row["trailer"].lower():
+            results.append(kodi_rpc('VideoLibrary.GetMovieDetails', {'movieid': row['movieid'], 'properties': ['title', 'year', 'imdbnumber', 'uniqueid', 'file', 'trailer']})['moviedetails'])
+
+    if not results and KODI_VERSION >= 22:
+        # https://github.com/xbmc/xbmc/pull/26719
+        rows = kodi_rpc('VideoLibrary.GetTvShows', {'filter': {'field': 'hastrailer', 'operator': 'true', 'value': '1'}, 'properties': ['trailer']})['tvshows']
         for row in rows:
             if trailer in row["trailer"].lower():
-                results.append(kodi_rpc('VideoLibrary.GetMovieDetails', {'movieid': row['movieid'], 'properties': ['title', 'year', 'imdbnumber', 'uniqueid', 'file', 'trailer']})['moviedetails'])
-        # shows not supported before Kodi 22
-        return results
+                results.append(kodi_rpc('VideoLibrary.GetTvShowDetails', {'tvshowid': row['tvshowid'], 'properties': ['title', 'year', 'imdbnumber', 'uniqueid', 'file', 'trailer']})['tvshowdetails'])
+
+    return results
 
 
 def _get_local_trailer(item):

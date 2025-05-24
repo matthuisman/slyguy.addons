@@ -3,7 +3,8 @@ import random
 import urllib.parse
 import urllib.request
 
-from ._utils import remove_start
+from ._utils import remove_start, format_field
+from .traversal import traverse_obj
 
 
 def random_user_agent():
@@ -162,3 +163,17 @@ def normalize_url(url):
         query=escape_rfc3986(url_parsed.query),
         fragment=escape_rfc3986(url_parsed.fragment),
     ).geturl()
+
+
+
+def select_proxy(url, proxies):
+    """Unified proxy selector for all backends"""
+    url_components = urllib.parse.urlparse(url)
+    if 'no' in proxies:
+        hostport = url_components.hostname + format_field(url_components.port, None, ':%s')
+        if urllib.request.proxy_bypass_environment(hostport, {'no': proxies['no']}):
+            return
+        elif urllib.request.proxy_bypass(hostport):  # check system settings
+            return
+
+    return traverse_obj(proxies, url_components.scheme or 'http', 'all')
