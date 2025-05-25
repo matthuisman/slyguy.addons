@@ -404,11 +404,18 @@ def process_brightcove(data):
             art = False,
         )
     elif source['type'] == 'widevine':
-        return plugin.Item(
+        item = plugin.Item(
             path = source['source']['src'],
             inputstream = inputstream.Widevine(license_key=source['source']['key_systems']['com.widevine.alpha']['license_url'], mimetype=source['mimetype'], manifest_type='mpd' if source['mimetype'] == 'application/dash+xml' else 'hls'),
             art = False,
         )
+
+        try:
+            item.headers = {'Authorization': 'Bearer {}'.format(source['source']['key_systems']['authorization']['token'])}
+        except KeyError:
+            pass
+
+        return item
     else:
         raise Error(_.NO_BRIGHTCOVE_SRC)
 
