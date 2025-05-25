@@ -728,7 +728,9 @@ class Item(gui.Item):
 
         set_kodi_string('_slyguy_play_data', json.dumps(play_data))
 
-        process_support()
+        # check supporter on final url
+        if self.path.lower().startswith('http'):
+            process_support()
 
         if handle > 0:
             xbmcplugin.setResolvedUrl(handle, True, li)
