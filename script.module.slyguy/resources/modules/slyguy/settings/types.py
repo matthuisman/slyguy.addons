@@ -314,11 +314,16 @@ class Text(Setting):
 
 class AutoText(Text):
     def __init__(self, *args, **kwargs):
-        generator = kwargs.pop('generator')
+        self.generator = kwargs.pop('generator')
         kwargs.setdefault('confirm_clear', True)
         super(AutoText, self).__init__(*args, **kwargs)
-        if not self.value:
-            self.value = str(generator())
+
+    def _get_value_owner(self):
+        owner, value = super(AutoText, self)._get_value_owner()
+        if value == DBStorage.NO_ENTRY:
+            value = str(self.generator())
+            self._set_value(value)
+        return owner, value
 
     def select(self):
         self.on_clear()
