@@ -312,6 +312,17 @@ class Text(Setting):
         return value
 
 
+class AutoText(Text):
+    def __init__(self, *args, **kwargs):
+        generator = kwargs.pop('generator')
+        super(AutoText, self).__init__(*args, **kwargs)
+        if not self.value:
+            self.value = str(generator())
+
+    def select(self):
+        self.on_clear()
+
+
 class Browse(Text):
     DIRECTORY = 'directory'
     FILE = 'file'
