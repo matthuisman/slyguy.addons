@@ -2,10 +2,10 @@ import sys
 import traceback
 from contextlib import contextmanager
 
-from kodi_six import xbmcgui, xbmc
+from kodi_six import xbmcgui, xbmc, xbmcvfs
 
 from slyguy import _
-from slyguy.util import get_system_arch
+from slyguy.util import get_system_arch, hash_6
 from slyguy.constants import *
 
 
@@ -95,6 +95,38 @@ def progressbg(message='', heading=None, percent=0):
     return dialog
 
 
+class QRCodeDialog(xbmcgui.WindowDialog):
+    def __init__(self, qr_data, size):
+        super(QRCodeDialog, self).__init__()
+
+        if KODI_VERSION > 18:
+            import qrcode
+            self.filepath = 'special://temp/qr_{}.png'.format(hash_6(qr_data))
+            qr_image = qrcode.make(qr_data)
+            with xbmcvfs.File(self.filepath, 'wb') as f:
+                qr_image.save(f, 'PNG')
+        else:
+            self.filepath = 'http://api.qrserver.com/v1/create-qr-code/?data={}&size={}x{}'.format(qr_data, size, size)
+
+        self.addControl(xbmcgui.ControlImage(0, 200, size, size, self.filepath))
+
+    def close(self):
+        super(QRCodeDialog, self).close()
+        try: xbmcvfs.delete(self.filepath)
+        except: pass
+
+
+class ProgressQR(Progress):
+    def __init__(self, qr_data, message='', heading=None, percent=0, background=False):
+        self.qr_dlg = QRCodeDialog(qr_data, size=324)
+        self.qr_dlg.show()
+        super(ProgressQR, self).__init__(message, heading, percent, background)
+
+    def close(self):
+        self.qr_dlg.close()
+        super(ProgressQR, self).close()
+
+
 @contextmanager
 def busy():
     xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
@@ -107,6 +139,15 @@ def busy():
 @contextmanager
 def progress(message='', heading=None, percent=0, background=False):
     dialog = Progress(message=message, heading=heading, percent=percent, background=background)
+
+    try:
+        yield dialog
+    finally:
+        dialog.close()
+
+@contextmanager
+def progress_qr(qr_data, message='', heading=None, percent=0, background=False):
+    dialog = ProgressQR(qr_data, message=message, heading=heading, percent=percent, background=background)
 
     try:
         yield dialog
