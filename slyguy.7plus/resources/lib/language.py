@@ -26,6 +26,11 @@ class Language(BaseLanguage):
     TSV                   = 30030
     REGION                = 30031
     WBY                   = 30032
+    TOKEN_REFRESH_ERROR   = 30033
+    LOCATION_NEEDED       = 30034
+    LOCATION_WRONG        = 30035
+    CLEAR_DEVICE_ID       = 30036
+    DEVICE_ID             = 30037
 
 
 _ = Language()

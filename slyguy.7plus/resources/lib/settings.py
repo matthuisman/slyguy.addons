@@ -1,6 +1,7 @@
-from slyguy import mem_cache
+import uuid
+
 from slyguy.settings import CommonSettings
-from slyguy.settings.types import Bool, Enum
+from slyguy.settings.types import Bool, Enum, AutoText
 from slyguy.constants import *
 
 from .language import _
@@ -30,6 +31,7 @@ class Settings(CommonSettings):
                     options=[[_.AUTO, Region.AUTO], [_.MEL, Region.MEL], [_.SYD, Region.SYD], [_.BRI, Region.BRI],
                         [_.PER, Region.PER], [_.ADE, Region.ADE], [_.CNS, Region.CNS], [_.MKY, Region.MKY], [_.SSC, Region.SSC],
                         [_.RKY, Region.RKY], [_.TWB, Region.TWB], [_.TSV, Region.TSV], [_.WBY, Region.WBY]])
+    DEVICE_ID = AutoText('device_id', _.DEVICE_ID, generator=uuid.uuid4, confirm_clear=_.CLEAR_DEVICE_ID)
 
 
 settings = Settings()

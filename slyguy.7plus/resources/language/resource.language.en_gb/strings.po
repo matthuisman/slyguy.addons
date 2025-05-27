@@ -109,3 +109,27 @@ msgstr ""
 msgctxt "#30032"
 msgid "Wide Bay"
 msgstr ""
+
+msgctxt "#30033"
+msgid "Failed to refresh token\n"
+"Try logout and login again"
+msgstr ""
+
+msgctxt "#30034"
+msgid "{error}\n"
+"You will need to login from main menu to confirm location for this device"
+msgstr ""
+
+msgctxt "#30035"
+msgid "{error}\n"
+"You will need to logout and login again to confirm new location"
+msgstr ""
+
+msgctxt "#30036"
+msgid "Changing will require you to confirm your new device id location\n"
+"Are you sure you want to reset it?"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Device ID"
+msgstr ""

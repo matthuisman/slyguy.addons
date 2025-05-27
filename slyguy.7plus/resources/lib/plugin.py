@@ -2,12 +2,12 @@ import re
 import codecs
 from xml.sax.saxutils import escape
 
-import arrow
-from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
-
-from slyguy import plugin, signals, mem_cache
+from slyguy import plugin, signals, mem_cache, gui, monitor
 from slyguy.exceptions import PluginError
 from slyguy.constants import ROUTE_LIVE_TAG
+
+import arrow
+from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus
 
 from .api import API
 from .language import _
@@ -34,12 +34,52 @@ def home(**kwargs):
     folder.add_item(label=_(_.CATEGORIES, _bold=True), path=plugin.url_for(content, slug='all-categories'))
     folder.add_item(label=_(_.SEARCH, _bold=True), path=plugin.url_for(search))
 
+    if api.logged_in:
+        folder.add_item(label=_.LOGOUT, path=plugin.url_for(logout), _kiosk=False, bookmark=False)
+    else:
+        folder.add_item(label=_(_.LOGIN, _bold=True), path=plugin.url_for(login), bookmark=False)
+
     if settings.getBool('bookmarks', True):
         folder.add_item(label=_(_.BOOKMARKS, _bold=True),  path=plugin.url_for(plugin.ROUTE_BOOKMARKS), bookmark=False)
 
     folder.add_item(label=_.SETTINGS, path=plugin.url_for(plugin.ROUTE_SETTINGS), _kiosk=False, bookmark=False)
 
     return folder
+
+
+@plugin.route()
+def login(**kwargs):
+    options = [
+        [_.DEVICE_CODE, _device_code],
+    ]
+
+    index = 0 if len(options) == 1 else gui.context_menu([x[0] for x in options])
+    if index == -1 or not options[index][1]():
+        return
+
+    gui.refresh()
+
+
+def _device_code():
+    data = api.device_code(location=True)
+    url = data['verification_uri_complete'].replace('code={}&'.format(data['user_code']), '')
+    with gui.progress_qr(data['verification_uri_complete'], _(_.DEVICE_LINK_STEPS, code=data['user_code'], url=url), heading=_.DEVICE_CODE) as progress:
+        for i in range(data['expires_in']):
+            if progress.iscanceled() or monitor.waitForAbort(1):
+                return
+
+            progress.update(int((i / float(data['expires_in'])) * 100))
+            if i % data['interval'] == 0 and api.device_login(data['device_code']):
+                return True
+
+
+@plugin.route()
+def logout(**kwargs):
+    if not gui.yes_no(_.LOGOUT_YES_NO):
+        return
+
+    api.logout()
+    gui.refresh()
 
 
 def _get_url(url):
@@ -412,7 +452,7 @@ def play(account, reference, **kwargs):
 
 def _play(account, reference, live=False):
     item = api.play(account, reference, live)
-    item.headers = HEADERS
+    item.headers.update(HEADERS)
 
     if live and item.inputstream:
         item.inputstream.live = True
