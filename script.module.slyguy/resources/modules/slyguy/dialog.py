@@ -103,7 +103,7 @@ class QRCodeDialog(xbmcgui.WindowDialog):
             import qrcode
             self.filepath = 'special://temp/qr_{}.png'.format(hash_6(qr_data))
             qr_image = qrcode.make(qr_data)
-            with xbmcvfs.File(self.filepath, 'wb') as f:
+            with open(xbmc.translatePath(self.filepath), 'wb') as f:
                 qr_image.save(f, 'PNG')
         else:
             self.filepath = 'http://api.qrserver.com/v1/create-qr-code/?data={}&size={}x{}'.format(qr_data, size, size)

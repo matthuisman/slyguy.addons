@@ -247,7 +247,7 @@ class Setting(object):
         return self._label
 
     def on_clear(self):
-        if not self.can_clear() or (self.confirm_clear and not dialog.yes_no(_.ARE_YOU_SURE, _.RESET_TO_DEFAULT)):
+        if not self.can_clear() or (self.confirm_clear and not dialog.yes_no(self.confirm_clear if isinstance(self.confirm_clear, str) else _.ARE_YOU_SURE, _.RESET_TO_DEFAULT)):
             return
 
         prev_value = self._get_value_owner()
