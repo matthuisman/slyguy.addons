@@ -315,6 +315,7 @@ class Text(Setting):
 class AutoText(Text):
     def __init__(self, *args, **kwargs):
         generator = kwargs.pop('generator')
+        kwargs.setdefault('confirm_clear', True)
         super(AutoText, self).__init__(*args, **kwargs)
         if not self.value:
             self.value = str(generator())
